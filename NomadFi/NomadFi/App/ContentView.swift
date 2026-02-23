@@ -6,7 +6,9 @@ struct ContentView: View {
             ContentUnavailableView(
                 "NomadFi",
                 systemImage: "globe",
-                description: Text("Project scaffold ready for Phase 1 implementation.")
+                description: Text(
+                    "Project scaffold ready for Phase 1 implementation."
+                )
             )
             .navigationTitle("NomadFi")
         }
