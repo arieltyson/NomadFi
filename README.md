@@ -5,7 +5,7 @@
 ### Wealth without borders
 
 <kbd>
-    <img src="" width="800" height="500">
+    <img src="https://github.com/user-attachments/assets/c5ff4701-e938-4024-9d5c-0ed2d04d484c" width="800" height="500">
 </kbd>
 
 ## Project Description 🎨
@@ -104,36 +104,6 @@ This project is designed to showcase distinguished-level iOS engineering practic
 - [x] **SOCIAL IMPACT**: Purpose-built tooling that addresses a real affordability crisis — making hidden FX fees visible and cross-border tax compliance manageable for a vulnerable population.
 - [x] **ACCESSIBILITY EXCELLENCE**: VoiceOver narratives, Dynamic Type at AX5, Reduce Motion/Transparency support, and WCAG 2.1 AA contrast compliance on every screen.
 - [x] **TESTABILITY**: Protocol-oriented service layer with mock implementations from Day 1, enabling comprehensive unit testing and SwiftUI Previews.
-
-## Architecture 🏗️
-
-```
-NomadFi/
-├── App/
-│   └── NomadFiApp.swift
-├── Features/
-│   ├── Dashboard/
-│   ├── Ledger/
-│   ├── Arbitrage/
-│   ├── TaxVault/
-│   ├── Subscriptions/
-│   └── Onboarding/
-├── Core/
-│   ├── Models/
-│   ├── Services/
-│   ├── Extensions/
-│   └── Utilities/
-├── DesignSystem/
-│   ├── Components/
-│   ├── Tokens/
-│   └── Theme/
-├── Resources/
-│   ├── Assets.xcassets
-│   └── Localizable.xcstrings
-└── Tests/
-    ├── UnitTests/
-    └── UITests/
-```
 
 ## Contributing ⚙️
 
