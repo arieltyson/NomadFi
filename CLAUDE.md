@@ -63,8 +63,12 @@ Focus on the key features that allowed winners to be featured in each category, 
 - Avoid hard-coded values for padding and stack spacing unless requested.
 - Avoid UIKit colors in SwiftUI code.
 - `'+'` was deprecated in iOS 26.0 for `Text` concatenation — use string interpolation: `Text("Hello \(name)")`.
+- `Material` (e.g., `.ultraThinMaterial`) is a `ShapeStyle`, not a `View` — it cannot be returned directly from a `@ViewBuilder`. Wrap it in a shape: `Rectangle().fill(.ultraThinMaterial)`.
 
 ## SwiftData Rules
+
+- Always use fully qualified default values in `@Model` stored properties — the `@Model` macro cannot resolve shorthand static member syntax during expansion. Use `Date.now` instead of `.now`, `AccountType.checking` instead of `.checking`, etc.
+- In bidirectional relationships, only declare `@Relationship(inverse:)` on **one** side — typically the to-many (parent) side. Leave the other side as a plain `var`. Declaring `inverse:` on both sides causes circular macro resolution errors.
 
 If SwiftData is configured to use CloudKit:
 
