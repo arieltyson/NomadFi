@@ -12,7 +12,7 @@ struct MainTabView: View {
 
             Tab("Ledger", systemImage: "list.bullet.rectangle") {
                 NavigationStack {
-                    LedgerPlaceholderView()
+                    LedgerView()
                 }
             }
 
