@@ -64,6 +64,7 @@ Focus on the key features that allowed winners to be featured in each category, 
 - Avoid UIKit colors in SwiftUI code.
 - `'+'` was deprecated in iOS 26.0 for `Text` concatenation — use string interpolation: `Text("Hello \(name)")`.
 - `Material` (e.g., `.ultraThinMaterial`) is a `ShapeStyle`, not a `View` — it cannot be returned directly from a `@ViewBuilder`. Wrap it in a shape: `Rectangle().fill(.ultraThinMaterial)`.
+- Never use `.relative(presentation:)` date formatting in SwiftUI `Text` — it creates an internal timer that fires continuously (~every second) to update the display, causing High Energy Impact even when the app is idle. Use a static format like `.dateTime.hour().minute()` instead.
 
 ## SwiftData Rules
 

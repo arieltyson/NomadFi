@@ -60,7 +60,7 @@ private extension ExchangeRateTicker {
             Spacer()
 
             if let lastUpdated {
-                Text("Updated \(lastUpdated, format: .relative(presentation: .named))")
+                Text("Updated \(lastUpdated, format: .dateTime.hour().minute())")
                     .font(TypographyTokens.footnote)
                     .foregroundStyle(.tertiary)
             }
