@@ -6,7 +6,7 @@ struct MainTabView: View {
         TabView {
             Tab("Dashboard", systemImage: "globe") {
                 NavigationStack {
-                    DashboardPlaceholderView()
+                    DashboardView()
                 }
             }
 

@@ -3,9 +3,16 @@ import SwiftUI
 
 @main
 struct NomadFiApp: App {
+
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            if hasCompletedOnboarding {
+                MainTabView()
+            } else {
+                OnboardingFlowView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            }
         }
         .modelContainer(for: [
             Currency.self,
