@@ -6,16 +6,15 @@ final class TaxDocument {
     var merchantName: String = ""
     var amount: Double = 0
     var currencyCodeRawValue: String = CurrencyCode.usd.rawValue
-    var documentDate: Date = .now
+    var documentDate: Date = Date.now
     var taxYear: Int = 0
     var jurisdiction: String = ""
     var taxCategoryRawValue: String = TaxCategory.other.rawValue
     var extractedText: String = ""
     var imageRelativePath: String = ""
-    var scannedAt: Date = .now
+    var scannedAt: Date = Date.now
     var isVerified: Bool = false
 
-    @Relationship(inverse: \Transaction.taxDocument)
     var transaction: Transaction?
 
     var currencyCode: CurrencyCode? {

@@ -11,10 +11,9 @@ final class Account {
     var jurisdiction: String = ""
     var isFinanceKitLinked: Bool = false
     var foreignTransactionFeePercent: Double = 0
-    var createdAt: Date = .now
-    var lastUpdatedAt: Date = .now
+    var createdAt: Date = Date.now
+    var lastUpdatedAt: Date = Date.now
 
-    @Relationship(inverse: \JurisdictionProfile.accounts)
     var jurisdictionProfile: JurisdictionProfile?
 
     @Relationship(inverse: \Transaction.account)

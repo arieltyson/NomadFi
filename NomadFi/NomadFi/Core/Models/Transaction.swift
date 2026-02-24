@@ -10,15 +10,14 @@ final class Transaction {
     var homeCurrencyRawValue: String = CurrencyCode.usd.rawValue
     var appliedExchangeRate: Double = 0
     var midMarketRate: Double = 0
-    var date: Date = .now
+    var date: Date = Date.now
     var categoryRawValue: String = TransactionCategory.other.rawValue
     var jurisdiction: String = ""
     var notes: String = ""
     var isTaxDeductible: Bool = false
     var isFinanceKitImported: Bool = false
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
-    @Relationship(inverse: \Account.transactions)
     var account: Account?
 
     @Relationship(inverse: \TaxDocument.transaction)

@@ -7,16 +7,15 @@ final class Subscription {
     var amount: Double = 0
     var currencyCodeRawValue: String = CurrencyCode.usd.rawValue
     var frequencyRawValue: String = BillingFrequency.monthly.rawValue
-    var nextRenewalDate: Date = .now
+    var nextRenewalDate: Date = Date.now
     var jurisdiction: String = ""
     var homeCurrencyEquivalent: Double = 0
     var cheapestAlternativeAmount: Double = 0
     var cheapestAlternativeCurrencyRawValue: String = CurrencyCode.usd.rawValue
     var cheapestAlternativeJurisdiction: String = ""
     var hasNotifiedSavings: Bool = false
-    var detectedAt: Date = .now
+    var detectedAt: Date = Date.now
 
-    @Relationship(inverse: \Account.subscriptions)
     var account: Account?
 
     var currencyCode: CurrencyCode? {

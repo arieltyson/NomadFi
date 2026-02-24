@@ -6,7 +6,7 @@ final class ExchangeRate {
     var baseCurrencyRawValue: String = CurrencyCode.usd.rawValue
     var targetCurrencyRawValue: String = CurrencyCode.cad.rawValue
     var rate: Double = 0
-    var fetchedAt: Date = .now
+    var fetchedAt: Date = Date.now
 
     var baseCurrency: CurrencyCode? {
         CurrencyCode(rawValue: baseCurrencyRawValue)

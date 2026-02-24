@@ -9,11 +9,10 @@ final class Budget {
     var spentAmount: Double = 0
     var periodRawValue: String = BudgetPeriod.monthly.rawValue
     var jurisdiction: String = ""
-    var periodStartDate: Date = .now
+    var periodStartDate: Date = Date.now
     var alertsEnabled: Bool = true
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
-    @Relationship(inverse: \JurisdictionProfile.budgets)
     var jurisdictionProfile: JurisdictionProfile?
 
     var currencyCode: CurrencyCode? {

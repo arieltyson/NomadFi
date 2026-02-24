@@ -8,7 +8,7 @@ final class JurisdictionProfile {
     var currencyCodeRawValue: String = CurrencyCode.usd.rawValue
     var isHome: Bool = false
     var displayOrder: Int = 0
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     @Relationship(inverse: \Account.jurisdictionProfile)
     var accounts: [Account]?

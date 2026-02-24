@@ -35,7 +35,7 @@ struct GlassCard<Content: View>: View {
         if reduceTransparency {
             ColorTokens.surfaceSecondary
         } else {
-            .ultraThinMaterial
+            Rectangle().fill(.ultraThinMaterial)
         }
     }
 }
