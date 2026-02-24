@@ -481,7 +481,7 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 
 ---
 
-## Phase 7 — Polish, Performance & Award Readiness (Commits 38–44)
+## Phase 7 — Polish & Award Readiness (Commits 38–44)
 
 ### Commit 38: Liquid Glass Design Polish
 - Audit every screen against iOS 26 Liquid Glass design language
@@ -489,48 +489,136 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 - Clear-look app icon style
 - Light and dark mode testing
 
-### Commit 39: Performance Optimization
-- Profile with Instruments: Time Profiler, Allocations, Core Animation
-- 60fps scrolling in transaction lists
-- SwiftData queries use proper predicates (no fetch-all-then-filter)
-- Receipt thumbnails properly downsampled
-- Memory under 100MB for typical usage
-
-### Commit 40: Error Handling & Edge Cases
+### Commit 39: Error Handling & Edge Cases
 - Network failure: cached data with "Last updated" banner
 - FinanceKit denied: graceful fallback to manual mode
 - Empty states for every list/section
 - Invalid receipt scan: clear feedback + retry
 - Currency conversion failure: show original currency with explanation
 
-### Commit 41: Onboarding Refinement & First-Run Experience
+### Commit 40: Onboarding Refinement & First-Run Experience
 - Full onboarding under 90 seconds
 - "Why this matters" on every screen
 - Skip option (not prominent) for returning users
 - Sample/demo data on first dashboard load
 - TipKit for progressive feature discovery
 
-### Commit 42: Privacy & Security Hardening
-- Minimal permissions requested
-- Accurate App Privacy Nutrition Label
-- No data leaves device unless user exports
-- Keychain for sensitive tokens
-- Biometric lock option (Face ID/Touch ID)
-- Data governance explanation in Settings
-
-### Commit 43: App Store Metadata & Screenshots
+### Commit 41: App Store Metadata & Screenshots
 - Description emphasizing Social Impact
 - 6.7" and 6.1" screenshots telling Problem -> Solution -> Impact story
 - App Preview video: receipt scan -> insight flow
 - Keywords: international student finance, cross-border money, FX tracker, NRA tax, global net worth
 
-### Commit 44: Final Integration Test & Submission
+### Commit 42: Final Integration Test & Submission
 - End-to-end test: onboarding -> add accounts -> scan receipt -> view insight -> export tax report -> Siri shortcut
 - Accessibility audit with Accessibility Inspector
-- Memory leak check with Instruments
 - App Review Guidelines compliance (Section 5 — Finance)
 - TestFlight beta to 5–10 international student testers
 - Submit with supplementary notes on Social Impact
+
+---
+
+## Phase 8 — Performance Audit (Commits 45–49)
+
+NomadFi is a finance app that users depend on for real-money decisions. Sluggish UI, unnecessary battery drain, or excessive memory usage erodes trust immediately. This phase is a dedicated, systematic performance audit — not a polish pass.
+
+### Commit 45: Instruments Profiling Baseline
+- Profile every screen with Time Profiler — identify and eliminate any work taking >16ms on main thread
+- Allocations instrument: identify retain cycles, leaked objects, and unexpected growth
+- Core Animation instrument: verify 60fps scrolling on transaction lists, dashboard, and Tax Vault
+- Establish baseline metrics: launch time, memory at idle, memory under load, scroll frame rate
+- Document all findings in a performance report for regression tracking
+
+### Commit 46: SwiftData Query Optimization
+- Audit every `@Query` and `ModelContext.fetch()` — ensure proper `#Predicate` filtering (no fetch-all-then-filter)
+- Add `fetchLimit` where appropriate (e.g., dashboard showing top 5 transactions)
+- Verify `SortDescriptor` usage aligns with SwiftData indexes
+- Batch inserts for bulk operations (FinanceKit import, CSV import)
+- Test with 1,000+ transactions to verify list performance at scale
+- Profile SwiftData migration paths for schema evolution
+
+### Commit 47: Energy & Battery Optimization
+- Audit all timers, animations, and continuous updates — eliminate unnecessary wake-ups
+- Verify no `.relative` date formatting or other hidden SwiftUI timers remain
+- Profile background tasks: ensure exchange rate fetches and notification scheduling are coalesced
+- Location updates use `significantLocationChanges` (not continuous GPS) except during active card detection
+- Audit `Task` usage — ensure all long-running tasks are properly cancelled on view disappearance
+- Verify WidgetKit timeline updates are batched (every 15 minutes, not per-change)
+
+### Commit 48: Memory & Asset Optimization
+- Receipt image thumbnails properly downsampled before display (never load full-resolution into `Image`)
+- Implement lazy thumbnail generation with `@State` loading for Tax Vault grid
+- Verify `LazyVStack`/`LazyHStack` are used for all unbounded lists
+- Profile memory under peak load: 50+ accounts, 1,000+ transactions, 100+ receipts
+- Target: under 100MB for typical usage, under 200MB at peak
+- Audit for unnecessary caching or duplicate data in memory
+
+### Commit 49: Launch Time & Perceived Performance
+- Measure cold launch to interactive: target under 1 second
+- Verify SwiftData container initialization is non-blocking
+- Skeleton loading (`redacted(reason: .placeholder)`) on all data-dependent views
+- Stagger-animate content appearance to mask loading latency
+- Prefetch exchange rates and insights during splash screen hold time
+- Verify `@Query` properties don't block initial render
+
+---
+
+## Phase 9 — Security Audit (Commits 50–55)
+
+NomadFi handles real financial data for a vulnerable population (international students navigating foreign financial systems). A single data leak, credential exposure, or trust violation would be catastrophic. This phase is a comprehensive security audit treating every data path as adversarial.
+
+### Commit 50: Data-at-Rest Security
+- Audit every SwiftData model for sensitive fields — ensure no PII is stored in plaintext where encryption is warranted
+- Keychain storage (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) for:
+  - API keys and tokens (exchange rate service, future FinanceKit tokens)
+  - Biometric authentication state
+  - Any user credentials
+- **Never store financial credentials, bank passwords, or API keys in SwiftData, UserDefaults, or `@AppStorage`**
+- Verify iCloud sync (if enabled) does not inadvertently sync sensitive tokens
+- Implement data encryption for exported tax reports before they leave the app sandbox
+- Audit `TaxDocument` image storage — receipt images may contain account numbers, SSN fragments, or other PII visible in the photo
+
+### Commit 51: Data-in-Transit Security
+- All network requests use HTTPS with TLS 1.3 minimum — enforce via App Transport Security (ATS) with no exceptions
+- Certificate pinning for exchange rate API endpoints
+- No sensitive data in URL query parameters (use POST bodies or headers)
+- No PII, account balances, or financial data in analytics, logs, or crash reports
+- Audit `OSLog` usage — ensure `.private` redaction on all financial amounts, account names, and user identifiers
+- Verify `URLSession` configurations: no caching of financial responses on disk, ephemeral sessions where appropriate
+
+### Commit 52: Authentication & Access Control
+- Biometric lock (Face ID / Touch ID) using `LAContext` with `.deviceOwnerAuthenticationWithBiometrics`
+- App lock triggers on background (after configurable timeout: immediate, 1 min, 5 min)
+- Graceful fallback to device passcode if biometrics unavailable
+- Screen content hidden in App Switcher (overlay blur on `scenePhase` change to `.inactive`/`.background`)
+- No financial data visible in notifications on Lock Screen — use placeholder text with "Open app to view"
+- Prevent screenshots of sensitive screens using `UITextField.isSecureTextEntry` overlay technique if needed
+
+### Commit 53: Input Validation & Injection Prevention
+- Sanitize all user text inputs (merchant names, notes, custom categories) — strip control characters, limit length
+- Validate currency amounts: reject NaN, Infinity, negative-zero, and unreasonably large values
+- Validate exchange rates: reject zero, negative, and rates outside plausible bounds (e.g., >10,000)
+- Receipt OCR output sanitized before display and storage — Vision framework output treated as untrusted input
+- Exported PDF content uses proper escaping — no injection through merchant names or notes
+- SwiftData `#Predicate` queries with user-supplied strings use parameterized values (no string concatenation)
+
+### Commit 54: Privacy Compliance & Data Governance
+- Minimal permissions: only request Location (when needed for Active Card), Camera (for receipt scan), FinanceKit (for account access)
+- Each permission requested in context with clear explanation (not at launch)
+- Accurate App Privacy Nutrition Label reflecting actual data collection
+- **Zero analytics, zero tracking, zero third-party SDKs** — data never leaves the device unless the user explicitly exports
+- Implement "Delete All My Data" in Settings — complete SwiftData wipe + Keychain cleanup + cached images
+- Data retention policy: no orphaned records when accounts/transactions are deleted (cascade rules)
+- Privacy policy accessible in-app and in App Store listing
+
+### Commit 55: Threat Modeling & Penetration Testing
+- Document threat model covering: device theft, shoulder surfing, malicious Wi-Fi, iCloud compromise, shared device scenarios
+- Test: exported `.zip` tax report contains only expected files (no directory traversal, no extra metadata)
+- Test: receipt images stripped of EXIF GPS data before storage (prevent location leakage from photo metadata)
+- Test: deep links and URL schemes (if any) cannot be exploited to bypass authentication
+- Test: App Extension / Widget does not expose sensitive data to other apps via shared container without biometric gate
+- Verify no sensitive data persists in system keyboard autocomplete (use `.textContentType(.none)` and `.autocorrectionDisabled()` on financial fields)
+- Test backup exclusion: ensure Keychain items use `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` (not synced to iCloud Keychain or unencrypted backups)
 
 ---
 
@@ -545,7 +633,26 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 | 4 | 22–27 | Tax Vault & receipt scanning | Social Impact |
 | 5 | 28–32 | Subscriptions, Siri, Shortcuts | Innovation, Interaction |
 | 6 | 33–37 | Accessibility deep pass | Inclusivity |
-| 7 | 38–44 | Polish, performance, submission | All categories |
+| 7 | 38–44 | Polish & award readiness | All categories |
+| 8 | 45–49 | Performance audit | Reliability |
+| 9 | 50–55 | Security audit | Trust & Safety |
+
+---
+
+## Progress Tracker
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 0 | Scaffold & Architecture | ✅ Complete |
+| 1 | Onboarding & Jurisdiction Setup | ✅ Complete |
+| 2 | Dashboard & Global Net Worth | ✅ Commits 9–13 done; 14–15 partial |
+| 3 | Ledger & Transaction Intelligence | ❌ Stub only |
+| 4 | Tax Vault & Receipt Scanning | ❌ Stub only |
+| 5 | Subscriptions, Siri & Shortcuts | ❌ Stub only |
+| 6 | Accessibility Deep Pass | ◐ Patterns in place, not formally audited |
+| 7 | Polish & Award Readiness | ❌ Not started |
+| 8 | Performance Audit | ❌ Not started |
+| 9 | Security Audit | ❌ Not started |
 
 ---
 
