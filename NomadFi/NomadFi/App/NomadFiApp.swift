@@ -5,13 +5,22 @@ import SwiftUI
 struct NomadFiApp: App {
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var isShowingSplash = true
 
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
-                MainTabView()
-            } else {
-                OnboardingFlowView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            ZStack {
+                if hasCompletedOnboarding {
+                    MainTabView()
+                } else {
+                    OnboardingFlowView(hasCompletedOnboarding: $hasCompletedOnboarding)
+                }
+
+                if isShowingSplash {
+                    SplashView(isActive: $isShowingSplash)
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
             }
         }
         .modelContainer(for: [
