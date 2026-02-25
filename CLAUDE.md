@@ -646,7 +646,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 | 0 | Scaffold & Architecture | ✅ Complete |
 | 1 | Onboarding & Jurisdiction Setup | ✅ Complete |
 | 2 | Dashboard & Global Net Worth | ✅ Commits 9–13 done; 14–15 partial |
-| 3 | Ledger & Transaction Intelligence | ❌ Stub only |
+| 3 | Ledger & Transaction Intelligence | ✅ Commits 16–21 done (live services, InsightEngine, FX intelligence) |
 | 4 | Tax Vault & Receipt Scanning | ❌ Stub only |
 | 5 | Subscriptions, Siri & Shortcuts | ❌ Stub only |
 | 6 | Accessibility Deep Pass | ◐ Patterns in place, not formally audited |

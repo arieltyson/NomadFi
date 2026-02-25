@@ -1,10 +1,13 @@
 import Foundation
+import OSLog
 import SwiftData
 
-/// Manages dashboard state including exchange rate fetching and net worth calculations.
+/// Manages dashboard state including exchange rate fetching,
+/// net worth calculations, and financial insight generation.
 ///
-/// Works alongside `@Query` in the view: SwiftData queries provide reactive account
-/// and jurisdiction data, while this view model handles service calls and derived calculations.
+/// Works alongside `@Query` in the view: SwiftData queries provide reactive account,
+/// transaction, and jurisdiction data, while this view model handles service calls,
+/// currency conversions, and the ``InsightEngine`` for real-time financial intelligence.
 @MainActor
 @Observable
 final class DashboardViewModel {
@@ -12,6 +15,7 @@ final class DashboardViewModel {
     // MARK: - State
 
     var exchangeRates: [ExchangeRateSnapshot] = []
+    var insights: [FinancialInsight] = []
     var isLoading = false
     var errorMessage: String?
     var lastUpdated: Date?
@@ -19,6 +23,7 @@ final class DashboardViewModel {
     // MARK: - Dependencies
 
     private let services: ServiceContainer
+    private static let logger = Logger(subsystem: "com.nomadfi.app", category: "Dashboard")
 
     init(services: ServiceContainer = ServiceContainer()) {
         self.services = services
@@ -37,9 +42,39 @@ final class DashboardViewModel {
             exchangeRates = try await services.exchangeRateService.fetchAllRates(for: currencies)
             lastUpdated = .now
             errorMessage = nil
+            Self.logger.info("Exchange rates updated: \(self.exchangeRates.count) pairs")
         } catch {
             errorMessage = error.localizedDescription
+            Self.logger.error("Rate fetch failed: \(error.localizedDescription)")
         }
+    }
+
+    // MARK: - Insight Generation
+
+    /// Generates actionable financial insights from the user's data.
+    ///
+    /// Replaces sample data with real calculations from the ``InsightEngine``.
+    /// Falls back to sample insights when there's insufficient data.
+    func generateInsights(
+        transactions: [Transaction],
+        accounts: [Account],
+        homeCurrency: CurrencyCode
+    ) {
+        let generated = InsightEngine.generateInsights(
+            transactions: transactions,
+            accounts: accounts,
+            exchangeRates: exchangeRates,
+            homeCurrency: homeCurrency
+        )
+
+        // Use real insights if we have data, otherwise show helpful samples
+        if generated.isEmpty && transactions.isEmpty {
+            insights = FinancialInsight.samples
+        } else {
+            insights = generated
+        }
+
+        Self.logger.info("Dashboard insights: \(self.insights.count) (\(generated.count) from real data)")
     }
 
     // MARK: - Calculations

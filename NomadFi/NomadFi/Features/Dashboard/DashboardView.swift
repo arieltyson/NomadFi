@@ -12,6 +12,9 @@ struct DashboardView: View {
 
     @Query private var accounts: [Account]
 
+    @Query(sort: \Transaction.date, order: .reverse)
+    private var transactions: [Transaction]
+
     @State private var viewModel = DashboardViewModel()
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -68,8 +71,10 @@ private extension DashboardView {
             accountSections
                 .padding(.horizontal, SpacingTokens.medium)
 
-            InsightsSection(insights: FinancialInsight.samples)
-                .padding(.horizontal, SpacingTokens.medium)
+            if !viewModel.insights.isEmpty {
+                InsightsSection(insights: viewModel.insights)
+                    .padding(.horizontal, SpacingTokens.medium)
+            }
         }
         .padding(.vertical, SpacingTokens.medium)
     }
@@ -120,6 +125,11 @@ private extension DashboardView {
     func refreshRates() async {
         let currencies = viewModel.currencies(from: jurisdictions)
         await viewModel.fetchRates(for: currencies)
+        viewModel.generateInsights(
+            transactions: transactions,
+            accounts: accounts,
+            homeCurrency: homeCurrency
+        )
     }
 }
 

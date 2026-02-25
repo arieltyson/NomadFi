@@ -40,6 +40,8 @@ struct LedgerView: View {
             AddTransactionView()
         }
         .task {
+            viewModel.requestLocationAuthorizationIfNeeded()
+            viewModel.updateFXIntelligence(transactions: transactions)
             await viewModel.updateActiveCardRecommendation(accounts: accounts)
         }
     }
