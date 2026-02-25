@@ -50,15 +50,19 @@ struct LiveLocationService: LocationService {
 
 extension LiveLocationService {
 
-    /// Reverse geocodes a location to extract the ISO 3166-1 alpha-2 country code.
+    /// Reverse geocodes a location to extract the ISO 3166-1 alpha-2 country code
+    /// using MapKit's `MKReverseGeocodingRequest` and `MKAddressRepresentations`
+    /// (iOS 26 replacement for deprecated `CLGeocoder` and `MKPlacemark`).
     fileprivate func reverseGeocode(_ location: CLLocation) async throws
         -> String?
     {
-        let geocoder = CLGeocoder()
-        let placemarks = try await geocoder.reverseGeocodeLocation(location)
+        guard let request = MKReverseGeocodingRequest(location: location) else {
+            Self.logger.info("Invalid coordinates for reverse geocoding")
+            return nil
+        }
 
-        // Extract the country code from the first placemark
-        let countryCode = placemarks.first?.isoCountryCode
+        let mapItems = try await request.mapItems
+        let countryCode = mapItems.first?.addressRepresentations?.region?.identifier
 
         Self.logger.info(
             "Country detected: \(countryCode ?? "unknown", privacy: .public)"
