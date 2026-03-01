@@ -20,6 +20,10 @@ struct MainTabView: View {
                 TaxVaultView()
             }
 
+            Tab("Subscriptions", systemImage: "arrow.triangle.2.circlepath") {
+                SubscriptionsView()
+            }
+
             Tab("Settings", systemImage: "gearshape") {
                 NavigationStack {
                     SettingsPlaceholderView()
