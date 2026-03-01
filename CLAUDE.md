@@ -651,7 +651,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 | 5 | Subscriptions, Siri & Shortcuts | ✅ Commits 28–32 done (detection, comparison, App Intents, Spotlight, notifications) |
 | 6 | Accessibility Deep Pass | ✅ Commits 33–37 done (VoiceOver, Dynamic Type reflow, color accessibility, reduce motion/transparency, i18n foundation) |
 | 7 | Polish & Award Readiness | ◐ Commits 38–40 done (Liquid Glass polish, error handling, TipKit, sample data, onboarding refinement); 41–44 remaining |
-| 8 | Performance Audit | ❌ Not started |
+| 8 | Performance Audit | ✅ Commits 45–49 done (OSSignposter instrumentation, SwiftData query optimization, cache TTL, location timeout, image downsampling, skeleton loading, stagger animations) |
 | 9 | Security Audit | ❌ Not started |
 
 ---

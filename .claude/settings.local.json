@@ -4,7 +4,8 @@
       "Bash(xcodebuild:*)",
       "Bash(find:*)",
       "WebFetch(domain:dev.to)",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "Bash(wc -l /Users/arieltyson/Desktop/Projects/NomadFi/NomadFi/NomadFi/**/*.swift)"
     ]
   }
 }

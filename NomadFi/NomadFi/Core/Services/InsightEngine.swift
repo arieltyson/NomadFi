@@ -32,22 +32,30 @@ enum InsightEngine {
         exchangeRates: [ExchangeRateSnapshot],
         homeCurrency: CurrencyCode
     ) -> [FinancialInsight] {
-        var insights: [FinancialInsight] = []
+        PerformanceMonitor.measureSync(.insightEngine, name: "Generate Insights") {
+            // Pre-filter to the 7-day window used by all insight generators.
+            // Avoids redundant filtering of the full transaction history
+            // inside each individual insight method.
+            let recentWindow = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
+            let recentTransactions = transactions.filter { $0.date >= recentWindow }
 
-        if let fxWaste = fxWasteInsight(transactions: transactions, homeCurrency: homeCurrency) {
-            insights.append(fxWaste)
+            var insights: [FinancialInsight] = []
+
+            if let fxWaste = fxWasteInsight(transactions: recentTransactions, homeCurrency: homeCurrency) {
+                insights.append(fxWaste)
+            }
+
+            if let wrongCard = wrongCardInsight(transactions: recentTransactions, accounts: accounts) {
+                insights.append(wrongCard)
+            }
+
+            if let arbitrage = arbitrageInsight(exchangeRates: exchangeRates, homeCurrency: homeCurrency) {
+                insights.append(arbitrage)
+            }
+
+            logger.info("Generated \(insights.count) insights from \(recentTransactions.count) recent transactions (of \(transactions.count) total)")
+            return insights
         }
-
-        if let wrongCard = wrongCardInsight(transactions: transactions, accounts: accounts) {
-            insights.append(wrongCard)
-        }
-
-        if let arbitrage = arbitrageInsight(exchangeRates: exchangeRates, homeCurrency: homeCurrency) {
-            insights.append(arbitrage)
-        }
-
-        logger.info("Generated \(insights.count) insights from \(transactions.count) transactions")
-        return insights
     }
 
     // MARK: - FX Waste Aggregation

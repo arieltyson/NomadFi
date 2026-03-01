@@ -37,36 +37,18 @@ struct TaxDocumentRow: View {
 
 private extension TaxDocumentRow {
 
+    /// Receipt thumbnail using memory-efficient downsampling.
+    ///
+    /// Uses ``DownsampledImage`` instead of `AsyncImage` to avoid
+    /// loading multi-megabyte receipt images at full resolution
+    /// for a 44×44pt display. See ``ImageDownsampler`` for details.
     var receiptThumbnail: some View {
-        Group {
-            if let imageURL = document.imageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    default:
-                        thumbnailPlaceholder
-                    }
-                }
-            } else {
-                thumbnailPlaceholder
-            }
-        }
-        .frame(width: 44, height: 44)
+        DownsampledImage(
+            url: document.imageURL,
+            size: CGSize(width: 44, height: 44)
+        )
         .clipShape(.rect(cornerRadius: SpacingTokens.xSmall))
         .accessibilityHidden(true)
-    }
-
-    var thumbnailPlaceholder: some View {
-        Rectangle()
-            .fill(ColorTokens.surfaceTertiary)
-            .overlay {
-                Image(systemName: "doc.text")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
     }
 
     var documentInfo: some View {

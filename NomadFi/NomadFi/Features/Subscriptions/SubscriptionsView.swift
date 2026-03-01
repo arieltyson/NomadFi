@@ -107,7 +107,9 @@ private extension SubscriptionsView {
                     .tipBackground(ColorTokens.surfaceSecondary)
                     .padding(.horizontal, SpacingTokens.medium)
 
-                if !viewModel.comparisonResults.isEmpty {
+                if viewModel.isComparing {
+                    savingsOpportunitiesPlaceholder
+                } else if !viewModel.comparisonResults.isEmpty {
                     savingsOpportunitiesSection
                 }
 
@@ -202,6 +204,31 @@ private extension SubscriptionsView {
                 SavingsOpportunityCard(result: result)
                     .padding(.horizontal, SpacingTokens.medium)
             }
+        }
+    }
+
+    // MARK: Savings Placeholder (Skeleton)
+
+    /// Skeleton placeholder while subscription comparison is loading.
+    var savingsOpportunitiesPlaceholder: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+            Text("Savings Opportunities")
+                .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.horizontal, SpacingTokens.medium)
+
+            GlassCard {
+                VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                    Text("Comparing prices across jurisdictions...")
+                        .font(TypographyTokens.body)
+                        .foregroundStyle(.secondary)
+
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .padding(.horizontal, SpacingTokens.medium)
+            .redacted(reason: .placeholder)
         }
     }
 

@@ -30,18 +30,14 @@ struct ActiveCardIntent: AppIntent {
         let container = try ModelContainer(for: Account.self)
         let context = container.mainContext
 
-        let descriptor = FetchDescriptor<Account>()
+        // Sort by foreign transaction fee in the query to avoid in-memory sorting.
+        let descriptor = FetchDescriptor<Account>(
+            sortBy: [SortDescriptor(\.foreignTransactionFeePercent)]
+        )
         let accounts = try context.fetch(descriptor)
 
-        guard !accounts.isEmpty else {
+        guard let bestCard = accounts.first else {
             return .result(dialog: "You don't have any accounts set up yet. Open NomadFi to add your cards.")
-        }
-
-        // Find the card with the lowest foreign transaction fee
-        let sortedByFee = accounts.sorted { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }
-
-        guard let bestCard = sortedByFee.first else {
-            return .result(dialog: "Open NomadFi to see your card recommendation.")
         }
 
         let fee = bestCard.foreignTransactionFeePercent

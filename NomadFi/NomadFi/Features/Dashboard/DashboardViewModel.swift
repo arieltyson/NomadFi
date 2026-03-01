@@ -24,6 +24,12 @@ final class DashboardViewModel {
 
     private let services: ServiceContainer
     private var cachedRates: [ExchangeRateSnapshot] = []
+    private var cachedRatesTimestamp: Date?
+
+    /// Maximum age for cached exchange rates before they're considered stale.
+    /// After this interval, cached rates are discarded on the next fetch attempt.
+    private static let cacheTimeToLive: Duration = .seconds(3600) // 1 hour
+
     private static let logger = Logger(subsystem: "com.nomadfi.app", category: "Dashboard")
 
     init(services: ServiceContainer = ServiceContainer()) {
@@ -40,20 +46,26 @@ final class DashboardViewModel {
         defer { isLoading = false }
 
         do {
-            let freshRates = try await services.exchangeRateService.fetchAllRates(for: currencies)
+            let freshRates = try await PerformanceMonitor.measure(.network, name: "Fetch Exchange Rates") {
+                try await services.exchangeRateService.fetchAllRates(for: currencies)
+            }
             exchangeRates = freshRates
             cachedRates = freshRates
+            cachedRatesTimestamp = .now
             lastUpdated = .now
             errorMessage = nil
             Self.logger.info("Exchange rates updated: \(self.exchangeRates.count) pairs")
         } catch {
-            if !cachedRates.isEmpty {
+            if !cachedRates.isEmpty, !isCacheExpired {
                 exchangeRates = cachedRates
                 errorMessage = "Using cached rates. Pull to refresh."
                 Self.logger.warning("Rate fetch failed, using \(self.cachedRates.count) cached rates")
             } else {
+                // Cache is either empty or stale — clear it
+                cachedRates = []
+                cachedRatesTimestamp = nil
                 errorMessage = error.localizedDescription
-                Self.logger.error("Rate fetch failed with no cache: \(error.localizedDescription)")
+                Self.logger.error("Rate fetch failed with no valid cache: \(error.localizedDescription)")
             }
         }
     }
@@ -139,5 +151,13 @@ final class DashboardViewModel {
     func currencies(from jurisdictions: [JurisdictionProfile]) -> [CurrencyCode] {
         let codes = jurisdictions.compactMap(\.currencyCode)
         return Array(Set(codes)).sorted { $0.rawValue < $1.rawValue }
+    }
+
+    // MARK: - Cache Expiry
+
+    /// Whether the cached exchange rates have exceeded the time-to-live threshold.
+    private var isCacheExpired: Bool {
+        guard let timestamp = cachedRatesTimestamp else { return true }
+        return Date.now.timeIntervalSince(timestamp) > 3600 // 1 hour
     }
 }

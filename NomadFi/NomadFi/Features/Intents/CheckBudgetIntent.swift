@@ -29,9 +29,10 @@ struct CheckBudgetIntent: AppIntent {
         let container = try ModelContainer(for: Budget.self)
         let context = container.mainContext
 
-        let budgetDescriptor = FetchDescriptor<Budget>(
+        var budgetDescriptor = FetchDescriptor<Budget>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
+        budgetDescriptor.fetchLimit = 1
         let budgets = try context.fetch(budgetDescriptor)
 
         guard let budget = budgets.first else {

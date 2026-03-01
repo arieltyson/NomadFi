@@ -94,11 +94,23 @@ final class NotificationManager {
     }
 
     /// Schedules renewal reminders for all subscriptions.
+    ///
+    /// Removes stale reminders first, then batches new scheduling to
+    /// minimize notification center round-trips. Only schedules reminders
+    /// for subscriptions renewing within the next 30 days.
     func scheduleAllRenewalReminders(subscriptions: [Subscription]) async {
-        for subscription in subscriptions {
+        // Remove all existing renewal reminders before re-scheduling
+        let existingIDs = subscriptions.map { "renewal-\($0.serviceName)" }
+        center.removePendingNotificationRequests(withIdentifiers: existingIDs)
+
+        // Only schedule reminders for subscriptions renewing in the next 30 days
+        let thirtyDaysFromNow = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
+        let upcoming = subscriptions.filter { $0.nextRenewalDate <= thirtyDaysFromNow }
+
+        for subscription in upcoming {
             await scheduleRenewalReminder(for: subscription)
         }
-        Self.logger.info("Scheduled \(subscriptions.count) renewal reminders")
+        Self.logger.info("Scheduled \(upcoming.count) renewal reminders (of \(subscriptions.count) total)")
     }
 
     // MARK: - Budget Alerts

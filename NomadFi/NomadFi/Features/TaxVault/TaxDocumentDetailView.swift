@@ -42,20 +42,19 @@ private extension TaxDocumentDetailView {
 
     // MARK: Receipt Image
 
+    /// Receipt image section using downsampled rendering.
+    ///
+    /// Caps the decoded image at 400×600pt (1200×1800px @3x) rather than
+    /// loading the full-resolution camera image into memory.
     var receiptImageSection: some View {
         Section {
-            if let imageURL = document.imageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(.rect(cornerRadius: SpacingTokens.small))
-                    default:
-                        imagePlaceholder
-                    }
-                }
+            if document.imageURL != nil {
+                DownsampledImage(
+                    url: document.imageURL,
+                    size: CGSize(width: 400, height: 600),
+                    contentMode: .fit
+                )
+                .clipShape(.rect(cornerRadius: SpacingTokens.small))
                 .frame(maxHeight: 300)
                 .frame(maxWidth: .infinity)
                 .listRowInsets(EdgeInsets(

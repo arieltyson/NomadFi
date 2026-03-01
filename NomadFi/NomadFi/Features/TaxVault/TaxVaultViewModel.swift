@@ -9,6 +9,7 @@ import OSLog
 import PhotosUI
 import SwiftData
 import SwiftUI
+import UIKit
 
 /// Manages the Tax Vault feature's state and business logic.
 ///
@@ -177,11 +178,13 @@ final class TaxVaultViewModel {
         defer { isExporting = false }
 
         do {
-            let url = try await TaxReportExporter.generateReport(
-                documents: documents,
-                taxYear: taxYear,
-                jurisdictions: jurisdictions
-            )
+            let url = try await PerformanceMonitor.measure(.export, name: "Generate Tax Report") {
+                try await TaxReportExporter.generateReport(
+                    documents: documents,
+                    taxYear: taxYear,
+                    jurisdictions: jurisdictions
+                )
+            }
             exportURL = url
             Self.logger.info("Tax report exported for \(taxYear)")
         } catch {
@@ -194,6 +197,12 @@ final class TaxVaultViewModel {
 
     private var pendingImagePath = ""
 
+    /// Saves the receipt image to the documents directory.
+    ///
+    /// Caps the stored image at 2048px on the longest side to balance OCR
+    /// quality with storage efficiency. A full 12MP camera image is ~4MB;
+    /// downsampled to 2048px it's ~500KB — a 8× reduction that preserves
+    /// all text readable by the Vision framework.
     private func saveImageToDocuments(data: Data) throws -> URL {
         let receiptsDir = URL.documentsDirectory.appending(path: "receipts")
         try FileManager.default.createDirectory(at: receiptsDir, withIntermediateDirectories: true)
@@ -201,6 +210,22 @@ final class TaxVaultViewModel {
         let filename = "receipt_\(Int(Date.now.timeIntervalSince1970)).jpg"
         let fileURL = receiptsDir.appending(path: filename)
 
+        // Downsample before saving to reduce disk usage and future load times.
+        // 2048px is sufficient for Vision OCR's .accurate recognition level.
+        if let downsampledCGImage = ImageDownsampler.downsample(
+            data: data,
+            pointSize: CGSize(width: 2048, height: 2048),
+            scale: 1.0
+        ) {
+            let uiImage = UIImage(cgImage: downsampledCGImage)
+            if let jpegData = uiImage.jpegData(compressionQuality: 0.85) {
+                try jpegData.write(to: fileURL)
+                pendingImagePath = "receipts/\(filename)"
+                return fileURL
+            }
+        }
+
+        // Fall back to saving the original data if downsampling fails
         try data.write(to: fileURL)
         pendingImagePath = "receipts/\(filename)"
 

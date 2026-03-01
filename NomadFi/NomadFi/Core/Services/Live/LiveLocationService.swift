@@ -23,26 +23,50 @@ struct LiveLocationService: LocationService {
         category: "Location"
     )
 
+    /// Maximum time to wait for a GPS fix before falling back gracefully.
+    private static let locationTimeout: Duration = .seconds(10)
+
     func currentCountryCode() async throws -> String? {
-        do {
-            for try await update in CLLocationUpdate.liveUpdates() {
-                guard let location = update.location else { continue }
+        try await PerformanceMonitor.measure(.location, name: "Detect Country") {
+            do {
+                // Race location acquisition against a timeout to prevent
+                // indefinite blocking when GPS/network is unavailable.
+                return try await withThrowingTaskGroup(of: String?.self) { group in
+                    group.addTask {
+                        for try await update in CLLocationUpdate.liveUpdates() {
+                            guard let location = update.location else { continue }
 
-                Self.logger.debug(
-                    "Location acquired: \(location.coordinate.latitude, privacy: .private), \(location.coordinate.longitude, privacy: .private)"
+                            Self.logger.debug(
+                                "Location acquired: \(location.coordinate.latitude, privacy: .private), \(location.coordinate.longitude, privacy: .private)"
+                            )
+
+                            return try await self.reverseGeocode(location)
+                        }
+                        return nil
+                    }
+
+                    group.addTask {
+                        try await Task.sleep(for: Self.locationTimeout)
+                        Self.logger.info("Location timeout after \(Self.locationTimeout)")
+                        return nil
+                    }
+
+                    // Return whichever finishes first
+                    for try await result in group {
+                        group.cancelAll()
+                        return result
+                    }
+                    return nil
+                }
+            } catch is CancellationError {
+                return nil
+            } catch {
+                Self.logger.info(
+                    "Location unavailable: \(error.localizedDescription, privacy: .public)"
                 )
-
-                return try await reverseGeocode(location)
+                return nil
             }
-        } catch {
-            // Graceful degradation — location unavailable does not break the app.
-            // The Active Card feature simply won't show a recommendation.
-            Self.logger.info(
-                "Location unavailable: \(error.localizedDescription, privacy: .public)"
-            )
         }
-
-        return nil
     }
 }
 

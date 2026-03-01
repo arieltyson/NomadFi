@@ -18,6 +18,7 @@ struct DashboardView: View {
 
     @State private var viewModel = DashboardViewModel()
     @State private var showError = false
+    @State private var hasContentAppeared = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -94,10 +95,15 @@ private extension DashboardView {
         viewModel.homeCurrency(from: jurisdictions)
     }
 
+    /// Whether this is the initial load (no data yet from the network).
+    var isFirstLoad: Bool {
+        viewModel.isLoading && viewModel.exchangeRates.isEmpty
+    }
+
     var dashboardContent: some View {
         LazyVStack(spacing: SpacingTokens.large, pinnedViews: .sectionHeaders) {
             netWorthCard
-                .redacted(reason: viewModel.isLoading && viewModel.exchangeRates.isEmpty ? .placeholder : [])
+                .redacted(reason: isFirstLoad ? .placeholder : [])
                 .padding(.horizontal, SpacingTokens.medium)
 
             TipView(ExchangeRateTip())
@@ -105,6 +111,7 @@ private extension DashboardView {
                 .padding(.horizontal, SpacingTokens.medium)
 
             exchangeRateTicker
+                .redacted(reason: isFirstLoad ? .placeholder : [])
                 .padding(.horizontal, SpacingTokens.medium)
 
             accountSections
@@ -150,10 +157,16 @@ private extension DashboardView {
 
     var accountSections: some View {
         ForEach(
-            viewModel.accountsByJurisdiction(accounts: accounts, jurisdictions: jurisdictions),
-            id: \.profile.countryCode
-        ) { group in
+            viewModel.accountsByJurisdiction(accounts: accounts, jurisdictions: jurisdictions).enumerated(),
+            id: \.element.profile.countryCode
+        ) { index, group in
             JurisdictionAccountSection(profile: group.profile, accounts: group.accounts)
+                .opacity(hasContentAppeared ? 1 : 0)
+                .offset(y: hasContentAppeared ? 0 : 12)
+                .animation(
+                    reduceMotion ? nil : AnimationTokens.stagger(index: index),
+                    value: hasContentAppeared
+                )
         }
     }
 
@@ -173,6 +186,11 @@ private extension DashboardView {
             accounts: accounts,
             homeCurrency: homeCurrency
         )
+
+        // Trigger stagger entrance animation after first successful load
+        if !hasContentAppeared {
+            hasContentAppeared = true
+        }
     }
 }
 

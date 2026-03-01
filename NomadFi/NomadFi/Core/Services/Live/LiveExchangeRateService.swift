@@ -48,7 +48,9 @@ struct LiveExchangeRateService: ExchangeRateService {
 
         // Fetch USD-based rates, then derive cross-rates for all pairs.
         // This minimizes API calls to a single request regardless of pair count.
-        let response = try await fetchRatesResponse(for: .usd)
+        let response = try await PerformanceMonitor.measure(.network, name: "API Fetch Rates") {
+            try await fetchRatesResponse(for: .usd)
+        }
         let now = Date.now
 
         var snapshots: [ExchangeRateSnapshot] = []
