@@ -33,7 +33,7 @@ struct ServiceContainer: Sendable {
         exchangeRateService: any ExchangeRateService = LiveExchangeRateService(),
         financeDataService: any FinanceDataService = LiveFinanceDataService(),
         locationService: any LocationService = LiveLocationService(),
-        receiptScannerService: any ReceiptScannerService = MockReceiptScannerService()
+        receiptScannerService: any ReceiptScannerService = LiveReceiptScannerService()
     ) {
         self.exchangeRateService = exchangeRateService
         self.financeDataService = financeDataService

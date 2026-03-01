@@ -17,9 +17,7 @@ struct MainTabView: View {
             }
 
             Tab("Tax Vault", systemImage: "doc.text.viewfinder") {
-                NavigationStack {
-                    TaxVaultPlaceholderView()
-                }
+                TaxVaultView()
             }
 
             Tab("Settings", systemImage: "gearshape") {
