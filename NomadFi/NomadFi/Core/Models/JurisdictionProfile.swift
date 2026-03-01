@@ -10,10 +10,10 @@ final class JurisdictionProfile {
     var displayOrder: Int = 0
     var createdAt: Date = Date.now
 
-    @Relationship(inverse: \Account.jurisdictionProfile)
+    @Relationship(deleteRule: .nullify, inverse: \Account.jurisdictionProfile)
     var accounts: [Account]?
 
-    @Relationship(inverse: \Budget.jurisdictionProfile)
+    @Relationship(deleteRule: .cascade, inverse: \Budget.jurisdictionProfile)
     var budgets: [Budget]?
 
     var currencyCode: CurrencyCode? {

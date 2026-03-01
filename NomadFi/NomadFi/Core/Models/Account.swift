@@ -16,10 +16,10 @@ final class Account {
 
     var jurisdictionProfile: JurisdictionProfile?
 
-    @Relationship(inverse: \Transaction.account)
+    @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
     var transactions: [Transaction]?
 
-    @Relationship(inverse: \Subscription.account)
+    @Relationship(deleteRule: .cascade, inverse: \Subscription.account)
     var subscriptions: [Subscription]?
 
     var currencyCode: CurrencyCode? {

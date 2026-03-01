@@ -123,7 +123,7 @@ final class TaxVaultViewModel {
             populateDraft(from: result, imageURL: imageURL)
             showingConfirmation = true
 
-            Self.logger.info("Receipt scanned: \(result.merchantName ?? "unknown merchant", privacy: .public)")
+            Self.logger.info("Receipt scanned: \(result.merchantName ?? "unknown merchant", privacy: .private)")
         } catch {
             scanError = error.localizedDescription
             Self.logger.error("Receipt scan failed: \(error.localizedDescription, privacy: .public)")
@@ -136,22 +136,24 @@ final class TaxVaultViewModel {
     func saveConfirmedDocument(modelContext: ModelContext) {
         let taxYear = Calendar.current.component(.year, from: draftDocumentDate)
 
+        let sanitizedAmount = InputSanitizer.validateAmount(draftAmount) ?? 0
+
         let document = TaxDocument(
-            merchantName: draftMerchantName,
-            amount: draftAmount,
+            merchantName: InputSanitizer.sanitizeShortText(draftMerchantName),
+            amount: sanitizedAmount,
             currencyCode: draftCurrencyCode,
             documentDate: draftDocumentDate,
             taxYear: taxYear,
             jurisdiction: draftJurisdiction,
             taxCategory: draftTaxCategory,
-            extractedText: scanResult?.rawText ?? "",
+            extractedText: InputSanitizer.sanitizeLongText(scanResult?.rawText ?? ""),
             imageRelativePath: pendingImagePath,
             scannedAt: .now,
             isVerified: true
         )
 
         modelContext.insert(document)
-        Self.logger.info("Tax document saved: \(self.draftMerchantName, privacy: .public) for \(taxYear)")
+        Self.logger.info("Tax document saved: \(self.draftMerchantName, privacy: .private) for \(taxYear)")
 
         resetDraft()
     }
@@ -163,7 +165,7 @@ final class TaxVaultViewModel {
             try? FileManager.default.removeItem(at: imageURL)
         }
         modelContext.delete(document)
-        Self.logger.info("Tax document deleted: \(document.merchantName, privacy: .public)")
+        Self.logger.info("Tax document deleted: \(document.merchantName, privacy: .private)")
     }
 
     // MARK: - Export
@@ -203,6 +205,9 @@ final class TaxVaultViewModel {
     /// quality with storage efficiency. A full 12MP camera image is ~4MB;
     /// downsampled to 2048px it's ~500KB — a 8× reduction that preserves
     /// all text readable by the Vision framework.
+    ///
+    /// EXIF metadata (GPS coordinates, camera model, timestamps) is stripped
+    /// before writing to disk to prevent unintentional location leakage.
     private func saveImageToDocuments(data: Data) throws -> URL {
         let receiptsDir = URL.documentsDirectory.appending(path: "receipts")
         try FileManager.default.createDirectory(at: receiptsDir, withIntermediateDirectories: true)
@@ -219,14 +224,18 @@ final class TaxVaultViewModel {
         ) {
             let uiImage = UIImage(cgImage: downsampledCGImage)
             if let jpegData = uiImage.jpegData(compressionQuality: 0.85) {
-                try jpegData.write(to: fileURL)
+                // Strip EXIF/GPS metadata before writing to disk
+                let cleanData = ImageMetadataStripper.stripMetadata(from: jpegData)
+                try cleanData.write(to: fileURL)
                 pendingImagePath = "receipts/\(filename)"
                 return fileURL
             }
         }
 
-        // Fall back to saving the original data if downsampling fails
-        try data.write(to: fileURL)
+        // Fall back to saving the original data if downsampling fails,
+        // still stripping metadata for privacy
+        let cleanData = ImageMetadataStripper.stripMetadata(from: data)
+        try cleanData.write(to: fileURL)
         pendingImagePath = "receipts/\(filename)"
 
         return fileURL

@@ -97,6 +97,7 @@ private extension AddTransactionView {
             TextField("Merchant Name", text: $formData.merchantName)
                 .focused($focusedField, equals: .merchant)
                 .textContentType(.organizationName)
+                .autocorrectionDisabled()
 
             DatePicker("Date", selection: $formData.date, displayedComponents: .date)
         }
@@ -108,6 +109,8 @@ private extension AddTransactionView {
                 TextField("Amount", text: $formData.amount)
                     .focused($focusedField, equals: .amount)
                     .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
 
                 Picker("Currency", selection: $formData.originalCurrency) {
                     ForEach(availableCurrencies) { currency in
@@ -122,6 +125,8 @@ private extension AddTransactionView {
                     TextField("Converted Amount", text: $formData.convertedAmount)
                         .focused($focusedField, equals: .convertedAmount)
                         .keyboardType(.decimalPad)
+                        .textContentType(.none)
+                        .autocorrectionDisabled()
 
                     Text(formData.homeCurrency.rawValue)
                         .foregroundStyle(.secondary)
@@ -187,6 +192,8 @@ private extension AddTransactionView {
             TextField("Notes (optional)", text: $formData.notes, axis: .vertical)
                 .focused($focusedField, equals: .notes)
                 .lineLimit(3...6)
+                .textContentType(.none)
+                .autocorrectionDisabled()
 
             Toggle("Tax Deductible", isOn: $formData.isTaxDeductible)
         }
@@ -201,23 +208,28 @@ private extension AddTransactionView {
     func saveTransaction() {
         guard formData.isValid else { return }
 
-        let originalAmount = -(abs(Double(formData.amount) ?? 0))
-        let convertedAmount = formData.isCrossBorder
+        let rawOriginal = -(abs(Double(formData.amount) ?? 0))
+        guard let originalAmount = InputSanitizer.validateAmount(rawOriginal) else { return }
+
+        let rawConverted = formData.isCrossBorder
             ? -(abs(Double(formData.convertedAmount) ?? 0))
             : originalAmount
+        let convertedAmount = InputSanitizer.validateAmount(rawConverted) ?? originalAmount
+
+        let sanitizedRate = InputSanitizer.validateExchangeRate(formData.calculatedRate) ?? 0
 
         let transaction = Transaction(
-            merchantName: formData.merchantName.trimmingCharacters(in: .whitespaces),
+            merchantName: InputSanitizer.sanitizeShortText(formData.merchantName),
             originalAmount: originalAmount,
             originalCurrency: formData.originalCurrency,
             convertedAmount: convertedAmount,
             homeCurrency: formData.homeCurrency,
-            appliedExchangeRate: formData.calculatedRate,
-            midMarketRate: formData.calculatedRate,
+            appliedExchangeRate: sanitizedRate,
+            midMarketRate: sanitizedRate,
             date: formData.date,
             category: formData.category,
             jurisdiction: formData.jurisdiction,
-            notes: formData.notes.trimmingCharacters(in: .whitespaces),
+            notes: InputSanitizer.sanitizeLongText(formData.notes),
             isTaxDeductible: formData.isTaxDeductible
         )
 

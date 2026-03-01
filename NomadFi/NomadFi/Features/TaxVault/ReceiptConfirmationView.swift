@@ -82,6 +82,7 @@ private extension ReceiptConfirmationView {
         Section("Merchant") {
             TextField("Merchant name", text: $viewModel.draftMerchantName)
                 .textContentType(.organizationName)
+                .autocorrectionDisabled()
 
             DatePicker(
                 "Date",
@@ -105,6 +106,8 @@ private extension ReceiptConfirmationView {
                     format: .number.precision(.fractionLength(2))
                 )
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
             }
 
             Picker("Currency", selection: $viewModel.draftCurrencyCode) {

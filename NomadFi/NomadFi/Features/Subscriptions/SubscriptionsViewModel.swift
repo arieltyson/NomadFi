@@ -78,7 +78,7 @@ final class SubscriptionsViewModel {
             $0.merchantName == detection.merchantName && $0.amount == detection.amount
         }
 
-        Self.logger.info("Subscription confirmed: \(detection.merchantName)")
+        Self.logger.info("Subscription confirmed: \(detection.merchantName, privacy: .private)")
     }
 
     /// Dismisses a detection candidate.
@@ -163,6 +163,6 @@ final class SubscriptionsViewModel {
     /// Deletes a subscription from SwiftData.
     func deleteSubscription(_ subscription: Subscription, modelContext: ModelContext) {
         modelContext.delete(subscription)
-        Self.logger.info("Subscription deleted: \(subscription.serviceName)")
+        Self.logger.info("Subscription deleted: \(subscription.serviceName, privacy: .private)")
     }
 }

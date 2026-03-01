@@ -8,6 +8,7 @@ struct NomadFiApp: App {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var isShowingSplash = true
     @State private var isBlurred = false
+    @State private var appLockManager = AppLockManager()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -31,10 +32,17 @@ struct NomadFiApp: App {
                         .zIndex(1)
                 }
 
+                // Privacy blur for App Switcher — always active when backgrounded
                 if isBlurred {
                     Rectangle().fill(.ultraThinMaterial)
                         .ignoresSafeArea()
                         .zIndex(2)
+                }
+
+                // Biometric lock overlay — blocks content until authenticated
+                if appLockManager.isLocked && hasCompletedOnboarding {
+                    AppLockView(appLockManager: appLockManager)
+                        .zIndex(3)
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
@@ -43,8 +51,10 @@ struct NomadFiApp: App {
                     withAnimation(AnimationTokens.snappy) {
                         isBlurred = false
                     }
+                    appLockManager.willEnterForeground()
                 case .inactive, .background:
                     isBlurred = true
+                    appLockManager.didEnterBackground()
                 @unknown default:
                     break
                 }

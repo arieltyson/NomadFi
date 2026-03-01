@@ -63,13 +63,12 @@ final class NotificationManager {
 
         let content = UNMutableNotificationContent()
         content.title = "Subscription Renewal"
-
-        let serviceName = subscription.serviceName
-        let currency = subscription.currencyCode?.rawValue ?? "USD"
-        let amount = subscription.amount.formatted(.currency(code: currency))
-        content.body = "\(serviceName) renews in 3 days for \(amount). Open NomadFi to review."
+        // Use generic body text — no financial amounts or service names on Lock Screen
+        content.body = "A subscription renews in 3 days. Open NomadFi to review."
         content.sound = .default
         content.categoryIdentifier = "SUBSCRIPTION_RENEWAL"
+
+        let serviceName = subscription.serviceName
 
         let calendar = Calendar.current
         guard let triggerDate = calendar.date(byAdding: .day, value: -3, to: subscription.nextRenewalDate) else {
@@ -87,7 +86,7 @@ final class NotificationManager {
 
         do {
             try await center.add(request)
-            Self.logger.info("Renewal reminder scheduled for \(serviceName)")
+            Self.logger.info("Renewal reminder scheduled for \(serviceName, privacy: .private)")
         } catch {
             Self.logger.error("Failed to schedule renewal: \(error.localizedDescription)")
         }
@@ -126,17 +125,16 @@ final class NotificationManager {
         content.categoryIdentifier = "BUDGET_ALERT"
         content.sound = .default
 
+        // No financial amounts or budget names on Lock Screen
         let budgetName = budget.name.isEmpty ? "weekly" : budget.name
-        let currency = budget.currencyCode?.rawValue ?? "USD"
-        let remaining = budget.remainingAmount.formatted(.currency(code: currency))
 
         switch threshold {
         case .approaching:
-            content.body = "You've used 80% of your \(budgetName) budget. \(remaining) remaining."
+            content.body = "You've used 80% of a budget. Open NomadFi to check remaining balance."
         case .critical:
-            content.body = "You've used 90% of your \(budgetName) budget. \(remaining) remaining."
+            content.body = "You've used 90% of a budget. Open NomadFi to review."
         case .exceeded:
-            content.body = "You've exceeded your \(budgetName) budget! Review your spending in NomadFi."
+            content.body = "A budget has been exceeded. Open NomadFi to review your spending."
         }
 
         let request = UNNotificationRequest(
@@ -172,9 +170,8 @@ final class NotificationManager {
         content.categoryIdentifier = "FX_ALERT"
         content.sound = .default
 
-        let direction = changePercent > 0 ? "strengthened" : "weakened"
-        let formatted = abs(changePercent).formatted(.number.precision(.fractionLength(1)))
-        content.body = "\(baseCurrency.rawValue) has \(direction) \(formatted)% against \(targetCurrency.rawValue). Check NomadFi for details."
+        // No currency pair details or percentage on Lock Screen
+        content.body = "A currency pair you track has moved significantly. Open NomadFi for details."
 
         let request = UNNotificationRequest(
             identifier: "fx-\(baseCurrency.rawValue)-\(targetCurrency.rawValue)-\(Date.now.timeIntervalSince1970)",

@@ -57,7 +57,9 @@ enum TaxReportExporter {
             let pdfURL = exportDir.appending(path: pdfFilename)
             try pdfData.write(to: pdfURL)
 
-            // Copy receipt images into a subdirectory
+            // Copy receipt images into a subdirectory, stripping any
+            // residual EXIF/GPS metadata to prevent location leakage
+            // in the exported archive.
             let receiptsDir = exportDir.appending(path: "\(jurisdictionCode)_Receipts")
             try FileManager.default.createDirectory(at: receiptsDir, withIntermediateDirectories: true)
 
@@ -66,7 +68,7 @@ enum TaxReportExporter {
                    FileManager.default.fileExists(atPath: imageURL.path())
                 {
                     let destURL = receiptsDir.appending(path: imageURL.lastPathComponent)
-                    try? FileManager.default.copyItem(at: imageURL, to: destURL)
+                    ImageMetadataStripper.stripMetadata(from: imageURL, to: destURL)
                 }
             }
         }

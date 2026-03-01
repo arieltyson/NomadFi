@@ -21,13 +21,21 @@ struct LiveExchangeRateService: ExchangeRateService {
     private static let baseURL = URL(string: "https://open.er-api.com/v6/latest/")!
 
     /// Ephemeral session — no financial response data persisted to disk.
+    /// Uses ``CertificatePinningDelegate`` for strict TLS trust evaluation.
     private let session: URLSession
+
+    /// Retained delegate for the URLSession lifetime.
+    private let pinningDelegate = CertificatePinningDelegate()
 
     init() {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 15
         configuration.waitsForConnectivity = true
-        session = URLSession(configuration: configuration)
+        session = URLSession(
+            configuration: configuration,
+            delegate: pinningDelegate,
+            delegateQueue: nil
+        )
     }
 
     func fetchRate(base: CurrencyCode, target: CurrencyCode) async throws -> Double {

@@ -64,6 +64,7 @@ private extension AddSubscriptionView {
         Section("Service") {
             TextField("Service name", text: $serviceName)
                 .textContentType(.organizationName)
+                .autocorrectionDisabled()
         }
     }
 
@@ -79,6 +80,8 @@ private extension AddSubscriptionView {
                     format: .number.precision(.fractionLength(2))
                 )
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
             }
 
             Picker("Currency", selection: $currencyCode) {
@@ -119,9 +122,11 @@ private extension AddSubscriptionView {
 private extension AddSubscriptionView {
 
     func saveSubscription() {
+        let sanitizedAmount = InputSanitizer.validateAmount(amount) ?? 0
+
         let subscription = Subscription(
-            serviceName: serviceName,
-            amount: amount,
+            serviceName: InputSanitizer.sanitizeShortText(serviceName),
+            amount: sanitizedAmount,
             currencyCode: currencyCode,
             frequency: frequency,
             nextRenewalDate: nextRenewalDate,

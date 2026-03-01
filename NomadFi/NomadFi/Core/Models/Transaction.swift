@@ -20,7 +20,7 @@ final class Transaction {
 
     var account: Account?
 
-    @Relationship(inverse: \TaxDocument.transaction)
+    @Relationship(deleteRule: .cascade, inverse: \TaxDocument.transaction)
     var taxDocument: TaxDocument?
 
     var originalCurrency: CurrencyCode? {

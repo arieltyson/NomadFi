@@ -48,10 +48,12 @@ private struct AddAccountSheet: View {
                     TextField("Account Name", text: $viewModel.accountName)
                         .focused($focusedField, equals: .name)
                         .textContentType(.organizationName)
+                        .autocorrectionDisabled()
 
                     TextField("Institution", text: $viewModel.accountInstitution)
                         .focused($focusedField, equals: .institution)
                         .textContentType(.organizationName)
+                        .autocorrectionDisabled()
                 }
 
                 Section("Type & Currency") {
@@ -74,6 +76,8 @@ private struct AddAccountSheet: View {
                     TextField("Current Balance", text: $viewModel.accountBalance)
                         .focused($focusedField, equals: .balance)
                         .keyboardType(.decimalPad)
+                        .textContentType(.none)
+                        .autocorrectionDisabled()
                 }
             }
             .navigationTitle("Add Account")

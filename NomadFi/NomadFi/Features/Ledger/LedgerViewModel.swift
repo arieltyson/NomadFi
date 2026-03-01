@@ -108,7 +108,7 @@ final class LedgerViewModel {
                 return
             }
 
-            Self.logger.info("Updating Active Card for country: \(country, privacy: .public)")
+            Self.logger.info("Updating Active Card for country: \(country, privacy: .private)")
 
             // Prefer accounts in the local jurisdiction (zero FX fees)
             let localAccounts = accounts.filter { $0.jurisdiction == country }
@@ -195,7 +195,7 @@ final class LedgerViewModel {
     ) async -> Double? {
         do {
             let rate = try await services.exchangeRateService.fetchRate(base: base, target: target)
-            Self.logger.info("Mid-market rate for \(base.rawValue)/\(target.rawValue): \(rate)")
+            Self.logger.info("Mid-market rate for \(base.rawValue, privacy: .public)/\(target.rawValue, privacy: .public): \(rate, privacy: .private)")
             return rate
         } catch {
             Self.logger.error("Failed to fetch mid-market rate: \(error.localizedDescription)")

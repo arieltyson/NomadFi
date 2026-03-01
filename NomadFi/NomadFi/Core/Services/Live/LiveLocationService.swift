@@ -27,7 +27,7 @@ struct LiveLocationService: LocationService {
     private static let locationTimeout: Duration = .seconds(10)
 
     func currentCountryCode() async throws -> String? {
-        try await PerformanceMonitor.measure(.location, name: "Detect Country") {
+        await PerformanceMonitor.measure(.location, name: "Detect Country") {
             do {
                 // Race location acquisition against a timeout to prevent
                 // indefinite blocking when GPS/network is unavailable.
@@ -89,7 +89,7 @@ extension LiveLocationService {
         let countryCode = mapItems.first?.addressRepresentations?.region?.identifier
 
         Self.logger.info(
-            "Country detected: \(countryCode ?? "unknown", privacy: .public)"
+            "Country detected: \(countryCode ?? "unknown", privacy: .private)"
         )
         return countryCode
     }

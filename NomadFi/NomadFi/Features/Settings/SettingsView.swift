@@ -4,6 +4,7 @@
 // Main settings screen providing jurisdiction management,
 // notification preferences, privacy controls, and app information.
 
+import LocalAuthentication
 import SwiftData
 import SwiftUI
 
@@ -26,10 +27,15 @@ struct SettingsView: View {
     @Query private var subscriptions: [Subscription]
 
     @State private var notificationManager = NotificationManager()
+    @State private var appLockManager = AppLockManager()
+    @State private var isShowingDeleteConfirmation = false
+    @State private var isShowingPrivacyPolicy = false
 
     var body: some View {
         List {
             jurisdictionsSection
+
+            securitySection
 
             notificationsSection
 
@@ -41,6 +47,23 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .glassToolbar()
+        .confirmationDialog(
+            "Delete All Data",
+            isPresented: $isShowingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Everything", role: .destructive) {
+                DataGovernancePolicy.deleteAllUserData(
+                    in: modelContext,
+                    notificationManager: notificationManager
+                )
+            }
+        } message: {
+            Text("This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone.")
+        }
+        .sheet(isPresented: $isShowingPrivacyPolicy) {
+            PrivacyPolicySheet()
+        }
         .task {
             await notificationManager.refreshAuthorizationStatus()
         }
@@ -50,6 +73,36 @@ struct SettingsView: View {
 // MARK: - Sections
 
 private extension SettingsView {
+
+    // MARK: Security
+
+    var securitySection: some View {
+        Section {
+            Toggle("App Lock", isOn: $appLockManager.isAppLockEnabled)
+                .accessibilityHint(
+                    appLockManager.isBiometricAvailable
+                        ? "Requires \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") to open NomadFi"
+                        : "Requires your device passcode to open NomadFi"
+                )
+
+            if appLockManager.isAppLockEnabled {
+                Picker("Lock After", selection: $appLockManager.lockTimeout) {
+                    ForEach(LockTimeout.allCases) { timeout in
+                        Text(timeout.displayName).tag(timeout)
+                    }
+                }
+                .accessibilityHint("Choose how long NomadFi waits before locking after you leave the app")
+            }
+        } header: {
+            Text("Security")
+        } footer: {
+            if appLockManager.isBiometricAvailable {
+                Text("When enabled, \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") is required to access your financial data.")
+            } else {
+                Text("When enabled, your device passcode is required to access your financial data.")
+            }
+        }
+    }
 
     // MARK: Jurisdictions
 
@@ -134,8 +187,13 @@ private extension SettingsView {
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Privacy: all your financial data stays on your device")
 
+            Button("Privacy Policy", systemImage: "doc.text") {
+                isShowingPrivacyPolicy = true
+            }
+            .accessibilityHint("View how NomadFi protects your data")
+
             Button("Delete All My Data", systemImage: "trash", role: .destructive) {
-                deleteAllData()
+                isShowingDeleteConfirmation = true
             }
             .accessibilityHint("Permanently removes all accounts, transactions, receipts, and subscriptions from this device")
         } header: {
@@ -210,28 +268,6 @@ private extension SettingsView {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
         return "\(version) (\(build))"
-    }
-
-    func deleteAllData() {
-        // Delete all SwiftData records
-        try? modelContext.delete(model: Transaction.self)
-        try? modelContext.delete(model: Account.self)
-        try? modelContext.delete(model: Subscription.self)
-        try? modelContext.delete(model: TaxDocument.self)
-        try? modelContext.delete(model: Budget.self)
-        try? modelContext.delete(model: ExchangeRate.self)
-
-        // Clean up receipt images
-        let receiptsDir = URL.documentsDirectory.appending(path: "receipts")
-        try? FileManager.default.removeItem(at: receiptsDir)
-
-        // Remove Spotlight entries
-        Task {
-            await SpotlightIndexer.removeAllIndexedItems()
-        }
-
-        // Remove pending notifications
-        notificationManager.removeAllPendingNotifications()
     }
 }
 
