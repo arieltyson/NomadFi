@@ -128,7 +128,7 @@ private extension ReceiptConfirmationView {
                 Text("None")
                     .tag("")
                 ForEach(jurisdictions) { jurisdiction in
-                    Text("\(flagEmoji(for: jurisdiction.countryCode)) \(jurisdiction.countryName)")
+                    Text("\(String.flagEmoji(for: jurisdiction.countryCode)) \(jurisdiction.countryName)")
                         .tag(jurisdiction.countryCode)
                 }
             }
@@ -164,21 +164,6 @@ private extension ReceiptConfirmationView {
                 }
             }
         }
-    }
-}
-
-// MARK: - Helpers
-
-private extension ReceiptConfirmationView {
-
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
     }
 }
 

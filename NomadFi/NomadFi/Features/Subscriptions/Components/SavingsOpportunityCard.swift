@@ -13,6 +13,7 @@ import SwiftUI
 struct SavingsOpportunityCard: View {
 
     let result: SubscriptionComparisonEngine.ComparisonResult
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GlassCard {
@@ -56,37 +57,55 @@ private extension SavingsOpportunityCard {
     }
 
     var pricingComparison: some View {
-        HStack(spacing: SpacingTokens.medium) {
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text("Current (\(flagEmoji(for: result.currentJurisdiction)))")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+        let currentColumn = VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text("Current (\(String.flagEmoji(for: result.currentJurisdiction)))")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
 
-                Text(
-                    result.currentAmount,
-                    format: .currency(code: result.currentCurrency.rawValue)
-                )
-                .font(TypographyTokens.amountSmall)
-                .strikethrough(color: ColorTokens.negative)
-                .foregroundStyle(ColorTokens.negative)
-            }
+            Text(
+                result.currentAmount,
+                format: .currency(code: result.currentCurrency.rawValue)
+            )
+            .font(TypographyTokens.amountSmall)
+            .strikethrough(color: ColorTokens.negative)
+            .foregroundStyle(ColorTokens.negative)
+        }
 
-            Image(systemName: "arrow.right")
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
+        let cheaperColumn = VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text("Cheaper (\(String.flagEmoji(for: result.cheapestJurisdiction)))")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text("Cheaper (\(flagEmoji(for: result.cheapestJurisdiction)))")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+            Text(
+                result.cheapestAmount,
+                format: .currency(code: result.cheapestCurrency.rawValue)
+            )
+            .font(TypographyTokens.amountSmall)
+            .foregroundStyle(ColorTokens.positive)
+            .bold()
+        }
 
-                Text(
-                    result.cheapestAmount,
-                    format: .currency(code: result.cheapestCurrency.rawValue)
-                )
-                .font(TypographyTokens.amountSmall)
-                .foregroundStyle(ColorTokens.positive)
-                .bold()
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                    currentColumn
+
+                    Image(systemName: "arrow.down")
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+
+                    cheaperColumn
+                }
+            } else {
+                HStack(spacing: SpacingTokens.medium) {
+                    currentColumn
+
+                    Image(systemName: "arrow.right")
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+
+                    cheaperColumn
+                }
             }
         }
     }
@@ -119,15 +138,6 @@ private extension SavingsOpportunityCard {
         return "\(result.serviceName): currently \(current) in \(result.currentJurisdiction). Switch to \(result.cheapestJurisdiction) for \(cheaper). Save \(savings) per year."
     }
 
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

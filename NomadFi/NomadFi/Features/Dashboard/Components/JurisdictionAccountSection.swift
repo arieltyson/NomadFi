@@ -26,16 +26,26 @@ private struct AccountCard: View {
 
     let account: Account
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         GlassCard {
-            HStack(spacing: SpacingTokens.small) {
-                accountIcon
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    accountInfo
 
-                accountInfo
+                    balanceColumn
+                }
+            } else {
+                HStack(spacing: SpacingTokens.small) {
+                    accountIcon
 
-                Spacer()
+                    accountInfo
 
-                balanceColumn
+                    Spacer()
+
+                    balanceColumn
+                }
             }
         }
         .accessibilityElement(children: .combine)
@@ -93,7 +103,7 @@ private extension JurisdictionAccountSection {
     var sectionHeader: some View {
         HStack(spacing: SpacingTokens.xSmall) {
             // Map country code to flag emoji
-            Text(flagEmoji(for: profile.countryCode))
+            Text(String.flagEmoji(for: profile.countryCode))
                 .font(.title3)
 
             Text(profile.countryName)
@@ -109,18 +119,9 @@ private extension JurisdictionAccountSection {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(profile.countryName) accounts")
+        .accessibilityAddTraits(.isHeader)
     }
 
-    /// Converts an ISO 3166-1 alpha-2 code to its regional indicator emoji.
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

@@ -8,6 +8,7 @@ struct ExchangeRateTicker: View {
 
     let rates: [ExchangeRateSnapshot]
     let lastUpdated: Date?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
@@ -53,16 +54,33 @@ private struct RateCard: View {
 private extension ExchangeRateTicker {
 
     var headerRow: some View {
-        HStack {
-            Label("Exchange Rates", systemImage: "chart.line.uptrend.xyaxis")
-                .font(TypographyTokens.sectionHeader)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    Label("Exchange Rates", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(TypographyTokens.sectionHeader)
+                        .accessibilityAddTraits(.isHeader)
 
-            Spacer()
+                    if let lastUpdated {
+                        Text("Updated \(lastUpdated, format: .dateTime.hour().minute())")
+                            .font(TypographyTokens.footnote)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            } else {
+                HStack {
+                    Label("Exchange Rates", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(TypographyTokens.sectionHeader)
+                        .accessibilityAddTraits(.isHeader)
 
-            if let lastUpdated {
-                Text("Updated \(lastUpdated, format: .dateTime.hour().minute())")
-                    .font(TypographyTokens.footnote)
-                    .foregroundStyle(.tertiary)
+                    Spacer()
+
+                    if let lastUpdated {
+                        Text("Updated \(lastUpdated, format: .dateTime.hour().minute())")
+                            .font(TypographyTokens.footnote)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
             }
         }
     }

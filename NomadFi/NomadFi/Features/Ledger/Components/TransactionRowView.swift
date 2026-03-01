@@ -8,15 +8,27 @@ struct TransactionRowView: View {
 
     let transaction: Transaction
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: SpacingTokens.small) {
-            categoryIcon
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    merchantInfo
 
-            merchantInfo
+                    amountColumn
+                }
+            } else {
+                HStack(spacing: SpacingTokens.small) {
+                    categoryIcon
 
-            Spacer()
+                    merchantInfo
 
-            amountColumn
+                    Spacer()
+
+                    amountColumn
+                }
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityDescription)
@@ -43,7 +55,7 @@ private extension TransactionRowView {
 
             HStack(spacing: SpacingTokens.xxSmall) {
                 if !transaction.jurisdiction.isEmpty {
-                    Text(flagEmoji(for: transaction.jurisdiction))
+                    Text(String.flagEmoji(for: transaction.jurisdiction))
                 }
 
                 Text(transaction.category?.displayName ?? "Other")
@@ -87,16 +99,6 @@ private extension TransactionRowView {
         return "\(transaction.merchantName), \(amount), \(category)"
     }
 
-    /// Converts an ISO 3166-1 alpha-2 code to its regional indicator emoji.
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

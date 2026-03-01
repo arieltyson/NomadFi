@@ -20,7 +20,7 @@ struct CurrencyConfigurationView: View {
             continueButton
         }
         .padding(SpacingTokens.large)
-        .animation(AnimationTokens.standard, value: viewModel.homeCurrencyCode)
+        .reduceMotionAnimation(AnimationTokens.standard, value: viewModel.homeCurrencyCode)
     }
 }
 

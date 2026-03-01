@@ -129,6 +129,7 @@ private struct AccountRow: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(draft.name) at \(draft.institutionName), balance \(draft.balance.formatted(.currency(code: draft.currencyCode.rawValue))), \(draft.accountType.displayName)")
     }
 }
 

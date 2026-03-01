@@ -58,6 +58,8 @@ private struct FilterChip: View {
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityLabel("\(label) filter")
+        .accessibilityHint(isSelected ? "Double tap to remove filter" : "Double tap to apply filter")
     }
 }
 

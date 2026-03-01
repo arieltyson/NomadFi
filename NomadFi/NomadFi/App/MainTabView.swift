@@ -26,7 +26,7 @@ struct MainTabView: View {
 
             Tab("Settings", systemImage: "gearshape") {
                 NavigationStack {
-                    SettingsPlaceholderView()
+                    SettingsView()
                 }
             }
         }

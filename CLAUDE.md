@@ -649,7 +649,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 | 3 | Ledger & Transaction Intelligence | ✅ Commits 16–21 done (live services, InsightEngine, FX intelligence) |
 | 4 | Tax Vault & Receipt Scanning | ✅ Commits 22–27 done (Vision OCR, auto-categorization, PDF export) |
 | 5 | Subscriptions, Siri & Shortcuts | ✅ Commits 28–32 done (detection, comparison, App Intents, Spotlight, notifications) |
-| 6 | Accessibility Deep Pass | ◐ Patterns in place, not formally audited |
+| 6 | Accessibility Deep Pass | ✅ Commits 33–37 done (VoiceOver, Dynamic Type reflow, color accessibility, reduce motion/transparency, i18n foundation) |
 | 7 | Polish & Award Readiness | ❌ Not started |
 | 8 | Performance Audit | ❌ Not started |
 | 9 | Security Audit | ❌ Not started |

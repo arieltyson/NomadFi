@@ -19,7 +19,7 @@ struct JurisdictionSelectionView: View {
             footer
         }
         .padding(SpacingTokens.large)
-        .animation(AnimationTokens.standard, value: viewModel.selectedJurisdictions)
+        .reduceMotionAnimation(AnimationTokens.standard, value: viewModel.selectedJurisdictions)
     }
 }
 

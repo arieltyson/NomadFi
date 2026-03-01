@@ -43,21 +43,12 @@ private extension ActiveCardBanner {
                 .font(TypographyTokens.sectionHeader)
                 .foregroundStyle(ColorTokens.brandPrimary)
 
-            Text("Best card for \(flagEmoji(for: countryCode)) \(countryCode) — lowest FX fees")
+            Text("Best card for \(String.flagEmoji(for: countryCode)) \(countryCode) — lowest FX fees")
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
         }
     }
 
-    func flagEmoji(for code: String) -> String {
-        let base: UInt32 = 127397
-        return code
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

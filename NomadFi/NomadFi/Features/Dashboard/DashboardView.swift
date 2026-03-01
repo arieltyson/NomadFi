@@ -44,11 +44,13 @@ private struct InsightsSection: View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
             Label("Your Money This Week", systemImage: "lightbulb.fill")
                 .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
 
             ForEach(insights) { insight in
                 InsightCardView(insight: insight)
             }
         }
+        .accessibilityLabel("Financial insights: \(insights.count) recommendation\(insights.count == 1 ? "" : "s") this week")
     }
 }
 

@@ -58,6 +58,7 @@ private struct DateSectionHeader: View {
             .font(TypographyTokens.caption)
             .foregroundStyle(.secondary)
             .textCase(nil)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 

@@ -103,7 +103,7 @@ private extension AddSubscriptionView {
             Picker("Jurisdiction", selection: $jurisdiction) {
                 Text("None").tag("")
                 ForEach(jurisdictions) { profile in
-                    Text("\(flagEmoji(for: profile.countryCode)) \(profile.countryName)")
+                    Text("\(String.flagEmoji(for: profile.countryCode)) \(profile.countryName)")
                         .tag(profile.countryCode)
                 }
             }
@@ -128,15 +128,6 @@ private extension AddSubscriptionView {
         modelContext.insert(subscription)
     }
 
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

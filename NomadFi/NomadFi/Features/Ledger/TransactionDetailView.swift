@@ -132,6 +132,7 @@ private extension TransactionDetailView {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Exchange Rate", systemImage: "chart.line.uptrend.xyaxis")
                     .font(TypographyTokens.sectionHeader)
+                    .accessibilityAddTraits(.isHeader)
 
                 DetailRow(
                     label: "Applied Rate",
@@ -164,6 +165,7 @@ private extension TransactionDetailView {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Details", systemImage: "info.circle")
                     .font(TypographyTokens.sectionHeader)
+                    .accessibilityAddTraits(.isHeader)
 
                 if let category = transaction.category {
                     DetailRow(
@@ -208,6 +210,7 @@ private extension TransactionDetailView {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Tax", systemImage: "doc.text")
                     .font(TypographyTokens.sectionHeader)
+                    .accessibilityAddTraits(.isHeader)
 
                 Toggle("Tax Deductible", isOn: $transaction.isTaxDeductible)
                     .font(TypographyTokens.body)

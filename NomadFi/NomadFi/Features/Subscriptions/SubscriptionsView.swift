@@ -134,6 +134,7 @@ private extension SubscriptionsView {
         VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
             Text("Detected Subscriptions")
                 .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, SpacingTokens.medium)
 
             Text("We found these recurring charges in your transactions.")
@@ -166,6 +167,7 @@ private extension SubscriptionsView {
         VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
             Text("Savings Opportunities")
                 .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, SpacingTokens.medium)
 
             ForEach(viewModel.comparisonResults) { result in
@@ -181,6 +183,7 @@ private extension SubscriptionsView {
         VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
             Text("Your Subscriptions")
                 .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, SpacingTokens.medium)
 
             let filtered = viewModel.filteredSubscriptions(subscriptions)

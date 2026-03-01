@@ -61,6 +61,18 @@ enum ColorTokens {
         }
     }
 
+    /// Returns the SF Symbol icon for an FX markup value (Differentiate Without Color).
+    /// - Parameter markup: The FX markup amount (positive = overpaid).
+    static func fxMarkupIcon(for markup: Double) -> String {
+        if markup <= 0 {
+            return "checkmark.circle.fill"
+        } else if markup < 1.0 {
+            return "exclamationmark.triangle.fill"
+        } else {
+            return "xmark.octagon.fill"
+        }
+    }
+
     /// Returns the appropriate color for a budget utilization fraction.
     /// - Parameter fraction: The spent fraction (0.0 to 1.0+).
     static func budgetColor(for fraction: Double) -> Color {
@@ -70,6 +82,18 @@ enum ColorTokens {
             return warning
         } else {
             return negative
+        }
+    }
+
+    /// Returns the SF Symbol icon for a budget utilization fraction (Differentiate Without Color).
+    /// - Parameter fraction: The spent fraction (0.0 to 1.0+).
+    static func budgetIcon(for fraction: Double) -> String {
+        if fraction < 0.8 {
+            return "checkmark.circle.fill"
+        } else if fraction < 1.0 {
+            return "exclamationmark.triangle.fill"
+        } else {
+            return "xmark.octagon.fill"
         }
     }
 }

@@ -32,7 +32,7 @@ struct OnboardingFlowView: View {
                     .transition(.push(from: .trailing))
             }
         }
-        .animation(AnimationTokens.standard, value: viewModel.currentStep)
+        .reduceMotionAnimation(AnimationTokens.standard, value: viewModel.currentStep)
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 if viewModel.currentStep != .welcome {

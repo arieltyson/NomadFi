@@ -17,16 +17,26 @@ struct SubscriptionRowView: View {
     let subscription: Subscription
     let homeCurrency: CurrencyCode
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         GlassCard {
-            HStack(spacing: SpacingTokens.small) {
-                serviceIcon
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    serviceInfo
 
-                serviceInfo
+                    amountColumn
+                }
+            } else {
+                HStack(spacing: SpacingTokens.small) {
+                    serviceIcon
 
-                Spacer()
+                    serviceInfo
 
-                amountColumn
+                    Spacer()
+
+                    amountColumn
+                }
             }
         }
         .accessibilityElement(children: .combine)
@@ -54,7 +64,7 @@ private extension SubscriptionRowView {
 
             HStack(spacing: SpacingTokens.xxSmall) {
                 if !subscription.jurisdiction.isEmpty {
-                    Text(flagEmoji(for: subscription.jurisdiction))
+                    Text(String.flagEmoji(for: subscription.jurisdiction))
                 }
 
                 if let frequency = subscription.frequency {
@@ -113,15 +123,6 @@ private extension SubscriptionRowView {
         return description
     }
 
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

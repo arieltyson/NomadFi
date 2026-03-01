@@ -159,7 +159,8 @@ enum TaxReportExporter {
                 let categoryName = TaxCategory(rawValue: categoryRaw)?.displayName ?? categoryRaw
                 let total = docs.reduce(0.0) { $0 + $1.amount }
                 let currencySymbol = docs.first?.currencyCode?.symbol ?? "$"
-                let line = "\(categoryName): \(currencySymbol)\(String(format: "%.2f", total)) (\(docs.count) items)"
+                let formattedTotal = total.formatted(.number.precision(.fractionLength(2)))
+                let line = "\(categoryName): \(currencySymbol)\(formattedTotal) (\(docs.count) items)"
                 line.draw(at: CGPoint(x: margin + 10, y: yPosition), withAttributes: bodyAttributes)
                 yPosition += 18
 
@@ -183,7 +184,8 @@ enum TaxReportExporter {
             for doc in documents.sorted(by: { $0.documentDate > $1.documentDate }) {
                 let currencySymbol = doc.currencyCode?.symbol ?? "$"
                 let dateStr = dateFormatter.string(from: doc.documentDate)
-                let line = "\(dateStr) — \(doc.merchantName) — \(currencySymbol)\(String(format: "%.2f", doc.amount))"
+                let formattedAmount = doc.amount.formatted(.number.precision(.fractionLength(2)))
+                let line = "\(dateStr) — \(doc.merchantName) — \(currencySymbol)\(formattedAmount)"
                 line.draw(at: CGPoint(x: margin + 10, y: yPosition), withAttributes: bodyAttributes)
                 yPosition += 18
 

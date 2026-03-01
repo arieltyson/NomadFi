@@ -11,6 +11,7 @@ struct RealCostCard: View {
     let actualCost: Double
     let delta: Double
     let homeCurrency: CurrencyCode
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GlassCard {
@@ -36,35 +37,47 @@ private extension RealCostCard {
     var headerRow: some View {
         Label("Real Cost Analysis", systemImage: "arrow.triangle.swap")
             .font(TypographyTokens.sectionHeader)
+            .accessibilityAddTraits(.isHeader)
     }
 
     var costComparison: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text("Fair Cost")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+        let fairColumn = VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text("Fair Cost")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
 
-                CurrencyText(
-                    amount: fairCost,
-                    currencyCode: homeCurrency,
-                    font: TypographyTokens.amountSmall
-                )
-            }
+            CurrencyText(
+                amount: fairCost,
+                currencyCode: homeCurrency,
+                font: TypographyTokens.amountSmall
+            )
+        }
 
-            Spacer()
+        let actualColumn = VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
+            Text("You Paid")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
 
-            VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
-                Text("You Paid")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+            CurrencyText(
+                amount: actualCost,
+                currencyCode: homeCurrency,
+                font: TypographyTokens.amountSmall
+            )
+            .bold()
+        }
 
-                CurrencyText(
-                    amount: actualCost,
-                    currencyCode: homeCurrency,
-                    font: TypographyTokens.amountSmall
-                )
-                .bold()
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                    fairColumn
+                    actualColumn
+                }
+            } else {
+                HStack {
+                    fairColumn
+                    Spacer()
+                    actualColumn
+                }
             }
         }
     }

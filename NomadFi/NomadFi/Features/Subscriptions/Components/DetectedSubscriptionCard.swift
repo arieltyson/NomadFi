@@ -15,6 +15,7 @@ struct DetectedSubscriptionCard: View {
     let detection: SubscriptionDetector.DetectedSubscription
     let onConfirm: () -> Void
     let onDismiss: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GlassCard {
@@ -54,7 +55,7 @@ private extension DetectedSubscriptionCard {
     }
 
     var confidenceBadge: some View {
-        Text(confidenceLabel)
+        Label(confidenceLabel, systemImage: confidenceIcon)
             .font(.caption2)
             .bold()
             .padding(.horizontal, SpacingTokens.xSmall)
@@ -65,24 +66,48 @@ private extension DetectedSubscriptionCard {
     }
 
     var detectionDetails: some View {
-        HStack(spacing: SpacingTokens.medium) {
-            LabeledContent("Amount") {
-                Text(detection.amount, format: .currency(code: detection.currencyCode.rawValue))
-                    .bold()
-            }
-            .font(TypographyTokens.caption)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    LabeledContent("Amount") {
+                        Text(detection.amount, format: .currency(code: detection.currencyCode.rawValue))
+                            .bold()
+                    }
+                    .font(TypographyTokens.caption)
 
-            if !detection.jurisdiction.isEmpty {
-                LabeledContent("Region") {
-                    Text("\(flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)")
+                    if !detection.jurisdiction.isEmpty {
+                        LabeledContent("Region") {
+                            Text("\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)")
+                        }
+                        .font(TypographyTokens.caption)
+                    }
+
+                    LabeledContent("Matches") {
+                        Text("\(detection.matchedTransactionCount)")
+                    }
+                    .font(TypographyTokens.caption)
                 }
-                .font(TypographyTokens.caption)
-            }
+            } else {
+                HStack(spacing: SpacingTokens.medium) {
+                    LabeledContent("Amount") {
+                        Text(detection.amount, format: .currency(code: detection.currencyCode.rawValue))
+                            .bold()
+                    }
+                    .font(TypographyTokens.caption)
 
-            LabeledContent("Matches") {
-                Text("\(detection.matchedTransactionCount)")
+                    if !detection.jurisdiction.isEmpty {
+                        LabeledContent("Region") {
+                            Text("\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)")
+                        }
+                        .font(TypographyTokens.caption)
+                    }
+
+                    LabeledContent("Matches") {
+                        Text("\(detection.matchedTransactionCount)")
+                    }
+                    .font(TypographyTokens.caption)
+                }
             }
-            .font(TypographyTokens.caption)
         }
         .foregroundStyle(.secondary)
     }
@@ -124,20 +149,19 @@ private extension DetectedSubscriptionCard {
         }
     }
 
+    var confidenceIcon: String {
+        switch detection.confidence {
+        case .high: "checkmark.seal.fill"
+        case .medium: "questionmark.circle.fill"
+        case .low: "minus.circle.fill"
+        }
+    }
+
     var accessibilityDescription: String {
         let amount = detection.amount.formatted(.currency(code: detection.currencyCode.rawValue))
         return "Detected subscription: \(detection.merchantName), \(amount) \(detection.frequency.displayName), \(confidenceLabel) confidence. Double tap to track."
     }
 
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

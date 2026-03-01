@@ -186,18 +186,9 @@ private extension TaxDocumentDetailView {
     var jurisdictionDisplay: String {
         let code = document.jurisdiction
         guard !code.isEmpty else { return "Unknown" }
-        return flagEmoji(for: code) + " " + code
+        return String.flagEmoji(for: code) + " " + code
     }
 
-    func flagEmoji(for countryCode: String) -> String {
-        let base: UInt32 = 127397
-        return countryCode
-            .uppercased()
-            .unicodeScalars
-            .compactMap { Unicode.Scalar(base + $0.value) }
-            .map { String($0) }
-            .joined()
-    }
 }
 
 #Preview {

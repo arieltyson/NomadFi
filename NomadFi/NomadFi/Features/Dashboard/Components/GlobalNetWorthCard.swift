@@ -63,6 +63,7 @@ private extension GlobalNetWorthCard {
             Text("Global Net Worth")
                 .font(TypographyTokens.sectionHeader)
                 .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isHeader)
 
             Spacer()
 
