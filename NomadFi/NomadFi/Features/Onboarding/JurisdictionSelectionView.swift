@@ -86,6 +86,12 @@ private extension JurisdictionSelectionView {
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
+            Text("NomadFi uses your jurisdictions to detect FX fees, optimize card usage, and organize tax documents by country.")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .padding(.top, SpacingTokens.xxSmall)
         }
     }
 

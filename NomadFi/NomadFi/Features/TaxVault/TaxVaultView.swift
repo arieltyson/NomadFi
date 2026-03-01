@@ -22,6 +22,7 @@ struct TaxVaultView: View {
     @State private var viewModel = TaxVaultViewModel()
     @State private var selectedTaxYear: Int?
     @State private var navigationPath = NavigationPath()
+    @State private var showScanError = false
 
     private let scanReceiptTip = ScanReceiptTip()
 
@@ -35,6 +36,7 @@ struct TaxVaultView: View {
                 }
             }
             .navigationTitle("Tax Vault")
+            .glassToolbar()
             .searchable(text: $viewModel.searchText, prompt: "Search receipts")
             .toolbar { toolbarContent }
             .navigationDestination(for: TaxDocument.self) { document in
@@ -42,6 +44,7 @@ struct TaxVaultView: View {
             }
             .sheet(isPresented: $viewModel.showingConfirmation) {
                 ReceiptConfirmationView(viewModel: viewModel)
+                    .glassSheet()
             }
             .overlay {
                 if viewModel.isScanning {
@@ -53,6 +56,21 @@ struct TaxVaultView: View {
                     await viewModel.processSelectedPhoto(modelContext: modelContext)
                 }
             }
+            .alert("Scan Error", isPresented: $showScanError) {
+                Button("Try Again") {
+                    viewModel.scanError = nil
+                }
+                Button("Dismiss", role: .cancel) {
+                    viewModel.scanError = nil
+                }
+            } message: {
+                Text(viewModel.scanError ?? "An unexpected error occurred while scanning the receipt.")
+            }
+            .onChange(of: viewModel.scanError) { _, newValue in
+                showScanError = newValue != nil
+            }
+            .sensoryFeedback(.error, trigger: viewModel.scanError)
+            .sensoryFeedback(.success, trigger: viewModel.showingConfirmation)
         }
     }
 
@@ -64,6 +82,9 @@ struct TaxVaultView: View {
 
         return List {
             TipView(scanReceiptTip)
+                .tipBackground(ColorTokens.surfaceSecondary)
+
+            TipView(TaxExportTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
 
             ForEach(yearGroups, id: \.year) { group in

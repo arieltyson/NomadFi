@@ -23,6 +23,7 @@ final class DashboardViewModel {
     // MARK: - Dependencies
 
     private let services: ServiceContainer
+    private var cachedRates: [ExchangeRateSnapshot] = []
     private static let logger = Logger(subsystem: "com.nomadfi.app", category: "Dashboard")
 
     init(services: ServiceContainer = ServiceContainer()) {
@@ -39,13 +40,21 @@ final class DashboardViewModel {
         defer { isLoading = false }
 
         do {
-            exchangeRates = try await services.exchangeRateService.fetchAllRates(for: currencies)
+            let freshRates = try await services.exchangeRateService.fetchAllRates(for: currencies)
+            exchangeRates = freshRates
+            cachedRates = freshRates
             lastUpdated = .now
             errorMessage = nil
             Self.logger.info("Exchange rates updated: \(self.exchangeRates.count) pairs")
         } catch {
-            errorMessage = error.localizedDescription
-            Self.logger.error("Rate fetch failed: \(error.localizedDescription)")
+            if !cachedRates.isEmpty {
+                exchangeRates = cachedRates
+                errorMessage = "Using cached rates. Pull to refresh."
+                Self.logger.warning("Rate fetch failed, using \(self.cachedRates.count) cached rates")
+            } else {
+                errorMessage = error.localizedDescription
+                Self.logger.error("Rate fetch failed with no cache: \(error.localizedDescription)")
+            }
         }
     }
 

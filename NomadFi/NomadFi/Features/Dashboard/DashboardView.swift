@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// The primary dashboard displaying global net worth, accounts, exchange rates, and insights.
 ///
@@ -16,8 +17,10 @@ struct DashboardView: View {
     private var transactions: [Transaction]
 
     @State private var viewModel = DashboardViewModel()
+    @State private var showError = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ScrollView {
@@ -28,9 +31,38 @@ struct DashboardView: View {
             }
         }
         .scrollIndicators(.hidden)
+        .background {
+            LinearGradient(
+                colors: [ColorTokens.brandPrimary.opacity(0.05), .clear],
+                startPoint: .top,
+                endPoint: .center
+            )
+            .ignoresSafeArea()
+        }
         .navigationTitle("Dashboard")
+        .glassToolbar()
         .refreshable { await refreshRates() }
-        .task { await refreshRates() }
+        .task {
+            AddMoreAccountsTip.accountCount = accounts.count
+            await refreshRates()
+        }
+        .alert("Something Went Wrong", isPresented: $showError) {
+            Button("Retry") {
+                Task { await refreshRates() }
+            }
+            Button("Dismiss", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "An unexpected error occurred.")
+        }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            showError = newValue != nil
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await refreshRates() }
+            }
+        }
+        .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
     }
 }
 
@@ -65,12 +97,21 @@ private extension DashboardView {
     var dashboardContent: some View {
         LazyVStack(spacing: SpacingTokens.large, pinnedViews: .sectionHeaders) {
             netWorthCard
+                .redacted(reason: viewModel.isLoading && viewModel.exchangeRates.isEmpty ? .placeholder : [])
+                .padding(.horizontal, SpacingTokens.medium)
+
+            TipView(ExchangeRateTip())
+                .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
 
             exchangeRateTicker
                 .padding(.horizontal, SpacingTokens.medium)
 
             accountSections
+                .padding(.horizontal, SpacingTokens.medium)
+
+            TipView(AddMoreAccountsTip())
+                .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
 
             if !viewModel.insights.isEmpty {

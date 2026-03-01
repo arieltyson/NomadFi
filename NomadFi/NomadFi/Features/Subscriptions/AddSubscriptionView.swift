@@ -19,6 +19,7 @@ struct AddSubscriptionView: View {
     @Query(sort: \JurisdictionProfile.displayOrder)
     private var jurisdictions: [JurisdictionProfile]
 
+    @State private var saveCount = 0
     @State private var serviceName = ""
     @State private var amount: Double = 0
     @State private var currencyCode: CurrencyCode = .usd
@@ -43,12 +44,14 @@ struct AddSubscriptionView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         saveSubscription()
+                        saveCount += 1
                         dismiss()
                     }
                     .bold()
                     .disabled(serviceName.isEmpty || amount <= 0)
                 }
             }
+            .sensoryFeedback(.success, trigger: saveCount)
         }
     }
 }

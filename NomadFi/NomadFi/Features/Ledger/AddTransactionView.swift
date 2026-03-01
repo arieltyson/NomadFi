@@ -14,6 +14,7 @@ struct AddTransactionView: View {
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
 
     @State private var formData = TransactionFormData()
+    @State private var saveCount = 0
     @FocusState private var focusedField: FormField?
 
     var body: some View {
@@ -41,6 +42,7 @@ struct AddTransactionView: View {
                         .bold()
                 }
             }
+            .sensoryFeedback(.success, trigger: saveCount)
         }
         .onAppear { focusedField = .merchant }
     }
@@ -226,6 +228,7 @@ private extension AddTransactionView {
         }
 
         modelContext.insert(transaction)
+        saveCount += 1
         dismiss()
     }
 }

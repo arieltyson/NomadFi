@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xcodebuild:*)",
       "Bash(find:*)",
-      "WebFetch(domain:dev.to)"
+      "WebFetch(domain:dev.to)",
+      "Bash(xargs -I {} basename {})"
     ]
   }
 }

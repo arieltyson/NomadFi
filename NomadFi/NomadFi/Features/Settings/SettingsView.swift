@@ -40,6 +40,7 @@ struct SettingsView: View {
             aboutSection
         }
         .navigationTitle("Settings")
+        .glassToolbar()
         .task {
             await notificationManager.refreshAuthorizationStatus()
         }

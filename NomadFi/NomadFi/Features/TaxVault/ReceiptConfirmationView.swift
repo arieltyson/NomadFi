@@ -19,6 +19,7 @@ struct ReceiptConfirmationView: View {
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
 
     @Bindable var viewModel: TaxVaultViewModel
+    @State private var saveCount = 0
 
     var body: some View {
         NavigationStack {
@@ -45,12 +46,14 @@ struct ReceiptConfirmationView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         viewModel.saveConfirmedDocument(modelContext: modelContext)
+                        saveCount += 1
                         dismiss()
                     }
                     .bold()
                     .disabled(viewModel.draftMerchantName.isEmpty)
                 }
             }
+            .sensoryFeedback(.success, trigger: saveCount)
         }
     }
 }

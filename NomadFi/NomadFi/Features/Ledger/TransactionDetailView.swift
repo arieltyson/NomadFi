@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// A detailed view for a single transaction showing amounts, FX analysis,
 /// category, and tax relevance controls.
@@ -19,6 +20,9 @@ struct TransactionDetailView: View {
                 amountSection
 
                 if isCrossBorder {
+                    TipView(RealCostTip())
+                        .tipBackground(ColorTokens.surfaceSecondary)
+
                     realCostSection
                     fxRateSection
                 }
@@ -31,6 +35,7 @@ struct TransactionDetailView: View {
         }
         .scrollIndicators(.hidden)
         .navigationTitle(transaction.merchantName)
+        .glassToolbar()
     }
 }
 

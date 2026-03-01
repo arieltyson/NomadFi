@@ -9,6 +9,7 @@ struct ActiveCardBanner: View {
 
     let accountName: String
     let countryCode: String
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         HStack(spacing: SpacingTokens.small) {
@@ -19,7 +20,14 @@ struct ActiveCardBanner: View {
             Spacer()
         }
         .padding(SpacingTokens.small)
-        .background(ColorTokens.brandPrimary.opacity(0.08))
+        .background {
+            if reduceTransparency {
+                ColorTokens.brandPrimary.opacity(0.08)
+            } else {
+                Rectangle().fill(.ultraThinMaterial)
+                    .overlay(ColorTokens.brandPrimary.opacity(0.05))
+            }
+        }
         .clipShape(.rect(cornerRadius: SpacingTokens.small))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Active card recommendation: Use \(accountName) in \(countryCode)")

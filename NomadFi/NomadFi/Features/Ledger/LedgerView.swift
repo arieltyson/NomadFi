@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// The transaction ledger displaying a searchable, filterable, date-grouped
 /// list of all transactions across jurisdictions.
@@ -18,6 +19,7 @@ struct LedgerView: View {
 
     @State private var viewModel = LedgerViewModel()
     @State private var isShowingAddTransaction = false
+    @State private var showError = false
 
     var body: some View {
         Group {
@@ -28,6 +30,7 @@ struct LedgerView: View {
             }
         }
         .navigationTitle("Ledger")
+        .glassToolbar()
         .searchable(text: $viewModel.searchText, prompt: "Search transactions")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -38,11 +41,20 @@ struct LedgerView: View {
         }
         .sheet(isPresented: $isShowingAddTransaction) {
             AddTransactionView()
+                .glassSheet()
         }
         .task {
             viewModel.requestLocationAuthorizationIfNeeded()
             viewModel.updateFXIntelligence(transactions: transactions)
             await viewModel.updateActiveCardRecommendation(accounts: accounts)
+        }
+        .alert("Location Error", isPresented: $showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "An unexpected error occurred.")
+        }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            showError = newValue != nil
         }
     }
 }
@@ -98,6 +110,10 @@ private extension LedgerView {
            let country = viewModel.currentCountryCode
         {
             ActiveCardBanner(accountName: accountName, countryCode: country)
+                .padding(.horizontal, SpacingTokens.medium)
+        } else if !viewModel.isLoadingLocation {
+            TipView(ActiveCardTip())
+                .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
         }
     }

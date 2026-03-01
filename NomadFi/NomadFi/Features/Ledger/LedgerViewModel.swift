@@ -25,6 +25,10 @@ final class LedgerViewModel {
     var currentCountryCode: String?
     var isLoadingLocation = false
 
+    // MARK: - Error State
+
+    var errorMessage: String?
+
     // MARK: - FX Intelligence
 
     var weeklyFXWaste: Double = 0
@@ -118,6 +122,7 @@ final class LedgerViewModel {
             let best = accounts.min { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }
             recommendedAccountName = best?.name
         } catch {
+            errorMessage = "Could not determine your location for Active Card."
             Self.logger.error("Active Card recommendation failed: \(error.localizedDescription)")
             recommendedAccountName = nil
         }

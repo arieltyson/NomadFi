@@ -6,6 +6,7 @@
 
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// Displays the user's subscriptions with cross-border price comparison
 /// and savings opportunities.
@@ -27,6 +28,7 @@ struct SubscriptionsView: View {
 
     @State private var viewModel = SubscriptionsViewModel()
     @State private var isShowingAddSubscription = false
+    @State private var showError = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +40,7 @@ struct SubscriptionsView: View {
                 }
             }
             .navigationTitle("Subscriptions")
+            .glassToolbar()
             .searchable(text: $viewModel.searchText, prompt: "Search subscriptions")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -48,6 +51,7 @@ struct SubscriptionsView: View {
             }
             .sheet(isPresented: $isShowingAddSubscription) {
                 AddSubscriptionView()
+                    .glassSheet()
             }
             .task {
                 viewModel.detectSubscriptions(
@@ -61,6 +65,26 @@ struct SubscriptionsView: View {
                     jurisdictions: jurisdictions,
                     homeCurrency: homeCurrency
                 )
+            }
+            .alert("Comparison Error", isPresented: $showError) {
+                Button("Retry") {
+                    Task {
+                        let homeCurrency = viewModel.homeCurrency(from: jurisdictions)
+                        await viewModel.compareSubscriptions(
+                            subscriptions: subscriptions,
+                            jurisdictions: jurisdictions,
+                            homeCurrency: homeCurrency
+                        )
+                    }
+                }
+                Button("Dismiss", role: .cancel) {
+                    viewModel.errorMessage = nil
+                }
+            } message: {
+                Text(viewModel.errorMessage ?? "Could not compare subscription prices.")
+            }
+            .onChange(of: viewModel.errorMessage) { _, newValue in
+                showError = newValue != nil
             }
         }
     }
@@ -78,6 +102,10 @@ private extension SubscriptionsView {
                 if !viewModel.detectedSubscriptions.isEmpty {
                     detectedSection
                 }
+
+                TipView(SubscriptionArbitrageTip())
+                    .tipBackground(ColorTokens.surfaceSecondary)
+                    .padding(.horizontal, SpacingTokens.medium)
 
                 if !viewModel.comparisonResults.isEmpty {
                     savingsOpportunitiesSection

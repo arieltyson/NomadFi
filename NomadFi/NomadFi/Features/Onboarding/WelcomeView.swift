@@ -21,6 +21,8 @@ struct WelcomeView: View {
 
             description
 
+            whyItMatters
+
             Spacer()
 
             getStartedButton
@@ -31,6 +33,25 @@ struct WelcomeView: View {
 }
 
 // MARK: - Subviews
+
+private struct WhyItMattersRow: View {
+
+    let icon: String
+    let color: Color
+    let text: String
+
+    var body: some View {
+        HStack(spacing: SpacingTokens.small) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+                .frame(width: 20)
+
+            Text(text)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
 
 private struct GlobeIllustration: View {
 
@@ -83,6 +104,33 @@ private extension WelcomeView {
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, SpacingTokens.medium)
+    }
+
+    var whyItMatters: some View {
+        VStack(spacing: SpacingTokens.xSmall) {
+            WhyItMattersRow(
+                icon: "lock.shield.fill",
+                color: ColorTokens.positive,
+                text: "On-device only. Zero tracking."
+            )
+
+            WhyItMattersRow(
+                icon: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90",
+                color: ColorTokens.warning,
+                text: "International students lose thousands to hidden FX fees."
+            )
+
+            WhyItMattersRow(
+                icon: "globe",
+                color: ColorTokens.brandPrimary,
+                text: "NomadFi makes cross-border money visible."
+            )
+        }
+        .padding(SpacingTokens.medium)
+        .glassBackground()
+        .clipShape(.rect(cornerRadius: SpacingTokens.small))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible")
     }
 
     var getStartedButton: some View {

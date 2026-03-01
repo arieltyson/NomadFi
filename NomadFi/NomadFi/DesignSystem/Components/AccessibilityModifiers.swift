@@ -138,6 +138,61 @@ struct AccessibleStatusIndicator: View {
     }
 }
 
+// MARK: - Glass Toolbar
+
+/// A view modifier that applies glass material styling to the navigation bar,
+/// respecting the Reduce Transparency accessibility preference.
+///
+/// On iOS 26, navigation bars receive Liquid Glass styling automatically.
+/// This modifier ensures the toolbar background visibility adapts correctly
+/// when Reduce Transparency is enabled.
+///
+/// ```swift
+/// NavigationStack {
+///     ContentView()
+///         .glassToolbar()
+/// }
+/// ```
+struct GlassToolbar: ViewModifier {
+
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        content
+            .toolbarBackgroundVisibility(
+                reduceTransparency ? .visible : .automatic,
+                for: .navigationBar
+            )
+    }
+}
+
+// MARK: - Glass Sheet
+
+/// A view modifier that applies glass material to a sheet's presentation
+/// background, with a solid fallback for Reduce Transparency.
+///
+/// ```swift
+/// .sheet(isPresented: $isShowing) {
+///     MySheetContent()
+///         .glassSheet()
+/// }
+/// ```
+struct GlassSheet: ViewModifier {
+
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        content
+            .presentationBackground {
+                if reduceTransparency {
+                    ColorTokens.surfacePrimary
+                } else {
+                    Rectangle().fill(.ultraThinMaterial)
+                }
+            }
+    }
+}
+
 // MARK: - View Extensions
 
 extension View {
@@ -157,5 +212,15 @@ extension View {
     /// Applies a glass material background that respects Reduce Transparency.
     func glassBackground() -> some View {
         modifier(GlassBackground())
+    }
+
+    /// Applies glass material styling to the navigation bar.
+    func glassToolbar() -> some View {
+        modifier(GlassToolbar())
+    }
+
+    /// Applies glass material to a sheet's presentation background.
+    func glassSheet() -> some View {
+        modifier(GlassSheet())
     }
 }
