@@ -123,6 +123,7 @@ final class NomadFiUITests: XCTestCase {
 
 private extension NomadFiUITests {
 
+    @MainActor
     func makeApp(
         hasCompletedOnboarding: Bool,
         extraEnvironment: [String: String] = [:]
@@ -145,6 +146,7 @@ private extension NomadFiUITests {
         return app
     }
 
+    @MainActor
     func tapButton(containing text: String, in app: XCUIApplication) {
         let predicate = NSPredicate(format: "label CONTAINS[c] %@", text)
         let button = app.buttons.matching(predicate).firstMatch
