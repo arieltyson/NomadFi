@@ -192,12 +192,14 @@ Verdict:
 - ✅ Chunk 1 complete: aligned button green to `AccentColor` as the app-wide tint source and tuned dark-mode AccentColor/BrandPrimary to a WCAG-safe contrast target for filled controls.
 - ✅ Chunk 2 complete: upgraded selected-state chips/tinted surfaces for stronger contrast and system Increase Contrast handling (`colorSchemeContrast`) in onboarding selection rows, ledger filter chips, settings home badge, active-card banner, and subscription confidence/savings badges.
 - ✅ Chunk 2 complete: replaced direct white-on-brand chip usage with semantic foreground token (`ColorTokens.onActionTint`).
-- Re-run contrast checks on all common task screens.
+- ✅ Chunk 3 complete: added automated WCAG guardrail tests for `AccentColor`, `BrandPrimary`, and `BrandSecondary` asset pairs in `NomadFiTests`.
+- ✅ Chunk 3 complete: added a reusable manual device matrix checklist in `ACCESSIBILITY_CONTRAST_MATRIX.md` for common-task contrast validation evidence.
+- Re-run contrast checks on all common task screens on physical device and archive evidence.
 
 ### Phase 2 - Differentiate Without Color Alone (1-2 days)
-- Update filter chips to include a checkmark or shape change when selected.
-- Apply the existing differentiate-without-color helper to status indicators.
-- Ensure selected/active states communicate via text/icon/shape, not hue alone.
+- ✅ Chunk 1 complete: filter chips now show a persistent selected checkmark shape (not color-only), plus selected accessibility value.
+- ✅ Chunk 1 complete: applied `AccessibleStatusIndicator` to receipt confidence messaging and added explicit FX markup icon + descriptor in transaction detail.
+- Continue sweeping remaining selected/active/disabled states to guarantee text/icon/shape cues everywhere color changes state.
 
 ### Phase 3 - VoiceOver and Larger Text Hardening (1-2 days)
 - Remove or relax one-line truncation where it blocks comprehension.

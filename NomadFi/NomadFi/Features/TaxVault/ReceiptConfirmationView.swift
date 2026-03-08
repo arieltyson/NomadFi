@@ -187,8 +187,11 @@ private struct ConfidenceBanner: View {
             let result = ReceiptCategorizer.categorize(text: text)
 
             HStack(spacing: SpacingTokens.xSmall) {
-                Image(systemName: confidenceIcon(result.confidence))
-                    .foregroundStyle(confidenceColor(result.confidence))
+                AccessibleStatusIndicator(
+                    color: confidenceColor(result.confidence),
+                    icon: confidenceIcon(result.confidence),
+                    label: confidenceAccessibilityLabel(result.confidence)
+                )
 
                 Text(confidenceMessage(result.confidence))
                     .font(TypographyTokens.caption)
@@ -225,6 +228,14 @@ private struct ConfidenceBanner: View {
         case .high: "High confidence — category and jurisdiction auto-detected."
         case .medium: "Medium confidence — please verify the details below."
         case .low: "Low confidence — manual categorization recommended."
+        }
+    }
+
+    private func confidenceAccessibilityLabel(_ confidence: ReceiptCategorizer.Confidence) -> String {
+        switch confidence {
+        case .high: "High confidence"
+        case .medium: "Medium confidence"
+        case .low: "Low confidence"
         }
     }
 }

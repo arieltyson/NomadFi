@@ -157,7 +157,8 @@ private extension TransactionDetailView {
                     let markupPercent = ((transaction.appliedExchangeRate / transaction.midMarketRate) - 1) * 100
                     DetailRow(
                         label: "Markup",
-                        value: abs(markupPercent).formatted(.number.precision(.fractionLength(2))) + "%"
+                        value: "\(abs(markupPercent).formatted(.number.precision(.fractionLength(2))))% \(markupDescriptor(for: markupPercent))",
+                        systemImage: ColorTokens.fxMarkupIcon(for: markupPercent)
                     )
                     .foregroundStyle(ColorTokens.fxMarkupColor(for: markupPercent))
                 }
@@ -226,6 +227,16 @@ private extension TransactionDetailView {
                         .foregroundStyle(ColorTokens.positive)
                 }
             }
+        }
+    }
+
+    func markupDescriptor(for markupPercent: Double) -> String {
+        if markupPercent <= 0 {
+            return "fair or better"
+        } else if markupPercent < 1 {
+            return "slight markup"
+        } else {
+            return "high markup"
         }
     }
 }

@@ -38,12 +38,11 @@ private struct FilterChip: View {
     let isSelected: Bool
     let action: () -> Void
 
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
         let increasedContrast = colorSchemeContrast == .increased
-        let showSelectedIndicator = isSelected && (differentiateWithoutColor || increasedContrast)
+        let showSelectedIndicator = isSelected
         let foregroundColor: Color = isSelected
             ? (increasedContrast ? .primary : ColorTokens.onActionTint)
             : .primary
@@ -51,7 +50,7 @@ private struct FilterChip: View {
         Button(action: action) {
             HStack(spacing: SpacingTokens.xxSmall) {
                 if showSelectedIndicator {
-                    Image(systemName: "checkmark")
+                    Image(systemName: "checkmark.circle.fill")
                         .imageScale(.small)
                 } else if let systemImage {
                     Image(systemName: systemImage)
@@ -74,7 +73,7 @@ private struct FilterChip: View {
                 Capsule()
                     .strokeBorder(
                         isSelected
-                            ? (increasedContrast ? Color.primary.opacity(0.7) : Color.clear)
+                            ? (increasedContrast ? Color.primary.opacity(0.7) : ColorTokens.actionTint.opacity(0.4))
                             : Color.secondary.opacity(increasedContrast ? 0.6 : 0.25),
                         lineWidth: increasedContrast ? 2 : 1
                     )
@@ -85,6 +84,7 @@ private struct FilterChip: View {
         .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityLabel("\(label) filter")
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
         .accessibilityHint(isSelected ? "Double tap to remove filter" : "Double tap to apply filter")
     }
 }
