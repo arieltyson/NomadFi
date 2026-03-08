@@ -52,6 +52,7 @@ private struct JurisdictionButton: View {
                     .font(.title3)
                     .foregroundStyle(isSelected ? ColorTokens.brandPrimary : Color(.tertiaryLabel))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(SpacingTokens.medium)
             .background(isSelected ? ColorTokens.brandPrimary.opacity(0.08) : Color.clear)
             .clipShape(.rect(cornerRadius: SpacingTokens.small))
@@ -62,6 +63,7 @@ private struct JurisdictionButton: View {
                         lineWidth: isSelected ? 2 : 1
                     )
             )
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)
