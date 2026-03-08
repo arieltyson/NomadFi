@@ -23,6 +23,7 @@ final class DashboardViewModel {
     // MARK: - Dependencies
 
     private let services: ServiceContainer
+    private let widgetSnapshotStore: DashboardWidgetSnapshotStore
     private var cachedRates: [ExchangeRateSnapshot] = []
     private var cachedRatesTimestamp: Date?
 
@@ -32,8 +33,12 @@ final class DashboardViewModel {
 
     private static let logger = Logger(subsystem: "com.nomadfi.app", category: "Dashboard")
 
-    init(services: ServiceContainer = ServiceContainer()) {
+    init(
+        services: ServiceContainer = ServiceContainer(),
+        widgetSnapshotStore: DashboardWidgetSnapshotStore = DashboardWidgetSnapshotStore()
+    ) {
         self.services = services
+        self.widgetSnapshotStore = widgetSnapshotStore
     }
 
     // MARK: - Data Loading
@@ -153,11 +158,114 @@ final class DashboardViewModel {
         return Array(Set(codes)).sorted { $0.rawValue < $1.rawValue }
     }
 
+    /// Publishes the latest dashboard summary used by WidgetKit timelines.
+    func publishWidgetSnapshot(
+        accounts: [Account],
+        jurisdictions: [JurisdictionProfile]
+    ) {
+        guard !accounts.isEmpty else {
+            widgetSnapshotStore.clearSnapshot()
+            return
+        }
+
+        let homeCurrency = homeCurrency(from: jurisdictions)
+        let totalNetWorth = globalNetWorth(accounts: accounts, homeCurrency: homeCurrency)
+        let previousSnapshot = widgetSnapshotStore.loadSnapshot()
+        let trendPercentage = netWorthTrendPercentage(
+            currentTotal: totalNetWorth,
+            previousTotal: previousSnapshot?.totalNetWorth
+        )
+
+        let snapshot = DashboardWidgetSnapshot(
+            generatedAt: Date.now,
+            totalNetWorth: totalNetWorth,
+            homeCurrencyCode: homeCurrency.rawValue,
+            trendDirection: trendDirection(for: trendPercentage),
+            trendPercentage: trendPercentage,
+            topAccounts: topAccountsForWidget(
+                from: accounts,
+                homeCurrency: homeCurrency
+            )
+        )
+
+        let reloadPolicy: DashboardWidgetSnapshotStore.ReloadPolicy = isSignificantWidgetChange(
+            previousSnapshot: previousSnapshot,
+            newSnapshot: snapshot
+        ) ? .significantChange : .scheduledOnly
+
+        widgetSnapshotStore.persist(snapshot, reloadPolicy: reloadPolicy)
+    }
+
     // MARK: - Cache Expiry
 
     /// Whether the cached exchange rates have exceeded the time-to-live threshold.
     private var isCacheExpired: Bool {
         guard let timestamp = cachedRatesTimestamp else { return true }
         return Date.now.timeIntervalSince(timestamp) > 3600 // 1 hour
+    }
+
+    private func topAccountsForWidget(
+        from accounts: [Account],
+        homeCurrency: CurrencyCode
+    ) -> [WidgetAccountSummary] {
+        accounts
+            .sorted {
+                convertedBalance(for: $0, to: homeCurrency) > convertedBalance(for: $1, to: homeCurrency)
+            }
+            .prefix(2)
+            .map { account in
+                WidgetAccountSummary(
+                    id: widgetAccountIdentifier(for: account),
+                    name: account.name,
+                    institutionName: account.institutionName,
+                    balance: account.balance,
+                    currencyCode: account.currencyCodeRawValue
+                )
+            }
+    }
+
+    private func widgetAccountIdentifier(for account: Account) -> String {
+        "\(account.institutionName)|\(account.name)|\(account.accountTypeRawValue)|\(account.currencyCodeRawValue)|\(account.jurisdiction)"
+    }
+
+    private func netWorthTrendPercentage(
+        currentTotal: Double,
+        previousTotal: Double?
+    ) -> Double {
+        guard let previousTotal, previousTotal != 0 else { return 0 }
+
+        return ((currentTotal - previousTotal) / abs(previousTotal)) * 100
+    }
+
+    private func trendDirection(for trendPercentage: Double) -> WidgetTrendDirection {
+        if trendPercentage >= 0.05 {
+            return .up
+        }
+
+        if trendPercentage <= -0.05 {
+            return .down
+        }
+
+        return .flat
+    }
+
+    private func isSignificantWidgetChange(
+        previousSnapshot: DashboardWidgetSnapshot?,
+        newSnapshot: DashboardWidgetSnapshot
+    ) -> Bool {
+        guard let previousSnapshot else { return true }
+
+        let previous = previousSnapshot.totalNetWorth
+        let absoluteChange = abs(newSnapshot.totalNetWorth - previous)
+
+        let relativeChangePercent: Double
+        if previous == 0 {
+            relativeChangePercent = absoluteChange > 0 ? 100 : 0
+        } else {
+            relativeChangePercent = (absoluteChange / abs(previous)) * 100
+        }
+
+        let topAccountIDsChanged = previousSnapshot.topAccounts.map(\.id) != newSnapshot.topAccounts.map(\.id)
+        return relativeChangePercent >= 0.25 || topAccountIDsChanged
     }
 }

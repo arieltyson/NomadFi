@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		10F260BDAE7999890600A36A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF3AAAC62F4C4E8500393A16 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 23E8839F52C526D801E3A5FB;
+			remoteInfo = NomadFiWidgetExtension;
+		};
 		AF3AAADE2F4C4E8600393A16 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AF3AAAC62F4C4E8500393A16 /* Project object */;
@@ -23,7 +34,22 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		F24861AA847D6818D20F751C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NomadFiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF3AAACE2F4C4E8500393A16 /* NomadFi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NomadFi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF3AAADD2F4C4E8600393A16 /* NomadFiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NomadFiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF3AAAE72F4C4E8600393A16 /* NomadFiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NomadFiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,6 +69,11 @@
 		AF3AAAEA2F4C4E8600393A16 /* NomadFiUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = NomadFiUITests;
+			sourceTree = "<group>";
+		};
+		AF77A87873ADF6E679B0D6BE /* NomadFiWidgetExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NomadFiWidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +100,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AF8C4D1502C0825001BF5122 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -76,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				AF3AAAD02F4C4E8500393A16 /* NomadFi */,
+				AF77A87873ADF6E679B0D6BE /* NomadFiWidgetExtension */,
 				AF3AAAE02F4C4E8600393A16 /* NomadFiTests */,
 				AF3AAAEA2F4C4E8600393A16 /* NomadFiUITests */,
 				AF3AAACF2F4C4E8500393A16 /* Products */,
@@ -88,6 +127,7 @@
 				AF3AAACE2F4C4E8500393A16 /* NomadFi.app */,
 				AF3AAADD2F4C4E8600393A16 /* NomadFiTests.xctest */,
 				AF3AAAE72F4C4E8600393A16 /* NomadFiUITests.xctest */,
+				8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +135,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		23E8839F52C526D801E3A5FB /* NomadFiWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 290E64347330DBC5E2E7A4B8 /* Build configuration list for PBXNativeTarget "NomadFiWidgetExtension" */;
+			buildPhases = (
+				D0B3D743394A15B390081CDE /* Sources */,
+				AF8C4D1502C0825001BF5122 /* Frameworks */,
+				BA22F91A24478B14D32BCAC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AF77A87873ADF6E679B0D6BE /* NomadFiWidgetExtension */,
+			);
+			name = NomadFiWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = NomadFiWidgetExtension;
+			productReference = 8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		AF3AAACD2F4C4E8500393A16 /* NomadFi */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AF3AAAF12F4C4E8600393A16 /* Build configuration list for PBXNativeTarget "NomadFi" */;
@@ -102,10 +164,12 @@
 				AF3AAACA2F4C4E8500393A16 /* Sources */,
 				AF3AAACB2F4C4E8500393A16 /* Frameworks */,
 				AF3AAACC2F4C4E8500393A16 /* Resources */,
+				F24861AA847D6818D20F751C /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				037A03BA5B811D6567AF0A84 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AF3AAAD02F4C4E8500393A16 /* NomadFi */,
@@ -173,6 +237,9 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					23E8839F52C526D801E3A5FB = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					AF3AAACD2F4C4E8500393A16 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -203,6 +270,7 @@
 				AF3AAACD2F4C4E8500393A16 /* NomadFi */,
 				AF3AAADC2F4C4E8600393A16 /* NomadFiTests */,
 				AF3AAAE62F4C4E8600393A16 /* NomadFiUITests */,
+				23E8839F52C526D801E3A5FB /* NomadFiWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +291,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AF3AAAE52F4C4E8600393A16 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA22F91A24478B14D32BCAC0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,9 +328,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D0B3D743394A15B390081CDE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		037A03BA5B811D6567AF0A84 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 23E8839F52C526D801E3A5FB /* NomadFiWidgetExtension */;
+			targetProxy = 10F260BDAE7999890600A36A /* PBXContainerItemProxy */;
+		};
 		AF3AAADF2F4C4E8600393A16 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = AF3AAACD2F4C4E8500393A16 /* NomadFi */;
@@ -269,6 +356,68 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1B2A9797B6F33148FF45644F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = NomadFiWidgetExtension/NomadFiWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2MPMKAF986;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NomadFiWidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arieljtyson.NomadFi.WidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3FAC2F8DA0C7DE56876ED373 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = NomadFiWidgetExtension/NomadFiWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2MPMKAF986;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NomadFiWidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arieljtyson.NomadFi.WidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		AF3AAAEF2F4C4E8600393A16 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -395,6 +544,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = NomadFi;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = NomadFi/NomadFi.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2MPMKAF986;
@@ -428,6 +578,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = NomadFi;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = NomadFi/NomadFi.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2MPMKAF986;
@@ -547,6 +698,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		290E64347330DBC5E2E7A4B8 /* Build configuration list for PBXNativeTarget "NomadFiWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FAC2F8DA0C7DE56876ED373 /* Debug */,
+				1B2A9797B6F33148FF45644F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AF3AAAC92F4C4E8500393A16 /* Build configuration list for PBXProject "NomadFi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

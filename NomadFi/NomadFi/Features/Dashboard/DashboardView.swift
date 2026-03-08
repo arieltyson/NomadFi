@@ -47,6 +47,12 @@ struct DashboardView: View {
             AddMoreAccountsTip.accountCount = accounts.count
             await refreshRates()
         }
+        .task(id: widgetSnapshotSignature) {
+            viewModel.publishWidgetSnapshot(
+                accounts: accounts,
+                jurisdictions: jurisdictions
+            )
+        }
         .alert("Something Went Wrong", isPresented: $showError) {
             Button("Retry") {
                 Task { await refreshRates() }
@@ -98,6 +104,31 @@ private extension DashboardView {
     /// Whether this is the initial load (no data yet from the network).
     var isFirstLoad: Bool {
         viewModel.isLoading && viewModel.exchangeRates.isEmpty
+    }
+
+    /// Stable change token for widget snapshot updates.
+    var widgetSnapshotSignature: Int {
+        var hasher = Hasher()
+        hasher.combine(homeCurrency.rawValue)
+        hasher.combine(jurisdictions.count)
+        hasher.combine(accounts.count)
+        hasher.combine(viewModel.lastUpdated?.timeIntervalSinceReferenceDate ?? 0)
+
+        for account in accounts.sorted(by: {
+            if $0.institutionName == $1.institutionName {
+                return $0.name < $1.name
+            }
+
+            return $0.institutionName < $1.institutionName
+        }) {
+            hasher.combine(account.institutionName)
+            hasher.combine(account.name)
+            hasher.combine(account.balance)
+            hasher.combine(account.currencyCodeRawValue)
+            hasher.combine(account.lastUpdatedAt.timeIntervalSinceReferenceDate)
+        }
+
+        return hasher.finalize()
     }
 
     var dashboardContent: some View {
@@ -191,6 +222,11 @@ private extension DashboardView {
         if !hasContentAppeared {
             hasContentAppeared = true
         }
+
+        viewModel.publishWidgetSnapshot(
+            accounts: accounts,
+            jurisdictions: jurisdictions
+        )
     }
 }
 
