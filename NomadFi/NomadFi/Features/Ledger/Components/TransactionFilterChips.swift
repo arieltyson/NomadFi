@@ -38,10 +38,22 @@ private struct FilterChip: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
     var body: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+        let showSelectedIndicator = isSelected && (differentiateWithoutColor || increasedContrast)
+        let foregroundColor: Color = isSelected
+            ? (increasedContrast ? .primary : ColorTokens.onActionTint)
+            : .primary
+
         Button(action: action) {
             HStack(spacing: SpacingTokens.xxSmall) {
-                if let systemImage {
+                if showSelectedIndicator {
+                    Image(systemName: "checkmark")
+                        .imageScale(.small)
+                } else if let systemImage {
                     Image(systemName: systemImage)
                         .imageScale(.small)
                 }
@@ -51,9 +63,23 @@ private struct FilterChip: View {
             }
             .padding(.horizontal, SpacingTokens.xSmall)
             .padding(.vertical, SpacingTokens.xxSmall + 2)
-            .foregroundStyle(isSelected ? .white : .primary)
-            .background(isSelected ? ColorTokens.brandPrimary : ColorTokens.surfaceSecondary)
+            .foregroundStyle(foregroundColor)
+            .background(
+                isSelected
+                    ? ColorTokens.actionTint
+                    : ColorTokens.surfaceSecondary
+            )
             .clipShape(.capsule)
+            .overlay {
+                Capsule()
+                    .strokeBorder(
+                        isSelected
+                            ? (increasedContrast ? Color.primary.opacity(0.7) : Color.clear)
+                            : Color.secondary.opacity(increasedContrast ? 0.6 : 0.25),
+                        lineWidth: increasedContrast ? 2 : 1
+                    )
+            }
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)

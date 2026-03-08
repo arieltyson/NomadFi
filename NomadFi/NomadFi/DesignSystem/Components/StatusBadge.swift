@@ -21,20 +21,34 @@ struct StatusBadge: View {
     var color: Color = ColorTokens.neutral
     var systemImage: String?
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
     var body: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         HStack(spacing: SpacingTokens.xxSmall) {
             if let systemImage {
                 Image(systemName: systemImage)
+                    .imageScale(.small)
+            } else if differentiateWithoutColor {
+                Image(systemName: "circle.fill")
                     .imageScale(.small)
             }
 
             Text(label)
                 .font(TypographyTokens.caption)
         }
-        .foregroundStyle(color)
+        .foregroundStyle(increasedContrast ? .primary : color)
         .padding(.horizontal, SpacingTokens.xSmall)
         .padding(.vertical, SpacingTokens.xxSmall)
-        .background(color.opacity(0.12))
+        .background(color.opacity(increasedContrast ? 0.24 : 0.12))
+        .overlay {
+            if increasedContrast {
+                Capsule()
+                    .strokeBorder(color, lineWidth: 1)
+            }
+        }
         .clipShape(.capsule)
         .accessibilityElement(children: .combine)
     }

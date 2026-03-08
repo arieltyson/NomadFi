@@ -28,6 +28,9 @@ enum ColorTokens {
     /// tab selection, and interactive controls share one canonical action color.
     static let actionTint = Color.accentColor
 
+    /// Foreground color on top of action-tint filled controls.
+    static let onActionTint = Color.white
+
     // MARK: - Semantic
 
     /// Positive financial indicator - gains, savings, under-budget.
@@ -52,6 +55,35 @@ enum ColorTokens {
 
     /// Tertiary background for nested groupings.
     static let surfaceTertiary = Color(.tertiarySystemBackground)
+
+    // MARK: - Selection States
+
+    /// Selection background for list-like selectable rows.
+    static func selectedRowBackground(for contrast: ColorSchemeContrast) -> Color {
+        switch contrast {
+        case .increased:
+            return actionTint.opacity(0.16)
+        default:
+            return actionTint.opacity(0.08)
+        }
+    }
+
+    /// Border color for selectable row outlines.
+    static func selectableRowBorder(
+        isSelected: Bool,
+        contrast: ColorSchemeContrast
+    ) -> Color {
+        if isSelected {
+            return actionTint
+        }
+
+        switch contrast {
+        case .increased:
+            return Color.secondary.opacity(0.6)
+        default:
+            return Color.secondary.opacity(0.2)
+        }
+    }
 
     // MARK: - FX Markup Indicators
 

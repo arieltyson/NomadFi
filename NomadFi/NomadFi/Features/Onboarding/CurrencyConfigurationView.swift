@@ -32,7 +32,11 @@ private struct CurrencyOption: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
     var body: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         Button(action: action) {
             HStack(spacing: SpacingTokens.small) {
                 Text(currency.symbol)
@@ -52,17 +56,24 @@ private struct CurrencyOption: View {
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? ColorTokens.brandPrimary : Color(.tertiaryLabel))
+                    .foregroundStyle(isSelected ? ColorTokens.actionTint : Color(.tertiaryLabel))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(SpacingTokens.medium)
-            .background(isSelected ? ColorTokens.brandPrimary.opacity(0.08) : Color.clear)
+            .background(
+                isSelected
+                    ? ColorTokens.selectedRowBackground(for: colorSchemeContrast)
+                    : Color.clear
+            )
             .clipShape(.rect(cornerRadius: SpacingTokens.small))
             .overlay(
                 RoundedRectangle(cornerRadius: SpacingTokens.small)
                     .strokeBorder(
-                        isSelected ? ColorTokens.brandPrimary : Color.secondary.opacity(0.2),
-                        lineWidth: isSelected ? 2 : 1
+                        ColorTokens.selectableRowBorder(
+                            isSelected: isSelected,
+                            contrast: colorSchemeContrast
+                        ),
+                        lineWidth: isSelected ? (increasedContrast ? 3 : 2) : (increasedContrast ? 2 : 1)
                     )
             )
             .contentShape(.rect)

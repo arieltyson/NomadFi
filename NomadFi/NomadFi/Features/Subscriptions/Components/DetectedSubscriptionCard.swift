@@ -16,6 +16,7 @@ struct DetectedSubscriptionCard: View {
     let onConfirm: () -> Void
     let onDismiss: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
         GlassCard {
@@ -55,13 +56,21 @@ private extension DetectedSubscriptionCard {
     }
 
     var confidenceBadge: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         Label(confidenceLabel, systemImage: confidenceIcon)
             .font(.caption2)
             .bold()
             .padding(.horizontal, SpacingTokens.xSmall)
             .padding(.vertical, SpacingTokens.xxSmall)
-            .background(confidenceColor.opacity(0.15))
-            .foregroundStyle(confidenceColor)
+            .background(confidenceColor.opacity(increasedContrast ? 0.24 : 0.15))
+            .foregroundStyle(increasedContrast ? .primary : confidenceColor)
+            .overlay {
+                if increasedContrast {
+                    Capsule()
+                        .strokeBorder(confidenceColor, lineWidth: 1)
+                }
+            }
             .clipShape(.capsule)
     }
 

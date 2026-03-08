@@ -278,7 +278,11 @@ private struct JurisdictionSettingsRow: View {
 
     let jurisdiction: JurisdictionProfile
 
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
     var body: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         Label {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 HStack(spacing: SpacingTokens.xSmall) {
@@ -291,8 +295,19 @@ private struct JurisdictionSettingsRow: View {
                             .bold()
                             .padding(.horizontal, SpacingTokens.xxSmall)
                             .padding(.vertical, 2)
-                            .background(ColorTokens.brandPrimary.opacity(0.15))
-                            .foregroundStyle(ColorTokens.brandPrimary)
+                            .background(
+                                ColorTokens.actionTint.opacity(increasedContrast ? 0.28 : 0.15)
+                            )
+                            .foregroundStyle(ColorTokens.actionTint)
+                            .overlay {
+                                if increasedContrast {
+                                    Capsule()
+                                        .strokeBorder(
+                                            Color.primary.opacity(0.6),
+                                            lineWidth: 1
+                                        )
+                                }
+                            }
                             .clipShape(.capsule)
                     }
                 }

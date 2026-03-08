@@ -190,9 +190,8 @@ Verdict:
   - Action fill color (filled buttons/chips).
   - On-action foreground color.
 - ✅ Chunk 1 complete: aligned button green to `AccentColor` as the app-wide tint source and tuned dark-mode AccentColor/BrandPrimary to a WCAG-safe contrast target for filled controls.
-- Validate every selected-state chip and tinted component against the updated accent pair.
-- Replace explicit white-on-brand chip text with semantic foreground token.
-- Add support for `accessibilityIncreaseContrast` with stronger variants.
+- ✅ Chunk 2 complete: upgraded selected-state chips/tinted surfaces for stronger contrast and system Increase Contrast handling (`colorSchemeContrast`) in onboarding selection rows, ledger filter chips, settings home badge, active-card banner, and subscription confidence/savings badges.
+- ✅ Chunk 2 complete: replaced direct white-on-brand chip usage with semantic foreground token (`ColorTokens.onActionTint`).
 - Re-run contrast checks on all common task screens.
 
 ### Phase 2 - Differentiate Without Color Alone (1-2 days)

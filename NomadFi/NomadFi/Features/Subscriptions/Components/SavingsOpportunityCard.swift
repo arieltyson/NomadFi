@@ -14,6 +14,7 @@ struct SavingsOpportunityCard: View {
 
     let result: SubscriptionComparisonEngine.ComparisonResult
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
         GlassCard {
@@ -35,6 +36,8 @@ struct SavingsOpportunityCard: View {
 private extension SavingsOpportunityCard {
 
     var header: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         HStack {
             Image(systemName: "arrow.2.squarepath")
                 .foregroundStyle(ColorTokens.positive)
@@ -50,8 +53,14 @@ private extension SavingsOpportunityCard {
                 .bold()
                 .padding(.horizontal, SpacingTokens.xSmall)
                 .padding(.vertical, SpacingTokens.xxSmall)
-                .background(ColorTokens.positive.opacity(0.15))
-                .foregroundStyle(ColorTokens.positive)
+                .background(ColorTokens.positive.opacity(increasedContrast ? 0.24 : 0.15))
+                .foregroundStyle(increasedContrast ? .primary : ColorTokens.positive)
+                .overlay {
+                    if increasedContrast {
+                        Capsule()
+                            .strokeBorder(ColorTokens.positive, lineWidth: 1)
+                    }
+                }
                 .clipShape(.capsule)
         }
     }
@@ -111,18 +120,26 @@ private extension SavingsOpportunityCard {
     }
 
     var savingsBanner: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
         HStack(spacing: SpacingTokens.xSmall) {
             Image(systemName: "arrow.down.circle.fill")
                 .foregroundStyle(ColorTokens.positive)
 
             Text("Save \(result.annualSavingsInHomeCurrency, format: .currency(code: result.homeCurrency.rawValue))/year")
                 .font(TypographyTokens.caption)
-                .foregroundStyle(ColorTokens.positive)
+                .foregroundStyle(increasedContrast ? .primary : ColorTokens.positive)
                 .bold()
         }
         .padding(SpacingTokens.xSmall)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(ColorTokens.positive.opacity(0.08))
+        .background(ColorTokens.positive.opacity(increasedContrast ? 0.18 : 0.08))
+        .overlay {
+            if increasedContrast {
+                RoundedRectangle(cornerRadius: SpacingTokens.xSmall)
+                    .strokeBorder(ColorTokens.positive, lineWidth: 1)
+            }
+        }
         .clipShape(.rect(cornerRadius: SpacingTokens.xSmall))
     }
 }
