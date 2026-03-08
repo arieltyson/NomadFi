@@ -24,6 +24,7 @@ final class LedgerViewModel {
     var recommendedAccountName: String?
     var currentCountryCode: String?
     var isLoadingLocation = false
+    var locationAuthorizationStatus: CLAuthorizationStatus = .notDetermined
 
     // MARK: - Error State
 
@@ -43,6 +44,7 @@ final class LedgerViewModel {
 
     init(services: ServiceContainer = ServiceContainer()) {
         self.services = services
+        refreshLocationAuthorizationStatus()
     }
 
     // MARK: - Filtering
@@ -81,15 +83,22 @@ final class LedgerViewModel {
 
     // MARK: - Active Card Recommendation
 
-    /// Requests location authorization if not yet determined.
+    /// Requests location authorization only when explicitly triggered by the user.
     ///
-    /// Called when the Ledger tab appears. Location is used to recommend
-    /// the best payment card based on the user's country.
+    /// This avoids surprise permission prompts during normal tab navigation.
     func requestLocationAuthorizationIfNeeded() {
-        if locationManager.authorizationStatus == .notDetermined {
+        refreshLocationAuthorizationStatus()
+
+        if locationAuthorizationStatus == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
             Self.logger.info("Requested location authorization for Active Card")
+            refreshLocationAuthorizationStatus()
         }
+    }
+
+    /// Refreshes the current Core Location authorization status.
+    func refreshLocationAuthorizationStatus() {
+        locationAuthorizationStatus = locationManager.authorizationStatus
     }
 
     /// Determines the best account to use at the user's current location.
@@ -99,6 +108,16 @@ final class LedgerViewModel {
     func updateActiveCardRecommendation(accounts: [Account]) async {
         isLoadingLocation = true
         defer { isLoadingLocation = false }
+
+        refreshLocationAuthorizationStatus()
+
+        guard locationAuthorizationStatus == .authorizedWhenInUse
+                || locationAuthorizationStatus == .authorizedAlways
+        else {
+            currentCountryCode = nil
+            recommendedAccountName = nil
+            return
+        }
 
         do {
             currentCountryCode = try await services.locationService.currentCountryCode()

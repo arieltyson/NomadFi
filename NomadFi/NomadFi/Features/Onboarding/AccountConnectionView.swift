@@ -1,3 +1,4 @@
+import CoreLocation
 import SwiftUI
 
 /// The final onboarding step where users add their financial accounts.
@@ -11,6 +12,7 @@ struct AccountConnectionView: View {
     let onComplete: () -> Void
 
     @State private var isShowingForm = false
+    @State private var isShowingLocationPermissionPriming = false
 
     var body: some View {
         VStack(spacing: SpacingTokens.large) {
@@ -25,6 +27,18 @@ struct AccountConnectionView: View {
         .padding(SpacingTokens.large)
         .sheet(isPresented: $isShowingForm) {
             AddAccountSheet(viewModel: viewModel, isPresented: $isShowingForm)
+        }
+        .fullScreenCover(isPresented: $isShowingLocationPermissionPriming) {
+            LocationPermissionPrimingView(
+                onFinishSetup: {
+                    isShowingLocationPermissionPriming = false
+                    onComplete()
+                },
+                onSkipLocation: {
+                    isShowingLocationPermissionPriming = false
+                    onComplete()
+                }
+            )
         }
     }
 }
@@ -222,7 +236,7 @@ private extension AccountConnectionView {
             .controlSize(.large)
             .accessibilityHint("Opens a form to add a bank account or card.")
 
-            Button("Finish Setup", action: onComplete)
+            Button("Finish Setup", action: handleFinishSetup)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .accessibilityHint(
@@ -230,6 +244,23 @@ private extension AccountConnectionView {
                         ? "You can add accounts later from the dashboard"
                         : "Saves your accounts and opens the dashboard"
                 )
+        }
+    }
+
+    var shouldBypassLocationPriming: Bool {
+        ProcessInfo.processInfo.environment["UI_TEST_MODE"] == "1"
+    }
+
+    var shouldPresentLocationPriming: Bool {
+        guard !shouldBypassLocationPriming else { return false }
+        return CLLocationManager().authorizationStatus == .notDetermined
+    }
+
+    func handleFinishSetup() {
+        if shouldPresentLocationPriming {
+            isShowingLocationPermissionPriming = true
+        } else {
+            onComplete()
         }
     }
 }

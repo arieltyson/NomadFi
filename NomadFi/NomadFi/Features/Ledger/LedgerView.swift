@@ -44,7 +44,7 @@ struct LedgerView: View {
                 .glassSheet()
         }
         .task {
-            viewModel.requestLocationAuthorizationIfNeeded()
+            viewModel.refreshLocationAuthorizationStatus()
             viewModel.updateFXIntelligence(transactions: transactions)
             await viewModel.updateActiveCardRecommendation(accounts: accounts)
         }
