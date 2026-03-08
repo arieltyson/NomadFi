@@ -178,7 +178,6 @@
 
     },
     "Adds this account to your onboarding list." : {
-
     },
     "All data stays on-device" : {
 
@@ -202,7 +201,6 @@
 
     },
     "Authenticates with %@ or device passcode." : {
-
     },
     "Back" : {
 
@@ -266,20 +264,20 @@
 
     },
     "Confirms this detected subscription and starts tracking it." : {
-
     },
     "Continue" : {
 
     },
     "Continues to account setup." : {
+
     },
     "Continues to home currency setup." : {
-
     },
     "Converted Amount" : {
 
     },
     "Creates and exports a report for tax year %@." : {
+
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -324,17 +322,16 @@
 
     },
     "Dismisses account entry without adding an account." : {
-
     },
     "Dismisses subscription entry without saving." : {
-
     },
     "Dismisses this detected subscription suggestion." : {
-
     },
     "Dismisses this sheet without saving the scanned receipt." : {
+
     },
     "Dismisses transaction entry without saving." : {
+
     },
     "Document date" : {
 
@@ -370,9 +367,9 @@
 
     },
     "Enter merchant and amount to enable saving." : {
-
     },
     "Enter service name and amount to enable saving." : {
+
     },
     "Every screen narrates as a coherent financial story." : {
 
@@ -488,10 +485,8 @@
 
     },
     "Needs review" : {
-
     },
     "Needs Review" : {
-
     },
     "Next renewal" : {
 
@@ -557,7 +552,6 @@
 
     },
     "Not selected" : {
-
     },
     "Notes" : {
 
@@ -578,9 +572,9 @@
 
     },
     "Opens a form to add a bank account or card." : {
+
     },
     "Opens your photo library to select a receipt image for scanning." : {
-
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
@@ -634,7 +628,6 @@
 
     },
     "Returns to the previous onboarding step." : {
-
     },
     "Review the fields below and adjust as needed." : {
 
@@ -652,11 +645,12 @@
 
     },
     "Saves this receipt to Tax Vault with the current details." : {
-
     },
     "Saves this subscription to your list." : {
+
     },
     "Saves this transaction to your ledger." : {
+
     },
     "Saves your accounts and opens the dashboard" : {
 
@@ -704,12 +698,11 @@
 
     },
     "Select at least two jurisdictions to continue." : {
-
     },
     "Selected" : {
+
     },
     "Selects a receipt image to scan and add to Tax Vault." : {
-
     },
     "Service" : {
 
@@ -724,7 +717,6 @@
 
     },
     "Shares the most recently exported tax report." : {
-
     },
     "Something Went Wrong" : {
 
@@ -815,7 +807,6 @@
       }
     },
     "Verification Status" : {
-
     },
     "Verified" : {
 

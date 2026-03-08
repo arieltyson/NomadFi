@@ -210,14 +210,10 @@ Verdict:
 - Validate onboarding and form sheets at largest text sizes on physical device and capture evidence for the matrix.
 
 ### Phase 4 - Reduced Motion and Regression Tests (1 day)
-- Gate remaining non-essential animations under Reduce Motion.
-- Add UI tests for:
-  - onboarding completion,
-  - add transaction,
-  - receipt confirmation,
-  - add subscription,
-  - settings flows,
-  with accessibility-focused launch configurations.
+- ✅ Chunk 1 complete: gated remaining app-level scene transition animation under Reduce Motion in `NomadFiApp`.
+- ✅ Chunk 1 complete: added deterministic UI-test launch configuration hooks (disable splash/app lock, force reduced motion, onboarding override, state reset).
+- ✅ Chunk 2 complete: added accessibility-focused UI regression tests for onboarding completion, add transaction, receipt confirmation, add subscription, and settings privacy policy flows.
+- Run the UI test suite on a healthy local Xcode runtime and archive evidence/screenshots for each common task.
 
 ### Phase 5 - App Store Connect Submission Prep (0.5-1 day)
 - Fill Accessibility Nutrition Labels only for verified features.

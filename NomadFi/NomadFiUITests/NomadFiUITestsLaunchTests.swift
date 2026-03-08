@@ -13,6 +13,14 @@ final class NomadFiUITestsLaunchTests: XCTestCase {
     @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
+        app.launchEnvironment = [
+            "UI_TEST_MODE": "1",
+            "UI_TEST_RESET_STATE": "1",
+            "UI_TEST_DISABLE_SPLASH": "1",
+            "UI_TEST_DISABLE_APP_LOCK": "1",
+            "UI_TEST_FORCE_REDUCE_MOTION": "1",
+            "UI_TEST_HAS_COMPLETED_ONBOARDING": "1",
+        ]
         app.launch()
 
         // Insert steps here to perform after app launch but before taking a screenshot,

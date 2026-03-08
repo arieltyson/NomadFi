@@ -6,12 +6,31 @@ import TipKit
 struct NomadFiApp: App {
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @State private var isShowingSplash = true
+    @State private var isShowingSplash: Bool
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let uiTestConfig: UITestLaunchConfiguration
 
     init() {
+        let config = UITestLaunchConfiguration()
+        uiTestConfig = config
+
+        if config.resetAppState, let bundleIdentifier = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleIdentifier)
+        }
+
+        if let hasCompletedOnboarding = config.hasCompletedOnboarding {
+            UserDefaults.standard.set(
+                hasCompletedOnboarding,
+                forKey: "hasCompletedOnboarding"
+            )
+        }
+
+        _isShowingSplash = State(initialValue: !config.disableSplash)
+
         try? Tips.configure([
             .displayFrequency(.weekly)
         ])
@@ -40,7 +59,10 @@ struct NomadFiApp: App {
                 }
 
                 // Biometric lock overlay — blocks content until authenticated
-                if appLockManager.isLocked && hasCompletedOnboarding {
+                if appLockManager.isLocked
+                    && hasCompletedOnboarding
+                    && !uiTestConfig.disableAppLock
+                {
                     AppLockView(appLockManager: appLockManager)
                         .zIndex(3)
                 }
@@ -48,13 +70,22 @@ struct NomadFiApp: App {
             .onChange(of: scenePhase) { _, newPhase in
                 switch newPhase {
                 case .active:
-                    withAnimation(AnimationTokens.snappy) {
+                    if reduceMotion || uiTestConfig.forceReduceMotion {
                         isBlurred = false
+                    } else {
+                        withAnimation(AnimationTokens.snappy) {
+                            isBlurred = false
+                        }
                     }
-                    appLockManager.willEnterForeground()
+
+                    if !uiTestConfig.disableAppLock {
+                        appLockManager.willEnterForeground()
+                    }
                 case .inactive, .background:
                     isBlurred = true
-                    appLockManager.didEnterBackground()
+                    if !uiTestConfig.disableAppLock {
+                        appLockManager.didEnterBackground()
+                    }
                 @unknown default:
                     break
                 }
@@ -71,5 +102,69 @@ struct NomadFiApp: App {
             Subscription.self,
             Budget.self,
         ])
+    }
+}
+
+private struct UITestLaunchConfiguration {
+
+    let resetAppState: Bool
+    let disableSplash: Bool
+    let disableAppLock: Bool
+    let forceReduceMotion: Bool
+    let hasCompletedOnboarding: Bool?
+
+    init(environment: [String: String] = ProcessInfo.processInfo.environment) {
+        let isUITesting = Self.boolValue(
+            for: "UI_TEST_MODE",
+            in: environment
+        )
+
+        if isUITesting {
+            resetAppState = Self.boolValue(
+                for: "UI_TEST_RESET_STATE",
+                in: environment
+            )
+            disableSplash = Self.boolValue(
+                for: "UI_TEST_DISABLE_SPLASH",
+                in: environment
+            )
+            disableAppLock = Self.boolValue(
+                for: "UI_TEST_DISABLE_APP_LOCK",
+                in: environment
+            )
+            forceReduceMotion = Self.boolValue(
+                for: "UI_TEST_FORCE_REDUCE_MOTION",
+                in: environment
+            )
+
+            if let value = environment["UI_TEST_HAS_COMPLETED_ONBOARDING"] {
+                hasCompletedOnboarding = Self.boolValue(from: value)
+            } else {
+                hasCompletedOnboarding = nil
+            }
+        } else {
+            resetAppState = false
+            disableSplash = false
+            disableAppLock = false
+            forceReduceMotion = false
+            hasCompletedOnboarding = nil
+        }
+    }
+
+    private static func boolValue(
+        for key: String,
+        in environment: [String: String]
+    ) -> Bool {
+        guard let value = environment[key] else { return false }
+        return boolValue(from: value)
+    }
+
+    private static func boolValue(from value: String) -> Bool {
+        switch value.lowercased() {
+        case "1", "true", "yes", "y":
+            return true
+        default:
+            return false
+        }
     }
 }

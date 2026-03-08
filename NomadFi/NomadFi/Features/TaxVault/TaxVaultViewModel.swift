@@ -47,6 +47,10 @@ final class TaxVaultViewModel {
 
     init(services: ServiceContainer = ServiceContainer()) {
         self.services = services
+
+        if ProcessInfo.processInfo.environment["UI_TEST_SHOW_RECEIPT_CONFIRMATION"] == "1" {
+            populateUITestDraft()
+        }
     }
 
     // MARK: - Tax Year & Filtering
@@ -264,5 +268,26 @@ final class TaxVaultViewModel {
         draftTaxCategory = .other
         pendingImagePath = ""
         showingConfirmation = false
+    }
+
+    private func populateUITestDraft() {
+        scanResult = ReceiptScanResult(
+            merchantName: "UITest Market",
+            totalAmount: 23.45,
+            currencyCode: .usd,
+            date: .now,
+            rawText: "UITEST MARKET\nTOTAL 23.45",
+            lineItems: [
+                ReceiptLineItem(description: "UITest Item", amount: 23.45)
+            ]
+        )
+
+        draftMerchantName = "UITest Market"
+        draftAmount = 23.45
+        draftCurrencyCode = .usd
+        draftDocumentDate = .now
+        draftJurisdiction = "US"
+        draftTaxCategory = .other
+        showingConfirmation = true
     }
 }
