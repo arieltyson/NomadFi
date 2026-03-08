@@ -35,9 +35,9 @@ struct DetectedSubscriptionCard: View {
 
 // MARK: - Subviews
 
-private extension DetectedSubscriptionCard {
+extension DetectedSubscriptionCard {
 
-    var detectionHeader: some View {
+    fileprivate var detectionHeader: some View {
         HStack {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text(detection.merchantName)
@@ -56,15 +56,17 @@ private extension DetectedSubscriptionCard {
         }
     }
 
-    var confidenceBadge: some View {
+    fileprivate var confidenceBadge: some View {
         let increasedContrast = colorSchemeContrast == .increased
 
-        Label(confidenceLabel, systemImage: confidenceIcon)
+        return Label(confidenceLabel, systemImage: confidenceIcon)
             .font(.caption2)
             .bold()
             .padding(.horizontal, SpacingTokens.xSmall)
             .padding(.vertical, SpacingTokens.xxSmall)
-            .background(confidenceColor.opacity(increasedContrast ? 0.24 : 0.15))
+            .background(
+                confidenceColor.opacity(increasedContrast ? 0.24 : 0.15)
+            )
             .foregroundStyle(increasedContrast ? .primary : confidenceColor)
             .overlay {
                 if increasedContrast {
@@ -75,19 +77,26 @@ private extension DetectedSubscriptionCard {
             .clipShape(.capsule)
     }
 
-    var detectionDetails: some View {
+    fileprivate var detectionDetails: some View {
         Group {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     LabeledContent("Amount") {
-                        Text(detection.amount, format: .currency(code: detection.currencyCode.rawValue))
-                            .bold()
+                        Text(
+                            detection.amount,
+                            format: .currency(
+                                code: detection.currencyCode.rawValue
+                            )
+                        )
+                        .bold()
                     }
                     .font(TypographyTokens.caption)
 
                     if !detection.jurisdiction.isEmpty {
                         LabeledContent("Region") {
-                            Text("\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)")
+                            Text(
+                                "\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)"
+                            )
                         }
                         .font(TypographyTokens.caption)
                     }
@@ -100,14 +109,21 @@ private extension DetectedSubscriptionCard {
             } else {
                 HStack(spacing: SpacingTokens.medium) {
                     LabeledContent("Amount") {
-                        Text(detection.amount, format: .currency(code: detection.currencyCode.rawValue))
-                            .bold()
+                        Text(
+                            detection.amount,
+                            format: .currency(
+                                code: detection.currencyCode.rawValue
+                            )
+                        )
+                        .bold()
                     }
                     .font(TypographyTokens.caption)
 
                     if !detection.jurisdiction.isEmpty {
                         LabeledContent("Region") {
-                            Text("\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)")
+                            Text(
+                                "\(String.flagEmoji(for: detection.jurisdiction)) \(detection.jurisdiction)"
+                            )
                         }
                         .font(TypographyTokens.caption)
                     }
@@ -122,30 +138,34 @@ private extension DetectedSubscriptionCard {
         .foregroundStyle(.secondary)
     }
 
-    var actionButtons: some View {
+    fileprivate var actionButtons: some View {
         HStack(spacing: SpacingTokens.small) {
             Button("Track", systemImage: "checkmark.circle") {
                 onConfirm()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
-            .accessibilityHint("Confirms this detected subscription and starts tracking it.")
+            .accessibilityHint(
+                "Confirms this detected subscription and starts tracking it."
+            )
 
             Button("Dismiss", systemImage: "xmark.circle") {
                 onDismiss()
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
-            .accessibilityHint("Dismisses this detected subscription suggestion.")
+            .accessibilityHint(
+                "Dismisses this detected subscription suggestion."
+            )
         }
     }
 }
 
 // MARK: - Helpers
 
-private extension DetectedSubscriptionCard {
+extension DetectedSubscriptionCard {
 
-    var confidenceLabel: String {
+    fileprivate var confidenceLabel: String {
         switch detection.confidence {
         case .high: "High"
         case .medium: "Medium"
@@ -153,7 +173,7 @@ private extension DetectedSubscriptionCard {
         }
     }
 
-    var confidenceColor: Color {
+    fileprivate var confidenceColor: Color {
         switch detection.confidence {
         case .high: ColorTokens.positive
         case .medium: ColorTokens.warning
@@ -161,7 +181,7 @@ private extension DetectedSubscriptionCard {
         }
     }
 
-    var confidenceIcon: String {
+    fileprivate var confidenceIcon: String {
         switch detection.confidence {
         case .high: "checkmark.seal.fill"
         case .medium: "questionmark.circle.fill"
@@ -169,9 +189,12 @@ private extension DetectedSubscriptionCard {
         }
     }
 
-    var accessibilityDescription: String {
-        let amount = detection.amount.formatted(.currency(code: detection.currencyCode.rawValue))
-        return "Detected subscription: \(detection.merchantName), \(amount) \(detection.frequency.displayName), \(confidenceLabel) confidence. Double tap to track."
+    fileprivate var accessibilityDescription: String {
+        let amount = detection.amount.formatted(
+            .currency(code: detection.currencyCode.rawValue)
+        )
+        return
+            "Detected subscription: \(detection.merchantName), \(amount) \(detection.frequency.displayName), \(confidenceLabel) confidence. Double tap to track."
     }
 
 }
@@ -185,7 +208,11 @@ private extension DetectedSubscriptionCard {
                 currencyCode: .usd,
                 frequency: .monthly,
                 jurisdiction: "US",
-                nextEstimatedDate: Calendar.current.date(byAdding: .day, value: 28, to: .now) ?? .now,
+                nextEstimatedDate: Calendar.current.date(
+                    byAdding: .day,
+                    value: 28,
+                    to: .now
+                ) ?? .now,
                 matchedTransactionCount: 4,
                 confidence: .high
             ),
@@ -200,7 +227,11 @@ private extension DetectedSubscriptionCard {
                 currencyCode: .cad,
                 frequency: .monthly,
                 jurisdiction: "CA",
-                nextEstimatedDate: Calendar.current.date(byAdding: .day, value: 14, to: .now) ?? .now,
+                nextEstimatedDate: Calendar.current.date(
+                    byAdding: .day,
+                    value: 14,
+                    to: .now
+                ) ?? .now,
                 matchedTransactionCount: 2,
                 confidence: .medium
             ),
