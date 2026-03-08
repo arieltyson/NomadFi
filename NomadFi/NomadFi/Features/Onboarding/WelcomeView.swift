@@ -41,15 +41,18 @@ private struct WhyItMattersRow: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: SpacingTokens.small) {
+        HStack(alignment: .top, spacing: SpacingTokens.small) {
             Image(systemName: icon)
                 .foregroundStyle(color)
-                .frame(width: 20)
+                .frame(width: 24, alignment: .center)
+                .accessibilityHidden(true)
 
             Text(text)
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -107,7 +110,7 @@ private extension WelcomeView {
     }
 
     var whyItMatters: some View {
-        VStack(spacing: SpacingTokens.xSmall) {
+        VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
             WhyItMattersRow(
                 icon: "lock.shield.fill",
                 color: ColorTokens.positive,
@@ -129,6 +132,7 @@ private extension WelcomeView {
         .padding(SpacingTokens.medium)
         .glassBackground()
         .clipShape(.rect(cornerRadius: SpacingTokens.small))
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible")
     }
@@ -137,6 +141,7 @@ private extension WelcomeView {
         Button("Get Started", action: onGetStarted)
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .tint(ColorTokens.brandPrimary)
             .accessibilityHint("Begins setting up your NomadFi profile")
     }
 }
