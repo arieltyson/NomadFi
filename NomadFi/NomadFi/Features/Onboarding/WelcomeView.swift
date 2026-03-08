@@ -141,7 +141,7 @@ private extension WelcomeView {
         Button("Get Started", action: onGetStarted)
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(ColorTokens.brandPrimary)
+            .tint(ColorTokens.actionTint)
             .accessibilityHint("Begins setting up your NomadFi profile")
     }
 }

@@ -111,21 +111,21 @@ Verdict:
 - Do not claim yet.
 
 ### 6) Sufficient Contrast
-Current State: Not ready (primary blocker)
+Current State: Partially ready (improving)
 
-What we measured from current tokens:
+What we measured from the AccentColor/BrandPrimary button green:
 - `BrandPrimary` light (`0.000, 0.420, 0.353`) vs white text: **6.45:1** (passes AA).
-- `BrandPrimary` dark (`0.000, 0.788, 0.655`) vs white text: **2.12:1** (fails AA).
-- `BrandSecondary` dark vs white text: **1.87:1** (fails AA).
-- `BrandSecondary` light vs white text: **4.05:1** (below 4.5:1 for normal text).
+- `BrandPrimary` dark (**updated**) (`0.000, 0.522, 0.434`) vs white text: **4.58:1** (passes AA).
+- `BrandPrimary` dark (**updated**) (`0.000, 0.522, 0.434`) vs black text: **4.59:1** (passes AA).
+- `BrandSecondary` dark vs white text: **1.87:1** (still fails AA for text-on-fill usage).
 
 Code risk points:
-- Global tint applies brand color app-wide:
+- App-wide tint now intentionally uses `AccentColor` as the canonical interactive green:
   - `NomadFi/NomadFi/App/NomadFiApp.swift`
 - Prominent and bordered controls are widely used with tint-driven foreground behavior.
 - Explicit white-on-brand usage in selected chips:
   - `NomadFi/NomadFi/Features/Ledger/Components/TransactionFilterChips.swift`
-- No `accessibilityIncreaseContrast` handling exists in production UI.
+- No `accessibilityIncreaseContrast` handling exists yet in production UI.
 
 Verdict:
 - Do not claim yet.
@@ -172,7 +172,7 @@ Verdict:
 | Larger Text | Mostly ready | After fixes | Truncation review and AX-size validation |
 | Dark Interface | Mostly ready | After validation | Full dark-mode regression pass |
 | Differentiate Without Color Alone | Partially ready | No | Add non-color state indicators in core flows |
-| Sufficient Contrast | Not ready | No | Token/button/chip contrast overhaul + Increase Contrast support |
+| Sufficient Contrast | Partially ready | No | Finish chip/state contrast pass + add Increase Contrast support |
 | Reduced Motion | Mostly ready | After fixes | Gate remaining animations + validate on device |
 | Captions | N/A | N/A | None |
 | Audio Descriptions | N/A | N/A | None |
@@ -189,9 +189,8 @@ Verdict:
   - Accent color (icons, selected indicators).
   - Action fill color (filled buttons/chips).
   - On-action foreground color.
-- For dark mode, either:
-  - darken action fill so white text reaches >= 4.5:1, or
-  - keep bright fill and force dark foreground text with >= 4.5:1.
+- ✅ Chunk 1 complete: aligned button green to `AccentColor` as the app-wide tint source and tuned dark-mode AccentColor/BrandPrimary to a WCAG-safe contrast target for filled controls.
+- Validate every selected-state chip and tinted component against the updated accent pair.
 - Replace explicit white-on-brand chip text with semantic foreground token.
 - Add support for `accessibilityIncreaseContrast` with stronger variants.
 - Re-run contrast checks on all common task screens.
@@ -240,9 +239,9 @@ For each setting, complete every common task in this document before claiming su
 
 ## Immediate Design Decision Recommendation
 
-Given your feedback on contrast and the current green palette:
-- Keep the green identity for accents and selected states.
-- Introduce a separate "action fill" green specifically for filled buttons/chips to guarantee contrast in both light and dark.
-- Stop depending on one global tint color for all interaction states.
+Given your feedback on contrast and the specific button green:
+- Keep `AccentColor` as the canonical interactive green for buttons and tab/controls tint.
+- Keep `BrandPrimary` aligned to AccentColor for now so existing design-system usage remains visually consistent.
+- Use phase-2 token refinement to separate accent vs action-fill only if later audits show specific component regressions.
 
 This keeps the NomadFi brand while meeting accessibility expectations for App Store labels and HIG alignment.

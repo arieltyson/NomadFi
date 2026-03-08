@@ -22,6 +22,12 @@ enum ColorTokens {
     /// A lighter teal variant for secondary elements and hover states.
     static let brandSecondary = Color("BrandSecondary", bundle: .main)
 
+    /// The app-wide interactive tint sourced from the AccentColor asset.
+    ///
+    /// Keep this aligned with App-level `.tint(...)` so prominent buttons,
+    /// tab selection, and interactive controls share one canonical action color.
+    static let actionTint = Color.accentColor
+
     // MARK: - Semantic
 
     /// Positive financial indicator - gains, savings, under-budget.
