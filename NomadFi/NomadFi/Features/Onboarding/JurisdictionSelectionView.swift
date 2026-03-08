@@ -135,6 +135,11 @@ private extension JurisdictionSelectionView {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!viewModel.canProceedFromJurisdictions)
+                .accessibilityHint(
+                    viewModel.canProceedFromJurisdictions
+                        ? "Continues to home currency setup."
+                        : "Select at least two jurisdictions to continue."
+                )
         }
     }
 }

@@ -42,7 +42,8 @@ private extension DetectedSubscriptionCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text(detection.merchantName)
                     .font(TypographyTokens.sectionHeader)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(detection.frequency.displayName)
                     .font(TypographyTokens.caption)
@@ -128,12 +129,14 @@ private extension DetectedSubscriptionCard {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
+            .accessibilityHint("Confirms this detected subscription and starts tracking it.")
 
             Button("Dismiss", systemImage: "xmark.circle") {
                 onDismiss()
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .accessibilityHint("Dismisses this detected subscription suggestion.")
         }
     }
 }

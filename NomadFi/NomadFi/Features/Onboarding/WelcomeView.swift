@@ -63,7 +63,7 @@ private struct GlobeIllustration: View {
 
     var body: some View {
         Image(systemName: "globe.americas.fill")
-            .font(.system(size: 80))
+            .font(TypographyTokens.amountLarge)
             .foregroundStyle(ColorTokens.brandPrimary.gradient)
             .symbolEffect(.breathe, options: .repeating, isActive: isAnimating && !reduceMotion)
             .accessibilityHidden(true)
@@ -86,6 +86,7 @@ private struct Headline: View {
                 .multilineTextAlignment(.center)
         }
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 

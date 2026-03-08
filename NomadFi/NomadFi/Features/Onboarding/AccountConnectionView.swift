@@ -84,6 +84,7 @@ private struct AddAccountSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
+                        .accessibilityHint("Dismisses account entry without adding an account.")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -92,6 +93,11 @@ private struct AddAccountSheet: View {
                         isPresented = false
                     }
                     .disabled(!viewModel.canAddAccount)
+                    .accessibilityHint(
+                        viewModel.canAddAccount
+                            ? "Adds this account to your onboarding list."
+                            : "Enter at least account name and institution to add this account."
+                    )
                 }
             }
         }
@@ -105,35 +111,62 @@ private struct AddAccountSheet: View {
 private struct AccountRow: View {
 
     let draft: AccountDraft
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: SpacingTokens.small) {
-            Image(systemName: draft.accountType.systemImage)
-                .font(.title3)
-                .foregroundStyle(ColorTokens.brandPrimary)
-                .frame(width: 32)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    HStack(spacing: SpacingTokens.small) {
+                        icon
+                        accountMetadata
+                    }
 
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text(draft.name)
-                    .font(TypographyTokens.sectionHeader)
+                    amountMetadata
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                HStack(spacing: SpacingTokens.small) {
+                    icon
 
-                Text(draft.institutionName)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-            }
+                    accountMetadata
 
-            Spacer()
+                    Spacer()
 
-            VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
-                CurrencyText(amount: draft.balance, currencyCode: draft.currencyCode)
-
-                Text(draft.currencyCode.rawValue)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+                    amountMetadata
+                }
             }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(draft.name) at \(draft.institutionName), balance \(draft.balance.formatted(.currency(code: draft.currencyCode.rawValue))), \(draft.accountType.displayName)")
+    }
+
+    var icon: some View {
+        Image(systemName: draft.accountType.systemImage)
+            .font(.title3)
+            .foregroundStyle(ColorTokens.brandPrimary)
+            .frame(width: 32)
+    }
+
+    var accountMetadata: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text(draft.name)
+                .font(TypographyTokens.sectionHeader)
+
+            Text(draft.institutionName)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    var amountMetadata: some View {
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
+            CurrencyText(amount: draft.balance, currencyCode: draft.currencyCode)
+
+            Text(draft.currencyCode.rawValue)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -187,6 +220,7 @@ private extension AccountConnectionView {
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .accessibilityHint("Opens a form to add a bank account or card.")
 
             Button("Finish Setup", action: onComplete)
                 .buttonStyle(.borderedProminent)

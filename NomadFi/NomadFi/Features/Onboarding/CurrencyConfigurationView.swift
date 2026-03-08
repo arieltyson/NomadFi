@@ -122,6 +122,7 @@ private extension CurrencyConfigurationView {
         Button("Continue", action: viewModel.advance)
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .accessibilityHint("Continues to account setup.")
     }
 }
 

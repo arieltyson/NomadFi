@@ -39,6 +39,7 @@ struct AddSubscriptionView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityHint("Dismisses subscription entry without saving.")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -49,6 +50,11 @@ struct AddSubscriptionView: View {
                     }
                     .bold()
                     .disabled(serviceName.isEmpty || amount <= 0)
+                    .accessibilityHint(
+                        serviceName.isEmpty || amount <= 0
+                            ? "Enter service name and amount to enable saving."
+                            : "Saves this subscription to your list."
+                    )
                 }
             }
             .sensoryFeedback(.success, trigger: saveCount)

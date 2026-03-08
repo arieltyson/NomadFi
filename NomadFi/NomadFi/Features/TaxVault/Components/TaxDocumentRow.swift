@@ -15,17 +15,31 @@ import SwiftUI
 struct TaxDocumentRow: View {
 
     let document: TaxDocument
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
         NavigationLink(value: document) {
-            HStack(spacing: SpacingTokens.small) {
-                receiptThumbnail
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    HStack(spacing: SpacingTokens.small) {
+                        receiptThumbnail
+                        documentInfo
+                    }
 
-                documentInfo
+                    amountColumn
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                HStack(spacing: SpacingTokens.small) {
+                    receiptThumbnail
 
-                Spacer()
+                    documentInfo
 
-                amountColumn
+                    Spacer()
+
+                    amountColumn
+                }
             }
         }
         .accessibilityElement(children: .combine)
@@ -55,14 +69,16 @@ private extension TaxDocumentRow {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
             Text(document.merchantName)
                 .font(TypographyTokens.sectionHeader)
-                .lineLimit(1)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: SpacingTokens.xxSmall) {
                 if let category = document.taxCategory {
                     Label(category.displayName, systemImage: category.systemImage)
                         .font(TypographyTokens.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -73,7 +89,7 @@ private extension TaxDocumentRow {
     }
 
     var amountColumn: some View {
-        VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
             Text(
                 document.amount,
                 format: .currency(code: document.currencyCode?.rawValue ?? "USD")
@@ -81,13 +97,37 @@ private extension TaxDocumentRow {
             .font(TypographyTokens.amountSmall)
             .bold()
 
-            if document.isVerified {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.caption2)
-                    .foregroundStyle(ColorTokens.positive)
-                    .accessibilityLabel("Verified")
+            verificationBadge
+        }
+    }
+
+    var verificationBadge: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+
+        return Label(
+            document.isVerified ? "Verified" : "Needs Review",
+            systemImage: document.isVerified ? "checkmark.seal.fill" : "questionmark.circle.fill"
+        )
+        .font(.caption2)
+        .bold()
+        .padding(.horizontal, SpacingTokens.xxSmall)
+        .padding(.vertical, 2)
+        .background(
+            (document.isVerified ? ColorTokens.positive : ColorTokens.warning)
+                .opacity(increasedContrast ? 0.24 : 0.12)
+        )
+        .foregroundStyle(increasedContrast ? .primary : (document.isVerified ? ColorTokens.positive : ColorTokens.warning))
+        .overlay {
+            if increasedContrast {
+                Capsule()
+                    .strokeBorder(
+                        document.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                        lineWidth: 1
+                    )
             }
         }
+        .clipShape(.capsule)
+        .accessibilityLabel(document.isVerified ? "Verified" : "Needs review")
     }
 
     var accessibilityDescription: String {
@@ -95,8 +135,8 @@ private extension TaxDocumentRow {
         let amount = document.amount.formatted(.currency(code: currency))
         let category = document.taxCategory?.displayName ?? "Other"
         let date = document.documentDate.formatted(date: .abbreviated, time: .omitted)
-        let verified = document.isVerified ? ", verified" : ""
-        return "\(document.merchantName), \(amount), \(category), \(date)\(verified)"
+        let verificationStatus = document.isVerified ? "verified" : "needs review"
+        return "\(document.merchantName), \(amount), \(category), \(date), \(verificationStatus)"
     }
 }
 

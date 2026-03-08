@@ -128,6 +128,7 @@ struct TaxVaultView: View {
                 }
             }
             .disabled(viewModel.isExporting)
+            .accessibilityHint("Creates and exports a report for tax year \(String(year)).")
         } header: {
             HStack {
                 Text("Tax Year \(String(year))")
@@ -176,6 +177,7 @@ struct TaxVaultView: View {
                 Label("Scan a Receipt", systemImage: "camera")
             }
             .buttonStyle(.borderedProminent)
+            .accessibilityHint("Opens your photo library to select a receipt image for scanning.")
 
             TipView(scanReceiptTip)
                 .tipBackground(ColorTokens.surfaceSecondary)
@@ -194,6 +196,7 @@ struct TaxVaultView: View {
             ) {
                 Label("Add Receipt", systemImage: "plus")
             }
+            .accessibilityHint("Selects a receipt image to scan and add to Tax Vault.")
         }
 
         if let exportURL = viewModel.exportURL {
@@ -201,6 +204,7 @@ struct TaxVaultView: View {
                 ShareLink(item: exportURL) {
                     Label("Share Report", systemImage: "square.and.arrow.up")
                 }
+                .accessibilityHint("Shares the most recently exported tax report.")
             }
         }
     }

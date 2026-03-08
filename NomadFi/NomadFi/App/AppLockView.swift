@@ -32,7 +32,7 @@ struct AppLockView: View {
                 Spacer()
 
                 Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 48))
+                    .font(TypographyTokens.amountMedium)
                     .foregroundStyle(ColorTokens.brandPrimary)
 
                 Text("NomadFi is Locked")
@@ -53,6 +53,7 @@ struct AppLockView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .accessibilityHint("Authenticates with \(biometricAccessLabel) or device passcode.")
             }
             .padding(SpacingTokens.large)
         }
@@ -70,6 +71,15 @@ struct AppLockView: View {
         case .touchID: "touchid"
         case .opticID: "opticid"
         default: "lock.open"
+        }
+    }
+
+    private var biometricAccessLabel: String {
+        switch appLockManager.biometricType {
+        case .faceID: "Face ID"
+        case .touchID: "Touch ID"
+        case .opticID: "Optic ID"
+        default: "biometrics"
         }
     }
 }

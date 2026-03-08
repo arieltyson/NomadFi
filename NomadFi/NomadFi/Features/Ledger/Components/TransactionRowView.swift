@@ -51,7 +51,8 @@ private extension TransactionRowView {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
             Text(transaction.merchantName)
                 .font(TypographyTokens.sectionHeader)
-                .lineLimit(1)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: SpacingTokens.xxSmall) {
                 if !transaction.jurisdiction.isEmpty {
@@ -66,7 +67,7 @@ private extension TransactionRowView {
     }
 
     var amountColumn: some View {
-        VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
             if let currency = transaction.originalCurrency {
                 CurrencyText(
                     amount: transaction.originalAmount,

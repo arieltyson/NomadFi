@@ -139,14 +139,15 @@ private extension SubscriptionsView {
                 .bold()
 
                 if viewModel.totalAnnualSavings > 0 {
-                    HStack(spacing: SpacingTokens.xxSmall) {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .foregroundStyle(ColorTokens.positive)
+                    StatusBadge(
+                        label: "Savings Opportunity Active",
+                        color: ColorTokens.positive,
+                        systemImage: "arrow.down.circle.fill"
+                    )
 
-                        Text("Save \(viewModel.totalAnnualSavings, format: .currency(code: homeCurrency.rawValue))/year with subscription arbitrage")
-                            .font(TypographyTokens.caption)
-                            .foregroundStyle(ColorTokens.positive)
-                    }
+                    Text("Save \(viewModel.totalAnnualSavings, format: .currency(code: homeCurrency.rawValue))/year with subscription arbitrage")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.positive)
                 }
 
                 Text("\(subscriptions.count) active subscription\(subscriptions.count == 1 ? "" : "s")")

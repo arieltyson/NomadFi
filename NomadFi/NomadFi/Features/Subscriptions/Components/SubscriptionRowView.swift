@@ -60,7 +60,8 @@ private extension SubscriptionRowView {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
             Text(subscription.serviceName)
                 .font(TypographyTokens.sectionHeader)
-                .lineLimit(1)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: SpacingTokens.xxSmall) {
                 if !subscription.jurisdiction.isEmpty {
@@ -91,7 +92,7 @@ private extension SubscriptionRowView {
     }
 
     var amountColumn: some View {
-        VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
             if let currency = subscription.currencyCode {
                 CurrencyText(
                     amount: subscription.amount,

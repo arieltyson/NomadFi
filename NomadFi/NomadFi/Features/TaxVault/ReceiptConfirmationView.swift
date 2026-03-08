@@ -16,6 +16,7 @@ struct ReceiptConfirmationView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
 
     @Bindable var viewModel: TaxVaultViewModel
@@ -41,6 +42,7 @@ struct ReceiptConfirmationView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityHint("Dismisses this sheet without saving the scanned receipt.")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -51,6 +53,7 @@ struct ReceiptConfirmationView: View {
                     }
                     .bold()
                     .disabled(viewModel.draftMerchantName.isEmpty)
+                    .accessibilityHint("Saves this receipt to Tax Vault with the current details.")
                 }
             }
             .sensoryFeedback(.success, trigger: saveCount)
@@ -148,28 +151,62 @@ private extension ReceiptConfirmationView {
         if let result = viewModel.scanResult, !result.lineItems.isEmpty {
             Section("Detected Line Items") {
                 ForEach(result.lineItems.indices, id: \.self) { index in
-                    let item = result.lineItems[index]
-                    HStack {
-                        Text(item.description)
-                            .font(TypographyTokens.body)
-                            .lineLimit(1)
+                    ReceiptLineItemRow(
+                        item: result.lineItems[index],
+                        currencyCode: viewModel.draftCurrencyCode,
+                        useAccessibilityLayout: dynamicTypeSize.isAccessibilitySize
+                    )
+                }
+            }
+        }
+    }
+}
 
-                        Spacer()
+private struct ReceiptLineItemRow: View {
 
-                        if let amount = item.amount {
-                            Text(
-                                amount,
-                                format: .currency(
-                                    code: viewModel.draftCurrencyCode.rawValue
-                                )
-                            )
-                            .font(TypographyTokens.caption)
-                            .foregroundStyle(.secondary)
-                        }
+    let item: ReceiptLineItem
+    let currencyCode: CurrencyCode
+    let useAccessibilityLayout: Bool
+
+    var body: some View {
+        Group {
+            if useAccessibilityLayout {
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    descriptionText
+
+                    if let amount = item.amount {
+                        amountText(amount)
+                    }
+                }
+            } else {
+                HStack {
+                    descriptionText
+
+                    Spacer()
+
+                    if let amount = item.amount {
+                        amountText(amount)
                     }
                 }
             }
         }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var descriptionText: some View {
+        Text(item.description)
+            .font(TypographyTokens.body)
+            .lineLimit(useAccessibilityLayout ? 3 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func amountText(_ amount: Double) -> some View {
+        Text(
+            amount,
+            format: .currency(code: currencyCode.rawValue)
+        )
+        .font(TypographyTokens.caption)
+        .foregroundStyle(.secondary)
     }
 }
 

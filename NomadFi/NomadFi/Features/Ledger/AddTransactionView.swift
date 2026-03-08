@@ -34,12 +34,18 @@ struct AddTransactionView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityHint("Dismisses transaction entry without saving.")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: saveTransaction)
                         .disabled(!formData.isValid)
                         .bold()
+                        .accessibilityHint(
+                            formData.isValid
+                                ? "Saves this transaction to your ledger."
+                                : "Enter merchant and amount to enable saving."
+                        )
                 }
             }
             .sensoryFeedback(.success, trigger: saveCount)

@@ -42,7 +42,7 @@ private extension SplashView {
 
     var brandIcon: some View {
         Image(systemName: "globe.americas.fill")
-            .font(.system(size: 72))
+            .font(TypographyTokens.amountLarge)
             .foregroundStyle(ColorTokens.brandPrimary.gradient)
             .scaleEffect(showIcon ? 1.0 : 0.85)
             .opacity(showIcon ? 1 : 0)

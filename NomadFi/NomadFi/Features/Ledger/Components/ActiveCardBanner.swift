@@ -56,6 +56,12 @@ private extension ActiveCardBanner {
 
     var recommendation: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            StatusBadge(
+                label: "Recommended",
+                color: ColorTokens.actionTint,
+                systemImage: "checkmark.circle.fill"
+            )
+
             Text("Use \(accountName)")
                 .font(TypographyTokens.sectionHeader)
                 .foregroundStyle(ColorTokens.actionTint)

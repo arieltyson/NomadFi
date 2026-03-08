@@ -37,6 +37,7 @@ struct OnboardingFlowView: View {
             ToolbarItem(placement: .navigation) {
                 if viewModel.currentStep != .welcome {
                     Button("Back", systemImage: "chevron.left", action: viewModel.goBack)
+                        .accessibilityHint("Returns to the previous onboarding step.")
                 }
             }
         }

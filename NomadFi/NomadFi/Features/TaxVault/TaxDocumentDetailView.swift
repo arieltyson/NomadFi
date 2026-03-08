@@ -15,6 +15,7 @@ import SwiftUI
 struct TaxDocumentDetailView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @Bindable var document: TaxDocument
 
     @State private var isEditingCategory = false
@@ -125,6 +126,8 @@ private extension TaxDocumentDetailView {
             }
 
             Toggle("Verified", isOn: $document.isVerified)
+
+            verificationStatusRow
         }
     }
 
@@ -175,6 +178,36 @@ private extension TaxDocumentDetailView {
             .font(TypographyTokens.caption)
             .foregroundStyle(.secondary)
         }
+    }
+
+    var verificationStatusRow: some View {
+        let increasedContrast = colorSchemeContrast == .increased
+        let statusColor = document.isVerified ? ColorTokens.positive : ColorTokens.warning
+        let statusIcon = document.isVerified ? "checkmark.seal.fill" : "questionmark.circle.fill"
+        let statusLabel = document.isVerified ? "Verified for export" : "Needs review before export"
+
+        return HStack {
+            Text("Verification Status")
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            Label(statusLabel, systemImage: statusIcon)
+                .font(TypographyTokens.caption)
+                .bold()
+                .padding(.horizontal, SpacingTokens.xSmall)
+                .padding(.vertical, SpacingTokens.xxSmall)
+                .background(statusColor.opacity(increasedContrast ? 0.24 : 0.12))
+                .foregroundStyle(increasedContrast ? .primary : statusColor)
+                .overlay {
+                    if increasedContrast {
+                        Capsule()
+                            .strokeBorder(statusColor, lineWidth: 1)
+                    }
+                }
+                .clipShape(.capsule)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

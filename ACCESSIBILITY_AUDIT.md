@@ -199,12 +199,15 @@ Verdict:
 ### Phase 2 - Differentiate Without Color Alone (1-2 days)
 - ✅ Chunk 1 complete: filter chips now show a persistent selected checkmark shape (not color-only), plus selected accessibility value.
 - ✅ Chunk 1 complete: applied `AccessibleStatusIndicator` to receipt confidence messaging and added explicit FX markup icon + descriptor in transaction detail.
-- Continue sweeping remaining selected/active/disabled states to guarantee text/icon/shape cues everywhere color changes state.
+- ✅ Chunk 2 complete: added explicit icon+text state badges for Active Card recommendation, subscription savings-active summary, and tax document verification status (including unverified/needs-review state).
+- Continue sweeping any remaining low-priority states and then run a focused Differentiate Without Color device pass across all common tasks.
 
 ### Phase 3 - VoiceOver and Larger Text Hardening (1-2 days)
-- Remove or relax one-line truncation where it blocks comprehension.
-- Add explicit hints for high-impact actions (save/export/confirm/dismiss).
-- Validate onboarding and form sheets at largest text sizes.
+- ✅ Chunk 1 complete: relaxed truncation hotspots with accessibility-size layouts/line limits in receipt confirmation line items, tax document rows, ledger transaction rows, detected subscription cards, and subscription rows.
+- ✅ Chunk 1 complete: added explicit VoiceOver hints for high-impact actions (save/cancel receipt confirmation, export tax report, add/scan receipt, share report, track/dismiss detected subscription).
+- ✅ Chunk 2 complete: hardened onboarding and form actions with explicit VoiceOver hints (back/continue/add/save/cancel) and upgraded onboarding account rows for accessibility-size layout.
+- ✅ Chunk 2 complete: removed remaining fixed-size symbol fonts in first-launch/security surfaces (welcome, splash, app lock) to keep typography Dynamic Type-aligned.
+- Validate onboarding and form sheets at largest text sizes on physical device and capture evidence for the matrix.
 
 ### Phase 4 - Reduced Motion and Regression Tests (1 day)
 - Gate remaining non-essential animations under Reduce Motion.
