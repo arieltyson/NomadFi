@@ -42,6 +42,7 @@
       }
     },
     "%@ accounts" : {
+
     },
     "%@ at %@, balance %@, %@" : {
       "localizations" : {
@@ -54,6 +55,7 @@
       }
     },
     "%@ filter" : {
+
     },
     "%@, %@" : {
       "localizations" : {
@@ -86,6 +88,7 @@
       }
     },
     "%lld" : {
+
     },
     "%lld active subscription%@" : {
       "localizations" : {
@@ -98,6 +101,7 @@
       }
     },
     "%lld documents" : {
+
     },
     "1 %@ equals %@ %@" : {
       "localizations" : {
@@ -110,14 +114,19 @@
       }
     },
     "About NomadFi" : {
+
     },
     "Accessibility" : {
+
     },
     "Account" : {
+
     },
     "Account (Optional)" : {
+
     },
     "Account Details" : {
+
     },
     "Account Name" : {
 
@@ -126,6 +135,7 @@
 
     },
     "Active Card Recommendation" : {
+
     },
     "Active card recommendation: Use %@ in %@" : {
       "localizations" : {
@@ -141,30 +151,43 @@
 
     },
     "Add Account" : {
+
     },
     "Add accounts from Settings to see your global net worth." : {
+
     },
     "Add More Accounts" : {
+
     },
     "Add Receipt" : {
+
     },
     "Add Subscription" : {
+
     },
     "Add the bank accounts and cards you use across your jurisdictions. Your data never leaves your iPhone." : {
+
     },
     "Add Transaction" : {
+
     },
     "Add transactions to auto-detect subscriptions, or add them manually." : {
 
     },
     "Add your accounts" : {
+
+    },
+    "Adds this account to your onboarding list." : {
+
     },
     "All data stays on-device" : {
+
     },
     "All text scales to your preferred size, including the largest accessibility sizes." : {
 
     },
     "Amount" : {
+
     },
     "App Lock" : {
 
@@ -178,12 +201,17 @@
     "Authenticate to access your financial data." : {
 
     },
+    "Authenticates with %@ or device passcode." : {
+
+    },
     "Back" : {
+
     },
     "Balance (Optional)" : {
 
     },
     "Begins setting up your NomadFi profile" : {
+
     },
     "Best card for %@ %@ — lowest FX fees" : {
       "localizations" : {
@@ -196,61 +224,95 @@
       }
     },
     "Billing" : {
+
     },
     "Built for International Students" : {
 
     },
     "Cancel" : {
+
     },
     "Categorization" : {
+
     },
     "Category" : {
+
     },
     "Cheaper (%@)" : {
+
     },
     "Check Budget" : {
+
     },
     "Check how much you have left in your budget." : {
+
     },
     "Check Net Worth" : {
+
     },
     "Choose how long NomadFi waits before locking after you leave the app" : {
+
     },
     "Clear" : {
+
     },
     "Comparing prices across jurisdictions..." : {
+
     },
     "Comparison Error" : {
+
     },
     "Confirm Receipt" : {
+
+    },
+    "Confirms this detected subscription and starts tracking it." : {
+
     },
     "Continue" : {
+
+    },
+    "Continues to account setup." : {
+    },
+    "Continues to home currency setup." : {
+
     },
     "Converted Amount" : {
+
+    },
+    "Creates and exports a report for tax year %@." : {
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
+
     },
     "Currency" : {
+
     },
     "Current (%@)" : {
 
     },
     "Current Balance" : {
+
     },
     "Dashboard" : {
+
     },
     "Date" : {
+
     },
     "Delete" : {
+
     },
     "Delete All Data" : {
 
     },
     "Delete All My Data" : {
+
     },
     "Delete Everything" : {
+
     },
     "Details" : {
+
     },
     "Detected Line Items" : {
 
@@ -261,9 +323,24 @@
     "Dismiss" : {
 
     },
+    "Dismisses account entry without adding an account." : {
+
+    },
+    "Dismisses subscription entry without saving." : {
+
+    },
+    "Dismisses this detected subscription suggestion." : {
+
+    },
+    "Dismisses this sheet without saving the scanned receipt." : {
+    },
+    "Dismisses transaction entry without saving." : {
+    },
     "Document date" : {
+
     },
     "Document Details" : {
+
     },
     "Done" : {
 
@@ -272,26 +349,42 @@
 
     },
     "Double tap to deselect" : {
+
     },
     "Double tap to remove filter" : {
+
     },
     "Double tap to select" : {
+
     },
     "Dynamic Type" : {
 
     },
     "Enable Notifications" : {
+
     },
     "Enable notifications to receive subscription reminders, budget alerts, and FX rate movement warnings." : {
+
+    },
+    "Enter at least account name and institution to add this account." : {
+
+    },
+    "Enter merchant and amount to enable saving." : {
+
+    },
+    "Enter service name and amount to enable saving." : {
     },
     "Every screen narrates as a coherent financial story." : {
 
     },
     "Exchange Rate" : {
+
     },
     "Exchange Rates" : {
+
     },
     "Export %@ Tax Report" : {
+
     },
     "Export for Tax Season" : {
 
@@ -300,6 +393,7 @@
 
     },
     "Fair Cost" : {
+
     },
     "Financial insights: %lld recommendation%@ this week" : {
       "localizations" : {
@@ -312,34 +406,43 @@
       }
     },
     "Finish Setup" : {
+
     },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
+
     },
     "Frequency" : {
 
     },
     "Get a recommendation for the best card to use at your current location." : {
+
     },
     "Get Started" : {
+
     },
     "Get your global net worth across all accounts." : {
 
     },
     "Global Net Worth" : {
+
     },
     "Home" : {
+
     },
     "Home Currency" : {
+
     },
     "Institution" : {
 
     },
     "Jurisdiction" : {
+
     },
     "Jurisdictions section" : {
 
     },
     "Ledger" : {
+
     },
     "Live Exchange Rates" : {
 
@@ -351,6 +454,7 @@
 
     },
     "Log Expense" : {
+
     },
     "Logged %@ at %@." : {
       "localizations" : {
@@ -363,6 +467,7 @@
       }
     },
     "Manage jurisdictions, currencies, privacy, and account preferences." : {
+
     },
     "Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding." : {
 
@@ -371,23 +476,34 @@
 
     },
     "Merchant" : {
+
     },
     "Merchant name" : {
+
     },
     "Merchant Name" : {
+
     },
     "Monthly Subscription Cost" : {
+
+    },
+    "Needs review" : {
+
+    },
+    "Needs Review" : {
 
     },
     "Next renewal" : {
 
     },
     "No Accounts" : {
+
     },
     "No Accounts Yet" : {
 
     },
     "No Receipt Image" : {
+
     },
     "No Subscriptions" : {
 
@@ -396,20 +512,28 @@
 
     },
     "No text was extracted from this receipt." : {
+
     },
     "No Transactions" : {
+
     },
     "NomadFi" : {
+
     },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
+
     },
     "NomadFi detects your location and recommends the card with the lowest foreign transaction fees." : {
+
     },
     "NomadFi is built specifically for international students managing money across borders" : {
+
     },
     "NomadFi is Locked" : {
+
     },
     "NomadFi is locked. Authenticate to access your financial data." : {
+
     },
     "NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible" : {
 
@@ -418,29 +542,48 @@
 
     },
     "NomadFi unifies your international finances into a single dashboard — eliminating hidden FX fees, automating tax compliance, and optimizing every cross-border payment." : {
+
     },
     "NomadFi uses your jurisdictions to detect FX fees, optimize card usage, and organize tax documents by country." : {
 
     },
     "NomadFi uses zero analytics, zero tracking, and zero third-party SDKs." : {
+
     },
     "NomadFi. Wealth without borders." : {
+
     },
     "None" : {
+
+    },
+    "Not selected" : {
+
     },
     "Notes" : {
+
     },
     "Notes (optional)" : {
+
     },
     "Notifications" : {
+
     },
     "Now it has one home." : {
+
     },
     "OK" : {
+
     },
     "On-Device Only" : {
+
+    },
+    "Opens a form to add a bank account or card." : {
+    },
+    "Opens your photo library to select a receipt image for scanning." : {
+
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
+
     },
     "Privacy & Data" : {
 
@@ -449,25 +592,34 @@
 
     },
     "Privacy: all your financial data stays on your device" : {
+
     },
     "Quickly log a transaction with an amount and category." : {
 
     },
     "Rate" : {
+
     },
     "Rates loading…" : {
+
     },
     "Reading receipt..." : {
+
     },
     "Real Cost Analysis" : {
+
     },
     "Receipt Details" : {
+
     },
     "Receipt scanning and tax exports are planned for Phase 4." : {
+
     },
     "Region" : {
+
     },
     "Renews %@" : {
+
     },
     "Requests permission to send financial alerts and reminders" : {
 
@@ -476,34 +628,56 @@
 
     },
     "Requires your device passcode to open NomadFi" : {
+
     },
     "Retry" : {
+
+    },
+    "Returns to the previous onboarding step." : {
+
     },
     "Review the fields below and adjust as needed." : {
+
     },
     "Save" : {
+
     },
     "Save %@/mo" : {
+
     },
     "Save %@/year" : {
 
     },
     "Save %@/year with subscription arbitrage" : {
+
+    },
+    "Saves this receipt to Tax Vault with the current details." : {
+
+    },
+    "Saves this subscription to your list." : {
+    },
+    "Saves this transaction to your ledger." : {
     },
     "Saves your accounts and opens the dashboard" : {
 
     },
     "Savings Opportunities" : {
+
     },
     "Scan a Receipt" : {
+
     },
     "Scan Error" : {
+
     },
     "Scan Info" : {
+
     },
     "Scan Receipts for Tax Season" : {
+
     },
     "Scan receipts to start building your tax records. NomadFi auto-categorizes and organizes them by jurisdiction for easy NRA tax filing." : {
+
     },
     "Scanned" : {
 
@@ -512,47 +686,72 @@
 
     },
     "Search receipts" : {
+
     },
     "Search subscriptions" : {
 
     },
     "Search transactions" : {
+
     },
     "Security" : {
+
     },
     "Select at least %lld more" : {
+
     },
     "Select at least two countries where you have financial accounts." : {
+
+    },
+    "Select at least two jurisdictions to continue." : {
+
+    },
+    "Selected" : {
+    },
+    "Selects a receipt image to scan and add to Tax Vault." : {
 
     },
     "Service" : {
 
     },
     "Service name" : {
+
     },
     "Settings" : {
+
     },
     "Share Report" : {
 
     },
+    "Shares the most recently exported tax report." : {
+
+    },
     "Something Went Wrong" : {
+
     },
     "Subscription Arbitrage" : {
+
     },
     "Subscriptions" : {
+
     },
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
+
     },
     "Tap the button below to add your first account." : {
 
     },
     "Tax" : {
+
     },
     "Tax Category" : {
+
     },
     "Tax Deductible" : {
+
     },
     "Tax Vault" : {
+
     },
     "Tax Year" : {
 
@@ -561,10 +760,13 @@
 
     },
     "The currency code (e.g., USD, CAD, TTD)" : {
+
     },
     "The expense amount" : {
+
     },
     "The expense category" : {
+
     },
     "The more accounts you connect, the better NomadFi can optimize your cross-border finances and detect hidden fees." : {
 
@@ -576,22 +778,28 @@
 
     },
     "This transaction will appear in your Tax Vault" : {
+
     },
     "Total net worth" : {
+
     },
     "Track" : {
+
     },
     "Try Again" : {
 
     },
     "Type & Currency" : {
+
     },
     "Unlock NomadFi" : {
+
     },
     "Updated %@" : {
 
     },
     "Use %@" : {
+
     },
     "Use your %@. It has no foreign transaction fees." : {
 
@@ -606,7 +814,11 @@
         }
       }
     },
+    "Verification Status" : {
+
+    },
     "Verified" : {
+
     },
     "Version" : {
 
@@ -615,10 +827,13 @@
 
     },
     "VoiceOver Optimized" : {
+
     },
     "We found these recurring charges in your transactions." : {
+
     },
     "Wealth without borders" : {
+
     },
     "What is your home currency?" : {
 
@@ -627,27 +842,34 @@
 
     },
     "When enabled, your device passcode is required to access your financial data." : {
+
     },
     "When tax season arrives, export a structured report organized by jurisdiction. Compatible with Sprintax and TurboTax for NRA filing." : {
 
     },
     "Where does your money live?" : {
+
     },
     "Where you spent the money" : {
+
     },
     "Which Card Should I Use?" : {
+
     },
     "Which Card?" : {
 
     },
     "You can add accounts later from the dashboard" : {
+
     },
     "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
+
     },
     "You don't have any accounts set up yet. Open NomadFi to get started." : {
 
     },
     "You don't have any budgets set up. Open NomadFi to create one." : {
+
     },
     "You have %@ left in your %@budget. You've used %@%%." : {
       "localizations" : {
@@ -660,11 +882,13 @@
       }
     },
     "You overpaid by %@" : {
+
     },
     "You Paid" : {
 
     },
     "You saved %@" : {
+
     },
     "You've exceeded your %@budget by %@. Consider reviewing your spending." : {
       "localizations" : {
@@ -677,19 +901,25 @@
       }
     },
     "Your cross-border transactions will appear here. Tap + to add one manually." : {
+
     },
     "Your financial data never leaves your iPhone." : {
+
     },
     "Your global net worth at a glance. Dashboard implementation starts in Phase 2." : {
+
     },
     "Your global net worth will be displayed in this currency. You can change it later in Settings." : {
 
     },
     "Your Jurisdictions" : {
+
     },
     "Your money lives in three countries." : {
+
     },
     "Your Money This Week" : {
+
     },
     "Your net worth across %lld account%@ is approximately %@." : {
       "localizations" : {
