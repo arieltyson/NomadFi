@@ -59,6 +59,7 @@ struct NomadFiApp: App {
                     break
                 }
             }
+            .tint(ColorTokens.brandPrimary)
         }
         .modelContainer(for: [
             Currency.self,
