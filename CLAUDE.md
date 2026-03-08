@@ -146,7 +146,7 @@ Every screen in NomadFi must be fully accessible from Day 1 — not bolted on at
 
 ## Phase 0 — Project Scaffold & Architecture (Commits 1–4)
 
-### Commit 1: Xcode Project & Build Configuration
+### Commit 1: Xcode Project & Build Configuration ✅
 - Create the Xcode project targeting iOS 26.0+, Swift 6.2, with strict concurrency checking enabled
 - Enable "Strict Concurrency Checking" -> Complete
 - Enable Swift 6 language mode
@@ -183,7 +183,7 @@ NomadFi/
     └── UITests/
 ```
 
-### Commit 2: SwiftData Schema — The Financial Data Model
+### Commit 2: SwiftData Schema — The Financial Data Model ✅
 Define every persistent model before building any UI.
 
 **Models:**
@@ -204,7 +204,7 @@ Define every persistent model before building any UI.
 - Transaction stores both `originalAmount` and `convertedAmount` with separate currency codes
 - Tag every model with a `jurisdiction: String` property for multi-country awareness
 
-### Commit 3: Service Layer & Dependency Architecture
+### Commit 3: Service Layer & Dependency Architecture ✅
 Create service protocols and `@Observable` view models forming the MVVM backbone.
 
 **Services:**
@@ -221,7 +221,7 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 - Mock implementations exist for every service from Day 1
 - Use Swift's native `Error` protocol with typed errors per domain
 
-### Commit 4: Design System Foundation — Tokens & Theme
+### Commit 4: Design System Foundation — Tokens & Theme ✅
 
 **DesignSystem structure:**
 - `Tokens/` — ColorTokens, TypographyTokens, SpacingTokens, AnimationTokens
@@ -240,14 +240,14 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 ## Phase 1 — Onboarding & Jurisdiction Setup (Commits 5–8)
 
-### Commit 5: Welcome & Value Proposition Screen
+### Commit 5: Welcome & Value Proposition Screen ✅
 - Full-bleed illustration showing fragmented finances converging
 - Headline: "Your money lives in three countries. Now it has one home."
 - Single CTA: "Get Started"
 - VoiceOver labels on every element; screen reads as coherent narrative
 - Respect `accessibilityReduceMotion` and `accessibilityReduceTransparency`
 
-### Commit 6: Jurisdiction Selection — "Where Does Your Money Live?"
+### Commit 6: Jurisdiction Selection — "Where Does Your Money Live?" ✅
 - Stylized world map or flag-based selector
 - Pre-populate common international student corridors (TT->CA->US, IN->US, NG->UK->US, etc.)
 - Haptic feedback (`.selection`) on each selection
@@ -255,12 +255,12 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 - Store selections in SwiftData as `JurisdictionProfile` records
 - Full VoiceOver support: each flag announces country name and currency
 
-### Commit 7: Currency Configuration & Preferences
+### Commit 7: Currency Configuration & Preferences ✅
 - Native `Picker` for currency selection
 - Allow reordering with `.draggable` and `.dropDestination`
 - Persist to SwiftData
 
-### Commit 8: Account Connection Strategy Screen
+### Commit 8: Account Connection Strategy Screen ✅
 - FinanceKit entitlement available: Apple Wallet connection flow with native privacy sheet
 - Non-Apple accounts: manual account entry (name, type, currency, optional balance)
 - Emphasize on-device privacy: "Your data never leaves your iPhone"
@@ -270,12 +270,12 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 ## Phase 2 — The Universal Ledger / Dashboard (Commits 9–15)
 
-### Commit 9: Dashboard Layout Shell
+### Commit 9: Dashboard Layout Shell ✅
 - Bottom `TabView` using modern `Tab` API with 4 tabs: Dashboard, Ledger, Tax Vault, Settings
 - `NavigationStack` with `navigationDestination(for:)` patterns
 - SF Symbols: `globe`, `list.bullet.rectangle`, `doc.text.viewfinder`, `gearshape`
 
-### Commit 10: Global Net Worth Card
+### Commit 10: Global Net Worth Card ✅
 - Total net worth in home currency (Dynamic Type `.largeTitle`)
 - Three smaller values in each jurisdiction's currency
 - Animate with `contentTransition(.numericText())`
@@ -284,21 +284,21 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 - Pull-to-refresh to update exchange rates
 - Full VoiceOver narration of all amounts
 
-### Commit 11: Account Cards — Jurisdiction-Grouped
+### Commit 11: Account Cards — Jurisdiction-Grouped ✅
 - Grouped by jurisdiction with flag + country name headers
 - Each card: account name, institution, balance, currency
 - `GlassCard` component from design system
 - `LazyVStack` with pinned section headers
 - Empty state with illustration + CTA
 
-### Commit 12: Exchange Rate Ticker
+### Commit 12: Exchange Rate Ticker ✅
 - Horizontal scroller with relevant FX pairs (TTD/USD, CAD/USD, TTD/CAD)
 - Fetch from free FX API, store in SwiftData `ExchangeRate` records
 - Trend arrow + percentage change
 - Tap for 7-day mini chart (Swift Charts)
 - Cache locally with "Last updated" timestamp
 
-### Commit 13: Smart Insights Section — "Your Money This Week"
+### Commit 13: Smart Insights Section — "Your Money This Week" ✅
 - **FX Waste Alert:** "You spent $47 CAD using your US account. That cost $3.20 in hidden fees."
 - **Arbitrage Opportunity:** "The USD is strong against TTD. Consider sending money home today."
 - **Budget Warning:** "You've spent 80% of your San Francisco weekly budget."
@@ -325,21 +325,21 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 ## Phase 3 — The Ledger & Transaction Intelligence (Commits 16–21)
 
-### Commit 16: Transaction List View
+### Commit 16: Transaction List View ✅
 - Chronological, searchable list grouped by date with sticky section headers
 - Each row: merchant, amount (original + home currency), category icon, jurisdiction flag
 - `.searchable(text:)` with `localizedStandardContains()` filtering
 - Filter chips by jurisdiction, category, date range
 - `LazyVStack` for performance
 
-### Commit 17: Transaction Detail View
+### Commit 17: Transaction Detail View ✅
 - Original amount + currency, converted amount in home currency
 - FX rate used vs. mid-market rate with delta display
 - Category (auto-detected or user-assigned)
 - Location (if available from FinanceKit)
 - Tax relevance toggle -> tags for Tax Vault
 
-### Commit 18: FinanceKit Integration Layer
+### Commit 18: FinanceKit Integration Layer ✅
 - Request authorization via `FinanceStore.shared.requestAuthorization()`
 - Handle all authorization states
 - Fetch accounts and transactions with date predicates
@@ -348,18 +348,18 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 - Graceful degradation without FinanceKit — manual entry works seamlessly
 - Background delivery using iOS 26 FinanceKit APIs
 
-### Commit 19: Manual Transaction Entry
+### Commit 19: Manual Transaction Entry ✅
 - SwiftUI `Form` with sections: amount + currency picker, date, category, optional receipt photo
 - Siri shortcut integration (implemented in Phase 5)
 - Validate before save; haptic feedback on success
 
-### Commit 20: "Real Cost" Calculator
+### Commit 20: "Real Cost" Calculator ✅
 - `realCost = amount x actualRate` vs `fairCost = amount x midMarketRate`
 - Display delta: "This purchase cost you TTD 3.20 more than it should have"
 - Aggregate deltas weekly/monthly for Insights
 - Color indicator: green (fair), yellow (slight markup), red (significant markup)
 
-### Commit 21: "Active Card" Recommendation Engine
+### Commit 21: "Active Card" Recommendation Engine ✅
 - `CLLocationManager` to detect current country
 - Cross-reference with accounts for lowest-fee option
 - Persistent recommendation display
@@ -370,13 +370,13 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 ## Phase 4 — The Tax Vault (Commits 22–27)
 
-### Commit 22: Tax Vault Landing Screen
+### Commit 22: Tax Vault Landing Screen ✅
 - Documents grouped by tax year and jurisdiction (US Source, Canadian Source, Trinidad Source)
 - Thumbnail, merchant, amount, date, category per document
 - Running totals per category
 - Export -> zip file organized by jurisdiction
 
-### Commit 23: Receipt Scanner — Vision Framework OCR
+### Commit 23: Receipt Scanner — Vision Framework OCR ✅
 - Camera via `DataScannerViewController` (VisionKit) for live scanning
 - Photo library import support
 - `VNRecognizeTextRequest` with `.accurate` recognition level
@@ -385,24 +385,24 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 - User confirmation before saving
 - Store original image + metadata in SwiftData `TaxDocument`
 
-### Commit 24: Auto-Categorization & Jurisdiction Tagging
+### Commit 24: Auto-Categorization & Jurisdiction Tagging ✅
 - Rule-based categorization (keywords: "tuition" -> Education, "pharmacy" -> Medical)
 - Auto-tag jurisdiction based on merchant location or currency
 - User override with on-device learning from corrections
 
-### Commit 25: Tax Category Management
+### Commit 25: Tax Category Management ✅
 - Pre-built NRA categories: Treaty Benefits, Education Expenses, Scholarship Income, Wages (J-1/F-1), Capital Gains
 - Custom user categories with name, SF Symbol icon, applicable jurisdictions, deductible flag
 - Stored in SwiftData, synced via iCloud
 
-### Commit 26: Export & Report Generation
+### Commit 26: Export & Report Generation ✅
 - Structured PDF per jurisdiction per tax year
 - Contents: categorized totals, transaction list, receipt thumbnails
 - Export as `.zip` with PDF + organized receipt images
 - Share via `ShareLink`
 - Filename: `NomadFi_TaxReport_US_2025.pdf`
 
-### Commit 27: Tax Vault Onboarding & Education
+### Commit 27: Tax Vault Onboarding & Education ✅
 - First-time NRA tax explanation
 - Contextual tips via `.popoverTip()` with TipKit
 - Links to IRS Publication 519 and CRA resources
@@ -412,18 +412,18 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 ## Phase 5 — Subscription Arbitrage & Siri Integration (Commits 28–32)
 
-### Commit 28: Subscription Detection
+### Commit 28: Subscription Detection ✅
 - Pattern-match on merchant name + recurring amounts at regular intervals
 - Display: name, amount, currency, frequency, renewal date
 - Equivalent cost in all user currencies
 - Flag duplicates across jurisdictions
 
-### Commit 29: Subscription Comparison Engine
+### Commit 29: Subscription Comparison Engine ✅
 - Look up pricing in user's other jurisdictions
 - Calculate savings: "Netflix CAD = $16.99 CAD ~ $12.01 USD. US price = $15.49 USD. Save $3.48/month."
 - Green badge for savings; aggregate annual savings potential
 
-### Commit 30: App Intents — Siri Shortcuts
+### Commit 30: App Intents — Siri Shortcuts ✅
 **Intents:**
 - `LogExpenseIntent` — "Hey Siri, I just spent $15 USD on lunch"
 - `CheckNetWorthIntent` — "Hey Siri, what's my net worth?"
@@ -432,12 +432,12 @@ Create service protocols and `@Observable` view models forming the MVVM backbone
 
 Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `.result(dialog:)`.
 
-### Commit 31: Spotlight & App Shortcuts Integration
+### Commit 31: Spotlight & App Shortcuts Integration ✅
 - `CSSearchableItem` entries for accounts and subscriptions
 - `AppShortcutsProvider` for Lock Screen suggested shortcuts
 - `.searchable` for in-app Spotlight indexing
 
-### Commit 32: Notifications & Alerts System
+### Commit 32: Notifications & Alerts System ✅
 - FX rate significant movement (>2% daily change)
 - Subscription renewal reminders (3 days before)
 - Weekly spending summary (Saturday morning)
@@ -449,31 +449,31 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 
 ## Phase 6 — Accessibility & Inclusivity Excellence (Commits 33–37)
 
-### Commit 33: VoiceOver Audit & Enhancement
+### Commit 33: VoiceOver Audit & Enhancement ✅
 - Every screen narrates as a coherent story
 - Custom `accessibilityLabel` and `accessibilityHint` on every interactive element
 - `accessibilityElement(children: .combine)` for related elements
 - Custom swipe actions on complex cards
 - Full eyes-free usability testing
 
-### Commit 34: Dynamic Type at Every Scale
+### Commit 34: Dynamic Type at Every Scale ✅
 - Test at largest accessibility size (AX5)
 - No text truncation — use `ScrollView` for large text
 - Layouts reflow with `ViewThatFits`
 - `.minimumScaleFactor()` only as last resort
 
-### Commit 35: Color Accessibility
+### Commit 35: Color Accessibility ✅
 - WCAG 2.1 AA contrast ratios (4.5:1 for text)
 - "Differentiate Without Color" support
 - Increase Contrast mode tested
 - Color-blind safe palette with pattern fills in Swift Charts
 
-### Commit 36: Reduce Motion & Reduce Transparency
+### Commit 36: Reduce Motion & Reduce Transparency ✅
 - `accessibilityReduceMotion` branch for every animation
 - `accessibilityReduceTransparency` fallback for glass/blur effects
 - Loading states work without animation
 
-### Commit 37: Internationalization & Localization
+### Commit 37: Internationalization & Localization ✅
 - All strings in `Localizable.xcstrings`
 - RTL layout support
 - Locale-aware currency and date formatting
@@ -483,20 +483,20 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 
 ## Phase 7 — Polish & Award Readiness (Commits 38–44)
 
-### Commit 38: Liquid Glass Design Polish
+### Commit 38: Liquid Glass Design Polish ✅
 - Audit every screen against iOS 26 Liquid Glass design language
 - Translucent bars, glass material effects, rounded surfaces
 - Clear-look app icon style
 - Light and dark mode testing
 
-### Commit 39: Error Handling & Edge Cases
+### Commit 39: Error Handling & Edge Cases ✅
 - Network failure: cached data with "Last updated" banner
 - FinanceKit denied: graceful fallback to manual mode
 - Empty states for every list/section
 - Invalid receipt scan: clear feedback + retry
 - Currency conversion failure: show original currency with explanation
 
-### Commit 40: Onboarding Refinement & First-Run Experience
+### Commit 40: Onboarding Refinement & First-Run Experience ✅
 - Full onboarding under 90 seconds
 - "Why this matters" on every screen
 - Skip option (not prominent) for returning users
@@ -522,14 +522,14 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 
 NomadFi is a finance app that users depend on for real-money decisions. Sluggish UI, unnecessary battery drain, or excessive memory usage erodes trust immediately. This phase is a dedicated, systematic performance audit — not a polish pass.
 
-### Commit 45: Instruments Profiling Baseline
+### Commit 45: Instruments Profiling Baseline ✅
 - Profile every screen with Time Profiler — identify and eliminate any work taking >16ms on main thread
 - Allocations instrument: identify retain cycles, leaked objects, and unexpected growth
 - Core Animation instrument: verify 60fps scrolling on transaction lists, dashboard, and Tax Vault
 - Establish baseline metrics: launch time, memory at idle, memory under load, scroll frame rate
 - Document all findings in a performance report for regression tracking
 
-### Commit 46: SwiftData Query Optimization
+### Commit 46: SwiftData Query Optimization ✅
 - Audit every `@Query` and `ModelContext.fetch()` — ensure proper `#Predicate` filtering (no fetch-all-then-filter)
 - Add `fetchLimit` where appropriate (e.g., dashboard showing top 5 transactions)
 - Verify `SortDescriptor` usage aligns with SwiftData indexes
@@ -537,7 +537,7 @@ NomadFi is a finance app that users depend on for real-money decisions. Sluggish
 - Test with 1,000+ transactions to verify list performance at scale
 - Profile SwiftData migration paths for schema evolution
 
-### Commit 47: Energy & Battery Optimization
+### Commit 47: Energy & Battery Optimization ✅
 - Audit all timers, animations, and continuous updates — eliminate unnecessary wake-ups
 - Verify no `.relative` date formatting or other hidden SwiftUI timers remain
 - Profile background tasks: ensure exchange rate fetches and notification scheduling are coalesced
@@ -545,7 +545,7 @@ NomadFi is a finance app that users depend on for real-money decisions. Sluggish
 - Audit `Task` usage — ensure all long-running tasks are properly cancelled on view disappearance
 - Verify WidgetKit timeline updates are batched (every 15 minutes, not per-change)
 
-### Commit 48: Memory & Asset Optimization
+### Commit 48: Memory & Asset Optimization ✅
 - Receipt image thumbnails properly downsampled before display (never load full-resolution into `Image`)
 - Implement lazy thumbnail generation with `@State` loading for Tax Vault grid
 - Verify `LazyVStack`/`LazyHStack` are used for all unbounded lists
@@ -553,7 +553,7 @@ NomadFi is a finance app that users depend on for real-money decisions. Sluggish
 - Target: under 100MB for typical usage, under 200MB at peak
 - Audit for unnecessary caching or duplicate data in memory
 
-### Commit 49: Launch Time & Perceived Performance
+### Commit 49: Launch Time & Perceived Performance ✅
 - Measure cold launch to interactive: target under 1 second
 - Verify SwiftData container initialization is non-blocking
 - Skeleton loading (`redacted(reason: .placeholder)`) on all data-dependent views
@@ -567,7 +567,7 @@ NomadFi is a finance app that users depend on for real-money decisions. Sluggish
 
 NomadFi handles real financial data for a vulnerable population (international students navigating foreign financial systems). A single data leak, credential exposure, or trust violation would be catastrophic. This phase is a comprehensive security audit treating every data path as adversarial.
 
-### Commit 50: Data-at-Rest Security
+### Commit 50: Data-at-Rest Security ✅
 - Audit every SwiftData model for sensitive fields — ensure no PII is stored in plaintext where encryption is warranted
 - Keychain storage (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`) for:
   - API keys and tokens (exchange rate service, future FinanceKit tokens)
@@ -578,7 +578,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 - Implement data encryption for exported tax reports before they leave the app sandbox
 - Audit `TaxDocument` image storage — receipt images may contain account numbers, SSN fragments, or other PII visible in the photo
 
-### Commit 51: Data-in-Transit Security
+### Commit 51: Data-in-Transit Security ✅
 - All network requests use HTTPS with TLS 1.3 minimum — enforce via App Transport Security (ATS) with no exceptions
 - Certificate pinning for exchange rate API endpoints
 - No sensitive data in URL query parameters (use POST bodies or headers)
@@ -586,7 +586,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 - Audit `OSLog` usage — ensure `.private` redaction on all financial amounts, account names, and user identifiers
 - Verify `URLSession` configurations: no caching of financial responses on disk, ephemeral sessions where appropriate
 
-### Commit 52: Authentication & Access Control
+### Commit 52: Authentication & Access Control ✅
 - Biometric lock (Face ID / Touch ID) using `LAContext` with `.deviceOwnerAuthenticationWithBiometrics`
 - App lock triggers on background (after configurable timeout: immediate, 1 min, 5 min)
 - Graceful fallback to device passcode if biometrics unavailable
@@ -594,7 +594,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 - No financial data visible in notifications on Lock Screen — use placeholder text with "Open app to view"
 - Prevent screenshots of sensitive screens using `UITextField.isSecureTextEntry` overlay technique if needed
 
-### Commit 53: Input Validation & Injection Prevention
+### Commit 53: Input Validation & Injection Prevention ✅
 - Sanitize all user text inputs (merchant names, notes, custom categories) — strip control characters, limit length
 - Validate currency amounts: reject NaN, Infinity, negative-zero, and unreasonably large values
 - Validate exchange rates: reject zero, negative, and rates outside plausible bounds (e.g., >10,000)
@@ -602,7 +602,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 - Exported PDF content uses proper escaping — no injection through merchant names or notes
 - SwiftData `#Predicate` queries with user-supplied strings use parameterized values (no string concatenation)
 
-### Commit 54: Privacy Compliance & Data Governance
+### Commit 54: Privacy Compliance & Data Governance ✅
 - Minimal permissions: only request Location (when needed for Active Card), Camera (for receipt scan), FinanceKit (for account access)
 - Each permission requested in context with clear explanation (not at launch)
 - Accurate App Privacy Nutrition Label reflecting actual data collection
@@ -611,7 +611,7 @@ NomadFi handles real financial data for a vulnerable population (international s
 - Data retention policy: no orphaned records when accounts/transactions are deleted (cascade rules)
 - Privacy policy accessible in-app and in App Store listing
 
-### Commit 55: Threat Modeling & Penetration Testing
+### Commit 55: Threat Modeling & Penetration Testing ✅
 - Document threat model covering: device theft, shoulder surfing, malicious Wi-Fi, iCloud compromise, shared device scenarios
 - Test: exported `.zip` tax report contains only expected files (no directory traversal, no extra metadata)
 - Test: receipt images stripped of EXIF GPS data before storage (prevent location leakage from photo metadata)

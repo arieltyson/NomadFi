@@ -109,6 +109,16 @@ This project is designed to showcase distinguished-level iOS engineering practic
 
 Contributions are welcome. If you have ideas for features, architecture improvements, or bug fixes, open an issue or submit a pull request. Please keep changes aligned with the project's privacy-first, accessibility-first, and on-device-first design principles.
 
+### Git Hook Setup
+
+To keep localization commits clean and avoid noise from Xcode-generated `.xcstrings` comment metadata, run:
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+The pre-commit hook normalizes staged `.xcstrings` files by stripping auto-generated comment fields while preserving actual localization keys and values.
+
 ## License 🪪
 
 All rights reserved. See [LICENSE](LICENSE) for details.

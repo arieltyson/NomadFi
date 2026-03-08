@@ -42,3 +42,6 @@ playground.xcworkspace
 Secrets/
 .env
 .env.*
+
+# Localization catalogs are source files and should stay version controlled.
+!**/*.xcstrings
