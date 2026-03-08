@@ -366,7 +366,7 @@
 				DEVELOPMENT_TEAM = 2MPMKAF986;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = NomadFiWidgetExtension/Info.plist;
+				INFOPLIST_FILE = "WidgetExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -397,7 +397,7 @@
 				DEVELOPMENT_TEAM = 2MPMKAF986;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = NomadFiWidgetExtension/Info.plist;
+				INFOPLIST_FILE = "WidgetExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
