@@ -205,7 +205,7 @@ private extension DashboardView {
         ContentUnavailableView {
             Label("No Accounts", systemImage: "creditcard")
         } description: {
-            Text("Add accounts from Settings to see your global net worth.")
+            Text("Add accounts from Settings > Accounts to see your global net worth.")
         }
     }
 

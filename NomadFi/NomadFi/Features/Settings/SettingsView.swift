@@ -30,10 +30,13 @@ struct SettingsView: View {
     @State private var appLockManager = AppLockManager()
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingPrivacyPolicy = false
+    @State private var isShowingAddAccountSheet = false
 
     var body: some View {
         List {
             jurisdictionsSection
+
+            accountsSection
 
             securitySection
 
@@ -63,6 +66,12 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $isShowingPrivacyPolicy) {
             PrivacyPolicySheet()
+        }
+        .sheet(isPresented: $isShowingAddAccountSheet) {
+            SettingsAddAccountSheet(jurisdictions: jurisdictions) { draft in
+                saveAccount(from: draft)
+            }
+            .glassSheet()
         }
         .task {
             await notificationManager.refreshAuthorizationStatus()
@@ -117,6 +126,34 @@ private extension SettingsView {
             Text("Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding.")
         }
         .accessibilityLabel("Jurisdictions section")
+    }
+
+    // MARK: Accounts
+
+    var accountsSection: some View {
+        Section {
+            if accounts.isEmpty {
+                ContentUnavailableView {
+                    Label("No Accounts Yet", systemImage: "creditcard")
+                } description: {
+                    Text("Add your first account to power Dashboard insights and Active Card recommendations.")
+                }
+            } else {
+                ForEach(sortedAccounts) { account in
+                    SettingsAccountRow(account: account)
+                }
+                .onDelete(perform: deleteAccounts)
+            }
+
+            Button("Add Account", systemImage: "plus") {
+                isShowingAddAccountSheet = true
+            }
+            .accessibilityHint("Opens a form to add a new bank account or card.")
+        } header: {
+            Text("Accounts")
+        } footer: {
+            Text("Manage the accounts used for global net worth, FX analysis, and card recommendations.")
+        }
     }
 
     // MARK: Notifications
@@ -268,6 +305,37 @@ private extension SettingsView {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
         return "\(version) (\(build))"
+    }
+
+    var sortedAccounts: [Account] {
+        accounts.sorted { lhs, rhs in
+            if lhs.institutionName == rhs.institutionName {
+                return lhs.name < rhs.name
+            }
+
+            return lhs.institutionName < rhs.institutionName
+        }
+    }
+
+    func saveAccount(from draft: SettingsAccountDraft) {
+        let account = Account(
+            name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
+            institutionName: draft.institutionName.trimmingCharacters(in: .whitespacesAndNewlines),
+            accountType: draft.accountType,
+            currencyCode: draft.currencyCode,
+            balance: draft.parsedBalance,
+            jurisdiction: draft.jurisdictionCode,
+            foreignTransactionFeePercent: draft.parsedForeignTransactionFeePercent
+        )
+
+        modelContext.insert(account)
+    }
+
+    func deleteAccounts(at offsets: IndexSet) {
+        for index in offsets.sorted().reversed() {
+            let account = sortedAccounts[index]
+            modelContext.delete(account)
+        }
     }
 }
 
