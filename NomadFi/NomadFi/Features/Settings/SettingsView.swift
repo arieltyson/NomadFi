@@ -381,7 +381,7 @@ private struct JurisdictionSettingsRow: View {
                 }
 
                 if let currency = jurisdiction.currencyCode {
-                    Text("\(currency.symbol) \(currency.displayName)")
+                    Text("\(currency.rawValue) • \(currency.displayName)")
                         .font(TypographyTokens.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -397,7 +397,7 @@ private struct JurisdictionSettingsRow: View {
         var label = "\(jurisdiction.countryName)"
         if jurisdiction.isHome { label += ", home jurisdiction" }
         if let currency = jurisdiction.currencyCode {
-            label += ", currency: \(currency.displayName)"
+            label += ", currency: \(currency.rawValue), \(currency.displayName)"
         }
         return label
     }

@@ -54,7 +54,7 @@ struct SettingsAddAccountSheet: View {
                 Section("Currency & Amounts") {
                     Picker("Currency", selection: $draft.currencyCode) {
                         ForEach(CurrencyCode.allCases) { currency in
-                            Text("\(currency.symbol) \(currency.displayName)")
+                            Text("\(currency.rawValue) • \(currency.displayName)")
                                 .tag(currency)
                         }
                     }

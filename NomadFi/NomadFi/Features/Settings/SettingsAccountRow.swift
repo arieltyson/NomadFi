@@ -25,11 +25,17 @@ struct SettingsAccountRow: View {
 
             Spacer(minLength: 0)
 
-            Text(
-                account.balance,
-                format: .currency(code: account.currencyCodeRawValue)
-            )
-            .font(TypographyTokens.body)
+            VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
+                Text(account.currencyCodeRawValue)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(
+                    account.balance,
+                    format: .currency(code: account.currencyCodeRawValue)
+                )
+                .font(TypographyTokens.body)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityDescription)
