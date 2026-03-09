@@ -13,40 +13,49 @@ struct LocationPermissionPrimingView: View {
     @State private var borderGlowPhase: CGFloat = 0
     @State private var arrowBounceOffset: CGFloat = 0
 
-    private let maxContentWidth: CGFloat = 620
+    private let maxContentWidth: CGFloat = 560
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: SpacingTokens.large) {
-                headerSection
+        ZStack {
+            ColorTokens.surfacePrimary
+                .ignoresSafeArea()
 
-                mockPermissionSection
+            ViewThatFits(in: .vertical) {
+                contentContainer(isCompact: false)
+                    .padding(.horizontal, SpacingTokens.medium)
+                    .padding(.top, SpacingTokens.large)
+                    .padding(.bottom, SpacingTokens.medium)
 
-                footerSection
+                contentContainer(isCompact: true)
+                    .padding(.horizontal, SpacingTokens.medium)
+                    .padding(.top, SpacingTokens.medium)
+                    .padding(.bottom, SpacingTokens.small)
+
+                ScrollView {
+                    contentContainer(isCompact: false)
+                        .padding(.horizontal, SpacingTokens.medium)
+                        .padding(.top, SpacingTokens.large)
+                        .padding(.bottom, SpacingTokens.medium)
+                }
+                .scrollIndicators(.hidden)
             }
-            .frame(maxWidth: maxContentWidth)
-            .padding(.horizontal, SpacingTokens.medium)
-            .padding(.top, SpacingTokens.xLarge)
-            .padding(.bottom, SpacingTokens.large)
-            .frame(maxWidth: .infinity)
         }
-        .scrollIndicators(.hidden)
-        .background(ColorTokens.surfacePrimary.ignoresSafeArea())
         .task(id: viewModel.canShowAnimatedPrompt) {
             guard viewModel.canShowAnimatedPrompt, !reduceMotion else { return }
 
-            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
                 borderGlowPhase = 1
             }
-            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                arrowBounceOffset = 10
+
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                arrowBounceOffset = 8
             }
         }
         .onAppear {
             viewModel.refreshAuthorizationStatus()
         }
-        .onChange(of: viewModel.canShowAnimatedPrompt) { _, isVisible in
-            if !isVisible {
+        .onChange(of: viewModel.canShowAnimatedPrompt) { _, canAnimate in
+            if !canAnimate {
                 borderGlowPhase = 0
                 arrowBounceOffset = 0
             }
@@ -54,59 +63,93 @@ struct LocationPermissionPrimingView: View {
     }
 }
 
-// MARK: - Header
-
 private extension LocationPermissionPrimingView {
 
-    var headerSection: some View {
-        VStack(spacing: SpacingTokens.small) {
-            Text("Use location for better card recommendations.")
-                .font(TypographyTokens.amountMedium)
-                .bold()
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.isHeader)
-
-            Text("NomadFi only uses your current country on-device to suggest the lowest-fee payment card where you are.")
-                .font(TypographyTokens.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
+    func contentContainer(isCompact: Bool) -> some View {
+        LocationPermissionPrimingContent(
+            viewModel: viewModel,
+            borderGlowPhase: borderGlowPhase,
+            arrowBounceOffset: arrowBounceOffset,
+            isCompact: isCompact,
+            maxContentWidth: maxContentWidth,
+            onFinishSetup: onFinishSetup,
+            onSkipLocation: onSkipLocation
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
-// MARK: - Mock Permission
+private struct LocationPermissionPrimingContent: View {
 
-private extension LocationPermissionPrimingView {
+    @Bindable var viewModel: LocationPermissionPrimingViewModel
 
-    var mockPermissionSection: some View {
+    let borderGlowPhase: CGFloat
+    let arrowBounceOffset: CGFloat
+    let isCompact: Bool
+    let maxContentWidth: CGFloat
+    let onFinishSetup: () -> Void
+    let onSkipLocation: () -> Void
+
+    var body: some View {
+        VStack(spacing: isCompact ? SpacingTokens.medium : SpacingTokens.large) {
+            LocationPermissionHeader(isCompact: isCompact)
+
+            mockPermissionSection
+
+            LocationPermissionFooter(
+                viewModel: viewModel,
+                isCompact: isCompact,
+                onFinishSetup: onFinishSetup,
+                onSkipLocation: onSkipLocation
+            )
+        }
+        .frame(maxWidth: maxContentWidth)
+        .frame(maxWidth: .infinity)
+    }
+
+    private var mockPermissionSection: some View {
         VStack(spacing: 0) {
             mockDialogContainer
 
             if viewModel.isNotDetermined {
-                PermissionArrowIndicator(bounceOffset: arrowBounceOffset)
-                    .accessibilityHidden(true)
+                PermissionArrowIndicator(
+                    bounceOffset: arrowBounceOffset,
+                    isCompact: isCompact
+                )
+                .accessibilityHidden(true)
             }
         }
     }
 
-    var mockDialogContainer: some View {
+    private var mockDialogContainer: some View {
         let borderColor = viewModel.isDeniedOrRestricted ? ColorTokens.warning : ColorTokens.actionTint
 
-        return VStack(spacing: SpacingTokens.medium) {
-            MockPermissionDialogContent(status: viewModel.authorizationStatus)
-        }
-        .padding(SpacingTokens.small)
-        .background(ColorTokens.surfaceSecondary.opacity(0.35), in: .rect(cornerRadius: SpacingTokens.medium))
+        return MockPermissionDialogContent(
+            status: viewModel.authorizationStatus,
+            isCompact: isCompact
+        )
+        .padding(isCompact ? SpacingTokens.xSmall : SpacingTokens.small)
+        .background(
+            ColorTokens.surfaceSecondary.opacity(isCompact ? 0.28 : 0.35),
+            in: .rect(cornerRadius: SpacingTokens.medium)
+        )
         .overlay {
             RoundedRectangle(cornerRadius: SpacingTokens.medium)
                 .strokeBorder(
-                    borderColor.opacity(0.45 + (borderGlowPhase * 0.4)),
-                    lineWidth: 2.5
+                    .linearGradient(
+                        colors: [
+                            borderColor.opacity(0.50 + borderGlowPhase * 0.35),
+                            borderColor.opacity(0.26 + borderGlowPhase * 0.18),
+                            borderColor.opacity(0.50 + borderGlowPhase * 0.35),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 3
                 )
                 .shadow(
-                    color: borderColor.opacity(0.25 + (borderGlowPhase * 0.25)),
-                    radius: 16
+                    color: borderColor.opacity(0.34 + borderGlowPhase * 0.24),
+                    radius: isCompact ? 11 : 14
                 )
         }
         .reduceMotionAnimation(AnimationTokens.entrance, value: viewModel.authorizationStatus)
@@ -115,11 +158,33 @@ private extension LocationPermissionPrimingView {
     }
 }
 
+private struct LocationPermissionHeader: View {
+
+    let isCompact: Bool
+
+    var body: some View {
+        VStack(spacing: isCompact ? SpacingTokens.xSmall : SpacingTokens.small) {
+            Text("Connect to Location, Securely.")
+                .font(isCompact ? .title3 : .title2)
+                .bold()
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+
+            Text("To recommend your best card where you are, NomadFi needs location permission.")
+                .font(TypographyTokens.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
 private struct MockPermissionDialogContent: View {
 
     let status: CLAuthorizationStatus
+    let isCompact: Bool
 
-    @ScaledMetric private var symbolSize: CGFloat = 42
+    @ScaledMetric private var symbolSize: CGFloat = 40
 
     var body: some View {
         Group {
@@ -131,11 +196,11 @@ private struct MockPermissionDialogContent: View {
                 pendingView
             }
         }
-        .padding(SpacingTokens.medium)
+        .padding(isCompact ? SpacingTokens.small : SpacingTokens.medium)
         .background(ColorTokens.surfacePrimary, in: .rect(cornerRadius: SpacingTokens.small))
     }
 
-    var authorizedView: some View {
+    private var authorizedView: some View {
         VStack(spacing: SpacingTokens.small) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: symbolSize))
@@ -152,10 +217,10 @@ private struct MockPermissionDialogContent: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, SpacingTokens.large)
+        .padding(.vertical, isCompact ? SpacingTokens.small : SpacingTokens.medium)
     }
 
-    var deniedView: some View {
+    private var deniedView: some View {
         VStack(spacing: SpacingTokens.small) {
             Image(systemName: "location.slash.circle.fill")
                 .font(.system(size: symbolSize))
@@ -166,29 +231,31 @@ private struct MockPermissionDialogContent: View {
                 .font(TypographyTokens.sectionHeader)
                 .bold()
 
-            Text("You can continue setup now and enable location later in iOS Settings.")
+            Text("You can finish setup now and enable location later in iOS Settings.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, SpacingTokens.large)
+        .padding(.vertical, isCompact ? SpacingTokens.small : SpacingTokens.medium)
     }
 
-    var pendingView: some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.medium) {
+    private var pendingView: some View {
+        VStack(alignment: .leading, spacing: isCompact ? SpacingTokens.small : SpacingTokens.medium) {
             HStack(spacing: SpacingTokens.small) {
                 ZStack {
                     RoundedRectangle(cornerRadius: SpacingTokens.small)
-                        .fill(.linearGradient(
-                            colors: [ColorTokens.actionTint.opacity(0.9), ColorTokens.brandSecondary],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 64, height: 64)
+                        .fill(
+                            .linearGradient(
+                                colors: [ColorTokens.actionTint.opacity(0.9), ColorTokens.brandSecondary],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: isCompact ? 56 : 62, height: isCompact ? 56 : 62)
 
                     Image(systemName: "location.fill")
-                        .font(.title2)
+                        .font(isCompact ? .title3 : .title2)
                         .foregroundStyle(ColorTokens.onActionTint)
                 }
                 .accessibilityHidden(true)
@@ -196,23 +263,23 @@ private struct MockPermissionDialogContent: View {
                 Spacer(minLength: 0)
             }
 
-            Text(#""NomadFi" Would Like to Use Your Location"#)
-                .font(TypographyTokens.sectionHeader)
+            Text("Allow \u{201C}NomadFi\u{201D} to use your location?")
+                .font(TypographyTokens.amountMedium)
                 .bold()
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("NomadFi detects your current country to recommend the lowest-fee payment card where you are.")
+            Text("NomadFi detects your current country to recommend the lowest-fee payment card for where you are.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            MockLocationPreviewMap()
+            MockLocationPreviewMap(isCompact: isCompact)
                 .accessibilityHidden(true)
 
-            VStack(spacing: SpacingTokens.small) {
-                MockPermissionButton(title: "Allow Once")
-                MockPermissionButton(title: "Allow While Using App")
-                MockPermissionButton(title: "Don’t Allow", isPrimary: false)
+            VStack(spacing: isCompact ? SpacingTokens.xSmall : SpacingTokens.small) {
+                MockPermissionButton(title: "Allow Once", isCompact: isCompact)
+                MockPermissionButton(title: "Allow While Using App", isCompact: isCompact)
+                MockPermissionButton(title: "Don\u{2019}t Allow", isPrimary: false, isCompact: isCompact)
             }
             .accessibilityHidden(true)
         }
@@ -221,20 +288,23 @@ private struct MockPermissionDialogContent: View {
 
 private struct MockLocationPreviewMap: View {
 
+    let isCompact: Bool
+
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: SpacingTokens.medium)
-                .fill(.linearGradient(
-                    colors: [
-                        ColorTokens.actionTint.opacity(0.28),
-                        ColorTokens.brandSecondary.opacity(0.4),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-                .aspectRatio(1.75, contentMode: .fit)
+                .fill(
+                    .linearGradient(
+                        colors: [
+                            ColorTokens.actionTint.opacity(0.26),
+                            ColorTokens.brandSecondary.opacity(0.37),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
 
             MapGridOverlay()
                 .clipShape(.rect(cornerRadius: SpacingTokens.medium))
@@ -250,6 +320,8 @@ private struct MockLocationPreviewMap: View {
                 .clipShape(.capsule)
                 .padding(SpacingTokens.small)
         }
+        .aspectRatio(isCompact ? 2.25 : 2.05, contentMode: .fit)
+        .frame(maxHeight: isCompact ? 148 : 170)
     }
 }
 
@@ -303,13 +375,14 @@ private struct MockPermissionButton: View {
 
     let title: String
     var isPrimary: Bool = true
+    let isCompact: Bool
 
     var body: some View {
         Text(title)
             .font(TypographyTokens.sectionHeader)
             .bold()
             .frame(maxWidth: .infinity)
-            .padding(.vertical, SpacingTokens.medium)
+            .padding(.vertical, isCompact ? SpacingTokens.small : SpacingTokens.medium)
             .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: SpacingTokens.medium))
             .foregroundStyle(isPrimary ? .primary : .secondary)
     }
@@ -318,8 +391,9 @@ private struct MockPermissionButton: View {
 private struct PermissionArrowIndicator: View {
 
     let bounceOffset: CGFloat
+    let isCompact: Bool
 
-    @ScaledMetric private var arrowSize: CGFloat = 52
+    @ScaledMetric private var arrowSize: CGFloat = 46
 
     var body: some View {
         Image(systemName: "arrow.turn.right.up")
@@ -333,24 +407,27 @@ private struct PermissionArrowIndicator: View {
                 )
             )
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, SpacingTokens.xLarge)
-            .padding(.top, SpacingTokens.xSmall)
+            .padding(.trailing, isCompact ? SpacingTokens.large : SpacingTokens.xLarge)
+            .padding(.top, isCompact ? SpacingTokens.xxSmall : SpacingTokens.xSmall)
             .offset(y: -bounceOffset)
     }
 }
 
-// MARK: - Footer
+private struct LocationPermissionFooter: View {
 
-private extension LocationPermissionPrimingView {
+    @Bindable var viewModel: LocationPermissionPrimingViewModel
 
-    @ViewBuilder
-    var footerSection: some View {
+    let isCompact: Bool
+    let onFinishSetup: () -> Void
+    let onSkipLocation: () -> Void
+
+    var body: some View {
         switch viewModel.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             VStack(spacing: SpacingTokens.small) {
                 Button("Finish Setup", action: onFinishSetup)
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .controlSize(isCompact ? .regular : .large)
                     .tint(ColorTokens.actionTint)
 
                 Text("You can change this anytime in iOS Settings.")
@@ -363,7 +440,7 @@ private extension LocationPermissionPrimingView {
             VStack(spacing: SpacingTokens.small) {
                 Button("Continue Without Location", action: onSkipLocation)
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .controlSize(isCompact ? .regular : .large)
                     .tint(ColorTokens.actionTint)
 
                 Text("You can enable location later from Settings to improve Active Card recommendations.")
@@ -375,19 +452,19 @@ private extension LocationPermissionPrimingView {
         default:
             VStack(spacing: SpacingTokens.small) {
                 Button(
-                    viewModel.isRequestingPermission ? "Waiting for iOS Permission…" : "Allow Location Access"
+                    viewModel.isRequestingPermission ? "Waiting for iOS Permission\u{2026}" : "Allow Location Access"
                 ) {
                     viewModel.requestLocationPermission()
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .controlSize(isCompact ? .regular : .large)
                 .tint(ColorTokens.actionTint)
                 .disabled(viewModel.isRequestingPermission)
                 .accessibilityHint("Requests location access so NomadFi can recommend the best card for your current country.")
 
                 Button("Not Now", action: onSkipLocation)
                     .buttonStyle(.bordered)
-                    .controlSize(.large)
+                    .controlSize(isCompact ? .regular : .large)
                     .accessibilityHint("Finishes setup and lets you enable location later.")
             }
         }

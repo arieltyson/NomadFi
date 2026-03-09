@@ -134,6 +134,8 @@
     "Account Type" : {
 
     },
+    "Active Card can now recommend the best account for your current country." : {
+    },
     "Active Card Recommendation" : {
 
     },
@@ -178,12 +180,18 @@
 
     },
     "Adds this account to your onboarding list." : {
+
     },
     "All data stays on-device" : {
 
     },
     "All text scales to your preferred size, including the largest accessibility sizes." : {
 
+    },
+    "Allow “NomadFi” to use your location?" : {
+
+    },
+    "Allow Location Access" : {
     },
     "Amount" : {
 
@@ -201,6 +209,7 @@
 
     },
     "Authenticates with %@ or device passcode." : {
+
     },
     "Back" : {
 
@@ -264,14 +273,20 @@
 
     },
     "Confirms this detected subscription and starts tracking it." : {
+
+    },
+    "Connect to Location, Securely." : {
     },
     "Continue" : {
 
+    },
+    "Continue Without Location" : {
     },
     "Continues to account setup." : {
 
     },
     "Continues to home currency setup." : {
+
     },
     "Converted Amount" : {
 
@@ -322,10 +337,13 @@
 
     },
     "Dismisses account entry without adding an account." : {
+
     },
     "Dismisses subscription entry without saving." : {
+
     },
     "Dismisses this detected subscription suggestion." : {
+
     },
     "Dismisses this sheet without saving the scanned receipt." : {
 
@@ -367,6 +385,7 @@
 
     },
     "Enter merchant and amount to enable saving." : {
+
     },
     "Enter service name and amount to enable saving." : {
 
@@ -404,6 +423,8 @@
     },
     "Finish Setup" : {
 
+    },
+    "Finishes setup and lets you enable location later." : {
     },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
@@ -444,8 +465,14 @@
     "Live Exchange Rates" : {
 
     },
+    "Location Access Enabled" : {
+    },
+    "Location Access Not Enabled" : {
+    },
     "Location Error" : {
 
+    },
+    "Location permission preview" : {
     },
     "Lock After" : {
 
@@ -485,8 +512,10 @@
 
     },
     "Needs review" : {
+
     },
     "Needs Review" : {
+
     },
     "Next renewal" : {
 
@@ -516,6 +545,9 @@
 
     },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
+
+    },
+    "NomadFi detects your current country to recommend the lowest-fee payment card for where you are." : {
 
     },
     "NomadFi detects your location and recommends the card with the lowest foreign transaction fees." : {
@@ -551,7 +583,10 @@
     "None" : {
 
     },
+    "Not Now" : {
+    },
     "Not selected" : {
+
     },
     "Notes" : {
 
@@ -575,9 +610,12 @@
 
     },
     "Opens your photo library to select a receipt image for scanning." : {
+
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
+    },
+    "Precise: On" : {
     },
     "Privacy & Data" : {
 
@@ -615,6 +653,8 @@
     "Renews %@" : {
 
     },
+    "Requests location access so NomadFi can recommend the best card for your current country." : {
+    },
     "Requests permission to send financial alerts and reminders" : {
 
     },
@@ -628,6 +668,7 @@
 
     },
     "Returns to the previous onboarding step." : {
+
     },
     "Review the fields below and adjust as needed." : {
 
@@ -645,6 +686,7 @@
 
     },
     "Saves this receipt to Tax Vault with the current details." : {
+
     },
     "Saves this subscription to your list." : {
 
@@ -698,11 +740,13 @@
 
     },
     "Select at least two jurisdictions to continue." : {
+
     },
     "Selected" : {
 
     },
     "Selects a receipt image to scan and add to Tax Vault." : {
+
     },
     "Service" : {
 
@@ -717,6 +761,7 @@
 
     },
     "Shares the most recently exported tax report." : {
+
     },
     "Something Went Wrong" : {
 
@@ -772,6 +817,8 @@
     "This transaction will appear in your Tax Vault" : {
 
     },
+    "To recommend your best card where you are, NomadFi needs location permission." : {
+    },
     "Total net worth" : {
 
     },
@@ -807,6 +854,7 @@
       }
     },
     "Verification Status" : {
+
     },
     "Verified" : {
 
@@ -819,6 +867,8 @@
     },
     "VoiceOver Optimized" : {
 
+    },
+    "Waiting for iOS Permission…" : {
     },
     "We found these recurring charges in your transactions." : {
 
@@ -852,6 +902,12 @@
     },
     "You can add accounts later from the dashboard" : {
 
+    },
+    "You can change this anytime in iOS Settings." : {
+    },
+    "You can enable location later from Settings to improve Active Card recommendations." : {
+    },
+    "You can finish setup now and enable location later in iOS Settings." : {
     },
     "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
 
