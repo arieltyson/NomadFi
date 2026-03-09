@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,15 +35,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		F24861AA847D6818D20F751C /* Embed App Extensions */ = {
+		F24861AA847D6818D20F751C /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed App Extensions */,
+				B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -164,7 +164,7 @@
 				AF3AAACA2F4C4E8500393A16 /* Sources */,
 				AF3AAACB2F4C4E8500393A16 /* Frameworks */,
 				AF3AAACC2F4C4E8500393A16 /* Resources */,
-				F24861AA847D6818D20F751C /* Embed App Extensions */,
+				F24861AA847D6818D20F751C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -235,7 +235,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					23E8839F52C526D801E3A5FB = {
 						CreatedOnToolsVersion = 26.2;
@@ -477,6 +477,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -534,6 +535,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
