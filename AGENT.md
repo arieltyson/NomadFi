@@ -503,13 +503,13 @@ Each conforms to `AppIntent` with `localizedStringResource`, `@Parameter`, and `
 - Sample/demo data on first dashboard load
 - TipKit for progressive feature discovery
 
-### Commit 41: App Store Metadata & Screenshots
+### Commit 41: App Store Metadata & Screenshots ⏸️ PAUSED
 - Description emphasizing Social Impact
 - 6.7" and 6.1" screenshots telling Problem -> Solution -> Impact story
 - App Preview video: receipt scan -> insight flow
 - Keywords: international student finance, cross-border money, FX tracker, NRA tax, global net worth
 
-### Commit 42: Final Integration Test & Submission
+### Commit 42: Final Integration Test & Submission ⏸️ PAUSED
 - End-to-end test: onboarding -> add accounts -> scan receipt -> view insight -> export tax report -> Siri shortcut
 - Accessibility audit with Accessibility Inspector
 - App Review Guidelines compliance (Section 5 — Finance)

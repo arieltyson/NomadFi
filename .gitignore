@@ -43,5 +43,8 @@ Secrets/
 .env
 .env.*
 
+# Local agent/editor settings
+.claude/
+
 # Localization catalogs are source files and should stay version controlled.
 !**/*.xcstrings
