@@ -24,14 +24,16 @@ struct DashboardView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        ScrollView {
+        Group {
             if accounts.isEmpty {
-                emptyState
+                centeredEmptyState
             } else {
-                dashboardContent
+                ScrollView {
+                    dashboardContent
+                }
+                .scrollIndicators(.hidden)
             }
         }
-        .scrollIndicators(.hidden)
         .background {
             LinearGradient(
                 colors: [ColorTokens.brandPrimary.opacity(0.05), .clear],
@@ -207,6 +209,12 @@ private extension DashboardView {
         } description: {
             Text("Add accounts from Settings > Accounts to see your global net worth.")
         }
+    }
+
+    var centeredEmptyState: some View {
+        emptyState
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(.horizontal, SpacingTokens.medium)
     }
 
     func refreshRates() async {

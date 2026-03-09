@@ -31,6 +31,16 @@
         }
       }
     },
+    "%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      }
+    },
     "%@ → %@" : {
       "localizations" : {
         "en" : {
@@ -134,7 +144,10 @@
     "Account Type" : {
 
     },
+    "Accounts" : {
+    },
     "Active Card can now recommend the best account for your current country." : {
+
     },
     "Active Card Recommendation" : {
 
@@ -155,8 +168,7 @@
     "Add Account" : {
 
     },
-    "Add accounts from Settings to see your global net worth." : {
-
+    "Add accounts from Settings > Accounts to see your global net worth." : {
     },
     "Add More Accounts" : {
 
@@ -179,6 +191,8 @@
     "Add your accounts" : {
 
     },
+    "Add your first account to power Dashboard insights and Active Card recommendations." : {
+    },
     "Adds this account to your onboarding list." : {
 
     },
@@ -192,6 +206,7 @@
 
     },
     "Allow Location Access" : {
+
     },
     "Amount" : {
 
@@ -276,11 +291,13 @@
 
     },
     "Connect to Location, Securely." : {
+
     },
     "Continue" : {
 
     },
     "Continue Without Location" : {
+
     },
     "Continues to account setup." : {
 
@@ -299,6 +316,8 @@
     },
     "Currency" : {
 
+    },
+    "Currency & Amounts" : {
     },
     "Current (%@)" : {
 
@@ -338,6 +357,8 @@
     },
     "Dismisses account entry without adding an account." : {
 
+    },
+    "Dismisses account entry without saving." : {
     },
     "Dismisses subscription entry without saving." : {
 
@@ -380,6 +401,8 @@
     },
     "Enable notifications to receive subscription reminders, budget alerts, and FX rate movement warnings." : {
 
+    },
+    "Enter account name and institution to save this account." : {
     },
     "Enter at least account name and institution to add this account." : {
 
@@ -425,12 +448,15 @@
 
     },
     "Finishes setup and lets you enable location later." : {
+
     },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
     },
     "Frequency" : {
 
+    },
+    "FX Fee %" : {
     },
     "Get a recommendation for the best card to use at your current location." : {
 
@@ -466,13 +492,16 @@
 
     },
     "Location Access Enabled" : {
+
     },
     "Location Access Not Enabled" : {
+
     },
     "Location Error" : {
 
     },
     "Location permission preview" : {
+
     },
     "Lock After" : {
 
@@ -492,6 +521,8 @@
     },
     "Manage jurisdictions, currencies, privacy, and account preferences." : {
 
+    },
+    "Manage the accounts used for global net worth, FX analysis, and card recommendations." : {
     },
     "Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding." : {
 
@@ -584,6 +615,7 @@
 
     },
     "Not Now" : {
+
     },
     "Not selected" : {
 
@@ -609,6 +641,8 @@
     "Opens a form to add a bank account or card." : {
 
     },
+    "Opens a form to add a new bank account or card." : {
+    },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
@@ -616,6 +650,7 @@
 
     },
     "Precise: On" : {
+
     },
     "Privacy & Data" : {
 
@@ -654,6 +689,7 @@
 
     },
     "Requests location access so NomadFi can recommend the best card for your current country." : {
+
     },
     "Requests permission to send financial alerts and reminders" : {
 
@@ -684,6 +720,8 @@
     },
     "Save %@/year with subscription arbitrage" : {
 
+    },
+    "Saves this account to your profile." : {
     },
     "Saves this receipt to Tax Vault with the current details." : {
 
@@ -818,6 +856,7 @@
 
     },
     "To recommend your best card where you are, NomadFi needs location permission." : {
+
     },
     "Total net worth" : {
 
@@ -830,6 +869,8 @@
     },
     "Type & Currency" : {
 
+    },
+    "Type & Jurisdiction" : {
     },
     "Unlock NomadFi" : {
 
@@ -869,6 +910,7 @@
 
     },
     "Waiting for iOS Permission…" : {
+
     },
     "We found these recurring charges in your transactions." : {
 
@@ -904,10 +946,13 @@
 
     },
     "You can change this anytime in iOS Settings." : {
+
     },
     "You can enable location later from Settings to improve Active Card recommendations." : {
+
     },
     "You can finish setup now and enable location later in iOS Settings." : {
+
     },
     "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
 
