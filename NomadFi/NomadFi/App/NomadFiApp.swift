@@ -63,11 +63,11 @@ struct NomadFiApp: App {
                     && hasCompletedOnboarding
                     && !uiTestConfig.disableAppLock
                 {
-                    AppLockView(appLockManager: appLockManager)
+                    AppLockView()
                         .zIndex(3)
                 }
             }
-            .onChange(of: scenePhase) { _, newPhase in
+            .onChange(of: scenePhase, initial: true) { _, newPhase in
                 switch newPhase {
                 case .active:
                     if reduceMotion || uiTestConfig.forceReduceMotion {
@@ -79,17 +79,20 @@ struct NomadFiApp: App {
                     }
 
                     if !uiTestConfig.disableAppLock {
-                        appLockManager.willEnterForeground()
+                        appLockManager.sceneDidBecomeActive()
                     }
-                case .inactive, .background:
+                case .inactive:
+                    isBlurred = true
+                case .background:
                     isBlurred = true
                     if !uiTestConfig.disableAppLock {
-                        appLockManager.didEnterBackground()
+                        appLockManager.sceneDidEnterBackground()
                     }
                 @unknown default:
                     break
                 }
             }
+            .environment(appLockManager)
             .tint(ColorTokens.actionTint)
         }
         .modelContainer(for: [

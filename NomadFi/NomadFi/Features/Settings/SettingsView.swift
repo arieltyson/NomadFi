@@ -19,6 +19,7 @@ import SwiftUI
 struct SettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppLockManager.self) private var appLockManager
 
     @Query(sort: \JurisdictionProfile.displayOrder)
     private var jurisdictions: [JurisdictionProfile]
@@ -27,7 +28,6 @@ struct SettingsView: View {
     @Query private var subscriptions: [Subscription]
 
     @State private var notificationManager = NotificationManager()
-    @State private var appLockManager = AppLockManager()
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingAddAccountSheet = false
@@ -74,6 +74,7 @@ struct SettingsView: View {
             .glassSheet()
         }
         .task {
+            appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
         }
     }
@@ -86,7 +87,9 @@ private extension SettingsView {
     // MARK: Security
 
     var securitySection: some View {
-        Section {
+        @Bindable var appLockManager = appLockManager
+
+        return Section {
             Toggle("App Lock", isOn: $appLockManager.isAppLockEnabled)
                 .accessibilityHint(
                     appLockManager.isBiometricAvailable

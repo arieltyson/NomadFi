@@ -14,9 +14,8 @@ import SwiftUI
 /// Blocks all interaction with the underlying content.
 struct AppLockView: View {
 
-    let appLockManager: AppLockManager
-
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(AppLockManager.self) private var appLockManager
 
     var body: some View {
         ZStack {
@@ -44,23 +43,30 @@ struct AppLockView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
+                if appLockManager.isAuthenticating {
+                    ProgressView()
+                        .controlSize(.regular)
+                }
+
                 Spacer()
 
-                Button("Unlock NomadFi", systemImage: biometricIcon) {
+                Button(appLockManager.isAuthenticating ? "Authenticating..." : "Unlock NomadFi", systemImage: biometricIcon) {
                     Task {
                         await appLockManager.authenticate()
                     }
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .disabled(appLockManager.isAuthenticating)
                 .accessibilityHint("Authenticates with \(biometricAccessLabel) or device passcode.")
+                .accessibilityIdentifier("appLock.unlockButton")
             }
             .padding(SpacingTokens.large)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("NomadFi is locked. Authenticate to access your financial data.")
         .task {
-            // Auto-trigger authentication on appearance
+            guard appLockManager.isLocked else { return }
             await appLockManager.authenticate()
         }
     }

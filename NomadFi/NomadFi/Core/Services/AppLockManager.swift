@@ -21,10 +21,18 @@ import OSLog
 @Observable
 final class AppLockManager {
 
+    struct BiometricState {
+        let isAvailable: Bool
+        let type: LABiometryType
+    }
+
     // MARK: - State
 
     /// Whether the app is currently locked and requires authentication.
     var isLocked = false
+
+    /// Whether an authentication request is currently in flight.
+    var isAuthenticating = false
 
     /// Whether biometric authentication is available on this device.
     var isBiometricAvailable = false
@@ -35,48 +43,75 @@ final class AppLockManager {
     /// Whether the user has enabled the app lock feature.
     var isAppLockEnabled: Bool {
         didSet {
-            KeychainService.save(isAppLockEnabled, forKey: .appLockEnabled)
+            persistIfNeeded(isAppLockEnabled, forKey: .appLockEnabled)
+
+            if !isAppLockEnabled {
+                isLocked = false
+                backgroundedAt = nil
+            }
         }
     }
 
     /// The selected lock timeout duration.
     var lockTimeout: LockTimeout {
         didSet {
-            KeychainService.save(lockTimeout.rawValue, forKey: .appLockTimeout)
+            persistIfNeeded(lockTimeout.rawValue, forKey: .appLockTimeout)
         }
     }
 
     // MARK: - Private
 
     /// Timestamp when the app last entered the background.
+    @ObservationIgnored
     private var backgroundedAt: Date?
 
-    private static let logger = Logger(subsystem: "com.nomadfi.app", category: "AppLock")
+    @ObservationIgnored
+    private var hasCompletedInitialActivation = false
+
+    @ObservationIgnored
+    private let persistChanges: Bool
+
+    @ObservationIgnored
+    private let now: () -> Date
+
+    @ObservationIgnored
+    private let biometricStateProvider: () -> BiometricState
+
+    @ObservationIgnored
+    private let authenticationEvaluator: () async throws -> Bool
+
+    nonisolated private static let logger = Logger(subsystem: "com.nomadfi.app", category: "AppLock")
 
     // MARK: - Initialization
 
-    init() {
-        isAppLockEnabled = KeychainService.loadBool(forKey: .appLockEnabled)
-        let timeoutRaw = KeychainService.loadString(forKey: .appLockTimeout) ?? LockTimeout.immediate.rawValue
-        lockTimeout = LockTimeout(rawValue: timeoutRaw) ?? .immediate
+    init(
+        isAppLockEnabled: Bool = KeychainService.loadBool(forKey: .appLockEnabled),
+        lockTimeout: LockTimeout? = nil,
+        persistChanges: Bool = true,
+        now: @escaping () -> Date = { .now },
+        biometricStateProvider: (() -> BiometricState)? = nil,
+        authenticationEvaluator: (() async throws -> Bool)? = nil
+    ) {
+        self.persistChanges = persistChanges
+        self.now = now
+        self.biometricStateProvider = biometricStateProvider ?? Self.liveBiometricState
+        self.authenticationEvaluator = authenticationEvaluator ?? Self.liveAuthenticate
+        self.isAppLockEnabled = isAppLockEnabled
+        self.lockTimeout = lockTimeout ?? Self.loadStoredLockTimeout()
 
-        checkBiometricAvailability()
+        refreshBiometricAvailability()
     }
 
     // MARK: - Biometric Check
 
     /// Checks whether biometric authentication is available on this device.
-    func checkBiometricAvailability() {
-        let context = LAContext()
-        var error: NSError?
-        isBiometricAvailable = context.canEvaluatePolicy(
-            .deviceOwnerAuthenticationWithBiometrics,
-            error: &error
-        )
-        biometricType = context.biometryType
+    func refreshBiometricAvailability() {
+        let biometricState = biometricStateProvider()
+        isBiometricAvailable = biometricState.isAvailable
+        biometricType = biometricState.type
 
-        if let error {
-            Self.logger.info("Biometrics unavailable: \(error.localizedDescription, privacy: .public)")
+        if biometricState.isAvailable == false, biometricType != .none {
+            Self.logger.info("Biometric authentication is currently unavailable for configured biometry type")
         }
     }
 
@@ -84,25 +119,28 @@ final class AppLockManager {
 
     /// Attempts to authenticate the user via biometrics or device passcode.
     ///
-    /// Falls back to device passcode if biometrics are unavailable or fail.
+    /// Uses `.deviceOwnerAuthentication` so the system can offer the
+    /// current best authentication method, including passcode fallback.
     /// On success, sets `isLocked = false` to reveal the app content.
     func authenticate() async {
-        let context = LAContext()
-        context.localizedCancelTitle = "Cancel"
+        guard isAppLockEnabled else {
+            isLocked = false
+            return
+        }
 
-        // Use deviceOwnerAuthentication to allow passcode fallback
-        let policy: LAPolicy = isBiometricAvailable
-            ? .deviceOwnerAuthenticationWithBiometrics
-            : .deviceOwnerAuthentication
+        guard !isAuthenticating else { return }
+
+        isAuthenticating = true
+        defer { isAuthenticating = false }
+
+        refreshBiometricAvailability()
 
         do {
-            let success = try await context.evaluatePolicy(
-                policy,
-                localizedReason: "Unlock NomadFi to access your financial data"
-            )
+            let success = try await authenticationEvaluator()
 
             if success {
                 isLocked = false
+                backgroundedAt = nil
                 Self.logger.info("App unlocked via biometric/passcode")
             }
         } catch {
@@ -114,27 +152,97 @@ final class AppLockManager {
     // MARK: - Scene Phase Handling
 
     /// Called when the app enters the background.
-    func didEnterBackground() {
-        backgroundedAt = .now
-    }
-
-    /// Called when the app returns to the foreground.
-    ///
-    /// Locks the app if the elapsed background time exceeds the timeout.
-    func willEnterForeground() {
-        guard isAppLockEnabled else { return }
-
-        guard let backgroundedAt else {
-            // First launch with lock enabled — require auth
-            isLocked = true
+    func sceneDidEnterBackground() {
+        guard isAppLockEnabled else {
+            backgroundedAt = nil
             return
         }
 
-        let elapsed = Date.now.timeIntervalSince(backgroundedAt)
+        guard !isAuthenticating else { return }
+
+        backgroundedAt = now()
+    }
+
+    /// Called when the app becomes active.
+    ///
+    /// Locks the app if the elapsed background time exceeds the timeout and
+    /// performs the one-time initial lock check when protection is enabled.
+    func sceneDidBecomeActive() {
+        refreshBiometricAvailability()
+
+        guard isAppLockEnabled else {
+            isLocked = false
+            backgroundedAt = nil
+            hasCompletedInitialActivation = true
+            return
+        }
+
+        guard !isAuthenticating else { return }
+
+        guard let backgroundedAt else {
+            if !hasCompletedInitialActivation {
+                isLocked = true
+                Self.logger.info("App locked on initial protected activation")
+            }
+
+            hasCompletedInitialActivation = true
+            return
+        }
+
+        self.backgroundedAt = nil
+
+        let elapsed = now().timeIntervalSince(backgroundedAt)
         if elapsed >= lockTimeout.seconds {
             isLocked = true
             Self.logger.info("App locked after \(elapsed, privacy: .public)s in background")
         }
+
+        hasCompletedInitialActivation = true
+    }
+
+    // MARK: - Helpers
+
+    private func persistIfNeeded(_ value: Bool, forKey key: KeychainService.Key) {
+        guard persistChanges else { return }
+        KeychainService.save(value, forKey: key)
+    }
+
+    private func persistIfNeeded(_ value: String, forKey key: KeychainService.Key) {
+        guard persistChanges else { return }
+        KeychainService.save(value, forKey: key)
+    }
+
+    nonisolated private static func loadStoredLockTimeout() -> LockTimeout {
+        let timeoutRaw = KeychainService.loadString(forKey: .appLockTimeout) ?? LockTimeout.immediate.rawValue
+        return LockTimeout(rawValue: timeoutRaw) ?? .immediate
+    }
+
+    nonisolated private static func liveBiometricState() -> BiometricState {
+        let context = LAContext()
+        var error: NSError?
+        let isAvailable = context.canEvaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            error: &error
+        )
+
+        if let error {
+            Self.logger.info("Biometrics unavailable: \(error.localizedDescription, privacy: .public)")
+        }
+
+        return BiometricState(
+            isAvailable: isAvailable,
+            type: context.biometryType
+        )
+    }
+
+    nonisolated private static func liveAuthenticate() async throws -> Bool {
+        let context = LAContext()
+        context.localizedCancelTitle = "Cancel"
+
+        return try await context.evaluatePolicy(
+            .deviceOwnerAuthentication,
+            localizedReason: "Unlock NomadFi to access your financial data"
+        )
     }
 }
 
