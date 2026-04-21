@@ -35,14 +35,17 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [
-            Currency.self,
-            JurisdictionProfile.self,
-            Account.self,
-            Transaction.self,
-            ExchangeRate.self,
-            TaxDocument.self,
-            Subscription.self,
-            Budget.self,
-        ], inMemory: true)
+        .modelContainer(
+            for: [
+                Currency.self,
+                JurisdictionProfile.self,
+                Account.self,
+                Transaction.self,
+                ExchangeRate.self,
+                TaxDocument.self,
+                Subscription.self,
+                Budget.self,
+            ],
+            inMemory: true
+        )
 }

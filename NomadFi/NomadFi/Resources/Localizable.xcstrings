@@ -145,6 +145,7 @@
 
     },
     "Accounts" : {
+
     },
     "Active Card can now recommend the best account for your current country." : {
 
@@ -169,6 +170,7 @@
 
     },
     "Add accounts from Settings > Accounts to see your global net worth." : {
+
     },
     "Add More Accounts" : {
 
@@ -192,6 +194,7 @@
 
     },
     "Add your first account to power Dashboard insights and Active Card recommendations." : {
+
     },
     "Adds this account to your onboarding list." : {
 
@@ -225,6 +228,8 @@
     },
     "Authenticates with %@ or device passcode." : {
 
+    },
+    "Authenticating..." : {
     },
     "Back" : {
 
@@ -318,6 +323,7 @@
 
     },
     "Currency & Amounts" : {
+
     },
     "Current (%@)" : {
 
@@ -359,6 +365,7 @@
 
     },
     "Dismisses account entry without saving." : {
+
     },
     "Dismisses subscription entry without saving." : {
 
@@ -403,6 +410,7 @@
 
     },
     "Enter account name and institution to save this account." : {
+
     },
     "Enter at least account name and institution to add this account." : {
 
@@ -457,6 +465,7 @@
 
     },
     "FX Fee %" : {
+
     },
     "Get a recommendation for the best card to use at your current location." : {
 
@@ -523,6 +532,7 @@
 
     },
     "Manage the accounts used for global net worth, FX analysis, and card recommendations." : {
+
     },
     "Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding." : {
 
@@ -642,6 +652,7 @@
 
     },
     "Opens a form to add a new bank account or card." : {
+
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
@@ -722,6 +733,7 @@
 
     },
     "Saves this account to your profile." : {
+
     },
     "Saves this receipt to Tax Vault with the current details." : {
 
@@ -871,6 +883,7 @@
 
     },
     "Type & Jurisdiction" : {
+
     },
     "Unlock NomadFi" : {
 
