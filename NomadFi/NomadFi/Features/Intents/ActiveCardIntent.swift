@@ -41,14 +41,20 @@ struct ActiveCardIntent: AppIntent {
         }
 
         let fee = bestCard.foreignTransactionFeePercent
+        let isVerified = bestCard.foreignTransactionFeeProvenance.confidence.isVerified
+        // When fee data is not verified against issuer disclosure, the
+        // dialog must not imply official verification. The caveat is
+        // spoken back so the user can judge the recommendation.
+        let caveat = isVerified ? "" : " This is based on fee data you saved, not confirmed with the issuer."
+
         if fee == 0 {
             return .result(
-                dialog: "Use your \(bestCard.name). It has no foreign transaction fees."
+                dialog: "Use your \(bestCard.name). It has no foreign transaction fees on record.\(caveat)"
             )
         } else {
             let feeFormatted = fee.formatted(.number.precision(.fractionLength(1)))
             return .result(
-                dialog: "Use your \(bestCard.name). It has the lowest foreign transaction fee at \(feeFormatted)%."
+                dialog: "Use your \(bestCard.name). It has the lowest foreign transaction fee on record at \(feeFormatted)%.\(caveat)"
             )
         }
     }

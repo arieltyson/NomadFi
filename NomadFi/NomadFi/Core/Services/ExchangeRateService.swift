@@ -29,9 +29,28 @@ protocol ExchangeRateService: Sendable {
 ///
 /// Used for transferring rate data between the service layer and
 /// view models before persisting to SwiftData.
+///
+/// Carries a ``SourceProvenance`` so the UI can honestly label whether a
+/// rate came from an indicative prototype API, a sample dataset, or a
+/// verified source — per the evidence hierarchy in `docs/README.md`.
 struct ExchangeRateSnapshot: Sendable {
     let baseCurrency: CurrencyCode
     let targetCurrency: CurrencyCode
     let rate: Double
     let fetchedAt: Date
+    let sourceProvenance: SourceProvenance
+
+    init(
+        baseCurrency: CurrencyCode,
+        targetCurrency: CurrencyCode,
+        rate: Double,
+        fetchedAt: Date,
+        sourceProvenance: SourceProvenance
+    ) {
+        self.baseCurrency = baseCurrency
+        self.targetCurrency = targetCurrency
+        self.rate = rate
+        self.fetchedAt = fetchedAt
+        self.sourceProvenance = sourceProvenance
+    }
 }

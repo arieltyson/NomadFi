@@ -60,6 +60,7 @@ struct LiveExchangeRateService: ExchangeRateService {
             try await fetchRatesResponse(for: .usd)
         }
         let now = Date.now
+        let provenance = SourceProvenance.openExchangeRatesAPI(accessedAt: now)
 
         var snapshots: [ExchangeRateSnapshot] = []
 
@@ -75,7 +76,8 @@ struct LiveExchangeRateService: ExchangeRateService {
                     baseCurrency: base,
                     targetCurrency: target,
                     rate: crossRate,
-                    fetchedAt: now
+                    fetchedAt: now,
+                    sourceProvenance: provenance
                 ))
             }
         }

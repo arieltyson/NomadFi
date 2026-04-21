@@ -60,6 +60,30 @@ private struct RateCard: View {
 
 private extension ExchangeRateTicker {
 
+    /// Derives a single confidence label for the whole ticker from the
+    /// snapshots currently displayed. When every snapshot shares the same
+    /// confidence (the normal case for a single fetch), we surface it;
+    /// otherwise we fall back to the weakest label to avoid overstating
+    /// the data.
+    var tickerConfidence: SourceConfidence? {
+        guard let first = rates.first?.sourceProvenance.confidence else { return nil }
+        let allSame = rates.allSatisfy { $0.sourceProvenance.confidence == first }
+        return allSame ? first : .indicative
+    }
+
+    var confidenceBadge: some View {
+        Group {
+            if let tickerConfidence {
+                StatusBadge(
+                    label: tickerConfidence.displayLabel,
+                    color: tickerConfidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                    systemImage: tickerConfidence.isVerified ? "checkmark.seal" : "info.circle"
+                )
+                .accessibilityLabel("Rates confidence: \(tickerConfidence.displayLabel)")
+            }
+        }
+    }
+
     var headerRow: some View {
         Group {
             if dynamicTypeSize.isAccessibilitySize {
@@ -68,6 +92,8 @@ private extension ExchangeRateTicker {
                         .font(TypographyTokens.sectionHeader)
                         .accessibilityAddTraits(.isHeader)
 
+                    confidenceBadge
+
                     if let lastUpdated {
                         Text("Updated \(lastUpdated, format: .dateTime.hour().minute())")
                             .font(TypographyTokens.footnote)
@@ -75,10 +101,12 @@ private extension ExchangeRateTicker {
                     }
                 }
             } else {
-                HStack {
+                HStack(spacing: SpacingTokens.xSmall) {
                     Label("Exchange Rates", systemImage: "chart.line.uptrend.xyaxis")
                         .font(TypographyTokens.sectionHeader)
                         .accessibilityAddTraits(.isHeader)
+
+                    confidenceBadge
 
                     Spacer()
 
@@ -111,11 +139,12 @@ private extension ExchangeRateTicker {
 }
 
 #Preview {
+    let sampleProvenance = SourceProvenance.sampleRates(accessedAt: .now)
     ExchangeRateTicker(
         rates: [
-            ExchangeRateSnapshot(baseCurrency: .usd, targetCurrency: .ttd, rate: 6.78, fetchedAt: .now),
-            ExchangeRateSnapshot(baseCurrency: .usd, targetCurrency: .cad, rate: 1.36, fetchedAt: .now),
-            ExchangeRateSnapshot(baseCurrency: .cad, targetCurrency: .ttd, rate: 4.99, fetchedAt: .now),
+            ExchangeRateSnapshot(baseCurrency: .usd, targetCurrency: .ttd, rate: 6.78, fetchedAt: .now, sourceProvenance: sampleProvenance),
+            ExchangeRateSnapshot(baseCurrency: .usd, targetCurrency: .cad, rate: 1.36, fetchedAt: .now, sourceProvenance: sampleProvenance),
+            ExchangeRateSnapshot(baseCurrency: .cad, targetCurrency: .ttd, rate: 4.99, fetchedAt: .now, sourceProvenance: sampleProvenance),
         ],
         lastUpdated: .now
     )

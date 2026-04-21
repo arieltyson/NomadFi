@@ -113,7 +113,10 @@ private extension InsightEngine {
         return FinancialInsight(
             title: "Hidden FX Fees This Week",
             message: "You paid \(formattedWaste) in exchange rate markups across \(count) cross-border transaction\(count == 1 ? "" : "s"). Check which cards have the lowest foreign transaction fees.",
-            category: .fxWaste
+            category: .fxWaste,
+            // Derived from user-entered transaction amounts; not a
+            // verified issuer disclosure.
+            confidence: .userProvided
         )
     }
 
@@ -144,10 +147,19 @@ private extension InsightEngine {
                 let savings = usedAccount.foreignTransactionFeePercent - better.foreignTransactionFeePercent
                 let savingsFormatted = savings.formatted(.number.precision(.fractionLength(1)))
 
+                // If either fee is not verified against issuer disclosure,
+                // the savings claim must inherit the weaker confidence.
+                let usedVerified = usedAccount.foreignTransactionFeeProvenance.confidence.isVerified
+                let betterVerified = better.foreignTransactionFeeProvenance.confidence.isVerified
+                let confidence: SourceConfidence = (usedVerified && betterVerified)
+                    ? .verifiedPrimary
+                    : .userProvided
+
                 return FinancialInsight(
                     title: "Better Card Available",
                     message: "You used \(usedAccount.name) for \(transaction.merchantName) but \(better.name) has \(savingsFormatted)% lower FX fees in \(transaction.jurisdiction).",
-                    category: .fxWaste
+                    category: .fxWaste,
+                    confidence: confidence
                 )
             }
         }
@@ -177,7 +189,10 @@ private extension InsightEngine {
         return FinancialInsight(
             title: "Strong \(bestRate.baseCurrency.rawValue) Today",
             message: "1 \(bestRate.baseCurrency.rawValue) = \(rateFormatted) \(homeCurrency.rawValue). Consider sending money home to maximize your transfer value.",
-            category: .arbitrage
+            category: .arbitrage,
+            // Confidence is inherited from the underlying snapshot —
+            // prototype API data must surface as indicative.
+            confidence: bestRate.sourceProvenance.confidence
         )
     }
 }

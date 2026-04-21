@@ -22,11 +22,22 @@ struct InsightCardView: View {
                         .font(TypographyTokens.body)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    if let confidence = insight.confidence {
+                        StatusBadge(
+                            label: confidence.displayLabel,
+                            color: confidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                            systemImage: confidence.isVerified
+                                ? "checkmark.seal"
+                                : "info.circle"
+                        )
+                        .accessibilityLabel("Data confidence: \(confidence.displayLabel)")
+                    }
                 }
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(insight.category.accessibilityLabel): \(insight.title). \(insight.message)")
+        .accessibilityLabel("\(insight.category.accessibilityLabel): \(insight.title). \(insight.message). \(insight.confidence?.displayLabel ?? "")")
     }
 }
 
@@ -52,6 +63,24 @@ struct FinancialInsight: Identifiable, Sendable {
     let title: String
     let message: String
     let category: Category
+
+    /// Confidence in the data this insight is built on, per the evidence
+    /// hierarchy in `docs/README.md`. `nil` means no label — avoid this
+    /// for money-impacting insights derived from prototype or user-entered
+    /// data.
+    let confidence: SourceConfidence?
+
+    init(
+        title: String,
+        message: String,
+        category: Category,
+        confidence: SourceConfidence? = nil
+    ) {
+        self.title = title
+        self.message = message
+        self.category = category
+        self.confidence = confidence
+    }
 
     enum Category: Sendable {
         case fxWaste

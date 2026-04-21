@@ -22,6 +22,9 @@ final class LedgerViewModel {
     // MARK: - Active Card
 
     var recommendedAccountName: String?
+    /// Confidence in the recommended account's foreign-transaction-fee
+    /// data, forwarded to the banner so it can truthfully label itself.
+    var recommendedAccountFeeConfidence: SourceConfidence?
     var currentCountryCode: String?
     var isLoadingLocation = false
     var locationAuthorizationStatus: CLAuthorizationStatus = .notDetermined
@@ -116,6 +119,7 @@ final class LedgerViewModel {
         else {
             currentCountryCode = nil
             recommendedAccountName = nil
+            recommendedAccountFeeConfidence = nil
             return
         }
 
@@ -124,6 +128,7 @@ final class LedgerViewModel {
 
             guard let country = currentCountryCode else {
                 recommendedAccountName = nil
+                recommendedAccountFeeConfidence = nil
                 return
             }
 
@@ -133,6 +138,7 @@ final class LedgerViewModel {
             let localAccounts = accounts.filter { $0.jurisdiction == country }
             if let best = localAccounts.min(by: { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }) {
                 recommendedAccountName = best.name
+                recommendedAccountFeeConfidence = best.foreignTransactionFeeProvenance.confidence
                 Self.logger.info("Recommended local account: \(best.name, privacy: .private)")
                 return
             }
@@ -140,10 +146,12 @@ final class LedgerViewModel {
             // Fall back to the account with the lowest foreign transaction fee
             let best = accounts.min { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }
             recommendedAccountName = best?.name
+            recommendedAccountFeeConfidence = best?.foreignTransactionFeeProvenance.confidence
         } catch {
             errorMessage = "Could not determine your location for Active Card."
             Self.logger.error("Active Card recommendation failed: \(error.localizedDescription)")
             recommendedAccountName = nil
+            recommendedAccountFeeConfidence = nil
         }
     }
 

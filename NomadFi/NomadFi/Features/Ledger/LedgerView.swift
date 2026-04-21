@@ -109,8 +109,12 @@ private extension LedgerView {
         if let accountName = viewModel.recommendedAccountName,
            let country = viewModel.currentCountryCode
         {
-            ActiveCardBanner(accountName: accountName, countryCode: country)
-                .padding(.horizontal, SpacingTokens.medium)
+            ActiveCardBanner(
+                accountName: accountName,
+                countryCode: country,
+                feeConfidence: viewModel.recommendedAccountFeeConfidence
+            )
+            .padding(.horizontal, SpacingTokens.medium)
         } else if !viewModel.isLoadingLocation {
             TipView(ActiveCardTip())
                 .tipBackground(ColorTokens.surfaceSecondary)

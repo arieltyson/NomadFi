@@ -36,6 +36,8 @@ struct MockExchangeRateService: ExchangeRateService {
         }
 
         var snapshots: [ExchangeRateSnapshot] = []
+        let now = Date.now
+        let provenance = SourceProvenance.sampleRates(accessedAt: now)
 
         for base in currencies {
             for target in currencies where base != target {
@@ -44,7 +46,8 @@ struct MockExchangeRateService: ExchangeRateService {
                     baseCurrency: base,
                     targetCurrency: target,
                     rate: rate,
-                    fetchedAt: .now
+                    fetchedAt: now,
+                    sourceProvenance: provenance
                 ))
             }
         }

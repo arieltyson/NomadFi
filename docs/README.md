@@ -295,34 +295,60 @@ Additional rules:
 This section is intentionally specific so a future coding agent can close the
 gaps without guessing.
 
-- **Live FX service.**
-  [`LiveExchangeRateService`](../NomadFi/NomadFi/Core/Services/Live/LiveExchangeRateService.swift)
-  currently calls `https://open.er-api.com/v6/latest/`, a free public
-  exchange-rate API. Per the evidence hierarchy, this is a **Tier-5 prototype
-  source**. It is acceptable for prototype display only if the UI labels the
-  value as **indicative**. Any production card-routing or FX-waste
-  recommendation must either (a) validate against a Tier-1 source (Bank of
-  Canada / Valet API, Federal Reserve H.10, Central Bank of Trinidad and
-  Tobago) or (b) persist source provenance and freshness metadata alongside
-  the rate so the UI can honestly label it.
-- **Account fee inputs.** Fields such as
-  `Account.foreignTransactionFeePercent` used by
-  [`InsightEngine`](../NomadFi/NomadFi/Core/Services/InsightEngine.swift),
-  [`LedgerViewModel`](../NomadFi/NomadFi/Features/Ledger/LedgerViewModel.swift),
-  and
-  [`ActiveCardIntent`](../NomadFi/NomadFi/Features/Intents/ActiveCardIntent.swift)
-  are currently plain numeric inputs. They need source provenance (issuer page
-  URL, `published/updated date`, `accessed date`) before any output derived
-  from them can be treated as a verified recommendation rather than a
-  scenario-style estimate.
-- **Provenance model.** There is no `Source` / `Citation` model or companion
-  freshness field on recommendation-facing data. Until one exists, any
-  cross-border recommendation must be rendered with an explicit "indicative
-  — verify with issuer" affordance.
-- **Governance utility.**
+### Phase 1 — landed
+
+Runtime provenance primitives now exist and money-impacting recommendations
+carry confidence labels:
+
+- [`SourceProvenance`](../NomadFi/NomadFi/Core/Models/SourceProvenance.swift)
+  — value types for `SourceConfidence`, `SourceType`, `JurisdictionScope`,
+  and the `SourceProvenance` itself, with short user-facing display labels.
+- [`SourceFreshness`](../NomadFi/NomadFi/Core/Utilities/SourceFreshness.swift)
+  — pure, testable freshness policy encoding the windows in this document
+  (live FX, issuer terms, credit-score guidance, deposit insurance). Tax and
+  academic domains deliberately return `unknown` under rolling-window checks
+  since they require current-tax-year or publication-date reasoning.
+- `ExchangeRateSnapshot` now carries `sourceProvenance`;
+  `LiveExchangeRateService` stamps every rate as `.indicative`
+  (`open.er-api.com`, prototype API), and `MockExchangeRateService` stamps
+  rates as sample data.
+- `Account` carries primitive, CloudKit-safe source fields for
+  `foreignTransactionFeePercent` and exposes
+  `foreignTransactionFeeProvenance`. Manually entered fees resolve to
+  `.userProvided` — never verified — until an explicit issuer-verified
+  upgrade is recorded.
+- The `ExchangeRateTicker` renders a confidence badge; `InsightCardView`
+  and `FinancialInsight` carry a `SourceConfidence`;
+  `ActiveCardBanner` shows a second badge reflecting the recommended
+  account's fee confidence and switches its subtitle away from "lowest FX
+  fees" to a saved-data-plus-verify phrasing when the fee is not verified;
+  `ActiveCardIntent` appends a "based on fee data you saved, not confirmed
+  with the issuer" caveat to its spoken dialog under the same condition.
+
+### Phase 1 — remaining
+
+These are still open and should be addressed in later phases:
+
+- **Tier-1 FX sources.** No central-bank clients yet. Bank of Canada
+  Valet, Federal Reserve H.10, and Central Bank of Trinidad and Tobago are
+  still unread at runtime; FX continues to ship as `.indicative`.
+- **Issuer verification flow.** There is no UI or service that lets a user
+  (or an agent on their behalf) upgrade an account fee from `.userProvided`
+  to `.verifiedPrimary` with a captured source URL and verification date.
+- **Freshness enforcement in the UI.** `SourceFreshness` is available but
+  no view currently consults it to decide when to refetch, dim, or refuse
+  to use a stale value.
+- **Persistent rate provenance.** `ExchangeRate` (the SwiftData model) has
+  no provenance fields; only the in-memory `ExchangeRateSnapshot` carries
+  provenance. Persisted rates therefore lose their confidence tier.
+- **Insight coverage.** Only a subset of generated insights set
+  `confidence`. Any new insight added to
+  [`InsightEngine`](../NomadFi/NomadFi/Core/Services/InsightEngine.swift)
+  must explicitly set a confidence value, even if the value is
+  `.userProvided`.
+- **Governance surface.**
   [`DataGovernancePolicy`](../NomadFi/NomadFi/Core/Utilities/DataGovernancePolicy.swift)
-  is the natural home for encoding these freshness windows and the
-  indicative/authoritative distinction.
+  does not yet expose or enforce the source-freshness windows end to end.
 
 None of these gaps are fixed by this document — they are surfaced here so the
 next code change can be scoped honestly.

@@ -9,6 +9,12 @@ struct ActiveCardBanner: View {
 
     let accountName: String
     let countryCode: String
+    /// Confidence in the underlying foreign-transaction-fee data for the
+    /// recommended account. When this is not verified, the banner phrases
+    /// itself in terms of saved fee data rather than implying issuer
+    /// verification.
+    var feeConfidence: SourceConfidence? = nil
+
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
@@ -39,7 +45,7 @@ struct ActiveCardBanner: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Active card recommendation: Use \(accountName) in \(countryCode)")
+        .accessibilityLabel(accessibilityNarrative)
     }
 }
 
@@ -56,25 +62,63 @@ private extension ActiveCardBanner {
 
     var recommendation: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-            StatusBadge(
-                label: "Recommended",
-                color: ColorTokens.actionTint,
-                systemImage: "checkmark.circle.fill"
-            )
+            HStack(spacing: SpacingTokens.xxSmall) {
+                StatusBadge(
+                    label: "Recommended",
+                    color: ColorTokens.actionTint,
+                    systemImage: "checkmark.circle.fill"
+                )
+
+                if let feeConfidence {
+                    StatusBadge(
+                        label: feeConfidence.displayLabel,
+                        color: feeConfidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                        systemImage: feeConfidence.isVerified ? "checkmark.seal" : "info.circle"
+                    )
+                }
+            }
 
             Text("Use \(accountName)")
                 .font(TypographyTokens.sectionHeader)
                 .foregroundStyle(ColorTokens.actionTint)
 
-            Text("Best card for \(String.flagEmoji(for: countryCode)) \(countryCode) — lowest FX fees")
+            Text(subtitle)
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
         }
     }
 
+    var subtitle: String {
+        let prefix = "Best card for \(String.flagEmoji(for: countryCode)) \(countryCode)"
+        guard let feeConfidence else {
+            return "\(prefix) — lowest FX fees"
+        }
+        return feeConfidence.isVerified
+            ? "\(prefix) — lowest FX fees"
+            : "\(prefix) — based on saved fee data; verify with your issuer"
+    }
+
+    var accessibilityNarrative: String {
+        var narrative = "Active card recommendation: Use \(accountName) in \(countryCode)."
+        if let feeConfidence {
+            narrative += " Fee data confidence: \(feeConfidence.displayLabel)."
+        }
+        return narrative
+    }
 }
 
 #Preview {
-    ActiveCardBanner(accountName: "Chase Freedom Rise", countryCode: "US")
-        .padding()
+    VStack(spacing: SpacingTokens.medium) {
+        ActiveCardBanner(
+            accountName: "Chase Freedom Rise",
+            countryCode: "US",
+            feeConfidence: .userProvided
+        )
+        ActiveCardBanner(
+            accountName: "CIBC Dividend Cash Back",
+            countryCode: "CA",
+            feeConfidence: .verifiedPrimary
+        )
+    }
+    .padding()
 }

@@ -11,6 +11,17 @@ final class Account {
     var jurisdiction: String = ""
     var isFinanceKitLinked: Bool = false
     var foreignTransactionFeePercent: Double = 0
+
+    // Provenance fields for `foreignTransactionFeePercent`. Stored as
+    // CloudKit-safe primitives: all optional with sensible defaults. See
+    // `SourceProvenance` and `docs/README.md` for the evidence hierarchy
+    // these values map into.
+    var foreignTransactionFeeSourceName: String? = nil
+    var foreignTransactionFeeSourceURL: String? = nil
+    var foreignTransactionFeeSourceConfidenceRaw: String? = nil
+    var foreignTransactionFeeSourceVerifiedAt: Date? = nil
+    var foreignTransactionFeeSourceNotes: String? = nil
+
     var createdAt: Date = Date.now
     var lastUpdatedAt: Date = Date.now
 
@@ -30,6 +41,35 @@ final class Account {
         AccountType(rawValue: accountTypeRawValue)
     }
 
+    /// Provenance for the `foreignTransactionFeePercent` value.
+    ///
+    /// Reconstructs a ``SourceProvenance`` from the persisted primitive
+    /// fields. Defaults to ``SourceProvenance/userEnteredAccountFee(accessedAt:)``
+    /// when no confidence has been recorded — user-entered fees are never
+    /// treated as verified without an explicit upgrade.
+    var foreignTransactionFeeProvenance: SourceProvenance {
+        let confidence = foreignTransactionFeeSourceConfidenceRaw
+            .flatMap(SourceConfidence.init(rawValue:))
+            ?? .userProvided
+
+        if let name = foreignTransactionFeeSourceName, !name.isEmpty {
+            return SourceProvenance(
+                name: name,
+                urlString: foreignTransactionFeeSourceURL,
+                type: confidence.isVerified ? .issuerDisclosure : .userEntered,
+                confidence: confidence,
+                jurisdiction: .unknown,
+                accessedAt: foreignTransactionFeeSourceVerifiedAt,
+                publishedAt: nil,
+                notes: foreignTransactionFeeSourceNotes
+            )
+        }
+
+        return SourceProvenance.userEnteredAccountFee(
+            accessedAt: foreignTransactionFeeSourceVerifiedAt
+        )
+    }
+
     init(
         name: String = "",
         institutionName: String = "",
@@ -39,6 +79,11 @@ final class Account {
         jurisdiction: String = "",
         isFinanceKitLinked: Bool = false,
         foreignTransactionFeePercent: Double = 0,
+        foreignTransactionFeeSourceName: String? = nil,
+        foreignTransactionFeeSourceURL: String? = nil,
+        foreignTransactionFeeSourceConfidence: SourceConfidence? = nil,
+        foreignTransactionFeeSourceVerifiedAt: Date? = nil,
+        foreignTransactionFeeSourceNotes: String? = nil,
         createdAt: Date = .now,
         lastUpdatedAt: Date = .now,
         jurisdictionProfile: JurisdictionProfile? = nil,
@@ -53,6 +98,11 @@ final class Account {
         self.jurisdiction = jurisdiction
         self.isFinanceKitLinked = isFinanceKitLinked
         self.foreignTransactionFeePercent = foreignTransactionFeePercent
+        self.foreignTransactionFeeSourceName = foreignTransactionFeeSourceName
+        self.foreignTransactionFeeSourceURL = foreignTransactionFeeSourceURL
+        self.foreignTransactionFeeSourceConfidenceRaw = foreignTransactionFeeSourceConfidence?.rawValue
+        self.foreignTransactionFeeSourceVerifiedAt = foreignTransactionFeeSourceVerifiedAt
+        self.foreignTransactionFeeSourceNotes = foreignTransactionFeeSourceNotes
         self.createdAt = createdAt
         self.lastUpdatedAt = lastUpdatedAt
         self.jurisdictionProfile = jurisdictionProfile
