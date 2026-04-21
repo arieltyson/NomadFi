@@ -25,6 +25,16 @@ final class Account {
     var createdAt: Date = Date.now
     var lastUpdatedAt: Date = Date.now
 
+    // Credit-card statement calendar metadata. Only meaningful when
+    // `accountType == .creditCard`. Stored as CloudKit-safe optionals —
+    // absent values mean "not yet entered", never zero. The
+    // authoritative source is the issuer's app; NomadFi only stores
+    // what the user confirms.
+    var statementPeriodStartDate: Date? = nil
+    var statementClosingDate: Date? = nil
+    var paymentDueDate: Date? = nil
+    var statementScheduleLastConfirmedAt: Date? = nil
+
     var jurisdictionProfile: JurisdictionProfile?
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
@@ -90,6 +100,10 @@ final class Account {
         foreignTransactionFeeSourceNotes: String? = nil,
         createdAt: Date = .now,
         lastUpdatedAt: Date = .now,
+        statementPeriodStartDate: Date? = nil,
+        statementClosingDate: Date? = nil,
+        paymentDueDate: Date? = nil,
+        statementScheduleLastConfirmedAt: Date? = nil,
         jurisdictionProfile: JurisdictionProfile? = nil,
         transactions: [Transaction]? = nil,
         subscriptions: [Subscription]? = nil
@@ -109,6 +123,10 @@ final class Account {
         self.foreignTransactionFeeSourceNotes = foreignTransactionFeeSourceNotes
         self.createdAt = createdAt
         self.lastUpdatedAt = lastUpdatedAt
+        self.statementPeriodStartDate = statementPeriodStartDate
+        self.statementClosingDate = statementClosingDate
+        self.paymentDueDate = paymentDueDate
+        self.statementScheduleLastConfirmedAt = statementScheduleLastConfirmedAt
         self.jurisdictionProfile = jurisdictionProfile
         self.transactions = transactions
         self.subscriptions = subscriptions

@@ -38,6 +38,8 @@ struct SettingsView: View {
 
             accountsSection
 
+            CreditCardCalendarSection(accounts: accounts)
+
             securitySection
 
             notificationsSection
