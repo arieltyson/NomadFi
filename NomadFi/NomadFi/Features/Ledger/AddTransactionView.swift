@@ -224,6 +224,14 @@ private extension AddTransactionView {
 
         let sanitizedRate = InputSanitizer.validateExchangeRate(formData.calculatedRate) ?? 0
 
+        // The mid-market rate is set equal to the calculated applied rate
+        // only because no live FX source is captured at entry time. Both
+        // rates are therefore labeled as user-provided/unverified so the
+        // detail screen, insights, and intents do not imply verification.
+        let now = Date.now
+        let appliedProvenance = SourceProvenance.manuallyEnteredAppliedRate(accessedAt: now)
+        let midMarketProvenance = SourceProvenance.manuallyEnteredMidMarketRate(accessedAt: now)
+
         let transaction = Transaction(
             merchantName: InputSanitizer.sanitizeShortText(formData.merchantName),
             originalAmount: originalAmount,
@@ -236,7 +244,9 @@ private extension AddTransactionView {
             category: formData.category,
             jurisdiction: formData.jurisdiction,
             notes: InputSanitizer.sanitizeLongText(formData.notes),
-            isTaxDeductible: formData.isTaxDeductible
+            isTaxDeductible: formData.isTaxDeductible,
+            appliedRateProvenance: appliedProvenance,
+            midMarketRateProvenance: midMarketProvenance
         )
 
         if let accountIndex = formData.selectedAccountIndex,

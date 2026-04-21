@@ -77,6 +77,55 @@ private struct AmountHeader: View {
     }
 }
 
+// MARK: - Rate Confidence Caption
+
+/// Compact provenance + freshness row shown under an FX rate in
+/// `TransactionDetailView`. Keeps the rate screen honest when a rate is
+/// user-provided, unverified, or stale without cluttering the layout.
+private struct RateConfidenceCaption: View {
+
+    let provenance: SourceProvenance
+    let domain: SourceDataDomain
+    let rateLabel: String
+
+    var body: some View {
+        let effective = SourceFreshness.effectiveConfidence(
+            for: provenance,
+            domain: domain
+        )
+        let freshness = SourceFreshness.status(for: provenance, domain: domain)
+
+        HStack(spacing: SpacingTokens.xxSmall) {
+            StatusBadge(
+                label: effective.displayLabel,
+                color: effective.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                systemImage: effective.isVerified ? "checkmark.seal" : "info.circle"
+            )
+
+            if freshness == .stale {
+                StatusBadge(
+                    label: "Stale",
+                    color: ColorTokens.warning,
+                    systemImage: "clock.badge.exclamationmark"
+                )
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityNarrative(effective: effective, freshness: freshness))
+    }
+
+    private func accessibilityNarrative(
+        effective: SourceConfidence,
+        freshness: FreshnessStatus
+    ) -> String {
+        var narrative = "\(rateLabel) confidence: \(effective.displayLabel)."
+        if freshness == .stale {
+            narrative += " Source is stale."
+        }
+        return narrative
+    }
+}
+
 // MARK: - Detail Row
 
 private struct DetailRow: View {
@@ -139,19 +188,33 @@ private extension TransactionDetailView {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                DetailRow(
-                    label: "Applied Rate",
-                    value: transaction.appliedExchangeRate.formatted(
-                        .number.precision(.fractionLength(2...4))
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    DetailRow(
+                        label: "Applied Rate",
+                        value: transaction.appliedExchangeRate.formatted(
+                            .number.precision(.fractionLength(2...4))
+                        )
                     )
-                )
+                    RateConfidenceCaption(
+                        provenance: transaction.appliedExchangeRateProvenance,
+                        domain: .liveFXMarketData,
+                        rateLabel: "Applied rate"
+                    )
+                }
 
-                DetailRow(
-                    label: "Mid-Market Rate",
-                    value: transaction.midMarketRate.formatted(
-                        .number.precision(.fractionLength(2...4))
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    DetailRow(
+                        label: "Mid-Market Rate",
+                        value: transaction.midMarketRate.formatted(
+                            .number.precision(.fractionLength(2...4))
+                        )
                     )
-                )
+                    RateConfidenceCaption(
+                        provenance: transaction.midMarketRateProvenance,
+                        domain: .liveFXMarketData,
+                        rateLabel: "Mid-market rate"
+                    )
+                }
 
                 if transaction.appliedExchangeRate > 0, transaction.midMarketRate > 0 {
                     let markupPercent = ((transaction.appliedExchangeRate / transaction.midMarketRate) - 1) * 100

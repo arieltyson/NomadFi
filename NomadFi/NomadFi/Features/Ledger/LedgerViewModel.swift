@@ -138,7 +138,10 @@ final class LedgerViewModel {
             let localAccounts = accounts.filter { $0.jurisdiction == country }
             if let best = localAccounts.min(by: { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }) {
                 recommendedAccountName = best.name
-                recommendedAccountFeeConfidence = best.foreignTransactionFeeProvenance.confidence
+                recommendedAccountFeeConfidence = SourceFreshness.effectiveConfidence(
+                    for: best.foreignTransactionFeeProvenance,
+                    domain: .issuerCardTerms
+                )
                 Self.logger.info("Recommended local account: \(best.name, privacy: .private)")
                 return
             }
@@ -146,7 +149,12 @@ final class LedgerViewModel {
             // Fall back to the account with the lowest foreign transaction fee
             let best = accounts.min { $0.foreignTransactionFeePercent < $1.foreignTransactionFeePercent }
             recommendedAccountName = best?.name
-            recommendedAccountFeeConfidence = best?.foreignTransactionFeeProvenance.confidence
+            recommendedAccountFeeConfidence = best.map {
+                SourceFreshness.effectiveConfidence(
+                    for: $0.foreignTransactionFeeProvenance,
+                    domain: .issuerCardTerms
+                )
+            }
         } catch {
             errorMessage = "Could not determine your location for Active Card."
             Self.logger.error("Active Card recommendation failed: \(error.localizedDescription)")

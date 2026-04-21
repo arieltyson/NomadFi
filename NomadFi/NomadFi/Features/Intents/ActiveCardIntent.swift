@@ -41,11 +41,23 @@ struct ActiveCardIntent: AppIntent {
         }
 
         let fee = bestCard.foreignTransactionFeePercent
-        let isVerified = bestCard.foreignTransactionFeeProvenance.confidence.isVerified
-        // When fee data is not verified against issuer disclosure, the
-        // dialog must not imply official verification. The caveat is
-        // spoken back so the user can judge the recommendation.
-        let caveat = isVerified ? "" : " This is based on fee data you saved, not confirmed with the issuer."
+        let provenance = bestCard.foreignTransactionFeeProvenance
+        let effective = SourceFreshness.effectiveConfidence(
+            for: provenance,
+            domain: .issuerCardTerms
+        )
+        // The caveat distinguishes three cases so the spoken dialog is
+        // honest about *why* a fee is not verified: never verified,
+        // verified but now stale, or verified and fresh.
+        let caveat: String
+        switch effective {
+        case .verifiedPrimary, .verifiedSecondary:
+            caveat = ""
+        case .unverified where provenance.confidence.isVerified:
+            caveat = " Heads up, your issuer terms for this card haven't been re-checked lately, so it's worth verifying."
+        default:
+            caveat = " This is based on fee data you saved, not confirmed with the issuer."
+        }
 
         if fee == 0 {
             return .result(

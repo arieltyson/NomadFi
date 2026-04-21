@@ -52,22 +52,26 @@ final class Account {
             .flatMap(SourceConfidence.init(rawValue:))
             ?? .userProvided
 
+        let scope = JurisdictionScope(countryCode: jurisdiction)
+
         if let name = foreignTransactionFeeSourceName, !name.isEmpty {
             return SourceProvenance(
                 name: name,
                 urlString: foreignTransactionFeeSourceURL,
                 type: confidence.isVerified ? .issuerDisclosure : .userEntered,
                 confidence: confidence,
-                jurisdiction: .unknown,
+                jurisdiction: scope,
                 accessedAt: foreignTransactionFeeSourceVerifiedAt,
                 publishedAt: nil,
                 notes: foreignTransactionFeeSourceNotes
             )
         }
 
-        return SourceProvenance.userEnteredAccountFee(
+        var provenance = SourceProvenance.userEnteredAccountFee(
             accessedAt: foreignTransactionFeeSourceVerifiedAt
         )
+        provenance.jurisdiction = scope
+        return provenance
     }
 
     init(

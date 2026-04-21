@@ -71,15 +71,52 @@ private extension ExchangeRateTicker {
         return allSame ? first : .indicative
     }
 
+    /// Worst-case freshness across the current snapshots. `unknown` when
+    /// any snapshot lacks an `accessedAt` timestamp so we do not imply
+    /// freshness we cannot prove.
+    var tickerFreshness: FreshnessStatus? {
+        guard !rates.isEmpty else { return nil }
+        var anyStale = false
+        var anyUnknown = false
+        for rate in rates {
+            switch SourceFreshness.status(
+                for: rate.sourceProvenance,
+                domain: .liveFXMarketData
+            ) {
+            case .fresh: break
+            case .stale: anyStale = true
+            case .unknown: anyUnknown = true
+            }
+        }
+        if anyStale { return .stale }
+        if anyUnknown { return .unknown }
+        return .fresh
+    }
+
     var confidenceBadge: some View {
         Group {
             if let tickerConfidence {
-                StatusBadge(
-                    label: tickerConfidence.displayLabel,
-                    color: tickerConfidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
-                    systemImage: tickerConfidence.isVerified ? "checkmark.seal" : "info.circle"
+                HStack(spacing: SpacingTokens.xxSmall) {
+                    StatusBadge(
+                        label: tickerConfidence.displayLabel,
+                        color: tickerConfidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                        systemImage: tickerConfidence.isVerified ? "checkmark.seal" : "info.circle"
+                    )
+
+                    if tickerFreshness == .stale {
+                        StatusBadge(
+                            label: "Needs refresh",
+                            color: ColorTokens.warning,
+                            systemImage: "arrow.clockwise"
+                        )
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(
+                    tickerFreshness == .stale
+                        ? "Rates confidence: \(tickerConfidence.displayLabel). Needs refresh."
+                        : "Rates confidence: \(tickerConfidence.displayLabel)"
                 )
-                .accessibilityLabel("Rates confidence: \(tickerConfidence.displayLabel)")
             }
         }
     }

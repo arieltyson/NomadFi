@@ -66,6 +66,22 @@ enum JurisdictionScope: String, Codable, Sendable, CaseIterable, Equatable {
     case trinidadAndTobago
     case crossBorder
     case unknown
+
+    /// Maps an ISO-style country code (as stored on `Account.jurisdiction`
+    /// and `Transaction.jurisdiction`) into a scope. Case-insensitive.
+    /// Empty or unrecognized inputs resolve to ``unknown``.
+    init(countryCode: String?) {
+        guard let countryCode, !countryCode.isEmpty else {
+            self = .unknown
+            return
+        }
+        switch countryCode.uppercased() {
+        case "US", "USA": self = .unitedStates
+        case "CA", "CAN": self = .canada
+        case "TT", "TTO": self = .trinidadAndTobago
+        default: self = .unknown
+        }
+    }
 }
 
 /// Provenance metadata attached to any value used in a money-impacting

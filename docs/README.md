@@ -325,33 +325,73 @@ carry confidence labels:
   `ActiveCardIntent` appends a "based on fee data you saved, not confirmed
   with the issuer" caveat to its spoken dialog under the same condition.
 
-### Phase 1 — remaining
+### Phase 2 — landed
 
-These are still open and should be addressed in later phases:
+Persistence and freshness-aware downgrading now exist end to end:
 
-- **Tier-1 FX sources.** No central-bank clients yet. Bank of Canada
-  Valet, Federal Reserve H.10, and Central Bank of Trinidad and Tobago are
-  still unread at runtime; FX continues to ship as `.indicative`.
-- **Issuer verification flow.** There is no UI or service that lets a user
-  (or an agent on their behalf) upgrade an account fee from `.userProvided`
-  to `.verifiedPrimary` with a captured source URL and verification date.
-- **Freshness enforcement in the UI.** `SourceFreshness` is available but
-  no view currently consults it to decide when to refetch, dim, or refuse
-  to use a stale value.
-- **Persistent rate provenance.** `ExchangeRate` (the SwiftData model) has
-  no provenance fields; only the in-memory `ExchangeRateSnapshot` carries
-  provenance. Persisted rates therefore lose their confidence tier.
-- **Insight coverage.** Only a subset of generated insights set
-  `confidence`. Any new insight added to
+- **Jurisdiction mapping.** `JurisdictionScope.init(countryCode:)` maps
+  `"US"`, `"CA"`, and `"TT"` (with case and 3-letter variants) into the
+  evidence-hierarchy scope. `Account.foreignTransactionFeeProvenance` now
+  reports the correct jurisdiction instead of `.unknown`.
+- **Persisted rate provenance.** `ExchangeRate` carries primitive,
+  CloudKit-safe `sourceName` / `sourceURL` / `sourceType` /
+  `sourceConfidence` / `sourceJurisdiction` / `sourceAccessedAt` /
+  `sourcePublishedAt` / `sourceNotes` fields, a `sourceProvenance`
+  computed property, and `convenience init(snapshot:)` so service
+  snapshots round-trip into the store without losing their confidence.
+  Persisted rates from before Phase 2 read back as `.unverified`.
+- **Persisted transaction rate provenance.** `Transaction` now carries
+  two independent provenance blocks — one for `appliedExchangeRate` and
+  one for `midMarketRate` — surfaced as
+  `appliedExchangeRateProvenance` and `midMarketRateProvenance`.
+  Missing values collapse to `.unverified`, not `.verifiedPrimary`.
+- **Honest manual entry.** `AddTransactionView` now stamps manually
+  entered rates as `.userProvided` (applied) and `.unverified`
+  (mid-market copied from the calculated applied rate) via
+  `SourceProvenance.manuallyEnteredAppliedRate` and
+  `SourceProvenance.manuallyEnteredMidMarketRate`. This is the first
+  place the spec rule "do not copy an applied rate into a verified
+  mid-market rate" is enforced at runtime.
+- **Freshness-aware downgrading.**
+  [`SourceFreshness.effectiveConfidence(for:domain:now:)`](../NomadFi/NomadFi/Core/Utilities/SourceFreshness.swift)
+  is now the single policy used by recommendation-facing code. A verified
+  source with no verification date or with an outdated verification date
+  is degraded to `.unverified` before it reaches the UI.
+- **Recommendation gating.**
   [`InsightEngine`](../NomadFi/NomadFi/Core/Services/InsightEngine.swift)
-  must explicitly set a confidence value, even if the value is
-  `.userProvided`.
+  only emits `.verifiedPrimary` wrong-card insights when both fees are
+  verified-and-fresh; arbitrage insights inherit a freshness-gated
+  confidence from the underlying snapshot.
+- **Surface copy.** `ActiveCardBanner` distinguishes `.unverified` ("needs
+  re-verification with your issuer") from `.userProvided` ("based on saved
+  fee data"). `ActiveCardIntent` speaks a stale-verified caveat
+  ("Heads up, your issuer terms haven't been re-checked lately…") when
+  appropriate. `TransactionDetailView` now shows per-rate confidence and
+  a dedicated `Stale` badge for both applied and mid-market rates.
+  `ExchangeRateTicker` shows a `Needs refresh` badge when any snapshot
+  has crossed the live-FX window.
+
+### Phase 2 — remaining
+
+- **Tier-1 FX sources.** Still no Bank of Canada Valet, Federal Reserve
+  H.10, or Central Bank of Trinidad and Tobago client. Live FX continues
+  to ship as `.indicative`; `LiveExchangeRateService` still uses
+  `open.er-api.com`.
+- **Issuer verification flow.** Nothing in the UI lets a user (or an
+  agent) upgrade `Account.foreignTransactionFeeSourceConfidence` from
+  `.userProvided` to `.verifiedPrimary` with a captured URL + date.
+- **Subscription / budget insights, receipt / tax exports.** These
+  surfaces do not yet carry provenance. Any new insight or report must
+  set a confidence value explicitly.
 - **Governance surface.**
   [`DataGovernancePolicy`](../NomadFi/NomadFi/Core/Utilities/DataGovernancePolicy.swift)
-  does not yet expose or enforce the source-freshness windows end to end.
-
-None of these gaps are fixed by this document — they are surfaced here so the
-next code change can be scoped honestly.
+  still does not expose or enforce the source-freshness windows at the
+  store level (e.g. refusing to cache a rate past its window).
+- **Data-entry for verified mid-market rates.** `AddTransactionView`
+  cannot accept a distinct verified mid-market rate today — there is no
+  field to enter or attach one. Phase 3 should either allow a live-FX
+  fetch at entry time or expose an explicit "I looked this up, here's
+  the source" input.
 
 ---
 

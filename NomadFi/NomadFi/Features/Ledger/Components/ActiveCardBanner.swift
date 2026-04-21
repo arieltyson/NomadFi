@@ -93,9 +93,17 @@ private extension ActiveCardBanner {
         guard let feeConfidence else {
             return "\(prefix) — lowest FX fees"
         }
-        return feeConfidence.isVerified
-            ? "\(prefix) — lowest FX fees"
-            : "\(prefix) — based on saved fee data; verify with your issuer"
+        switch feeConfidence {
+        case .verifiedPrimary, .verifiedSecondary:
+            return "\(prefix) — lowest FX fees"
+        case .unverified:
+            // `SourceFreshness.effectiveConfidence` degrades stale verified
+            // issuer data to `.unverified`, so this branch fires for both
+            // "never verified" and "verified but stale" inputs.
+            return "\(prefix) — needs re-verification with your issuer"
+        case .userProvided, .indicative, .institutional, .peerReviewed:
+            return "\(prefix) — based on saved fee data; verify with your issuer"
+        }
     }
 
     var accessibilityNarrative: String {

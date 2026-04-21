@@ -94,4 +94,29 @@ enum SourceFreshness {
     ) -> FreshnessStatus {
         status(verifiedAt: provenance.accessedAt, domain: domain, now: now)
     }
+
+    /// Returns the confidence a caller should actually present to the user
+    /// after accounting for freshness.
+    ///
+    /// The goal is that a label only says "Verified" when the underlying
+    /// source is verified *and* was checked inside the domain's allowed
+    /// window. Stale or unknown-age verified sources are downgraded so
+    /// the UI can caveat them.
+    ///
+    /// Non-verified confidence values pass through unchanged — an
+    /// `.indicative` or `.userProvided` source does not become more
+    /// reliable by being "fresh".
+    static func effectiveConfidence(
+        for provenance: SourceProvenance,
+        domain: SourceDataDomain,
+        now: Date = .now
+    ) -> SourceConfidence {
+        guard provenance.confidence.isVerified else {
+            return provenance.confidence
+        }
+        switch status(for: provenance, domain: domain, now: now) {
+        case .fresh: return provenance.confidence
+        case .stale, .unknown: return .unverified
+        }
+    }
 }

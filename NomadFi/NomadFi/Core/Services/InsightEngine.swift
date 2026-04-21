@@ -147,11 +147,21 @@ private extension InsightEngine {
                 let savings = usedAccount.foreignTransactionFeePercent - better.foreignTransactionFeePercent
                 let savingsFormatted = savings.formatted(.number.precision(.fractionLength(1)))
 
-                // If either fee is not verified against issuer disclosure,
-                // the savings claim must inherit the weaker confidence.
-                let usedVerified = usedAccount.foreignTransactionFeeProvenance.confidence.isVerified
-                let betterVerified = better.foreignTransactionFeeProvenance.confidence.isVerified
-                let confidence: SourceConfidence = (usedVerified && betterVerified)
+                // Both fees must be verified *and* fresh for the savings
+                // claim to read as verified. Stale or missing-date
+                // verified sources are degraded to .unverified by
+                // `SourceFreshness.effectiveConfidence`, which in turn
+                // downgrades the whole recommendation.
+                let usedEffective = SourceFreshness.effectiveConfidence(
+                    for: usedAccount.foreignTransactionFeeProvenance,
+                    domain: .issuerCardTerms
+                )
+                let betterEffective = SourceFreshness.effectiveConfidence(
+                    for: better.foreignTransactionFeeProvenance,
+                    domain: .issuerCardTerms
+                )
+                let confidence: SourceConfidence =
+                    (usedEffective.isVerified && betterEffective.isVerified)
                     ? .verifiedPrimary
                     : .userProvided
 
@@ -186,13 +196,18 @@ private extension InsightEngine {
 
         let rateFormatted = bestRate.rate.formatted(.number.precision(.fractionLength(2)))
 
+        // Confidence is inherited from the underlying snapshot and
+        // freshness-gated: a stale live rate must not claim verification.
+        let effective = SourceFreshness.effectiveConfidence(
+            for: bestRate.sourceProvenance,
+            domain: .liveFXMarketData
+        )
+
         return FinancialInsight(
             title: "Strong \(bestRate.baseCurrency.rawValue) Today",
             message: "1 \(bestRate.baseCurrency.rawValue) = \(rateFormatted) \(homeCurrency.rawValue). Consider sending money home to maximize your transfer value.",
             category: .arbitrage,
-            // Confidence is inherited from the underlying snapshot —
-            // prototype API data must surface as indicative.
-            confidence: bestRate.sourceProvenance.confidence
+            confidence: effective
         )
     }
 }
