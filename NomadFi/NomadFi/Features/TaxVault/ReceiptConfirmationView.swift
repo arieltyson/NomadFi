@@ -22,6 +22,13 @@ struct ReceiptConfirmationView: View {
     @Bindable var viewModel: TaxVaultViewModel
     @State private var saveCount = 0
 
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case merchant
+        case amount
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -35,6 +42,7 @@ struct ReceiptConfirmationView: View {
 
                 lineItemsSection
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Confirm Receipt")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -56,6 +64,7 @@ struct ReceiptConfirmationView: View {
                     .accessibilityHint("Saves this receipt to Tax Vault with the current details.")
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }
@@ -84,8 +93,11 @@ private extension ReceiptConfirmationView {
     var merchantSection: some View {
         Section("Merchant") {
             TextField("Merchant name", text: $viewModel.draftMerchantName)
+                .focused($focusedField, equals: .merchant)
                 .textContentType(.organizationName)
                 .autocorrectionDisabled()
+                .submitLabel(.next)
+                .onSubmit { focusedField = .amount }
 
             DatePicker(
                 "Date",
@@ -108,6 +120,7 @@ private extension ReceiptConfirmationView {
                     value: $viewModel.draftAmount,
                     format: .number.precision(.fractionLength(2))
                 )
+                .focused($focusedField, equals: .amount)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .autocorrectionDisabled()

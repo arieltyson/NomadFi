@@ -27,6 +27,13 @@ struct AddSubscriptionView: View {
     @State private var nextRenewalDate: Date = .now
     @State private var jurisdiction = ""
 
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case serviceName
+        case amount
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -34,6 +41,7 @@ struct AddSubscriptionView: View {
                 billingSection
                 regionSection
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Subscription")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -57,6 +65,7 @@ struct AddSubscriptionView: View {
                     )
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }
@@ -69,8 +78,11 @@ private extension AddSubscriptionView {
     var serviceSection: some View {
         Section("Service") {
             TextField("Service name", text: $serviceName)
+                .focused($focusedField, equals: .serviceName)
                 .textContentType(.organizationName)
                 .autocorrectionDisabled()
+                .submitLabel(.next)
+                .onSubmit { focusedField = .amount }
         }
     }
 
@@ -85,6 +97,7 @@ private extension AddSubscriptionView {
                     value: $amount,
                     format: .number.precision(.fractionLength(2))
                 )
+                .focused($focusedField, equals: .amount)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .autocorrectionDisabled()

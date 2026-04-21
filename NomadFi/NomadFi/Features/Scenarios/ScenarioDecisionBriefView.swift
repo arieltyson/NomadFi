@@ -10,6 +10,15 @@
 
 import SwiftUI
 
+/// Numeric fields in the Scenario brief that can summon the keyboard.
+/// Sharing one enum across rows lets the parent attach a single
+/// keyboard Done toolbar for `.decimalPad`, which has no Return key.
+enum ScenarioBriefField: Hashable {
+    case chaseAvailableCredit
+    case chaseCurrentBalance
+    case wiseBalance
+}
+
 /// The detail sheet for Scenario 1. Presented from the Dashboard card.
 struct ScenarioDecisionBriefView: View {
 
@@ -21,6 +30,7 @@ struct ScenarioDecisionBriefView: View {
     let creditCardAccounts: [Account]
 
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedField: ScenarioBriefField?
 
     init(
         viewModel: ScenarioDecisionBriefViewModel,
@@ -47,12 +57,14 @@ struct ScenarioDecisionBriefView: View {
                 .padding(SpacingTokens.medium)
             }
             .scrollIndicators(.hidden)
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Amazon arrival order")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close", systemImage: "xmark", action: { dismiss() })
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
         }
     }
 }
@@ -146,14 +158,18 @@ private extension ScenarioDecisionBriefView {
                 helper: "Open Chase, read available credit, and enter it here — USD.",
                 placeholder: "USD",
                 systemImage: "creditcard",
-                value: binding(\.chaseAvailableCreditUSD)
+                value: binding(\.chaseAvailableCreditUSD),
+                focusedField: $focusedField,
+                field: ScenarioBriefField.chaseAvailableCredit
             )
             ScenarioNumericInputRow(
                 title: "Current statement balance",
                 helper: "Today's Chase balance, not the last statement — USD.",
                 placeholder: "USD",
                 systemImage: "dollarsign.circle",
-                value: binding(\.chaseCurrentBalanceUSD)
+                value: binding(\.chaseCurrentBalanceUSD),
+                focusedField: $focusedField,
+                field: ScenarioBriefField.chaseCurrentBalance
             )
             Toggle(
                 "I will pay before statement close",
@@ -173,7 +189,9 @@ private extension ScenarioDecisionBriefView {
                 helper: "From the Wise app — the amount held in the USD jar.",
                 placeholder: "USD",
                 systemImage: "wallet.pass.fill",
-                value: binding(\.wiseUSDBalanceUSD)
+                value: binding(\.wiseUSDBalanceUSD),
+                focusedField: $focusedField,
+                field: ScenarioBriefField.wiseBalance
             )
             Toggle(
                 "Wise card accepted by Amazon",

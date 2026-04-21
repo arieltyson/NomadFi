@@ -30,6 +30,7 @@ struct AddTransactionView: View {
 
                 notesSection
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Transaction")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -48,9 +49,27 @@ struct AddTransactionView: View {
                         )
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
             .sensoryFeedback(.success, trigger: saveCount)
         }
         .onAppear { focusedField = .merchant }
+    }
+
+    /// Advances focus through the form so hardware/software Return
+    /// keys on text fields move through the form in order. The
+    /// `.decimalPad` amount field doesn't have a Return key; its
+    /// dismiss path is the shared keyboard Done toolbar.
+    private func advanceFocus(from field: FormField) {
+        switch field {
+        case .merchant:
+            focusedField = .amount
+        case .amount:
+            focusedField = formData.isCrossBorder ? .convertedAmount : .notes
+        case .convertedAmount:
+            focusedField = .notes
+        case .notes:
+            focusedField = nil
+        }
     }
 }
 
@@ -104,6 +123,8 @@ private extension AddTransactionView {
                 .focused($focusedField, equals: .merchant)
                 .textContentType(.organizationName)
                 .autocorrectionDisabled()
+                .submitLabel(.next)
+                .onSubmit { advanceFocus(from: .merchant) }
 
             DatePicker("Date", selection: $formData.date, displayedComponents: .date)
         }
@@ -200,6 +221,8 @@ private extension AddTransactionView {
                 .lineLimit(3...6)
                 .textContentType(.none)
                 .autocorrectionDisabled()
+                .submitLabel(.done)
+                .onSubmit { advanceFocus(from: .notes) }
 
             Toggle("Tax Deductible", isOn: $formData.isTaxDeductible)
         }

@@ -17,6 +17,18 @@ struct SettingsAddAccountSheet: View {
         case foreignTransactionFee
     }
 
+    /// Moves focus through the form's text fields so the on-screen
+    /// Return key advances through name → institution → balance.
+    /// `.decimalPad` fields don't surface a Return key, so the shared
+    /// keyboard Done toolbar handles dismissal for them.
+    private func advanceFocus(from field: Field) {
+        switch field {
+        case .name: focusedField = .institution
+        case .institution: focusedField = .balance
+        case .balance, .foreignTransactionFee: focusedField = nil
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -25,11 +37,15 @@ struct SettingsAddAccountSheet: View {
                         .focused($focusedField, equals: .name)
                         .textContentType(.organizationName)
                         .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .onSubmit { advanceFocus(from: .name) }
 
                     TextField("Institution", text: $draft.institutionName)
                         .focused($focusedField, equals: .institution)
                         .textContentType(.organizationName)
                         .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .onSubmit { advanceFocus(from: .institution) }
                 }
 
                 Section("Type & Jurisdiction") {
@@ -71,7 +87,10 @@ struct SettingsAddAccountSheet: View {
                         .textContentType(.none)
                         .autocorrectionDisabled()
                 }
+                // Decimal pad has no Return key — focus progression
+                // relies on the shared keyboard Done toolbar below.
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -94,6 +113,7 @@ struct SettingsAddAccountSheet: View {
                     )
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
             .onAppear {
                 if draft.jurisdictionCode.isEmpty,
                    let firstJurisdiction = jurisdictions.first

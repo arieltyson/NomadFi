@@ -55,6 +55,17 @@ private struct AddAccountSheet: View {
         case name, institution, balance
     }
 
+    /// Advances focus so Return keys move through name → institution →
+    /// balance; balance uses `.decimalPad` and is dismissed via the
+    /// shared keyboard Done toolbar instead.
+    private func advanceFocus(from field: Field) {
+        switch field {
+        case .name: focusedField = .institution
+        case .institution: focusedField = .balance
+        case .balance: focusedField = nil
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -63,11 +74,15 @@ private struct AddAccountSheet: View {
                         .focused($focusedField, equals: .name)
                         .textContentType(.organizationName)
                         .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .onSubmit { advanceFocus(from: .name) }
 
                     TextField("Institution", text: $viewModel.accountInstitution)
                         .focused($focusedField, equals: .institution)
                         .textContentType(.organizationName)
                         .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .onSubmit { advanceFocus(from: .institution) }
                 }
 
                 Section("Type & Currency") {
@@ -94,6 +109,7 @@ private struct AddAccountSheet: View {
                         .autocorrectionDisabled()
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -114,6 +130,7 @@ private struct AddAccountSheet: View {
                     )
                 }
             }
+            .keyboardDismissToolbar { focusedField = nil }
         }
         .presentationDetents([.medium, .large])
         .onAppear { focusedField = .name }

@@ -19,6 +19,7 @@ struct TaxDocumentDetailView: View {
     @Bindable var document: TaxDocument
 
     @State private var isEditingCategory = false
+    @FocusState private var isMerchantFocused: Bool
 
     var body: some View {
         List {
@@ -32,8 +33,10 @@ struct TaxDocumentDetailView: View {
 
             metadataSection
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Receipt Details")
         .navigationBarTitleDisplayMode(.inline)
+        .keyboardDismissToolbar { isMerchantFocused = false }
     }
 }
 
@@ -86,6 +89,9 @@ private extension TaxDocumentDetailView {
             LabeledContent("Merchant") {
                 TextField("Merchant name", text: $document.merchantName)
                     .multilineTextAlignment(.trailing)
+                    .focused($isMerchantFocused)
+                    .submitLabel(.done)
+                    .onSubmit { isMerchantFocused = false }
             }
 
             LabeledContent("Amount") {
