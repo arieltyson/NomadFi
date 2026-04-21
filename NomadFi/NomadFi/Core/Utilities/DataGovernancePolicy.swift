@@ -158,7 +158,11 @@ enum DataGovernancePolicy {
     your country for payment recommendations. Your coordinates are \
     never stored or transmitted.
     \u{2022} Notifications: Only for subscription reminders, budget \
-    alerts, and exchange rate movements you opt into.
+    alerts, exchange rate movements, and credit-card statement close \
+    and payment due reminders you opt into. All reminders are \
+    scheduled locally on this device; NomadFi never sends push \
+    notifications or includes account names, balances, or card \
+    numbers in reminder text.
 
     Exchange Rates:
     NomadFi fetches currency exchange rates from a public API. These \

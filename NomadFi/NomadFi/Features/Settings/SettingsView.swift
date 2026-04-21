@@ -32,6 +32,12 @@ struct SettingsView: View {
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingAddAccountSheet = false
 
+    /// Persisted opt-in for credit-card statement-close and payment-due
+    /// reminders. Default `false` — reminders are strictly opt-in, and
+    /// toggling this on triggers a live sync of pending requests.
+    @AppStorage("creditCardRemindersEnabled")
+    private var creditCardRemindersEnabled: Bool = false
+
     var body: some View {
         List {
             jurisdictionsSection
@@ -78,6 +84,7 @@ struct SettingsView: View {
         .task {
             appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
+            await syncCreditCardRemindersIfNeeded()
         }
     }
 }
@@ -193,6 +200,8 @@ private extension SettingsView {
                     systemImage: "calendar.badge.clock",
                     isEnabled: true
                 )
+
+                creditCardRemindersToggle
             } else {
                 Button("Enable Notifications", systemImage: "bell") {
                     Task {
@@ -204,9 +213,37 @@ private extension SettingsView {
         } header: {
             Text("Notifications")
         } footer: {
-            if !notificationManager.isAuthorized {
-                Text("Enable notifications to receive subscription reminders, budget alerts, and FX rate movement warnings.")
+            if notificationManager.isAuthorized {
+                Text("Credit card reminders fire \(CreditCardReminderPlanner.statementCloseLeadDays) days before each confirmed statement close date and \(CreditCardReminderPlanner.paymentDueLeadDays) days before each confirmed payment due date. Paying before statement close can reduce reported utilization, but issuer reporting can vary.")
+            } else {
+                Text("Enable notifications to receive subscription reminders, budget alerts, FX rate movement warnings, and credit-card statement reminders.")
             }
+        }
+    }
+
+    /// Real opt-in Toggle for credit-card statement close + payment
+    /// due reminders. Flipping it on triggers a live sync; flipping
+    /// it off removes only credit-card-prefixed pending requests.
+    var creditCardRemindersToggle: some View {
+        Toggle(isOn: $creditCardRemindersEnabled) {
+            Label {
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    Text("Credit Card Reminders")
+                        .font(TypographyTokens.body)
+                    Text("For confirmed statement close and payment due dates")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } icon: {
+                Image(systemName: "calendar.badge.exclamationmark")
+                    .foregroundStyle(ColorTokens.brandPrimary)
+            }
+        }
+        .accessibilityHint(
+            "Schedules reminders on your device \(CreditCardReminderPlanner.statementCloseLeadDays) days before each confirmed statement close date and \(CreditCardReminderPlanner.paymentDueLeadDays) days before each confirmed payment due date."
+        )
+        .onChange(of: creditCardRemindersEnabled) { _, newValue in
+            handleCreditCardRemindersToggleChange(enabled: newValue)
         }
     }
 
@@ -341,6 +378,52 @@ private extension SettingsView {
             let account = sortedAccounts[index]
             modelContext.delete(account)
         }
+    }
+
+    // MARK: - Credit card reminder sync
+
+    /// Handles the user flipping the Credit Card Reminders toggle.
+    ///
+    /// Enabling asks for notification authorization if the app does not
+    /// already have it. If authorization is denied, the toggle flips
+    /// itself back off so the UI never advertises a feature iOS will
+    /// silently suppress. Disabling removes only the credit-card-prefixed
+    /// pending requests — other reminder categories are untouched.
+    func handleCreditCardRemindersToggleChange(enabled: Bool) {
+        Task {
+            if enabled {
+                if !notificationManager.isAuthorized {
+                    await notificationManager.requestAuthorization()
+                }
+                guard notificationManager.isAuthorized else {
+                    creditCardRemindersEnabled = false
+                    return
+                }
+                await notificationManager.scheduleCreditCardReminders(
+                    for: accounts
+                )
+            } else {
+                await notificationManager.removeAllCreditCardReminders()
+            }
+        }
+    }
+
+    /// Re-syncs credit-card reminders on Settings appear so a newly
+    /// confirmed schedule, an updated date, or a deleted card is
+    /// reflected in pending requests without the user toggling.
+    func syncCreditCardRemindersIfNeeded() async {
+        guard creditCardRemindersEnabled else {
+            await notificationManager.removeAllCreditCardReminders()
+            return
+        }
+        guard notificationManager.isAuthorized else {
+            // User revoked permission from iOS Settings — reflect that
+            // state instead of leaving the toggle visually enabled.
+            creditCardRemindersEnabled = false
+            await notificationManager.removeAllCreditCardReminders()
+            return
+        }
+        await notificationManager.scheduleCreditCardReminders(for: accounts)
     }
 }
 

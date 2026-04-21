@@ -170,6 +170,7 @@
 
     },
     "Add a credit-card account above to track statement close and payment due dates here." : {
+
     },
     "Add Account" : {
 
@@ -205,6 +206,7 @@
 
     },
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
+
     },
     "All data stays on-device" : {
 
@@ -270,6 +272,7 @@
 
     },
     "Cart reviewed — shipping and Subscribe & Save" : {
+
     },
     "Categorization" : {
 
@@ -278,8 +281,9 @@
 
     },
     "Chase Freedom Rise" : {
+
     },
-    "Chase Freedom Rise is only recommended when your entered available credit clears checkout + a safety buffer, your current balance is known, and you commit to paying before statement close. Without all four, this tool routes to Wise USD or blocks on user input." : {
+    "Chase Freedom Rise is only recommended when your linked card's statement calendar is confirmed, your entered available credit clears checkout plus a safety buffer, your current balance is known, and you commit to paying before statement close. Without all of these, this tool routes to Wise USD or blocks on user input. Paying before statement close can reduce reported utilization, but issuer reporting can vary." : {
     },
     "Chase utilization guardrail" : {
 
@@ -303,13 +307,18 @@
 
     },
     "Clear All Dates" : {
+
     },
     "Clear all dates?" : {
+
     },
     "Clear Dates" : {
+
     },
     "Close" : {
 
+    },
+    "Closes %@" : {
     },
     "Comparing prices across jurisdictions..." : {
 
@@ -321,6 +330,7 @@
 
     },
     "Confirmation" : {
+
     },
     "Confirms this detected subscription and starts tracking it." : {
 
@@ -409,6 +419,8 @@
     "Dismisses subscription entry without saving." : {
 
     },
+    "Dismisses the keyboard." : {
+    },
     "Dismisses this detected subscription suggestion." : {
 
     },
@@ -443,6 +455,7 @@
 
     },
     "Each link opens the official source page in Safari. NomadFi does not fetch or cache these pages — you verify them yourself." : {
+
     },
     "Enable Notifications" : {
 
@@ -509,6 +522,7 @@
 
     },
     "Fix the highlighted date conflict before saving." : {
+
     },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
@@ -517,6 +531,7 @@
 
     },
     "From your numbers" : {
+
     },
     "FX Fee %" : {
 
@@ -543,6 +558,7 @@
 
     },
     "I will pay before statement close" : {
+
     },
     "Indicates you verified these dates against your issuer app." : {
 
@@ -557,11 +573,15 @@
 
     },
     "Last confirmed" : {
+
     },
     "Last confirmed %@" : {
+
     },
     "Ledger" : {
 
+    },
+    "Linked card" : {
     },
     "Live Exchange Rates" : {
 
@@ -604,8 +624,10 @@
 
     },
     "Mark Confirmed Today" : {
+
     },
     "Mark schedule as confirmed" : {
+
     },
     "Matches" : {
 
@@ -638,6 +660,9 @@
 
     },
     "No Credit Cards Yet" : {
+
+    },
+    "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
     },
     "No Receipt Image" : {
 
@@ -703,6 +728,7 @@
 
     },
     "Not set" : {
+
     },
     "Notes" : {
 
@@ -732,13 +758,16 @@
 
     },
     "Opens the official source in Safari" : {
+
     },
     "Opens the statement calendar editor for this card." : {
+
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
+
     },
     "Payment options" : {
 
@@ -789,6 +818,7 @@
 
     },
     "Removes every statement calendar date from this card." : {
+
     },
     "Renews %@" : {
 
@@ -830,6 +860,7 @@
 
     },
     "Saves the credit-card calendar." : {
+
     },
     "Saves this account to your profile." : {
 
@@ -891,6 +922,8 @@
     "Select at least two jurisdictions to continue." : {
 
     },
+    "Select which saved credit-card account is your Chase Freedom Rise." : {
+    },
     "Selected" : {
 
     },
@@ -916,10 +949,9 @@
 
     },
     "Sources" : {
+
     },
     "Stamps today's date as the last time you verified this schedule." : {
-    },
-    "Statement close date" : {
 
     },
     "Subscription Arbitrage" : {
@@ -953,6 +985,7 @@
 
     },
     "The confirmation stamp is informational only. NomadFi does not contact your issuer." : {
+
     },
     "The currency code (e.g., USD, CAD, TTD)" : {
 
@@ -969,10 +1002,13 @@
     "The original receipt image is not available." : {
 
     },
+    "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
+    },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
     },
     "This removes every statement calendar date from this card. You can re-enter them at any time." : {
+
     },
     "This transaction will appear in your Tax Vault" : {
 
@@ -996,6 +1032,9 @@
 
     },
     "Unlock NomadFi" : {
+
+    },
+    "Update in Settings → Credit Card Calendar" : {
 
     },
     "Updated %@" : {
@@ -1025,6 +1064,7 @@
       }
     },
     "Validation issue: %@" : {
+
     },
     "Verification Status" : {
 
@@ -1075,8 +1115,10 @@
 
     },
     "Wise" : {
+
     },
     "Wise card accepted by Amazon" : {
+
     },
     "You can add accounts later from the dashboard" : {
 
