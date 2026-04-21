@@ -287,9 +287,14 @@ _Append new entries below this line as they occur._
   composed of an FX-converted CAD subtotal plus an explicit **CAD 13.00
   "exchange rate guarantee fee"** (screenshot).
 - At Amazon's displayed rate (1 USD = 1.36528 CAD), USD 342.67 ≈
-  **CAD 467.86** pre-fee, confirming that the CAD 480.86 total is
-  equivalent to USD 342.67 **plus an ≈CAD 13.00 fee** — i.e.
-  **≈3.79% extra** on top of Amazon's own displayed rate.
+  **CAD 467.84** pre-fee. The CAD 480.86 ACC total is that converted
+  amount **plus the CAD 13.00 exchange-rate guarantee fee** — i.e.
+  **CAD 13.00 / CAD 467.84 ≈ 2.78%** extra over Amazon's own displayed
+  CAD conversion. The effective all-in ACC rate is **CAD 480.86 / USD
+  342.67 ≈ 1.4032 CAD/USD** versus Amazon's displayed 1.36528.
+  *(Earlier revisions of this file compared CAD 13.00 against USD 342.67
+  and reported ≈3.79%; that computation mixes currencies and is wrong.
+  The correct ratio is CAD 13.00 against the pre-fee CAD amount.)*
 - Ariel's Chase Freedom Rise credit limit is **USD $500** (§1.5);
   USD 342.67 is **≈68.5%** of that limit before any existing balance.
 - Ariel's short-term goal is to **minimize** Chase Freedom Rise
@@ -303,7 +308,7 @@ Each item here must be verified against the stated official source before
 the recommendation below is treated as final.
 
 - **Amazon Currency Converter (ACC).** Exact disclosure of the
-  "exchange rate guarantee fee" structure, whether the ≈3.79% observed
+  "exchange rate guarantee fee" structure, whether the ≈2.78% observed
   here matches Amazon's stated rate-plus-fee, and whether declining ACC
   reliably routes the charge to the card-issuer's FX conversion.
   *Source: Amazon.com official Currency Converter help and terms pages.*
@@ -347,7 +352,7 @@ the recommendation below is treated as final.
 
 | # | Option                                                                  | Observable cost                   | Main upside                                                 | Main downside / risk                                                                                   | Status     |
 |---|-------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|------------|
-| 1 | Canadian Amex Cobalt, ACC enabled, pay **CAD 480.86**                   | CAD 480.86 (screenshot)           | Already linked; no re-entry; no AVS friction                | Embedded **CAD 13.00** ACC fee (≈3.79% over Amazon's displayed rate); rewards likely only 1x           | Indicative |
+| 1 | Canadian Amex Cobalt, ACC enabled, pay **CAD 480.86**                   | CAD 480.86 (screenshot)           | Already linked; no re-entry; no AVS friction                | Embedded **CAD 13.00** ACC fee (≈2.78% over Amazon's displayed CAD conversion); rewards likely only 1x | Indicative |
 | 2 | Canadian Amex Cobalt, pay in **USD 342.67**                             | USD 342.67 + Amex FX conversion   | Skips Amazon ACC fee; Amex handles the conversion           | Amex Canada foreign-currency commission is **not yet verified**; net CAD cost unknown                  | Indicative |
 | 3 | **Chase Freedom Rise**, pay in **USD 342.67**                           | USD 342.67 + possible 1.5% reward | U.S. card, U.S. merchant, USD — cleanest FX path; rewards   | **≈68.5% utilization** of a USD $500 limit if it reports before payment; rewards rate **unverified**   | Indicative |
 | 4 | **Wise USD card / balance**, pay in **USD 342.67**                      | USD 342.67 (+ any Wise fee)       | No Chase utilization impact; direct USD spend               | Likely no rewards; weaker purchase protection than a credit card; acceptance on Amazon **unverified**  | Indicative |
@@ -368,9 +373,11 @@ relevant option.
      Save for a recurring shipment — useful only for genuine repeat
      items.
 2. **Pay in USD, not CAD.** The Amazon Currency Converter total
-   explicitly adds **CAD 13.00** ≈ **3.79%** on top of Amazon's own
-   displayed rate. Unless Amex Canada's verified foreign-currency
-   commission is confirmed to be worse than ≈3.79% of the total, paying
+   explicitly adds **CAD 13.00 ≈ 2.78%** on top of Amazon's own CAD
+   conversion of the USD 342.67 checkout (i.e. CAD 13.00 ÷ CAD 467.84),
+   for an **effective all-in rate of ≈1.4032 CAD/USD** versus the
+   displayed 1.36528. Unless Amex Canada's verified foreign-currency
+   commission is confirmed to be worse than that ≈2.78% spread, paying
    in USD and letting the card issuer handle the conversion is the
    more honest price to compare.
 3. **Between the USD-payment options, the choice is a Chase-utilization
