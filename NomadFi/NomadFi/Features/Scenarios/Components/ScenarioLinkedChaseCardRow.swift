@@ -6,6 +6,7 @@
 // Rise. The source of truth for the statement calendar is that
 // account — edits happen in Settings → Credit Card Calendar.
 
+import SwiftData
 import SwiftUI
 
 /// A labelled `Picker` binding the scenario's linked Chase account to
@@ -26,18 +27,24 @@ struct ScenarioLinkedChaseCardRow: View {
                         .tag(Optional(account))
                 }
             }
-            .accessibilityHint("Select which saved credit-card account is your Chase Freedom Rise.")
+            .accessibilityHint(
+                "Select which saved credit-card account is your Chase Freedom Rise."
+            )
 
             if creditCardAccounts.isEmpty {
-                Text("No credit-card accounts yet. Add one in Settings → Accounts to link it here.")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    "No credit-card accounts yet. Add one in Settings → Accounts to link it here."
+                )
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             } else {
-                Text("The statement calendar comes from the linked card's Settings entry — there is no separate date editor here.")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here."
+                )
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
