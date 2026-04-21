@@ -15,17 +15,56 @@ struct ScenarioDecisionEngineTests {
 
     // MARK: - Helpers
 
+    /// Stable date builder so schedule values line up predictably
+    /// across every test — no relative dates in fixtures either.
+    private static func date(year: Int, month: Int, day: Int) -> Date {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        components.timeZone = TimeZone(identifier: "UTC")
+        return Calendar(identifier: .gregorian).date(from: components) ?? .now
+    }
+
+    /// A fully-confirmed Chase schedule used as the default in
+    /// ``chaseGuardrailedState(currentBalanceUSD:)``.
+    private static var sampleConfirmedSchedule: CreditCardSchedule {
+        CreditCardSchedule(
+            statementPeriodStartDate: date(year: 2026, month: 4, day: 1),
+            statementClosingDate: date(year: 2026, month: 4, day: 28),
+            paymentDueDate: date(year: 2026, month: 5, day: 25),
+            lastConfirmedAt: date(year: 2026, month: 4, day: 21)
+        )
+    }
+
     /// Fully-populated guardrail state: cart reviewed, Chase available
     /// credit comfortably above checkout + buffer, current balance set,
-    /// and the user committed to paying before statement close.
+    /// the user committed to paying before statement close, **and** a
+    /// linked Chase card with a confirmed statement calendar.
     private static func chaseGuardrailedState(
         currentBalanceUSD: Double = 0
     ) -> ScenarioDecisionState {
-        ScenarioDecisionState(
+        chaseGuardrailedState(
+            currentBalanceUSD: currentBalanceUSD,
+            linkedSchedule: sampleConfirmedSchedule
+        )
+    }
+
+    /// Variant that lets tests inject any schedule state (or nil) to
+    /// exercise the schedule gate independently of numeric guardrails.
+    private static func chaseGuardrailedState(
+        currentBalanceUSD: Double,
+        linkedSchedule: CreditCardSchedule?
+    ) -> ScenarioDecisionState {
+        let hasLink = linkedSchedule != nil
+        return ScenarioDecisionState(
             cartShippingReviewed: true,
             chaseAvailableCreditUSD: 500,
             chaseCurrentBalanceUSD: currentBalanceUSD,
-            chaseWillPayBeforeStatementClose: true
+            chaseWillPayBeforeStatementClose: true,
+            hasLinkedChaseAccount: hasLink,
+            linkedChaseAccountName: hasLink ? "Sample Rewards" : nil,
+            linkedChaseSchedule: linkedSchedule
         )
     }
 
@@ -181,7 +220,7 @@ struct ScenarioDecisionEngineTests {
         #expect(decision.primaryPath != .chaseFreedomRiseUSD)
     }
 
-    @Test("Chase is recommended when cart is reviewed, credit clears buffer, balance known, and user will pay before close")
+    @Test("Chase is recommended when cart is reviewed, credit clears buffer, balance known, user will pay before close, and the linked card schedule is confirmed")
     func chaseRecommendedWhenAllGuardrailsMet() {
         let state = Self.chaseGuardrailedState()
         let decision = ScenarioDecisionEngine.decide(
@@ -189,6 +228,113 @@ struct ScenarioDecisionEngineTests {
             state: state
         )
         #expect(decision.primaryPath == .chaseFreedomRiseUSD)
+    }
+
+    @Test("Chase is blocked when no Chase card is linked, even if every numeric guardrail passes")
+    func chaseBlockedWhenNoCardLinked() {
+        let state = Self.chaseGuardrailedState(
+            currentBalanceUSD: 0,
+            linkedSchedule: nil
+        )
+        let decision = ScenarioDecisionEngine.decide(facts: .scenario1, state: state)
+        #expect(decision.primaryPath != .chaseFreedomRiseUSD)
+
+        let unlinkedCheck = decision.outstandingChecks.contains {
+            $0.localizedStandardContains("Link a Chase Freedom Rise credit-card account")
+        }
+        #expect(unlinkedCheck)
+    }
+
+    @Test("Chase is blocked when the linked card's schedule is missing")
+    func chaseBlockedWhenLinkedScheduleIsMissing() {
+        let state = Self.chaseGuardrailedState(
+            currentBalanceUSD: 0,
+            linkedSchedule: CreditCardSchedule()
+        )
+        let decision = ScenarioDecisionEngine.decide(facts: .scenario1, state: state)
+        #expect(decision.primaryPath != .chaseFreedomRiseUSD)
+
+        let scheduleCheck = decision.outstandingChecks.contains {
+            $0.localizedStandardContains("Add the linked Chase card's statement calendar")
+        }
+        #expect(scheduleCheck)
+    }
+
+    @Test("Chase is blocked when the linked card's schedule is partial (missing the due date)")
+    func chaseBlockedWhenLinkedScheduleIsPartial() {
+        let partial = CreditCardSchedule(
+            statementPeriodStartDate: Self.date(year: 2026, month: 4, day: 1),
+            statementClosingDate: Self.date(year: 2026, month: 4, day: 28),
+            lastConfirmedAt: Self.date(year: 2026, month: 4, day: 21)
+        )
+        let state = Self.chaseGuardrailedState(
+            currentBalanceUSD: 0,
+            linkedSchedule: partial
+        )
+        let decision = ScenarioDecisionEngine.decide(facts: .scenario1, state: state)
+        #expect(decision.primaryPath != .chaseFreedomRiseUSD)
+
+        let completeCheck = decision.outstandingChecks.contains {
+            $0.localizedStandardContains("Complete the linked Chase card's statement calendar")
+        }
+        #expect(completeCheck)
+    }
+
+    @Test("Chase is blocked when the linked card's dates are in an invalid order")
+    func chaseBlockedWhenLinkedScheduleNeedsAttention() {
+        let invalid = CreditCardSchedule(
+            statementPeriodStartDate: Self.date(year: 2026, month: 4, day: 1),
+            statementClosingDate: Self.date(year: 2026, month: 4, day: 28),
+            paymentDueDate: Self.date(year: 2026, month: 4, day: 15),
+            lastConfirmedAt: Self.date(year: 2026, month: 4, day: 21)
+        )
+        let state = Self.chaseGuardrailedState(
+            currentBalanceUSD: 0,
+            linkedSchedule: invalid
+        )
+        let decision = ScenarioDecisionEngine.decide(facts: .scenario1, state: state)
+        #expect(decision.primaryPath != .chaseFreedomRiseUSD)
+
+        let resolveCheck = decision.outstandingChecks.contains {
+            $0.localizedStandardContains("Resolve the linked Chase card's date order")
+        }
+        #expect(resolveCheck)
+    }
+
+    @Test("Chase is blocked when the schedule is complete but unconfirmed")
+    func chaseBlockedWhenLinkedScheduleIsUnconfirmed() {
+        let unconfirmed = CreditCardSchedule(
+            statementPeriodStartDate: Self.date(year: 2026, month: 4, day: 1),
+            statementClosingDate: Self.date(year: 2026, month: 4, day: 28),
+            paymentDueDate: Self.date(year: 2026, month: 5, day: 25)
+        )
+        let state = Self.chaseGuardrailedState(
+            currentBalanceUSD: 0,
+            linkedSchedule: unconfirmed
+        )
+        let decision = ScenarioDecisionEngine.decide(facts: .scenario1, state: state)
+        #expect(decision.primaryPath != .chaseFreedomRiseUSD)
+    }
+
+    @Test("Rationale mentions the absolute statement close date when Chase is recommended")
+    func rationaleIncludesAbsoluteCloseDate() {
+        let decision = ScenarioDecisionEngine.decide(
+            facts: .scenario1,
+            state: Self.chaseGuardrailedState()
+        )
+        let hasDatedLine = decision.rationale.contains {
+            $0.localizedStandardContains("April")
+                && $0.localizedStandardContains("2026")
+        }
+        #expect(hasDatedLine)
+
+        // And it must never use the relative-date words the HIG forbids.
+        let bannedRelative = decision.rationale.contains {
+            $0.localizedStandardContains("tomorrow")
+                || $0.localizedStandardContains("yesterday")
+                || $0.localizedStandardContains("days ago")
+        }
+        #expect(!bannedRelative)
     }
 
     @Test("Wise is recommended when Wise USD balance covers checkout and Chase guardrails are missing")

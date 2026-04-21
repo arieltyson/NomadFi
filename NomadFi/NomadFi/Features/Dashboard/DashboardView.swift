@@ -78,7 +78,10 @@ struct DashboardView: View {
         .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
         .sheet(isPresented: $isScenarioBriefPresented) {
             if let scenarioViewModel {
-                ScenarioDecisionBriefView(viewModel: scenarioViewModel)
+                ScenarioDecisionBriefView(
+                    viewModel: scenarioViewModel,
+                    creditCardAccounts: creditCardAccounts
+                )
             }
         }
     }
@@ -110,6 +113,20 @@ private extension DashboardView {
 
     var homeCurrency: CurrencyCode {
         viewModel.homeCurrency(from: jurisdictions)
+    }
+
+    /// All credit-card accounts, sorted to match the Settings order
+    /// so the Scenario brief's linked-card picker is consistent with
+    /// the Credit Card Calendar section.
+    var creditCardAccounts: [Account] {
+        accounts
+            .filter { $0.accountType == .creditCard }
+            .sorted { lhs, rhs in
+                if lhs.institutionName == rhs.institutionName {
+                    return lhs.name < rhs.name
+                }
+                return lhs.institutionName < rhs.institutionName
+            }
     }
 
     /// Whether this is the initial load (no data yet from the network).

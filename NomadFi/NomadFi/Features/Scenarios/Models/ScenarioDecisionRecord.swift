@@ -42,10 +42,18 @@ final class ScenarioDecisionRecord {
     /// the engine falls back to the zero-balance reference only.
     var chaseCurrentBalanceUSD: Double?
 
-    /// User-entered statement close date for the Chase Freedom Rise
-    /// card. Used to frame the "pay before statement close" commitment
-    /// with an actual date.
+    /// Legacy, scenario-local Chase statement close date. Retained for
+    /// migration safety — the engine now prefers the statement close
+    /// date on the linked ``chasePaymentAccount``. New edits flow
+    /// through Settings → Credit Card Calendar.
     var chaseStatementCloseDate: Date?
+
+    /// The persisted credit-card account the user has linked as their
+    /// Chase Freedom Rise. `.nullify` means scenario inputs survive a
+    /// card deletion as plain boolean/numeric values without being
+    /// force-cascaded into an orphaned state.
+    @Relationship(deleteRule: .nullify)
+    var chasePaymentAccount: Account?
 
     /// The user committed to paying the Chase balance in full before
     /// the next statement closes. Gates Chase recommendation.
@@ -73,6 +81,7 @@ final class ScenarioDecisionRecord {
         chaseAvailableCreditUSD: Double? = nil,
         chaseCurrentBalanceUSD: Double? = nil,
         chaseStatementCloseDate: Date? = nil,
+        chasePaymentAccount: Account? = nil,
         chaseWillPayBeforeStatementClose: Bool = false,
         wiseUSDBalanceUSD: Double? = nil,
         wiseCardAcceptedByAmazon: Bool = false,
@@ -84,6 +93,7 @@ final class ScenarioDecisionRecord {
         self.chaseAvailableCreditUSD = chaseAvailableCreditUSD
         self.chaseCurrentBalanceUSD = chaseCurrentBalanceUSD
         self.chaseStatementCloseDate = chaseStatementCloseDate
+        self.chasePaymentAccount = chasePaymentAccount
         self.chaseWillPayBeforeStatementClose = chaseWillPayBeforeStatementClose
         self.wiseUSDBalanceUSD = wiseUSDBalanceUSD
         self.wiseCardAcceptedByAmazon = wiseCardAcceptedByAmazon

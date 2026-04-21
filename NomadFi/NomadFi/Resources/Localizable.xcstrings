@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ — %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ — %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -114,6 +124,7 @@
 
     },
     "•" : {
+
     },
     "1 %@ equals %@ %@" : {
       "localizations" : {
@@ -158,6 +169,8 @@
     "Add" : {
 
     },
+    "Add a credit-card account above to track statement close and payment due dates here." : {
+    },
     "Add Account" : {
 
     },
@@ -191,7 +204,7 @@
     "Adds this account to your onboarding list." : {
 
     },
-    "Airbnb host can receive packages (or delivery timed for arrival)" : {
+    "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
     },
     "All data stays on-device" : {
 
@@ -200,6 +213,7 @@
 
     },
     "All user-side checks are confirmed." : {
+
     },
     "Allow “NomadFi” to use your location?" : {
 
@@ -208,8 +222,10 @@
 
     },
     "Amazon arrival order" : {
+
     },
     "Amazon arrival order decision brief. %@" : {
+
     },
     "Amount" : {
 
@@ -253,7 +269,7 @@
     "Cancel" : {
 
     },
-    "Cart reviewed — paid / overnight shipping and accidental Subscribe & Save" : {
+    "Cart reviewed — shipping and Subscribe & Save" : {
     },
     "Categorization" : {
 
@@ -261,11 +277,12 @@
     "Category" : {
 
     },
-    "Chase available credit confirmed (exceeds USD checkout + safety buffer)" : {
+    "Chase Freedom Rise" : {
     },
-    "Chase Freedom Rise is only recommended when available credit and statement-close timing are both confirmed. Without both, this tool routes to Wise USD or blocks on user input." : {
+    "Chase Freedom Rise is only recommended when your entered available credit clears checkout + a safety buffer, your current balance is known, and you commit to paying before statement close. Without all four, this tool routes to Wise USD or blocks on user input." : {
     },
     "Chase utilization guardrail" : {
+
     },
     "Cheaper (%@)" : {
 
@@ -285,7 +302,14 @@
     "Clear" : {
 
     },
+    "Clear All Dates" : {
+    },
+    "Clear all dates?" : {
+    },
+    "Clear Dates" : {
+    },
     "Close" : {
+
     },
     "Comparing prices across jurisdictions..." : {
 
@@ -295,6 +319,8 @@
     },
     "Confirm Receipt" : {
 
+    },
+    "Confirmation" : {
     },
     "Confirms this detected subscription and starts tracking it." : {
 
@@ -318,8 +344,12 @@
 
     },
     "Cost breakdown" : {
+
     },
     "Creates and exports a report for tax year %@." : {
+
+    },
+    "Credit Card Calendar" : {
 
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
@@ -341,6 +371,7 @@
 
     },
     "Data confidence: %@" : {
+
     },
     "Date" : {
 
@@ -411,6 +442,8 @@
     "Dynamic Type" : {
 
     },
+    "Each link opens the official source page in Safari. NomadFi does not fetch or cache these pages — you verify them yourself." : {
+    },
     "Enable Notifications" : {
 
     },
@@ -429,12 +462,17 @@
     "Enter service name and amount to enable saving." : {
 
     },
+    "Enter the real numbers from Chase and Wise. Values are stored only on this device and can be wiped from Settings → Privacy." : {
+
+    },
     "Every screen narrates as a coherent financial story." : {
 
     },
     "Evidence and assumptions" : {
+
     },
     "Evidence: %@" : {
+
     },
     "Exchange Rate" : {
 
@@ -470,11 +508,15 @@
     "Finishes setup and lets you enable location later." : {
 
     },
+    "Fix the highlighted date conflict before saving." : {
+    },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
     },
     "Frequency" : {
 
+    },
+    "From your numbers" : {
     },
     "FX Fee %" : {
 
@@ -492,11 +534,17 @@
 
     },
     "Hard rules" : {
+
     },
     "Home" : {
 
     },
     "Home Currency" : {
+
+    },
+    "I will pay before statement close" : {
+    },
+    "Indicates you verified these dates against your issuer app." : {
 
     },
     "Institution" : {
@@ -507,6 +555,10 @@
     },
     "Jurisdictions section" : {
 
+    },
+    "Last confirmed" : {
+    },
+    "Last confirmed %@" : {
     },
     "Ledger" : {
 
@@ -551,6 +603,10 @@
     "Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding." : {
 
     },
+    "Mark Confirmed Today" : {
+    },
+    "Mark schedule as confirmed" : {
+    },
     "Matches" : {
 
     },
@@ -580,6 +636,8 @@
     },
     "No Accounts Yet" : {
 
+    },
+    "No Credit Cards Yet" : {
     },
     "No Receipt Image" : {
 
@@ -644,6 +702,8 @@
     "Not selected" : {
 
     },
+    "Not set" : {
+    },
     "Notes" : {
 
     },
@@ -669,11 +729,19 @@
 
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
+
+    },
+    "Opens the official source in Safari" : {
+    },
+    "Opens the statement calendar editor for this card." : {
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
+    "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
+    },
     "Payment options" : {
+
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
@@ -700,6 +768,7 @@
 
     },
     "Rates confidence: %@. Needs refresh." : {
+
     },
     "Rates loading…" : {
 
@@ -718,6 +787,8 @@
     },
     "Region" : {
 
+    },
+    "Removes every statement calendar date from this card." : {
     },
     "Renews %@" : {
 
@@ -744,6 +815,7 @@
 
     },
     "Ruling" : {
+
     },
     "Save" : {
 
@@ -756,6 +828,8 @@
     },
     "Save %@/year with subscription arbitrage" : {
 
+    },
+    "Saves the credit-card calendar." : {
     },
     "Saves this account to your profile." : {
 
@@ -841,6 +915,13 @@
     "Something Went Wrong" : {
 
     },
+    "Sources" : {
+    },
+    "Stamps today's date as the last time you verified this schedule." : {
+    },
+    "Statement close date" : {
+
+    },
     "Subscription Arbitrage" : {
 
     },
@@ -871,6 +952,8 @@
     "Tax Year %@" : {
 
     },
+    "The confirmation stamp is informational only. NomadFi does not contact your issuer." : {
+    },
     "The currency code (e.g., USD, CAD, TTD)" : {
 
     },
@@ -889,13 +972,13 @@
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
     },
+    "This removes every statement calendar date from this card. You can re-enter them at any time." : {
+    },
     "This transaction will appear in your Tax Vault" : {
 
     },
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
-    },
-    "Toggle each item as you confirm it. Values are kept only for this session." : {
     },
     "Total net worth" : {
 
@@ -940,6 +1023,8 @@
           }
         }
       }
+    },
+    "Validation issue: %@" : {
     },
     "Verification Status" : {
 
@@ -989,9 +1074,9 @@
     "Which Card?" : {
 
     },
-    "Will pay Chase balance before next statement closes" : {
+    "Wise" : {
     },
-    "Wise USD balance is sufficient" : {
+    "Wise card accepted by Amazon" : {
     },
     "You can add accounts later from the dashboard" : {
 

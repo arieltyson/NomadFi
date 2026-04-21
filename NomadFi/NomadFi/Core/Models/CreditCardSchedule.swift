@@ -2,8 +2,9 @@
 // NomadFi
 //
 // Pure value projection of an `Account`'s credit-card statement
-// calendar. The Settings UI and tests reason about the schedule
-// through this type; the SwiftData model stays dumb storage.
+// calendar. Lives in Core/Models so both the Settings UI and the
+// Scenario decision engine can consume it without cross-feature
+// dependencies.
 
 import Foundation
 

@@ -79,6 +79,12 @@ enum ScenarioDecisionEngine {
 
     /// Chase Freedom Rise is conditionally preferred only when every
     /// single guardrail below is satisfied with a user-confirmed value.
+    ///
+    /// In addition to the numeric guardrails, a credit-card account
+    /// must be linked (the source of truth for the statement calendar)
+    /// and that account's schedule must be complete, in-order, and
+    /// confirmed. A missing or unconfirmed schedule blocks Chase even
+    /// when every other numeric guardrail passes.
     static func chaseGuardrailsMet(
         facts: ScenarioFacts,
         state: ScenarioDecisionState
@@ -91,6 +97,8 @@ enum ScenarioDecisionEngine {
         guard available >= required else { return false }
         guard state.chaseCurrentBalanceUSD != nil else { return false }
         guard state.chaseWillPayBeforeStatementClose else { return false }
+        guard state.hasLinkedChaseAccount else { return false }
+        guard state.linkedChaseScheduleState == .confirmed else { return false }
         return true
     }
 
@@ -168,6 +176,16 @@ enum ScenarioDecisionEngine {
         ScenarioChecklistItem(
             id: "cart_shipping_reviewed",
             title: "Reviewed cart for paid or overnight shipping lines and accidental Subscribe & Save",
+            evidence: .needsUserInput
+        ),
+        ScenarioChecklistItem(
+            id: "chase_account_linked",
+            title: "Linked a Chase Freedom Rise credit-card account to this scenario",
+            evidence: .needsUserInput
+        ),
+        ScenarioChecklistItem(
+            id: "chase_schedule_confirmed",
+            title: "Linked card's statement calendar is complete and confirmed in Settings",
             evidence: .needsUserInput
         ),
         ScenarioChecklistItem(
@@ -254,6 +272,12 @@ private extension ScenarioDecisionEngine {
                     "Chase available credit of USD \(formatted(available, fractionDigits: 2)) comfortably covers the USD \(formatted(computed.chaseRequiredAvailableCreditUSD, fractionDigits: 2)) threshold (checkout + USD \(formatted(computed.chaseAvailableCreditSafetyBufferUSD, fractionDigits: 0)) buffer), and the balance will be paid before statement close."
                 )
             }
+            if let cardName = state.linkedChaseAccountName,
+               let closing = state.effectiveChaseStatementCloseDate {
+                lines.append(
+                    "Linked card: \(cardName). Pay before \(closing.formatted(.dateTime.year().month(.wide).day())) to keep the statement balance low when it reports."
+                )
+            }
         case .wiseUSD:
             if !chaseGuardrailsMet(facts: facts, state: state) {
                 lines.append("Chase guardrails are not all confirmed, so Wise USD is the safer operational path — it avoids reporting high Chase utilization to the bureaus entirely.")
@@ -262,7 +286,38 @@ private extension ScenarioDecisionEngine {
             lines.append("Not enough user-confirmed inputs to pick between Chase and Wise. The ruling is a stance, not a selection.")
         }
 
+        // Schedule signal is surfaced in the rationale regardless of
+        // the chosen path, because it's the gate most likely to flip
+        // between Chase-preferred and Wise-fallback.
+        if let scheduleLine = scheduleRationaleLine(state: state) {
+            lines.append(scheduleLine)
+        }
+
         return lines
+    }
+
+    /// A single rationale line that describes the linked-card schedule
+    /// status, using absolute dates only — HIG forbids relative phrasing.
+    static func scheduleRationaleLine(state: ScenarioDecisionState) -> String? {
+        guard state.hasLinkedChaseAccount else {
+            return "No Chase card is linked to this scenario yet — link one from the Chase section to unlock the Chase path."
+        }
+        guard let schedule = state.linkedChaseSchedule else { return nil }
+
+        switch schedule.state {
+        case .confirmed:
+            if let cardName = state.linkedChaseAccountName,
+               let closing = schedule.statementClosingDate {
+                return "Linked card \(cardName) has a confirmed statement calendar (closes \(closing.formatted(.dateTime.year().month(.wide).day())))."
+            }
+            return nil
+        case .partial:
+            return "Linked Chase card's statement calendar is partial — complete it in Settings → Credit Card Calendar to unlock Chase."
+        case .needsAttention:
+            return "Linked Chase card's statement dates are in an invalid order — review them in Settings → Credit Card Calendar."
+        case .missing:
+            return "Linked Chase card has no statement calendar yet — enter it in Settings → Credit Card Calendar to unlock Chase."
+        }
     }
 
     static func outstandingChecks(
@@ -273,6 +328,21 @@ private extension ScenarioDecisionEngine {
 
         if !state.cartShippingReviewed {
             checks.append("Review the cart for paid / overnight shipping and accidental Subscribe & Save.")
+        }
+        if !state.hasLinkedChaseAccount {
+            checks.append("Link a Chase Freedom Rise credit-card account to this scenario.")
+        } else if let scheduleState = state.linkedChaseScheduleState,
+                  scheduleState != .confirmed {
+            switch scheduleState {
+            case .missing:
+                checks.append("Add the linked Chase card's statement calendar in Settings → Credit Card Calendar.")
+            case .partial:
+                checks.append("Complete the linked Chase card's statement calendar in Settings → Credit Card Calendar.")
+            case .needsAttention:
+                checks.append("Resolve the linked Chase card's date order in Settings → Credit Card Calendar.")
+            case .confirmed:
+                break
+            }
         }
         if state.chaseAvailableCreditUSD == nil {
             checks.append("Enter Chase Freedom Rise available credit from the Chase app.")

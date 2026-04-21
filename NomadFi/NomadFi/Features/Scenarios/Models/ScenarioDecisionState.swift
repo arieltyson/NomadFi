@@ -30,8 +30,9 @@ struct ScenarioDecisionState: Sendable, Equatable {
     /// User-confirmed Chase Freedom Rise current statement balance (USD).
     var chaseCurrentBalanceUSD: Double?
 
-    /// User-entered Chase statement close date — kept for context in
-    /// the UI; the engine treats it as informational, not a hard input.
+    /// Legacy scenario-local Chase statement close date. Still carried
+    /// for migration compatibility, but the engine prefers
+    /// ``linkedChaseSchedule`` when a card has been linked.
     var chaseStatementCloseDate: Date?
 
     /// The user committed to paying the Chase balance in full before
@@ -44,6 +45,20 @@ struct ScenarioDecisionState: Sendable, Equatable {
     /// The user confirmed their Wise card is accepted by Amazon.
     var wiseCardAcceptedByAmazon: Bool = false
 
+    /// Whether the user has linked a credit-card account as the Chase
+    /// payment source for this scenario. When `false`, no account is
+    /// attached and Chase guardrails cannot clear.
+    var hasLinkedChaseAccount: Bool = false
+
+    /// Display name of the linked Chase account — used by the rationale
+    /// text. Kept nil when no card has been linked.
+    var linkedChaseAccountName: String?
+
+    /// Schedule snapshot for the linked Chase account. `nil` when no
+    /// card is linked. The engine treats any state other than
+    /// ``CreditCardScheduleState/confirmed`` as insufficient.
+    var linkedChaseSchedule: CreditCardSchedule?
+
     init(
         cartShippingReviewed: Bool = false,
         airbnbPackageReceiptConfirmed: Bool = false,
@@ -52,7 +67,10 @@ struct ScenarioDecisionState: Sendable, Equatable {
         chaseStatementCloseDate: Date? = nil,
         chaseWillPayBeforeStatementClose: Bool = false,
         wiseUSDBalanceUSD: Double? = nil,
-        wiseCardAcceptedByAmazon: Bool = false
+        wiseCardAcceptedByAmazon: Bool = false,
+        hasLinkedChaseAccount: Bool = false,
+        linkedChaseAccountName: String? = nil,
+        linkedChaseSchedule: CreditCardSchedule? = nil
     ) {
         self.cartShippingReviewed = cartShippingReviewed
         self.airbnbPackageReceiptConfirmed = airbnbPackageReceiptConfirmed
@@ -62,6 +80,27 @@ struct ScenarioDecisionState: Sendable, Equatable {
         self.chaseWillPayBeforeStatementClose = chaseWillPayBeforeStatementClose
         self.wiseUSDBalanceUSD = wiseUSDBalanceUSD
         self.wiseCardAcceptedByAmazon = wiseCardAcceptedByAmazon
+        self.hasLinkedChaseAccount = hasLinkedChaseAccount
+        self.linkedChaseAccountName = linkedChaseAccountName
+        self.linkedChaseSchedule = linkedChaseSchedule
+    }
+}
+
+// MARK: - Derived
+
+extension ScenarioDecisionState {
+
+    /// The preferred statement close date for rationale copy. Prefers
+    /// the linked account's schedule over the legacy record field so
+    /// card-level edits in Settings flow straight into the brief.
+    var effectiveChaseStatementCloseDate: Date? {
+        linkedChaseSchedule?.statementClosingDate ?? chaseStatementCloseDate
+    }
+
+    /// Coarse state for the linked Chase schedule, or `nil` when no
+    /// card has been linked.
+    var linkedChaseScheduleState: CreditCardScheduleState? {
+        linkedChaseSchedule?.state
     }
 }
 
@@ -72,6 +111,9 @@ extension ScenarioDecisionState {
     /// Snapshots the persisted record into a pure state value the
     /// engine can evaluate without any SwiftData dependency.
     init(record: ScenarioDecisionRecord) {
+        let linkedAccount = record.chasePaymentAccount
+        let schedule = linkedAccount.map { CreditCardSchedule(account: $0) }
+
         self.init(
             cartShippingReviewed: record.cartShippingReviewed,
             airbnbPackageReceiptConfirmed: record.airbnbPackageReceiptConfirmed,
@@ -80,7 +122,10 @@ extension ScenarioDecisionState {
             chaseStatementCloseDate: record.chaseStatementCloseDate,
             chaseWillPayBeforeStatementClose: record.chaseWillPayBeforeStatementClose,
             wiseUSDBalanceUSD: record.wiseUSDBalanceUSD,
-            wiseCardAcceptedByAmazon: record.wiseCardAcceptedByAmazon
+            wiseCardAcceptedByAmazon: record.wiseCardAcceptedByAmazon,
+            hasLinkedChaseAccount: linkedAccount != nil,
+            linkedChaseAccountName: linkedAccount?.name,
+            linkedChaseSchedule: schedule
         )
     }
 }

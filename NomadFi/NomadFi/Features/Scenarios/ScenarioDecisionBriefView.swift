@@ -1,10 +1,12 @@
 // ScenarioDecisionBriefView.swift
 // NomadFi
 //
-// Detail sheet for Scenario 1 — Amazon.com arrival order. Numeric inputs
-// (Chase available credit, Chase current balance, statement close date,
-// Wise USD balance) are persisted in the underlying `ScenarioDecisionRecord`
-// via SwiftData; the pure engine re-runs on every edit.
+// Detail sheet for Scenario 1 — Amazon.com arrival order. Numeric
+// inputs (Chase available credit, Chase current balance, Wise USD
+// balance) live on the persisted `ScenarioDecisionRecord`; the
+// statement close date now comes from the linked credit-card account
+// selected in this sheet, so dates have a single source of truth
+// shared with Settings → Credit Card Calendar.
 
 import SwiftUI
 
@@ -12,7 +14,21 @@ import SwiftUI
 struct ScenarioDecisionBriefView: View {
 
     @Bindable var viewModel: ScenarioDecisionBriefViewModel
+
+    /// All credit-card accounts the user has added. Passed from the
+    /// Dashboard's `@Query` so the Chase linked-card picker stays in
+    /// sync with Settings without the brief owning its own query.
+    let creditCardAccounts: [Account]
+
     @Environment(\.dismiss) private var dismiss
+
+    init(
+        viewModel: ScenarioDecisionBriefViewModel,
+        creditCardAccounts: [Account] = []
+    ) {
+        self.viewModel = viewModel
+        self.creditCardAccounts = creditCardAccounts
+    }
 
     var body: some View {
         NavigationStack {
@@ -116,6 +132,15 @@ private extension ScenarioDecisionBriefView {
                 .font(TypographyTokens.sectionHeader.weight(.regular))
                 .foregroundStyle(.secondary)
 
+            ScenarioLinkedChaseCardRow(
+                creditCardAccounts: creditCardAccounts,
+                selectedAccount: binding(\.chasePaymentAccount)
+            )
+
+            if let linkedAccount = viewModel.record.chasePaymentAccount {
+                ScenarioLinkedChaseScheduleStatus(account: linkedAccount)
+            }
+
             ScenarioNumericInputRow(
                 title: "Available credit",
                 helper: "Open Chase, read available credit, and enter it here — USD.",
@@ -129,17 +154,6 @@ private extension ScenarioDecisionBriefView {
                 placeholder: "USD",
                 systemImage: "dollarsign.circle",
                 value: binding(\.chaseCurrentBalanceUSD)
-            )
-            DatePicker(
-                "Statement close date",
-                selection: Binding(
-                    get: { viewModel.record.chaseStatementCloseDate ?? .now },
-                    set: { newValue in
-                        viewModel.record.chaseStatementCloseDate = newValue
-                        viewModel.markEdited()
-                    }
-                ),
-                displayedComponents: .date
             )
             Toggle(
                 "I will pay before statement close",
@@ -236,7 +250,7 @@ private extension ScenarioDecisionBriefView {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                Text("Chase Freedom Rise is only recommended when your entered available credit clears checkout + a safety buffer, your current balance is known, and you commit to paying before statement close. Without all four, this tool routes to Wise USD or blocks on user input.")
+                Text("Chase Freedom Rise is only recommended when your linked card's statement calendar is confirmed, your entered available credit clears checkout plus a safety buffer, your current balance is known, and you commit to paying before statement close. Without all of these, this tool routes to Wise USD or blocks on user input. Paying before statement close can reduce reported utilization, but issuer reporting can vary.")
                     .font(TypographyTokens.body)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -423,6 +437,7 @@ private extension ScenarioDecisionBriefView {
 
 #Preview {
     ScenarioDecisionBriefView(
-        viewModel: ScenarioDecisionBriefViewModel()
+        viewModel: ScenarioDecisionBriefViewModel(),
+        creditCardAccounts: []
     )
 }
