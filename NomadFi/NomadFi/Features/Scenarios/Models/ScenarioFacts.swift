@@ -27,7 +27,8 @@ struct ScenarioFacts: Sendable, Equatable {
 
     // MARK: - Chase Freedom Rise (Ariel)
 
-    /// Total credit limit. Phase 3 does not know available credit.
+    /// Total credit limit. Available credit is a separate, user-supplied
+    /// value carried on ``ScenarioDecisionState``.
     let chaseTotalCreditLimitUSD: Double
     /// Chase Freedom Rise purchase APR shown on `docs/ARIEL.md`.
     let chasePurchaseAPRPercent: Double
@@ -62,12 +63,42 @@ struct ScenarioFacts: Sendable, Equatable {
     /// zero. Returns `nil` when the limit is non-positive.
     ///
     /// - Parameter currentBalanceUSD: The caller-supplied statement
-    ///   balance. Pass `0` only as an explicit assumption; otherwise
-    ///   ask the user.
+    ///   balance. Pass `0` only as an explicit reference assumption;
+    ///   otherwise ask the user.
     func chaseUtilizationPercent(currentBalanceUSD: Double) -> Double? {
         guard chaseTotalCreditLimitUSD > 0 else { return nil }
         return (currentBalanceUSD + usdCheckoutAmount) / chaseTotalCreditLimitUSD
     }
+
+    /// Projected Chase statement balance after the purchase posts.
+    /// Returns `nil` when the user has not confirmed their current
+    /// balance — honesty beats speculation.
+    func projectedChaseBalanceUSD(currentBalanceUSD: Double?) -> Double? {
+        guard let currentBalanceUSD else { return nil }
+        return currentBalanceUSD + usdCheckoutAmount
+    }
+
+    /// Projected Chase utilization percent using the user-entered
+    /// current balance. Returns `nil` when either the current balance
+    /// or the total limit is unknown / non-positive.
+    func projectedChaseUtilizationPercent(currentBalanceUSD: Double?) -> Double? {
+        guard let currentBalanceUSD,
+              chaseTotalCreditLimitUSD > 0 else {
+            return nil
+        }
+        return (currentBalanceUSD + usdCheckoutAmount) / chaseTotalCreditLimitUSD
+    }
+}
+
+// MARK: - Safety buffers
+
+extension ScenarioFacts {
+
+    /// Conservative headroom added on top of the USD checkout amount
+    /// when deciding whether Chase available credit is "enough". Keeps
+    /// small taxes, minor cart adjustments, or merchant auth holds from
+    /// tripping a declined-at-checkout surprise.
+    static let chaseAvailableCreditSafetyBufferUSD: Double = 50
 }
 
 // MARK: - Scenario 1 fixture

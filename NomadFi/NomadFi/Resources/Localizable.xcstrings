@@ -87,12 +87,12 @@
         }
       }
     },
-    "%@: %@. %@" : {
+    "%@: %@. %@. %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@: %2$@. %3$@"
+            "value" : "%1$@: %2$@. %3$@. %4$@"
           }
         }
       }
@@ -112,6 +112,8 @@
     },
     "%lld documents" : {
 
+    },
+    "•" : {
     },
     "1 %@ equals %@ %@" : {
       "localizations" : {
@@ -153,16 +155,6 @@
     "Active Card Recommendation" : {
 
     },
-    "Active card recommendation: Use %@ in %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active card recommendation: Use %1$@ in %2$@"
-          }
-        }
-      }
-    },
     "Add" : {
 
     },
@@ -199,17 +191,25 @@
     "Adds this account to your onboarding list." : {
 
     },
+    "Airbnb host can receive packages (or delivery timed for arrival)" : {
+    },
     "All data stays on-device" : {
 
     },
     "All text scales to your preferred size, including the largest accessibility sizes." : {
 
     },
+    "All user-side checks are confirmed." : {
+    },
     "Allow “NomadFi” to use your location?" : {
 
     },
     "Allow Location Access" : {
 
+    },
+    "Amazon arrival order" : {
+    },
+    "Amazon arrival order decision brief. %@" : {
     },
     "Amount" : {
 
@@ -230,6 +230,7 @@
 
     },
     "Authenticating..." : {
+
     },
     "Back" : {
 
@@ -237,18 +238,11 @@
     "Balance (Optional)" : {
 
     },
-    "Begins setting up your NomadFi profile" : {
+    "Before checkout" : {
 
     },
-    "Best card for %@ %@ — lowest FX fees" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Best card for %1$@ %2$@ — lowest FX fees"
-          }
-        }
-      }
+    "Begins setting up your NomadFi profile" : {
+
     },
     "Billing" : {
 
@@ -259,11 +253,19 @@
     "Cancel" : {
 
     },
+    "Cart reviewed — paid / overnight shipping and accidental Subscribe & Save" : {
+    },
     "Categorization" : {
 
     },
     "Category" : {
 
+    },
+    "Chase available credit confirmed (exceeds USD checkout + safety buffer)" : {
+    },
+    "Chase Freedom Rise is only recommended when available credit and statement-close timing are both confirmed. Without both, this tool routes to Wise USD or blocks on user input." : {
+    },
+    "Chase utilization guardrail" : {
     },
     "Cheaper (%@)" : {
 
@@ -282,6 +284,8 @@
     },
     "Clear" : {
 
+    },
+    "Close" : {
     },
     "Comparing prices across jurisdictions..." : {
 
@@ -313,6 +317,8 @@
     "Converted Amount" : {
 
     },
+    "Cost breakdown" : {
+    },
     "Creates and exports a report for tax year %@." : {
 
     },
@@ -333,6 +339,8 @@
     },
     "Dashboard" : {
 
+    },
+    "Data confidence: %@" : {
     },
     "Date" : {
 
@@ -424,6 +432,10 @@
     "Every screen narrates as a coherent financial story." : {
 
     },
+    "Evidence and assumptions" : {
+    },
+    "Evidence: %@" : {
+    },
     "Exchange Rate" : {
 
     },
@@ -478,6 +490,8 @@
     },
     "Global Net Worth" : {
 
+    },
+    "Hard rules" : {
     },
     "Home" : {
 
@@ -654,8 +668,12 @@
     "Opens a form to add a new bank account or card." : {
 
     },
+    "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
+    },
     "Opens your photo library to select a receipt image for scanning." : {
 
+    },
+    "Payment options" : {
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
@@ -677,6 +695,11 @@
     },
     "Rate" : {
 
+    },
+    "Rates confidence: %@" : {
+
+    },
+    "Rates confidence: %@. Needs refresh." : {
     },
     "Rates loading…" : {
 
@@ -719,6 +742,8 @@
     },
     "Review the fields below and adjust as needed." : {
 
+    },
+    "Ruling" : {
     },
     "Save" : {
 
@@ -870,6 +895,8 @@
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
     },
+    "Toggle each item as you confirm it. Values are kept only for this session." : {
+    },
     "Total net worth" : {
 
     },
@@ -894,15 +921,22 @@
     "Use %@" : {
 
     },
-    "Use your %@. It has no foreign transaction fees." : {
-
-    },
-    "Use your %@. It has the lowest foreign transaction fee at %@%%." : {
+    "Use your %@. It has no foreign transaction fees on record.%@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Use your %1$@. It has the lowest foreign transaction fee at %2$@%%."
+            "value" : "Use your %1$@. It has no foreign transaction fees on record.%2$@"
+          }
+        }
+      }
+    },
+    "Use your %@. It has the lowest foreign transaction fee on record at %@%%.%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use your %1$@. It has the lowest foreign transaction fee on record at %2$@%%.%3$@"
           }
         }
       }
@@ -954,6 +988,10 @@
     },
     "Which Card?" : {
 
+    },
+    "Will pay Chase balance before next statement closes" : {
+    },
+    "Wise USD balance is sufficient" : {
     },
     "You can add accounts later from the dashboard" : {
 

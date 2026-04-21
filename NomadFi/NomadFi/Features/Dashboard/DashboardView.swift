@@ -19,9 +19,10 @@ struct DashboardView: View {
     @State private var viewModel = DashboardViewModel()
     @State private var showError = false
     @State private var hasContentAppeared = false
-    @State private var scenarioViewModel = ScenarioDecisionBriefViewModel()
+    @State private var scenarioViewModel: ScenarioDecisionBriefViewModel?
     @State private var isScenarioBriefPresented = false
 
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
@@ -49,6 +50,7 @@ struct DashboardView: View {
         .refreshable { await refreshRates() }
         .task {
             AddMoreAccountsTip.accountCount = accounts.count
+            bootstrapScenarioViewModelIfNeeded()
             await refreshRates()
         }
         .task(id: widgetSnapshotSignature) {
@@ -75,7 +77,9 @@ struct DashboardView: View {
         }
         .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
         .sheet(isPresented: $isScenarioBriefPresented) {
-            ScenarioDecisionBriefView(viewModel: scenarioViewModel)
+            if let scenarioViewModel {
+                ScenarioDecisionBriefView(viewModel: scenarioViewModel)
+            }
         }
     }
 }
@@ -159,11 +163,13 @@ private extension DashboardView {
                 .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
 
-            ScenarioDashboardCard(
-                ruling: scenarioViewModel.decision.ruling,
-                action: { isScenarioBriefPresented = true }
-            )
-            .padding(.horizontal, SpacingTokens.medium)
+            if let scenarioViewModel {
+                ScenarioDashboardCard(
+                    ruling: scenarioViewModel.decision.ruling,
+                    action: { isScenarioBriefPresented = true }
+                )
+                .padding(.horizontal, SpacingTokens.medium)
+            }
 
             if !viewModel.insights.isEmpty {
                 InsightsSection(insights: viewModel.insights)
@@ -228,6 +234,14 @@ private extension DashboardView {
             .padding(.horizontal, SpacingTokens.medium)
     }
 
+    func bootstrapScenarioViewModelIfNeeded() {
+        guard scenarioViewModel == nil else { return }
+        let record = ScenarioDecisionBriefViewModel.fetchOrCreateScenario1Record(
+            in: modelContext
+        )
+        scenarioViewModel = ScenarioDecisionBriefViewModel(record: record)
+    }
+
     func refreshRates() async {
         let currencies = viewModel.currencies(from: jurisdictions)
         await viewModel.fetchRates(for: currencies)
@@ -262,5 +276,6 @@ private extension DashboardView {
         TaxDocument.self,
         Subscription.self,
         Budget.self,
+        ScenarioDecisionRecord.self,
     ], inMemory: true)
 }

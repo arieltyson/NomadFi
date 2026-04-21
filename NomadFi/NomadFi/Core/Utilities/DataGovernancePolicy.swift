@@ -103,6 +103,7 @@ enum DataGovernancePolicy {
         try? modelContext.delete(model: ExchangeRate.self)
         try? modelContext.delete(model: JurisdictionProfile.self)
         try? modelContext.delete(model: Currency.self)
+        try? modelContext.delete(model: ScenarioDecisionRecord.self)
 
         // 2. Clean up receipt images from disk
         let receiptsDirectory = URL.documentsDirectory.appending(path: "receipts")
