@@ -54,7 +54,6 @@ struct AccountDetailView: View {
                     }
                 }
                 .scrollDismissesKeyboard(.interactively)
-                .keyboardDismissToolbar { focusedField = nil }
             } else {
                 ProgressView()
                     .task { viewModel = AccountDetailViewModel(account: account) }
@@ -64,11 +63,25 @@ struct AccountDetailView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
+                    focusedField = nil
                     viewModel?.save()
                     dismiss()
                 }
                 .disabled(viewModel?.canSave != true)
                 .accessibilityHint("Saves your changes to this account and returns to Settings.")
+            }
+
+            KeyboardDismissToolbarItem { focusedField = nil }
+        }
+        .onChange(of: viewModel?.accountType) { _, newType in
+            // Guard against focus lingering on a field that disappears
+            // when the user switches away from Credit Card.
+            guard let newType, !newType.isCreditCard else { return }
+            if focusedField == .creditLimit
+                || focusedField == .availableCredit
+                || focusedField == .statementBalance
+            {
+                focusedField = nil
             }
         }
     }

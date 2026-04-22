@@ -111,12 +111,16 @@ private struct AddAccountSheet: View {
             .navigationTitle("Add Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
-                        .accessibilityHint("Dismisses account entry without adding an account.")
+                    Button("Cancel") {
+                        focusedField = nil
+                        isPresented = false
+                    }
+                    .accessibilityHint("Dismisses account entry without adding an account.")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
+                        focusedField = nil
                         viewModel.addCurrentAccount()
                         isPresented = false
                     }
@@ -127,8 +131,18 @@ private struct AddAccountSheet: View {
                             : "Enter at least account name and institution to add this account."
                     )
                 }
+
+                KeyboardDismissToolbarItem { focusedField = nil }
             }
-            .keyboardDismissToolbar { focusedField = nil }
+            .onChange(of: viewModel.accountType) { _, newType in
+                // Clear focus if it was parked on a credit-card-only
+                // field and the user has since switched to another type.
+                if !newType.isCreditCard,
+                   focusedField == .creditLimit || focusedField == .availableCredit
+                {
+                    focusedField = nil
+                }
+            }
         }
         .presentationDetents([.medium, .large])
         .onAppear { focusedField = .name }

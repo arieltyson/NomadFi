@@ -100,6 +100,7 @@ struct SettingsAddAccountSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        focusedField = nil
                         dismiss()
                     }
                     .accessibilityHint("Dismisses account entry without saving.")
@@ -107,6 +108,7 @@ struct SettingsAddAccountSheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        focusedField = nil
                         onSave(draft)
                         dismiss()
                     }
@@ -117,8 +119,19 @@ struct SettingsAddAccountSheet: View {
                             : "Enter account name and institution to save this account."
                     )
                 }
+
+                KeyboardDismissToolbarItem { focusedField = nil }
             }
-            .keyboardDismissToolbar { focusedField = nil }
+            .onChange(of: draft.accountType) { _, newType in
+                // If the user switches to a non-credit-card type while
+                // a credit-card-only field is focused, clear focus so a
+                // now-hidden field never retains the keyboard.
+                if !newType.isCreditCard {
+                    if focusedField == .creditLimit || focusedField == .availableCredit {
+                        focusedField = nil
+                    }
+                }
+            }
             .onAppear {
                 if draft.jurisdictionCode.isEmpty,
                    let firstJurisdiction = jurisdictions.first

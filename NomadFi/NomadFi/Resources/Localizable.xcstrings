@@ -64,16 +64,6 @@
     "%@ accounts" : {
 
     },
-    "%@ at %@, balance %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ at %2$@, balance %3$@, %4$@"
-          }
-        }
-      }
-    },
     "%@ filter" : {
 
     },
@@ -120,6 +110,16 @@
         }
       }
     },
+    "%lld credit %@ %@ not counted because no current balance is saved. Add a balance from Settings to include %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld credit %2$@ %3$@ not counted because no current balance is saved. Add a balance from Settings to include %4$@."
+          }
+        }
+      }
+    },
     "%lld documents" : {
 
     },
@@ -135,6 +135,10 @@
           }
         }
       }
+    },
+    "A credit limit is capacity, not a balance. Current balance and available credit are optional snapshots from your issuer app — they will be timestamped and flagged when stale." : {
+    },
+    "A credit limit is capacity, not a balance. NomadFi never counts it toward your net worth." : {
     },
     "About NomadFi" : {
 
@@ -160,6 +164,10 @@
     "Accounts" : {
 
     },
+    "Actions for %@" : {
+    },
+    "Active" : {
+    },
     "Active Card can now recommend the best account for your current country." : {
 
     },
@@ -168,6 +176,8 @@
     },
     "Add" : {
 
+    },
+    "Add %@" : {
     },
     "Add a credit-card account above to track statement close and payment due dates here." : {
 
@@ -187,8 +197,7 @@
     "Add Subscription" : {
 
     },
-    "Add the bank accounts and cards you use across your jurisdictions. Your data never leaves your iPhone." : {
-
+    "Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later." : {
     },
     "Add Transaction" : {
 
@@ -202,13 +211,25 @@
     "Add your first account to power Dashboard insights and Active Card recommendations." : {
 
     },
+    "Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed." : {
+    },
+    "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
+    },
+    "Adds %@ to your active jurisdictions." : {
+    },
     "Adds this account to your onboarding list." : {
+
+    },
+    "Advanced Tools" : {
 
     },
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
 
     },
     "All data stays on-device" : {
+
+    },
+    "All Supported Jurisdictions Added" : {
 
     },
     "All text scales to your preferred size, including the largest accessibility sizes." : {
@@ -250,11 +271,14 @@
     "Authenticating..." : {
 
     },
+    "Available" : {
+    },
+    "Available credit (optional)" : {
+    },
     "Back" : {
 
     },
-    "Balance (Optional)" : {
-
+    "Balance not set" : {
     },
     "Before checkout" : {
 
@@ -268,8 +292,12 @@
     "Built for International Students" : {
 
     },
+    "Can't Remove Yet" : {
+    },
     "Cancel" : {
 
+    },
+    "Card Amounts (Optional)" : {
     },
     "Cart reviewed — shipping and Subscribe & Save" : {
 
@@ -316,8 +344,12 @@
     "Clear Dates" : {
 
     },
+    "Clear snapshot" : {
+    },
     "Close" : {
 
+    },
+    "Close date, payment due date, and last-confirmed timestamp." : {
     },
     "Closes %@" : {
 
@@ -355,16 +387,21 @@
     "Converted Amount" : {
 
     },
+    "Copies the available credit and current balance you saved on this card into the fields below." : {
+    },
     "Cost breakdown" : {
 
     },
     "Creates and exports a report for tax year %@." : {
 
     },
+    "Credit Card Amounts" : {
+    },
     "Credit Card Calendar" : {
 
     },
     "Credit Card Reminders" : {
+
     },
     "Credit card reminders fire %lld days before each confirmed statement close date and %lld days before each confirmed payment due date. Paying before statement close can reduce reported utilization, but issuer reporting can vary." : {
       "localizations" : {
@@ -376,20 +413,33 @@
         }
       }
     },
+    "Credit Card Terms" : {
+    },
+    "Credit limit" : {
+
+    },
+    "Credit limit (optional)" : {
+    },
+    "Credit limit is capacity, not a balance. You can skip all three and add them later from Settings." : {
+    },
+    "Credit limits are not balances. This moves the value you previously entered into the credit limit field." : {
+    },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
     },
     "Currency" : {
 
     },
-    "Currency & Amounts" : {
-
+    "Currency & FX" : {
     },
     "Current (%@)" : {
 
     },
-    "Current Balance" : {
-
+    "Current balance" : {
+    },
+    "Current balance (amount owed)" : {
+    },
+    "Current balance (optional)" : {
     },
     "Dashboard" : {
 
@@ -476,6 +526,7 @@
 
     },
     "Enable notifications to receive subscription reminders, budget alerts, FX rate movement warnings, and credit-card statement reminders." : {
+
     },
     "Enter account name and institution to save this account." : {
 
@@ -535,16 +586,29 @@
     "Finishes setup and lets you enable location later." : {
 
     },
+    "Fix Mis-Entered Data" : {
+    },
     "Fix the highlighted date conflict before saving." : {
 
     },
     "For confirmed statement close and payment due dates" : {
+
     },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
     },
     "Frequency" : {
 
+    },
+    "From %@, saved %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From %1$@, saved %2$@"
+          }
+        }
+      }
     },
     "From your numbers" : {
 
@@ -594,8 +658,18 @@
     "Last confirmed %@" : {
 
     },
+    "Last updated" : {
+    },
+    "Latest Balance" : {
+    },
+    "Latest Balance (Optional)" : {
+    },
+    "Latest Snapshot" : {
+    },
     "Ledger" : {
 
+    },
+    "Limit %@" : {
     },
     "Linked card" : {
 
@@ -631,11 +705,15 @@
         }
       }
     },
+    "Manage Jurisdictions" : {
+    },
     "Manage jurisdictions, currencies, privacy, and account preferences." : {
 
     },
     "Manage the accounts used for global net worth, FX analysis, and card recommendations." : {
 
+    },
+    "Manual transaction review and entry." : {
     },
     "Mark Confirmed Today" : {
 
@@ -657,6 +735,8 @@
     },
     "Monthly Subscription Cost" : {
 
+    },
+    "Move %@ into credit limit" : {
     },
     "Needs review" : {
 
@@ -699,6 +779,8 @@
     },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
 
+    },
+    "NomadFi currently supports %lld jurisdictions. Your active set already covers them." : {
     },
     "NomadFi detects your current country to recommend the lowest-fee payment card for where you are." : {
 
@@ -769,17 +851,31 @@
     "Opens a form to add a new bank account or card." : {
 
     },
+    "Opens a screen to add, remove, or change your home jurisdiction." : {
+    },
+    "Opens the account editor to correct balances, limits, and other details." : {
+    },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
     },
+    "Opens the manual transaction ledger." : {
+    },
     "Opens the official source in Safari" : {
 
+    },
+    "Opens the receipts and tax document archive." : {
     },
     "Opens the statement calendar editor for this card." : {
 
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
+    },
+    "Optional companions. NomadFi's recommendations are built from your accounts and scenarios — you do not need to track every transaction or archive every receipt for the app to work." : {
+    },
+    "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
+    },
+    "Owed %@" : {
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
@@ -801,6 +897,8 @@
     },
     "Privacy: all your financial data stays on your device" : {
 
+    },
+    "Profile" : {
     },
     "Quickly log a transaction with an amount and category." : {
 
@@ -829,11 +927,17 @@
     "Receipt scanning and tax exports are planned for Phase 4." : {
 
     },
+    "Receipts and tax documents for later planning." : {
+    },
     "Region" : {
 
     },
+    "Remove" : {
+    },
     "Removes every statement calendar date from this card." : {
 
+    },
+    "Removes the saved balance snapshot. Your account profile stays intact." : {
     },
     "Renews %@" : {
 
@@ -891,6 +995,8 @@
     },
     "Saves your accounts and opens the dashboard" : {
 
+    },
+    "Saves your changes to this account and returns to Settings." : {
     },
     "Savings Opportunities" : {
 
@@ -962,6 +1068,8 @@
     "Service name" : {
 
     },
+    "Set as Home" : {
+    },
     "Settings" : {
 
     },
@@ -971,14 +1079,22 @@
     "Shares the most recently exported tax report." : {
 
     },
+    "Snapshots are point-in-time readings. NomadFi timestamps them and flags them as stale over time — it never treats an outdated snapshot as live." : {
+    },
     "Something Went Wrong" : {
 
+    },
+    "Source" : {
     },
     "Sources" : {
 
     },
     "Stamps today's date as the last time you verified this schedule." : {
 
+    },
+    "Statement balance (optional)" : {
+    },
+    "Statement Calendar" : {
     },
     "Subscription Arbitrage" : {
 
@@ -1031,6 +1147,8 @@
     "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
 
     },
+    "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
+    },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
     },
@@ -1069,6 +1187,8 @@
     },
     "Use %@" : {
 
+    },
+    "Use saved snapshot" : {
     },
     "Use your %@. It has no foreign transaction fees on record.%@" : {
       "localizations" : {
@@ -1159,6 +1279,8 @@
     "You can finish setup now and enable location later in iOS Settings." : {
 
     },
+    "You can skip this and add it later from Settings. Saved balances are timestamped as snapshots." : {
+    },
     "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
 
     },
@@ -1209,6 +1331,8 @@
     "Your global net worth will be displayed in this currency. You can change it later in Settings." : {
 
     },
+    "Your home jurisdiction is where NomadFi reports your net worth. Data attached to a jurisdiction keeps living on its own records — removing a jurisdiction never deletes your accounts, transactions, budgets, subscriptions, or tax documents." : {
+    },
     "Your Jurisdictions" : {
 
     },
@@ -1218,12 +1342,12 @@
     "Your Money This Week" : {
 
     },
-    "Your net worth across %lld account%@ is approximately %@." : {
+    "Your net worth across %lld account%@ is approximately %@.%@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Your net worth across %1$lld account%2$@ is approximately %3$@."
+            "value" : "Your net worth across %1$lld account%2$@ is approximately %3$@.%4$@"
           }
         }
       }
