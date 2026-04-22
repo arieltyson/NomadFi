@@ -35,8 +35,10 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Ledger"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Ledger"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Settings"].tap()
+
+        tapButton(containing: "Ledger", in: app)
 
         XCTAssertTrue(app.buttons["Add Transaction"].waitForExistence(timeout: 8))
         app.buttons["Add Transaction"].tap()
@@ -65,8 +67,10 @@ final class NomadFiUITests: XCTestCase {
         )
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Tax Vault"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Tax Vault"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Settings"].tap()
+
+        tapButton(containing: "Tax Vault", in: app)
 
         XCTAssertTrue(app.navigationBars["Confirm Receipt"].waitForExistence(timeout: 8))
         XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 8))

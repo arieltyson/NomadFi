@@ -21,57 +21,58 @@ struct TaxVaultView: View {
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
     @State private var viewModel = TaxVaultViewModel()
     @State private var selectedTaxYear: Int?
-    @State private var navigationPath = NavigationPath()
     @State private var showScanError = false
 
     private let scanReceiptTip = ScanReceiptTip()
 
+    // Tax Vault is now a Settings destination rather than a primary
+    // tab, so it relies on the ambient `NavigationStack` provided by
+    // Settings. Nesting a second stack here would double up the bar
+    // and break `.navigationDestination` routing.
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            Group {
-                if documents.isEmpty {
-                    emptyState
-                } else {
-                    documentList
-                }
+        Group {
+            if documents.isEmpty {
+                emptyState
+            } else {
+                documentList
             }
-            .navigationTitle("Tax Vault")
-            .glassToolbar()
-            .searchable(text: $viewModel.searchText, prompt: "Search receipts")
-            .toolbar { toolbarContent }
-            .navigationDestination(for: TaxDocument.self) { document in
-                TaxDocumentDetailView(document: document)
-            }
-            .sheet(isPresented: $viewModel.showingConfirmation) {
-                ReceiptConfirmationView(viewModel: viewModel)
-                    .glassSheet()
-            }
-            .overlay {
-                if viewModel.isScanning {
-                    scanningOverlay
-                }
-            }
-            .onChange(of: viewModel.selectedPhotoItem) {
-                Task {
-                    await viewModel.processSelectedPhoto(modelContext: modelContext)
-                }
-            }
-            .alert("Scan Error", isPresented: $showScanError) {
-                Button("Try Again") {
-                    viewModel.scanError = nil
-                }
-                Button("Dismiss", role: .cancel) {
-                    viewModel.scanError = nil
-                }
-            } message: {
-                Text(viewModel.scanError ?? "An unexpected error occurred while scanning the receipt.")
-            }
-            .onChange(of: viewModel.scanError) { _, newValue in
-                showScanError = newValue != nil
-            }
-            .sensoryFeedback(.error, trigger: viewModel.scanError)
-            .sensoryFeedback(.success, trigger: viewModel.showingConfirmation)
         }
+        .navigationTitle("Tax Vault")
+        .glassToolbar()
+        .searchable(text: $viewModel.searchText, prompt: "Search receipts")
+        .toolbar { toolbarContent }
+        .navigationDestination(for: TaxDocument.self) { document in
+            TaxDocumentDetailView(document: document)
+        }
+        .sheet(isPresented: $viewModel.showingConfirmation) {
+            ReceiptConfirmationView(viewModel: viewModel)
+                .glassSheet()
+        }
+        .overlay {
+            if viewModel.isScanning {
+                scanningOverlay
+            }
+        }
+        .onChange(of: viewModel.selectedPhotoItem) {
+            Task {
+                await viewModel.processSelectedPhoto(modelContext: modelContext)
+            }
+        }
+        .alert("Scan Error", isPresented: $showScanError) {
+            Button("Try Again") {
+                viewModel.scanError = nil
+            }
+            Button("Dismiss", role: .cancel) {
+                viewModel.scanError = nil
+            }
+        } message: {
+            Text(viewModel.scanError ?? "An unexpected error occurred while scanning the receipt.")
+        }
+        .onChange(of: viewModel.scanError) { _, newValue in
+            showScanError = newValue != nil
+        }
+        .sensoryFeedback(.error, trigger: viewModel.scanError)
+        .sensoryFeedback(.success, trigger: viewModel.showingConfirmation)
     }
 
     // MARK: - Document List
@@ -292,6 +293,8 @@ struct ScanReceiptTip: Tip {
 }
 
 #Preview {
-    TaxVaultView()
-        .modelContainer(for: [TaxDocument.self, JurisdictionProfile.self], inMemory: true)
+    NavigationStack {
+        TaxVaultView()
+    }
+    .modelContainer(for: [TaxDocument.self, JurisdictionProfile.self], inMemory: true)
 }
