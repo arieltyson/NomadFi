@@ -1,88 +1,91 @@
 // SettingsView.swift
 // NomadFi
 //
-// Main settings screen providing jurisdiction management,
-// notification preferences, privacy controls, and app information.
+// The Settings tab's root hub. Each row pushes a focused detail
+// page — full behaviour, toggles, and copy now live on those pages.
+// The hub itself deliberately stays short and scannable, matching
+// Apple's Settings-app information architecture.
+//
+// Side effects that must happen regardless of which sub-page the
+// user opens (jurisdiction home repair, credit-card reminder re-sync)
+// run on this root's `.task`, so they fire as soon as the tab is
+// visited. Nothing on the root mutates account data directly.
 
-import LocalAuthentication
 import SwiftData
 import SwiftUI
 
-/// The app's settings screen organized into clear sections.
-///
-/// Provides controls for:
-/// - Jurisdiction and currency management
-/// - Notification preferences
-/// - Privacy and data management
-/// - Accessibility information
-/// - About and legal links
 struct SettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AppLockManager.self) private var appLockManager
 
-    @Query(sort: \JurisdictionProfile.displayOrder)
-    private var jurisdictions: [JurisdictionProfile]
-
     @Query private var accounts: [Account]
-    @Query private var subscriptions: [Subscription]
 
     @State private var notificationManager = NotificationManager()
-    @State private var isShowingDeleteConfirmation = false
-    @State private var isShowingPrivacyPolicy = false
-    @State private var isShowingAddAccountSheet = false
 
-    /// Persisted opt-in for credit-card statement-close and payment-due
-    /// reminders. Default `false` — reminders are strictly opt-in, and
-    /// toggling this on triggers a live sync of pending requests.
     @AppStorage("creditCardRemindersEnabled")
     private var creditCardRemindersEnabled: Bool = false
 
     var body: some View {
         List {
-            jurisdictionsSection
+            Section {
+                SettingsNavigationRow(
+                    "Financial Setup",
+                    subtitle: "Jurisdictions, accounts, and credit-card calendar.",
+                    systemImage: "globe.americas.fill"
+                ) {
+                    FinancialSetupSettingsView()
+                }
 
-            accountsSection
+                SettingsNavigationRow(
+                    "Notifications",
+                    subtitle: "Subscription, budget, FX, and credit-card reminders.",
+                    systemImage: "bell.badge.fill"
+                ) {
+                    NotificationSettingsView()
+                }
 
-            CreditCardCalendarSection(accounts: accounts)
+                SettingsNavigationRow(
+                    "Privacy & Security",
+                    subtitle: "App Lock, privacy policy, and data controls.",
+                    systemImage: "lock.shield.fill"
+                ) {
+                    PrivacySecuritySettingsView()
+                }
+            }
 
-            securitySection
+            Section {
+                SettingsNavigationRow(
+                    "Advanced Tools",
+                    subtitle: "Ledger and Tax Vault — optional manual workflows.",
+                    systemImage: "slider.horizontal.3"
+                ) {
+                    AdvancedToolsSettingsView()
+                }
+            } footer: {
+                Text("NomadFi works without manually tracking every transaction. These tools stay here for users who want them.")
+            }
 
-            notificationsSection
+            Section {
+                SettingsNavigationRow(
+                    "Accessibility",
+                    subtitle: "VoiceOver, Dynamic Type, and contrast.",
+                    systemImage: "accessibility"
+                ) {
+                    AccessibilitySettingsView()
+                }
 
-            advancedToolsSection
-
-            privacySection
-
-            accessibilitySection
-
-            aboutSection
+                SettingsNavigationRow(
+                    "About NomadFi",
+                    subtitle: "Version and product direction.",
+                    systemImage: "info.circle.fill"
+                ) {
+                    AboutSettingsView()
+                }
+            }
         }
         .navigationTitle("Settings")
         .glassToolbar()
-        .confirmationDialog(
-            "Delete All Data",
-            isPresented: $isShowingDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Delete Everything", role: .destructive) {
-                DataGovernancePolicy.deleteAllUserData(
-                    in: modelContext,
-                    notificationManager: notificationManager
-                )
-            }
-        } message: {
-            Text("This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone.")
-        }
-        .sheet(isPresented: $isShowingPrivacyPolicy) {
-            PrivacyPolicySheet()
-        }
-        .sheet(isPresented: $isShowingAddAccountSheet) {
-            SettingsAddAccountSheet(jurisdictions: jurisdictions) { draft in
-                saveAccount(from: draft)
-            }
-            .glassSheet()
-        }
         .task {
             appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
@@ -92,411 +95,15 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Sections
+// MARK: - Root-level side effects
 
 private extension SettingsView {
 
-    // MARK: Security
-
-    var securitySection: some View {
-        @Bindable var appLockManager = appLockManager
-
-        return Section {
-            Toggle("App Lock", isOn: $appLockManager.isAppLockEnabled)
-                .accessibilityHint(
-                    appLockManager.isBiometricAvailable
-                        ? "Requires \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") to open NomadFi"
-                        : "Requires your device passcode to open NomadFi"
-                )
-
-            if appLockManager.isAppLockEnabled {
-                Picker("Lock After", selection: $appLockManager.lockTimeout) {
-                    ForEach(LockTimeout.allCases) { timeout in
-                        Text(timeout.displayName).tag(timeout)
-                    }
-                }
-                .accessibilityHint("Choose how long NomadFi waits before locking after you leave the app")
-            }
-        } header: {
-            Text("Security")
-        } footer: {
-            if appLockManager.isBiometricAvailable {
-                Text("When enabled, \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") is required to access your financial data.")
-            } else {
-                Text("When enabled, your device passcode is required to access your financial data.")
-            }
-        }
-    }
-
-    // MARK: Jurisdictions
-
-    var jurisdictionsSection: some View {
-        Section {
-            ForEach(jurisdictions) { jurisdiction in
-                JurisdictionSettingsRow(jurisdiction: jurisdiction)
-            }
-
-            NavigationLink {
-                JurisdictionManagementView()
-            } label: {
-                Label("Manage Jurisdictions", systemImage: "globe.badge.chevron.backward")
-            }
-            .accessibilityHint("Opens a screen to add, remove, or change your home jurisdiction.")
-        } header: {
-            Text("Your Jurisdictions")
-        } footer: {
-            Text("Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed.")
-        }
-        .accessibilityLabel("Jurisdictions section")
-    }
-
-    // MARK: Accounts
-
-    var accountsSection: some View {
-        Section {
-            if accounts.isEmpty {
-                ContentUnavailableView {
-                    Label("No Accounts Yet", systemImage: "creditcard")
-                } description: {
-                    Text("Add your first account to power Dashboard insights and Active Card recommendations.")
-                }
-            } else {
-                ForEach(sortedAccounts) { account in
-                    NavigationLink {
-                        AccountDetailView(account: account)
-                    } label: {
-                        SettingsAccountRow(account: account)
-                    }
-                    .accessibilityHint("Opens the account editor to correct balances, limits, and other details.")
-                }
-                .onDelete(perform: deleteAccounts)
-            }
-
-            Button("Add Account", systemImage: "plus") {
-                isShowingAddAccountSheet = true
-            }
-            .accessibilityHint("Opens a form to add a new bank account or card.")
-        } header: {
-            Text("Accounts")
-        } footer: {
-            Text("Manage the accounts used for global net worth, FX analysis, and card recommendations.")
-        }
-    }
-
-    // MARK: Notifications
-
-    var notificationsSection: some View {
-        Section {
-            if notificationManager.isAuthorized {
-                NotificationToggle(
-                    title: "Subscription Reminders",
-                    subtitle: "3 days before renewal",
-                    systemImage: "bell.badge",
-                    isEnabled: true
-                )
-
-                NotificationToggle(
-                    title: "Budget Alerts",
-                    subtitle: "At 80%, 90%, and 100%",
-                    systemImage: "chart.bar",
-                    isEnabled: true
-                )
-
-                NotificationToggle(
-                    title: "FX Rate Alerts",
-                    subtitle: "When rates move more than 2%",
-                    systemImage: "arrow.triangle.swap",
-                    isEnabled: true
-                )
-
-                NotificationToggle(
-                    title: "Weekly Summary",
-                    subtitle: "Every Saturday morning",
-                    systemImage: "calendar.badge.clock",
-                    isEnabled: true
-                )
-
-                creditCardRemindersToggle
-            } else {
-                Button("Enable Notifications", systemImage: "bell") {
-                    Task {
-                        await notificationManager.requestAuthorization()
-                    }
-                }
-                .accessibilityHint("Requests permission to send financial alerts and reminders")
-            }
-        } header: {
-            Text("Notifications")
-        } footer: {
-            if notificationManager.isAuthorized {
-                Text("Credit card reminders fire \(CreditCardReminderPlanner.statementCloseLeadDays) days before each confirmed statement close date and \(CreditCardReminderPlanner.paymentDueLeadDays) days before each confirmed payment due date. Paying before statement close can reduce reported utilization, but issuer reporting can vary.")
-            } else {
-                Text("Enable notifications to receive subscription reminders, budget alerts, FX rate movement warnings, and credit-card statement reminders.")
-            }
-        }
-    }
-
-    /// Real opt-in Toggle for credit-card statement close + payment
-    /// due reminders. Flipping it on triggers a live sync; flipping
-    /// it off removes only credit-card-prefixed pending requests.
-    var creditCardRemindersToggle: some View {
-        Toggle(isOn: $creditCardRemindersEnabled) {
-            Label {
-                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text("Credit Card Reminders")
-                        .font(TypographyTokens.body)
-                    Text("For confirmed statement close and payment due dates")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "calendar.badge.exclamationmark")
-                    .foregroundStyle(ColorTokens.brandPrimary)
-            }
-        }
-        .accessibilityHint(
-            "Schedules reminders on your device \(CreditCardReminderPlanner.statementCloseLeadDays) days before each confirmed statement close date and \(CreditCardReminderPlanner.paymentDueLeadDays) days before each confirmed payment due date."
-        )
-        .onChange(of: creditCardRemindersEnabled) { _, newValue in
-            handleCreditCardRemindersToggleChange(enabled: newValue)
-        }
-    }
-
-    // MARK: Advanced Tools
-
-    /// Manual-entry companions to NomadFi's decision features. Parked
-    /// here rather than in the tab bar so the primary surfaces stay
-    /// focused on recommendations — these tools stay fully functional
-    /// and round-trip all existing data.
-    var advancedToolsSection: some View {
-        Section {
-            NavigationLink {
-                LedgerView()
-            } label: {
-                Label {
-                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                        Text("Ledger")
-                            .font(TypographyTokens.body)
-                        Text("Manual transaction review and entry.")
-                            .font(TypographyTokens.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } icon: {
-                    Image(systemName: "list.bullet.rectangle")
-                        .foregroundStyle(ColorTokens.brandPrimary)
-                }
-            }
-            .accessibilityHint("Opens the manual transaction ledger.")
-
-            NavigationLink {
-                TaxVaultView()
-            } label: {
-                Label {
-                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                        Text("Tax Vault")
-                            .font(TypographyTokens.body)
-                        Text("Receipts and tax documents for later planning.")
-                            .font(TypographyTokens.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } icon: {
-                    Image(systemName: "doc.text.viewfinder")
-                        .foregroundStyle(ColorTokens.brandPrimary)
-                }
-            }
-            .accessibilityHint("Opens the receipts and tax document archive.")
-        } header: {
-            Text("Advanced Tools")
-        } footer: {
-            Text("Optional companions. NomadFi's recommendations are built from your accounts and scenarios — you do not need to track every transaction or archive every receipt for the app to work.")
-        }
-    }
-
-    // MARK: Privacy
-
-    var privacySection: some View {
-        Section {
-            Label {
-                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text("On-Device Only")
-                        .font(TypographyTokens.body)
-                    Text("Your financial data never leaves your iPhone.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "lock.shield.fill")
-                    .foregroundStyle(ColorTokens.positive)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Privacy: all your financial data stays on your device")
-
-            Button("Privacy Policy", systemImage: "doc.text") {
-                isShowingPrivacyPolicy = true
-            }
-            .accessibilityHint("View how NomadFi protects your data")
-
-            Button("Delete All My Data", systemImage: "trash", role: .destructive) {
-                isShowingDeleteConfirmation = true
-            }
-            .accessibilityHint("Permanently removes all accounts, transactions, receipts, and subscriptions from this device")
-        } header: {
-            Text("Privacy & Data")
-        } footer: {
-            Text("NomadFi uses zero analytics, zero tracking, and zero third-party SDKs.")
-        }
-    }
-
-    // MARK: Accessibility
-
-    var accessibilitySection: some View {
-        Section("Accessibility") {
-            Label {
-                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text("VoiceOver Optimized")
-                        .font(TypographyTokens.body)
-                    Text("Every screen narrates as a coherent financial story.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "accessibility")
-                    .foregroundStyle(ColorTokens.brandPrimary)
-            }
-            .accessibilityElement(children: .combine)
-
-            Label {
-                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text("Dynamic Type")
-                        .font(TypographyTokens.body)
-                    Text("All text scales to your preferred size, including the largest accessibility sizes.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "textformat.size")
-                    .foregroundStyle(ColorTokens.brandPrimary)
-            }
-            .accessibilityElement(children: .combine)
-        }
-    }
-
-    // MARK: About
-
-    var aboutSection: some View {
-        Section("About NomadFi") {
-            LabeledContent("Version") {
-                Text(appVersion)
-                    .foregroundStyle(.secondary)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("App version \(appVersion)")
-
-            Label {
-                Text("Built for International Students")
-                    .font(TypographyTokens.body)
-            } icon: {
-                Image(systemName: "globe")
-                    .foregroundStyle(ColorTokens.brandPrimary)
-            }
-            .accessibilityLabel("NomadFi is built specifically for international students managing money across borders")
-        }
-    }
-}
-
-// MARK: - Helpers
-
-private extension SettingsView {
-
-    var appVersion: String {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "\(version) (\(build))"
-    }
-
-    var sortedAccounts: [Account] {
-        accounts.sorted { lhs, rhs in
-            if lhs.institutionName == rhs.institutionName {
-                return lhs.name < rhs.name
-            }
-
-            return lhs.institutionName < rhs.institutionName
-        }
-    }
-
-    func saveAccount(from draft: SettingsAccountDraft) {
-        let snapshotTimestamp: Date? = draft.hasSnapshotValue ? .now : nil
-        let snapshotSource: FinancialSnapshotSource? = draft.hasSnapshotValue ? .userSnapshot : nil
-
-        let account = Account(
-            name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
-            institutionName: draft.institutionName.trimmingCharacters(in: .whitespacesAndNewlines),
-            accountType: draft.accountType,
-            currencyCode: draft.currencyCode,
-            jurisdiction: draft.jurisdictionCode,
-            foreignTransactionFeePercent: draft.parsedForeignTransactionFeePercent,
-            creditLimit: draft.accountType.isCreditCard ? draft.parsedCreditLimit : nil,
-            currentBalance: draft.parsedCurrentBalance,
-            availableCredit: draft.accountType.isCreditCard ? draft.parsedAvailableCredit : nil,
-            financialSnapshotUpdatedAt: snapshotTimestamp,
-            financialSnapshotSource: snapshotSource
-        )
-
-        modelContext.insert(account)
-    }
-
-    func deleteAccounts(at offsets: IndexSet) {
-        for index in offsets.sorted().reversed() {
-            let account = sortedAccounts[index]
-            modelContext.delete(account)
-        }
-    }
-
-    /// Quietly repairs a jurisdiction set that lost (or duplicated) its
-    /// home flag — can happen on old CloudKit data from before the
-    /// manager enforced a single home. No-op when the state is already
-    /// consistent.
-    func repairHomeJurisdictionIfNeeded() {
-        do {
-            _ = try JurisdictionManager(modelContext: modelContext)
-                .repairHomeJurisdictionIfNeeded()
-        } catch {
-            // Soft failure — the management screen can still be used to
-            // set a home manually. Logged at the manager layer.
-        }
-    }
-
-    // MARK: - Credit card reminder sync
-
-    /// Handles the user flipping the Credit Card Reminders toggle.
-    ///
-    /// Enabling asks for notification authorization if the app does not
-    /// already have it. If authorization is denied, the toggle flips
-    /// itself back off so the UI never advertises a feature iOS will
-    /// silently suppress. Disabling removes only the credit-card-prefixed
-    /// pending requests — other reminder categories are untouched.
-    func handleCreditCardRemindersToggleChange(enabled: Bool) {
-        Task {
-            if enabled {
-                if !notificationManager.isAuthorized {
-                    await notificationManager.requestAuthorization()
-                }
-                guard notificationManager.isAuthorized else {
-                    creditCardRemindersEnabled = false
-                    return
-                }
-                await notificationManager.scheduleCreditCardReminders(
-                    for: accounts
-                )
-            } else {
-                await notificationManager.removeAllCreditCardReminders()
-            }
-        }
-    }
-
-    /// Re-syncs credit-card reminders on Settings appear so a newly
-    /// confirmed schedule, an updated date, or a deleted card is
-    /// reflected in pending requests without the user toggling.
+    /// Keeps pending credit-card reminders in sync with the user's
+    /// current set of credit-card accounts and confirmed schedules,
+    /// running regardless of whether the user opens the Notifications
+    /// subpage. Mirrors the original behaviour from the pre-hub
+    /// Settings.
     func syncCreditCardRemindersIfNeeded() async {
         guard creditCardRemindersEnabled else {
             await notificationManager.removeAllCreditCardReminders()
@@ -511,98 +118,17 @@ private extension SettingsView {
         }
         await notificationManager.scheduleCreditCardReminders(for: accounts)
     }
-}
 
-// MARK: - Jurisdiction Settings Row
-
-/// Displays a jurisdiction with its flag, name, currency, and home indicator.
-private struct JurisdictionSettingsRow: View {
-
-    let jurisdiction: JurisdictionProfile
-
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-
-    var body: some View {
-        let increasedContrast = colorSchemeContrast == .increased
-
-        Label {
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                HStack(spacing: SpacingTokens.xSmall) {
-                    Text(jurisdiction.countryName)
-                        .font(TypographyTokens.body)
-
-                    if jurisdiction.isHome {
-                        Text("Home")
-                            .font(.caption2)
-                            .bold()
-                            .padding(.horizontal, SpacingTokens.xxSmall)
-                            .padding(.vertical, 2)
-                            .background(
-                                ColorTokens.actionTint.opacity(increasedContrast ? 0.28 : 0.15)
-                            )
-                            .foregroundStyle(ColorTokens.actionTint)
-                            .overlay {
-                                if increasedContrast {
-                                    Capsule()
-                                        .strokeBorder(
-                                            Color.primary.opacity(0.6),
-                                            lineWidth: 1
-                                        )
-                                }
-                            }
-                            .clipShape(.capsule)
-                    }
-                }
-
-                if let currency = jurisdiction.currencyCode {
-                    Text("\(currency.rawValue) • \(currency.displayName)")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        } icon: {
-            Text(String.flagEmoji(for: jurisdiction.countryCode))
+    /// Collapses duplicate-home or zero-home jurisdiction states on
+    /// visit. Cheap, no-op when the set is already consistent.
+    func repairHomeJurisdictionIfNeeded() {
+        do {
+            _ = try JurisdictionManager(modelContext: modelContext)
+                .repairHomeJurisdictionIfNeeded()
+        } catch {
+            // Soft failure — the management screen can still be used
+            // to set a home manually; the manager logs the error.
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityDescription)
-    }
-
-    private var accessibilityDescription: String {
-        var label = "\(jurisdiction.countryName)"
-        if jurisdiction.isHome { label += ", home jurisdiction" }
-        if let currency = jurisdiction.currencyCode {
-            label += ", currency: \(currency.rawValue), \(currency.displayName)"
-        }
-        return label
-    }
-}
-
-// MARK: - Notification Toggle
-
-/// A toggle-style row for notification preferences.
-private struct NotificationToggle: View {
-
-    let title: String
-    let subtitle: String
-    let systemImage: String
-    let isEnabled: Bool
-
-    var body: some View {
-        Label {
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text(title)
-                    .font(TypographyTokens.body)
-
-                Text(subtitle)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-            }
-        } icon: {
-            Image(systemName: systemImage)
-                .foregroundStyle(ColorTokens.brandPrimary)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(subtitle)")
     }
 }
 

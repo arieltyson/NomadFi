@@ -38,6 +38,7 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
         app.tabBars.buttons["Settings"].tap()
 
+        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Ledger", in: app)
 
         XCTAssertTrue(app.buttons["Add Transaction"].waitForExistence(timeout: 8))
@@ -70,6 +71,7 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
         app.tabBars.buttons["Settings"].tap()
 
+        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Tax Vault", in: app)
 
         XCTAssertTrue(app.navigationBars["Confirm Receipt"].waitForExistence(timeout: 8))
@@ -114,6 +116,10 @@ final class NomadFiUITests: XCTestCase {
         app.tabBars.buttons["Settings"].tap()
 
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 8))
+
+        tapButton(containing: "Privacy & Security", in: app)
+        XCTAssertTrue(app.navigationBars["Privacy & Security"].waitForExistence(timeout: 8))
+
         XCTAssertTrue(app.buttons["Privacy Policy"].waitForExistence(timeout: 8))
         app.buttons["Privacy Policy"].tap()
 
@@ -121,7 +127,7 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 8))
         app.buttons["Done"].tap()
 
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.navigationBars["Privacy & Security"].waitForExistence(timeout: 8))
     }
 }
 

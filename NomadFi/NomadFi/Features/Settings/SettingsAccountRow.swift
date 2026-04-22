@@ -20,9 +20,7 @@ struct SettingsAccountRow: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text(account.name)
-                    .font(TypographyTokens.body)
-                    .bold()
+                nameRow
 
                 Text(account.institutionName)
                     .font(TypographyTokens.caption)
@@ -45,6 +43,33 @@ struct SettingsAccountRow: View {
 // MARK: - Subviews
 
 private extension SettingsAccountRow {
+
+    /// Account name plus, for credit cards, an inline SF-symbol chip.
+    /// At accessibility text sizes the chip wraps below the name so
+    /// nothing is clipped; the name itself is never truncated.
+    @ViewBuilder
+    var nameRow: some View {
+        if account.isCreditCard, let type = account.accountType {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                    Text(account.name)
+                        .font(TypographyTokens.body)
+                        .bold()
+                    AccountTypeMarker(accountType: type)
+                }
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    Text(account.name)
+                        .font(TypographyTokens.body)
+                        .bold()
+                    AccountTypeMarker(accountType: type)
+                }
+            }
+        } else {
+            Text(account.name)
+                .font(TypographyTokens.body)
+                .bold()
+        }
+    }
 
     var amountColumn: some View {
         VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
@@ -106,9 +131,15 @@ private extension SettingsAccountRow {
         }
     }
 
-    /// VoiceOver phrasing. Never calls a credit limit a balance.
+    /// VoiceOver phrasing. Never calls a credit limit a balance, and
+    /// always names the account type so users relying on VoiceOver do
+    /// not need the visual chip to identify a card.
     var accessibilityDescription: String {
-        var parts: [String] = [account.name, account.institutionName]
+        var parts: [String] = [account.name]
+        if let type = account.accountType {
+            parts.append(AccountTypeMarker.accessibilityPhrase(for: type))
+        }
+        parts.append(account.institutionName)
 
         let primary = account.primaryAmountLabel
         parts.append(primary.accessibilityPhrase)

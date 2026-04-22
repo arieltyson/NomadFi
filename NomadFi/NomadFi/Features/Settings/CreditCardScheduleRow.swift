@@ -20,9 +20,20 @@ struct CreditCardScheduleRow: View {
     var body: some View {
         Label {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text(account.name)
-                    .font(TypographyTokens.body)
-                    .bold()
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                        Text(account.name)
+                            .font(TypographyTokens.body)
+                            .bold()
+                        AccountTypeMarker(accountType: .creditCard)
+                    }
+                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                        Text(account.name)
+                            .font(TypographyTokens.body)
+                            .bold()
+                        AccountTypeMarker(accountType: .creditCard)
+                    }
+                }
 
                 Text(account.institutionName)
                     .font(TypographyTokens.caption)
@@ -62,7 +73,11 @@ struct CreditCardScheduleRow: View {
         for account: Account,
         schedule: CreditCardSchedule
     ) -> String {
-        var parts: [String] = [account.name, account.institutionName]
+        var parts: [String] = [
+            account.name,
+            AccountTypeMarker.accessibilityPhrase(for: .creditCard),
+            account.institutionName,
+        ]
 
         if let closing = schedule.statementClosingDate {
             parts.append("statement closes \(Self.dateText(closing))")
