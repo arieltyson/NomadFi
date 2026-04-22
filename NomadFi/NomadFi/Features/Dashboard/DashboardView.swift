@@ -151,7 +151,8 @@ private extension DashboardView {
         }) {
             hasher.combine(account.institutionName)
             hasher.combine(account.name)
-            hasher.combine(account.balance)
+            hasher.combine(account.netWorthContribution)
+            hasher.combine(account.isExcludedFromNetWorth)
             hasher.combine(account.currencyCodeRawValue)
             hasher.combine(account.lastUpdatedAt.timeIntervalSinceReferenceDate)
         }
@@ -164,6 +165,11 @@ private extension DashboardView {
             netWorthCard
                 .redacted(reason: isFirstLoad ? .placeholder : [])
                 .padding(.horizontal, SpacingTokens.medium)
+
+            if excludedCreditCardsCount > 0 {
+                excludedCreditCardsNote
+                    .padding(.horizontal, SpacingTokens.medium)
+            }
 
             TipView(ExchangeRateTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
@@ -194,6 +200,26 @@ private extension DashboardView {
             }
         }
         .padding(.vertical, SpacingTokens.medium)
+    }
+
+    var excludedCreditCardsCount: Int {
+        viewModel.excludedCreditCardsCount(accounts: accounts)
+    }
+
+    var excludedCreditCardsNote: some View {
+        let count = excludedCreditCardsCount
+        let cardWord = count == 1 ? "card" : "cards"
+        return Label {
+            Text("\(count) credit \(cardWord) \(count == 1 ? "is" : "are") not counted because no current balance is saved. Add a balance from Settings to include \(count == 1 ? "it" : "them").")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "questionmark.circle")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     var netWorthCard: some View {

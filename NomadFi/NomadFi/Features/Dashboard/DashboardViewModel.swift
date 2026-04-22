@@ -106,31 +106,55 @@ final class DashboardViewModel {
     // MARK: - Calculations
 
     /// Calculates the total net worth across all accounts, converted to the home currency.
+    ///
+    /// Credit-card limits are never included (they are capacity, not
+    /// assets). Credit-card balances contribute as liabilities when a
+    /// user-confirmed snapshot is present; cards without a snapshot
+    /// are excluded entirely — see ``excludedCreditCardsCount`` for the
+    /// count the UI should surface.
     func globalNetWorth(accounts: [Account], homeCurrency: CurrencyCode) -> Double {
         accounts.reduce(0) { total, account in
-            total + convertedBalance(for: account, to: homeCurrency)
+            total + convertedContribution(for: account, to: homeCurrency)
         }
     }
 
     /// Calculates net worth for a single jurisdiction in its local currency.
+    ///
+    /// Uses ``Account/netWorthContribution`` so credit-card limits are
+    /// excluded and credit-card balances reduce the total.
     func jurisdictionNetWorth(accounts: [Account], jurisdictionCode: String) -> Double {
         accounts
             .filter { $0.jurisdiction == jurisdictionCode }
-            .reduce(0) { $0 + $1.balance }
+            .reduce(0) { $0 + $1.netWorthContribution }
     }
 
-    /// Converts an account's balance to the target currency using fetched rates.
-    func convertedBalance(for account: Account, to targetCurrency: CurrencyCode) -> Double {
-        guard let accountCurrency = account.currencyCode else { return account.balance }
-        if accountCurrency == targetCurrency { return account.balance }
+    /// Converts an account's net-worth contribution to the target
+    /// currency using fetched rates. Returns zero when the account is
+    /// excluded from net worth (e.g. a credit card with no snapshot).
+    func convertedContribution(
+        for account: Account,
+        to targetCurrency: CurrencyCode
+    ) -> Double {
+        let amount = account.netWorthContribution
+        guard amount != 0 else { return 0 }
+        guard let accountCurrency = account.currencyCode else { return amount }
+        if accountCurrency == targetCurrency { return amount }
 
         guard let rate = exchangeRates.first(where: {
             $0.baseCurrency == accountCurrency && $0.targetCurrency == targetCurrency
         }) else {
-            return account.balance
+            return amount
         }
 
-        return account.balance * rate.rate
+        return amount * rate.rate
+    }
+
+    /// Number of credit-card accounts whose balance is unknown and
+    /// therefore not reflected in net worth. The Dashboard surfaces
+    /// this as a subtle note so the user can decide whether to snapshot
+    /// them — it never silently treats unknown debt as zero in copy.
+    func excludedCreditCardsCount(accounts: [Account]) -> Int {
+        accounts.filter(\.isExcludedFromNetWorth).count
     }
 
     /// Groups accounts by jurisdiction code.
@@ -209,8 +233,9 @@ final class DashboardViewModel {
         homeCurrency: CurrencyCode
     ) -> [WidgetAccountSummary] {
         accounts
+            .filter { !$0.isExcludedFromNetWorth }
             .sorted {
-                convertedBalance(for: $0, to: homeCurrency) > convertedBalance(for: $1, to: homeCurrency)
+                convertedContribution(for: $0, to: homeCurrency) > convertedContribution(for: $1, to: homeCurrency)
             }
             .prefix(2)
             .map { account in
@@ -218,7 +243,7 @@ final class DashboardViewModel {
                     id: widgetAccountIdentifier(for: account),
                     name: account.name,
                     institutionName: account.institutionName,
-                    balance: account.balance,
+                    balance: account.netWorthContribution,
                     currencyCode: account.currencyCodeRawValue
                 )
             }

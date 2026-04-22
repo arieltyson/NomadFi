@@ -151,6 +151,8 @@ private extension ScenarioDecisionBriefView {
 
             if let linkedAccount = viewModel.record.chasePaymentAccount {
                 ScenarioLinkedChaseScheduleStatus(account: linkedAccount)
+
+                useSavedSnapshotButton(for: linkedAccount)
             }
 
             ScenarioNumericInputRow(
@@ -382,6 +384,43 @@ private extension ScenarioDecisionBriefView {
         case .chaseFreedomRiseUSD: "Chase Freedom Rise (USD)"
         case .wiseUSD: "Wise USD"
         case .awaitingUserInput: "Awaiting inputs"
+        }
+    }
+
+    /// Optional one-tap button offering to copy the linked Chase card's
+    /// saved snapshot (available credit + current balance) into the
+    /// brief's numeric inputs. Only shown when the linked account has
+    /// both snapshot values and a fresh-enough timestamp — stale or
+    /// missing snapshots fall through so the user enters numbers
+    /// by hand, per the "no stale live values" rule.
+    @ViewBuilder
+    func useSavedSnapshotButton(for account: Account) -> some View {
+        if let available = account.availableCredit,
+           let owed = account.currentBalance,
+           let updatedAt = account.financialSnapshotUpdatedAt,
+           !account.isFinancialSnapshotStale()
+        {
+            Button {
+                viewModel.record.chaseAvailableCreditUSD = available
+                viewModel.record.chaseCurrentBalanceUSD = owed
+                viewModel.markEdited()
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                        Text("Use saved snapshot")
+                            .font(TypographyTokens.body)
+                        Text("From \(account.name), saved \(updatedAt.formatted(.dateTime.year().month(.wide).day()))")
+                            .font(TypographyTokens.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "arrow.down.doc")
+                        .foregroundStyle(ColorTokens.brandPrimary)
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .accessibilityHint("Copies the available credit and current balance you saved on this card into the fields below.")
         }
     }
 

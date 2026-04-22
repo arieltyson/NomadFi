@@ -4,8 +4,11 @@ import SwiftUI
 /// The final onboarding step where users add their financial accounts.
 ///
 /// Supports manual account entry with name, institution, type, currency,
-/// and optional balance. Emphasizes on-device privacy and allows users
-/// to skip and add accounts later.
+/// and optional snapshot amounts. Credit cards ask for a credit limit
+/// plus optional current balance and available credit — all other types
+/// ask for an optional current balance. Balances are always optional at
+/// onboarding; the user should not be forced to track every transaction
+/// just to describe which accounts they have.
 struct AccountConnectionView: View {
 
     @Bindable var viewModel: OnboardingViewModel
@@ -52,17 +55,18 @@ private struct AddAccountSheet: View {
     @FocusState private var focusedField: Field?
 
     enum Field {
-        case name, institution, balance
+        case name, institution, currentBalance, creditLimit, availableCredit
     }
 
-    /// Advances focus so Return keys move through name → institution →
-    /// balance; balance uses `.decimalPad` and is dismissed via the
-    /// shared keyboard Done toolbar instead.
+    /// Advances focus so Return keys move through name → institution.
+    /// Amount fields use `.decimalPad` and are dismissed via the shared
+    /// keyboard Done toolbar.
     private func advanceFocus(from field: Field) {
         switch field {
         case .name: focusedField = .institution
-        case .institution: focusedField = .balance
-        case .balance: focusedField = nil
+        case .institution:
+            focusedField = viewModel.accountType.isCreditCard ? .creditLimit : .currentBalance
+        default: focusedField = nil
         }
     }
 
@@ -101,13 +105,7 @@ private struct AddAccountSheet: View {
                     }
                 }
 
-                Section("Balance (Optional)") {
-                    TextField("Current Balance", text: $viewModel.accountBalance)
-                        .focused($focusedField, equals: .balance)
-                        .keyboardType(.decimalPad)
-                        .textContentType(.none)
-                        .autocorrectionDisabled()
-                }
+                amountsSection
             }
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
@@ -134,6 +132,47 @@ private struct AddAccountSheet: View {
         }
         .presentationDetents([.medium, .large])
         .onAppear { focusedField = .name }
+    }
+
+    @ViewBuilder
+    private var amountsSection: some View {
+        if viewModel.accountType.isCreditCard {
+            Section {
+                TextField("Credit limit (optional)", text: $viewModel.accountCreditLimitText)
+                    .focused($focusedField, equals: .creditLimit)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
+
+                TextField("Current balance (optional)", text: $viewModel.accountCurrentBalanceText)
+                    .focused($focusedField, equals: .currentBalance)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
+
+                TextField("Available credit (optional)", text: $viewModel.accountAvailableCreditText)
+                    .focused($focusedField, equals: .availableCredit)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
+            } header: {
+                Text("Card Amounts (Optional)")
+            } footer: {
+                Text("Credit limit is capacity, not a balance. You can skip all three and add them later from Settings.")
+            }
+        } else {
+            Section {
+                TextField("Current balance (optional)", text: $viewModel.accountCurrentBalanceText)
+                    .focused($focusedField, equals: .currentBalance)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .autocorrectionDisabled()
+            } header: {
+                Text("Latest Balance (Optional)")
+            } footer: {
+                Text("You can skip this and add it later from Settings. Saved balances are timestamped as snapshots.")
+            }
+        }
     }
 }
 
@@ -169,7 +208,7 @@ private struct AccountRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(draft.name) at \(draft.institutionName), balance \(draft.balance.formatted(.currency(code: draft.currencyCode.rawValue))), \(draft.accountType.displayName)")
+        .accessibilityLabel(accessibilityDescription)
     }
 
     var icon: some View {
@@ -192,12 +231,72 @@ private struct AccountRow: View {
 
     var amountMetadata: some View {
         VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
-            CurrencyText(amount: draft.balance, currencyCode: draft.currencyCode)
+            primaryLine
+
+            secondaryLine
 
             Text(draft.currencyCode.rawValue)
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    @ViewBuilder
+    private var primaryLine: some View {
+        if draft.accountType.isCreditCard {
+            if let owed = draft.currentBalance {
+                Text("Owed \(owed.formatted(.currency(code: draft.currencyCode.rawValue)))")
+                    .font(TypographyTokens.amountSmall)
+                    .foregroundStyle(ColorTokens.negative)
+            } else {
+                Text("Balance not set")
+                    .font(TypographyTokens.amountSmall)
+                    .italic()
+                    .foregroundStyle(.secondary)
+            }
+        } else if let balance = draft.currentBalance {
+            CurrencyText(amount: balance, currencyCode: draft.currencyCode)
+        } else {
+            Text("Balance not set")
+                .font(TypographyTokens.amountSmall)
+                .italic()
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var secondaryLine: some View {
+        if draft.accountType.isCreditCard, let limit = draft.creditLimit {
+            Text("Limit \(limit.formatted(.currency(code: draft.currencyCode.rawValue)))")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            Text(draft.accountType.displayName)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var accessibilityDescription: String {
+        var parts: [String] = [draft.name, draft.institutionName, draft.accountType.displayName]
+        let code = draft.currencyCode.rawValue
+
+        if draft.accountType.isCreditCard {
+            if let limit = draft.creditLimit {
+                parts.append("credit limit \(limit.formatted(.currency(code: code)))")
+            }
+            if let owed = draft.currentBalance {
+                parts.append("current balance \(owed.formatted(.currency(code: code)))")
+            } else {
+                parts.append("balance not set")
+            }
+        } else if let balance = draft.currentBalance {
+            parts.append("current balance \(balance.formatted(.currency(code: code)))")
+        } else {
+            parts.append("balance not set")
+        }
+
+        return parts.joined(separator: ", ")
     }
 }
 
@@ -212,7 +311,7 @@ private extension AccountConnectionView {
                 .bold()
                 .multilineTextAlignment(.center)
 
-            Text("Add the bank accounts and cards you use across your jurisdictions. Your data never leaves your iPhone.")
+            Text("Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

@@ -84,32 +84,48 @@ enum SampleDataSeeder {
 
     @MainActor
     private static func seedSampleAccounts(modelContext: ModelContext) {
+        // Sample accounts illustrate the snapshot model:
+        //   * Deposit accounts carry a timestamped current-balance
+        //     snapshot instead of the legacy flat `balance`.
+        //   * Credit cards carry a credit limit (capacity, not an
+        //     asset) alongside a snapshot of current balance and
+        //     available credit.
+        // No real personal balances are hardcoded here — all numbers
+        // are illustrative.
         let accounts = [
             Account(
                 name: "Republic Bank Savings",
                 institutionName: "Republic Bank",
                 accountType: .savings,
                 currencyCode: .ttd,
-                balance: 45_000.00,
-                jurisdiction: "TT"
+                jurisdiction: "TT",
+                currentBalance: 45_000.00,
+                financialSnapshotUpdatedAt: .now,
+                financialSnapshotSource: .userSnapshot
             ),
             Account(
                 name: "CIBC Chequing",
                 institutionName: "CIBC",
                 accountType: .checking,
                 currencyCode: .cad,
-                balance: 3_250.75,
                 jurisdiction: "CA",
-                foreignTransactionFeePercent: 2.5
+                foreignTransactionFeePercent: 2.5,
+                currentBalance: 3_250.75,
+                financialSnapshotUpdatedAt: .now,
+                financialSnapshotSource: .userSnapshot
             ),
             Account(
                 name: "Chase Freedom Rise",
                 institutionName: "JPMorgan Chase",
                 accountType: .creditCard,
                 currencyCode: .usd,
-                balance: 1_875.00,
                 jurisdiction: "US",
-                foreignTransactionFeePercent: 0
+                foreignTransactionFeePercent: 0,
+                creditLimit: 500,
+                currentBalance: 125.00,
+                availableCredit: 375.00,
+                financialSnapshotUpdatedAt: .now,
+                financialSnapshotSource: .userSnapshot
             ),
         ]
 

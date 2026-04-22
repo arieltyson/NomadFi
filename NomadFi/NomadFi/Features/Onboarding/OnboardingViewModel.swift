@@ -40,7 +40,9 @@ final class OnboardingViewModel {
     var accountInstitution: String = ""
     var accountType: AccountType = .checking
     var accountCurrency: CurrencyCode = .usd
-    var accountBalance: String = ""
+    var accountCurrentBalanceText: String = ""
+    var accountCreditLimitText: String = ""
+    var accountAvailableCreditText: String = ""
     var addedAccounts: [AccountDraft] = []
 
     var canAddAccount: Bool {
@@ -84,7 +86,14 @@ final class OnboardingViewModel {
     func addCurrentAccount() {
         guard canAddAccount else { return }
 
-        let balance = Double(accountBalance) ?? 0
+        let currentBalance = Self.parseOptional(accountCurrentBalanceText)
+        let creditLimit = accountType.isCreditCard
+            ? Self.parseOptional(accountCreditLimitText)
+            : nil
+        let availableCredit = accountType.isCreditCard
+            ? Self.parseOptional(accountAvailableCreditText)
+            : nil
+
         let jurisdiction = selectedJurisdictions.first { $0.currencyCode == accountCurrency }?.id ?? ""
 
         let draft = AccountDraft(
@@ -92,8 +101,10 @@ final class OnboardingViewModel {
             institutionName: accountInstitution.trimmingCharacters(in: .whitespaces),
             accountType: accountType,
             currencyCode: accountCurrency,
-            balance: balance,
-            jurisdiction: jurisdiction
+            jurisdiction: jurisdiction,
+            creditLimit: creditLimit,
+            currentBalance: currentBalance,
+            availableCredit: availableCredit
         )
 
         addedAccounts.append(draft)
@@ -124,13 +135,18 @@ final class OnboardingViewModel {
 
         // Save accounts
         for draft in addedAccounts {
+            let hasSnapshot = draft.currentBalance != nil || draft.availableCredit != nil
             let account = Account(
                 name: draft.name,
                 institutionName: draft.institutionName,
                 accountType: draft.accountType,
                 currencyCode: draft.currencyCode,
-                balance: draft.balance,
-                jurisdiction: draft.jurisdiction
+                jurisdiction: draft.jurisdiction,
+                creditLimit: draft.creditLimit,
+                currentBalance: draft.currentBalance,
+                availableCredit: draft.availableCredit,
+                financialSnapshotUpdatedAt: hasSnapshot ? .now : nil,
+                financialSnapshotSource: hasSnapshot ? .userSnapshot : nil
             )
             modelContext.insert(account)
         }
@@ -142,7 +158,17 @@ final class OnboardingViewModel {
         accountName = ""
         accountInstitution = ""
         accountType = .checking
-        accountBalance = ""
+        accountCurrentBalanceText = ""
+        accountCreditLimitText = ""
+        accountAvailableCreditText = ""
+    }
+
+    private static func parseOptional(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let value = Double(trimmed), value >= 0 else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -155,6 +181,8 @@ struct AccountDraft: Identifiable, Sendable {
     let institutionName: String
     let accountType: AccountType
     let currencyCode: CurrencyCode
-    let balance: Double
     let jurisdiction: String
+    let creditLimit: Double?
+    let currentBalance: Double?
+    let availableCredit: Double?
 }

@@ -36,13 +36,27 @@ struct CheckNetWorthIntent: AppIntent {
             return .result(dialog: "You don't have any accounts set up yet. Open NomadFi to get started.")
         }
 
-        let totalBalance = accounts.reduce(0.0) { $0 + $1.balance }
+        // `netWorthContribution` treats credit-card limits as capacity
+        // (never assets), credit-card balances as liabilities when
+        // known, and credit cards without a snapshot as excluded —
+        // callers that want the count of excluded cards can inspect
+        // `isExcludedFromNetWorth` themselves.
+        let totalBalance = accounts.reduce(0.0) { $0 + $1.netWorthContribution }
         let accountCount = accounts.count
+        let excludedCount = accounts.filter(\.isExcludedFromNetWorth).count
         let primaryCurrency = accounts.first?.currencyCode ?? .usd
         let formatted = totalBalance.formatted(.currency(code: primaryCurrency.rawValue))
 
+        let caveat: String
+        if excludedCount > 0 {
+            let cardWord = excludedCount == 1 ? "credit card" : "credit cards"
+            caveat = " \(excludedCount) \(cardWord) with no saved balance \(excludedCount == 1 ? "is" : "are") not counted."
+        } else {
+            caveat = ""
+        }
+
         return .result(
-            dialog: "Your net worth across \(accountCount) account\(accountCount == 1 ? "" : "s") is approximately \(formatted)."
+            dialog: "Your net worth across \(accountCount) account\(accountCount == 1 ? "" : "s") is approximately \(formatted).\(caveat)"
         )
     }
 }

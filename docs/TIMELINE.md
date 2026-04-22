@@ -124,14 +124,33 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
+### Current Sub-Phase: Account Profiles + Live Snapshots
+
+This sub-phase separates stable account profile data (credit limit, account
+type, currency, jurisdiction) from volatile live amounts (current balance,
+available credit, statement balance). Profiles are entered once; live amounts
+are stored as optional, timestamped snapshots — never as stable facts. Credit
+limits are explicitly modelled as capacity, not as balances, and are never
+counted as net worth. Credit cards without a saved current-balance snapshot
+are excluded from net worth and labelled "not counted" rather than treated
+as zero debt.
+
+This lands before any automatic aggregation so that when FinanceKit,
+imports, or other live sources arrive later, they write into a model that
+already represents snapshots honestly.
+
 ### Build
 
-- User-managed accounts and cards.
+- User-managed accounts and cards as stable profile records.
+- Account-type-aware amount entry (credit card: credit limit, current
+  balance, available credit; non-credit: optional current balance).
+- Timestamped, source-labelled live snapshots with stale/unknown markers.
 - Credit-card statement close dates and payment due dates.
 - Card-level foreign-transaction-fee provenance.
 - Exchange-rate provenance and freshness labels.
 - Scenario-specific decision engines, starting with real cross-border purchase
-  cases.
+  cases. Scenarios may read the linked card's saved snapshot but never
+  assume snapshot values are live.
 - Local notifications for statement close and payment due dates.
 - Clear privacy controls and complete local data wipe.
 

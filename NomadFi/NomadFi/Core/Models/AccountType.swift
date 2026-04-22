@@ -28,4 +28,11 @@ enum AccountType: String, Codable, CaseIterable, Identifiable, Sendable {
         case .wallet: "wallet.bifold"
         }
     }
+
+    /// True when this type represents a borrowing vehicle whose live
+    /// amounts are shaped by credit limit, current balance, statement
+    /// balance, and available credit — not by a single deposit balance.
+    var isCreditCard: Bool {
+        self == .creditCard
+    }
 }

@@ -1,6 +1,12 @@
 import SwiftUI
 
 /// Form sheet for adding an account from Settings after onboarding.
+///
+/// The amount section is account-type-aware: credit cards ask for a
+/// credit limit plus optional current balance and available credit;
+/// deposit, wallet, and investment accounts ask for an optional current
+/// balance. A single field is never overloaded for both balance and
+/// limit — the two are distinct financial facts.
 struct SettingsAddAccountSheet: View {
 
     let jurisdictions: [JurisdictionProfile]
@@ -13,19 +19,22 @@ struct SettingsAddAccountSheet: View {
     enum Field {
         case name
         case institution
-        case balance
+        case currentBalance
+        case creditLimit
+        case availableCredit
         case foreignTransactionFee
     }
 
     /// Moves focus through the form's text fields so the on-screen
-    /// Return key advances through name → institution → balance.
-    /// `.decimalPad` fields don't surface a Return key, so the shared
-    /// keyboard Done toolbar handles dismissal for them.
+    /// Return key advances through name → institution. Amount fields
+    /// use `.decimalPad`, which has no Return key, so the shared
+    /// keyboard Done toolbar dismisses them.
     private func advanceFocus(from field: Field) {
         switch field {
         case .name: focusedField = .institution
-        case .institution: focusedField = .balance
-        case .balance, .foreignTransactionFee: focusedField = nil
+        case .institution:
+            focusedField = draft.accountType.isCreditCard ? .creditLimit : .currentBalance
+        default: focusedField = nil
         }
     }
 
@@ -67,7 +76,7 @@ struct SettingsAddAccountSheet: View {
                     }
                 }
 
-                Section("Currency & Amounts") {
+                Section {
                     Picker("Currency", selection: $draft.currencyCode) {
                         ForEach(CurrencyCode.allCases) { currency in
                             Text("\(currency.rawValue) • \(currency.displayName)")
@@ -75,20 +84,16 @@ struct SettingsAddAccountSheet: View {
                         }
                     }
 
-                    TextField("Current Balance", text: $draft.balanceText)
-                        .focused($focusedField, equals: .balance)
-                        .keyboardType(.decimalPad)
-                        .textContentType(.none)
-                        .autocorrectionDisabled()
-
                     TextField("FX Fee %", text: $draft.foreignTransactionFeePercentText)
                         .focused($focusedField, equals: .foreignTransactionFee)
                         .keyboardType(.decimalPad)
                         .textContentType(.none)
                         .autocorrectionDisabled()
+                } header: {
+                    Text("Currency & FX")
                 }
-                // Decimal pad has no Return key — focus progression
-                // relies on the shared keyboard Done toolbar below.
+
+                amountsSection
             }
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
@@ -139,6 +144,60 @@ struct SettingsAddAccountSheet: View {
     }
 }
 
+// MARK: - Amount section
+
+private extension SettingsAddAccountSheet {
+
+    @ViewBuilder
+    var amountsSection: some View {
+        if draft.accountType.isCreditCard {
+            creditCardAmountsSection
+        } else {
+            depositAmountsSection
+        }
+    }
+
+    var creditCardAmountsSection: some View {
+        Section {
+            TextField("Credit limit", text: $draft.creditLimitText)
+                .focused($focusedField, equals: .creditLimit)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
+
+            TextField("Current balance (optional)", text: $draft.currentBalanceText)
+                .focused($focusedField, equals: .currentBalance)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
+
+            TextField("Available credit (optional)", text: $draft.availableCreditText)
+                .focused($focusedField, equals: .availableCredit)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
+        } header: {
+            Text("Credit Card Amounts")
+        } footer: {
+            Text("A credit limit is capacity, not a balance. Current balance and available credit are optional snapshots from your issuer app — they will be timestamped and flagged when stale.")
+        }
+    }
+
+    var depositAmountsSection: some View {
+        Section {
+            TextField("Current balance (optional)", text: $draft.currentBalanceText)
+                .focused($focusedField, equals: .currentBalance)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .autocorrectionDisabled()
+        } header: {
+            Text("Latest Balance")
+        } footer: {
+            Text("Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings.")
+        }
+    }
+}
+
 /// Temporary form state for creating a new settings account.
 struct SettingsAccountDraft: Sendable {
     var name = ""
@@ -146,7 +205,9 @@ struct SettingsAccountDraft: Sendable {
     var accountType: AccountType = .checking
     var currencyCode: CurrencyCode = .usd
     var jurisdictionCode = ""
-    var balanceText = ""
+    var currentBalanceText = ""
+    var creditLimitText = ""
+    var availableCreditText = ""
     var foreignTransactionFeePercentText = ""
 
     var canSave: Bool {
@@ -154,12 +215,43 @@ struct SettingsAccountDraft: Sendable {
             && !institutionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var parsedBalance: Double {
-        Double(balanceText) ?? 0
+    /// Parses a user-entered decimal string into an optional value. A
+    /// blank field stays optional — credit limit / current balance are
+    /// intentionally nullable. Negative or malformed inputs clamp to
+    /// `nil` so downstream code never has to guess.
+    private static func parseOptional(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let value = Double(trimmed), value >= 0 else {
+            return nil
+        }
+        return value
+    }
+
+    var parsedCurrentBalance: Double? {
+        Self.parseOptional(currentBalanceText)
+    }
+
+    var parsedCreditLimit: Double? {
+        Self.parseOptional(creditLimitText)
+    }
+
+    var parsedAvailableCredit: Double? {
+        Self.parseOptional(availableCreditText)
     }
 
     var parsedForeignTransactionFeePercent: Double {
         let parsedValue = Double(foreignTransactionFeePercentText) ?? 0
         return max(0, parsedValue)
+    }
+
+    /// Whether any user-confirmed snapshot value was supplied. Used by
+    /// the persistence bridge to decide whether to stamp a snapshot
+    /// timestamp.
+    var hasSnapshotValue: Bool {
+        if accountType.isCreditCard {
+            return parsedCurrentBalance != nil
+                || parsedAvailableCredit != nil
+        }
+        return parsedCurrentBalance != nil
     }
 }

@@ -152,7 +152,12 @@ private extension SettingsView {
                 }
             } else {
                 ForEach(sortedAccounts) { account in
-                    SettingsAccountRow(account: account)
+                    NavigationLink {
+                        AccountDetailView(account: account)
+                    } label: {
+                        SettingsAccountRow(account: account)
+                    }
+                    .accessibilityHint("Opens the account editor to correct balances, limits, and other details.")
                 }
                 .onDelete(perform: deleteAccounts)
             }
@@ -360,14 +365,21 @@ private extension SettingsView {
     }
 
     func saveAccount(from draft: SettingsAccountDraft) {
+        let snapshotTimestamp: Date? = draft.hasSnapshotValue ? .now : nil
+        let snapshotSource: FinancialSnapshotSource? = draft.hasSnapshotValue ? .userSnapshot : nil
+
         let account = Account(
             name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
             institutionName: draft.institutionName.trimmingCharacters(in: .whitespacesAndNewlines),
             accountType: draft.accountType,
             currencyCode: draft.currencyCode,
-            balance: draft.parsedBalance,
             jurisdiction: draft.jurisdictionCode,
-            foreignTransactionFeePercent: draft.parsedForeignTransactionFeePercent
+            foreignTransactionFeePercent: draft.parsedForeignTransactionFeePercent,
+            creditLimit: draft.accountType.isCreditCard ? draft.parsedCreditLimit : nil,
+            currentBalance: draft.parsedCurrentBalance,
+            availableCredit: draft.accountType.isCreditCard ? draft.parsedAvailableCredit : nil,
+            financialSnapshotUpdatedAt: snapshotTimestamp,
+            financialSnapshotSource: snapshotSource
         )
 
         modelContext.insert(account)

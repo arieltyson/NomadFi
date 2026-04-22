@@ -73,26 +73,97 @@ private struct AccountCard: View {
 
     private var balanceColumn: some View {
         VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
-            if let currency = account.currencyCode {
-                CurrencyText(
-                    amount: account.balance,
-                    currencyCode: currency,
-                    font: TypographyTokens.amountMedium
-                )
-            }
+            primaryAmountView
 
-            if let type = account.accountType {
+            if let secondary = account.secondaryAmountLabel {
+                Text(secondary.text)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+            } else if let type = account.accountType {
                 Text(type.displayName)
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
             }
+
+            if snapshotFreshnessText != nil || account.isExcludedFromNetWorth {
+                snapshotFreshnessBadge
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var primaryAmountView: some View {
+        let primary = account.primaryAmountLabel
+        switch primary.kind {
+        case .currentBalance:
+            if let amount = primary.rawAmount,
+               let currency = account.currencyCode
+            {
+                if account.isCreditCard {
+                    CurrencyText(
+                        amount: amount,
+                        currencyCode: currency,
+                        font: TypographyTokens.amountMedium
+                    )
+                    .foregroundStyle(ColorTokens.negative)
+                } else {
+                    CurrencyText(
+                        amount: amount,
+                        currencyCode: currency,
+                        font: TypographyTokens.amountMedium
+                    )
+                }
+            } else {
+                Text(primary.text)
+                    .font(TypographyTokens.amountMedium)
+            }
+        case .balanceUnknown:
+            Text(primary.text)
+                .font(TypographyTokens.amountMedium)
+                .foregroundStyle(.secondary)
+        case .creditLimit, .availableCredit, .statementBalance:
+            Text(primary.text)
+                .font(TypographyTokens.amountMedium)
+        }
+    }
+
+    private var snapshotFreshnessText: String? {
+        guard account.hasFinancialSnapshot,
+              let updatedAt = account.financialSnapshotUpdatedAt
+        else { return nil }
+        let date = updatedAt.formatted(.dateTime.year().month(.abbreviated).day())
+        return account.isFinancialSnapshotStale() ? "Stale · \(date)" : "As of \(date)"
+    }
+
+    @ViewBuilder
+    private var snapshotFreshnessBadge: some View {
+        if account.isExcludedFromNetWorth {
+            StatusBadge(
+                label: "Not counted",
+                color: ColorTokens.neutral,
+                systemImage: "questionmark.circle"
+            )
+        } else if let text = snapshotFreshnessText {
+            StatusBadge(
+                label: text,
+                color: account.isFinancialSnapshotStale() ? ColorTokens.warning : ColorTokens.neutral,
+                systemImage: account.isFinancialSnapshotStale() ? "clock.badge.exclamationmark" : "clock"
+            )
         }
     }
 
     private var accessibilityDescription: String {
-        let currency = account.currencyCode?.rawValue ?? ""
-        let formatted = account.balance.formatted(.currency(code: currency))
-        return "\(account.name) at \(account.institutionName), balance \(formatted)"
+        let primary = account.primaryAmountLabel
+        var parts = ["\(account.name) at \(account.institutionName)", primary.accessibilityPhrase]
+        if let secondary = account.secondaryAmountLabel {
+            parts.append(secondary.accessibilityPhrase)
+        }
+        if account.isExcludedFromNetWorth {
+            parts.append("not counted in net worth")
+        } else if let text = snapshotFreshnessText {
+            parts.append(text)
+        }
+        return parts.joined(separator: ", ")
     }
 }
 
@@ -135,20 +206,26 @@ private extension JurisdictionAccountSection {
 
     let accounts = [
         Account(
-            name: "Chase Freedom Rise",
-            institutionName: "JPMorgan Chase",
+            name: "Sample Rewards",
+            institutionName: "Sample Bank",
             accountType: .creditCard,
             currencyCode: .usd,
-            balance: 1_250.00,
-            jurisdiction: "US"
+            jurisdiction: "US",
+            creditLimit: 5_000,
+            currentBalance: 350,
+            availableCredit: 4_650,
+            financialSnapshotUpdatedAt: .now,
+            financialSnapshotSource: .userSnapshot
         ),
         Account(
-            name: "Chase Checking",
-            institutionName: "JPMorgan Chase",
+            name: "Sample Checking",
+            institutionName: "Sample Bank",
             accountType: .checking,
             currencyCode: .usd,
-            balance: 2_875.00,
-            jurisdiction: "US"
+            jurisdiction: "US",
+            currentBalance: 2_875,
+            financialSnapshotUpdatedAt: .now,
+            financialSnapshotSource: .userSnapshot
         ),
     ]
 
