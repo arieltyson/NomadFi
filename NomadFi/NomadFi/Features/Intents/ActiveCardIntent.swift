@@ -2,72 +2,45 @@
 // NomadFi
 //
 // Siri shortcut: "Hey Siri, which card should I use?"
-// Recommends the optimal payment card for the user's current location.
+//
+// The original implementation sorted accounts by
+// `foreignTransactionFeePercent` and announced the lowest-fee card as
+// the recommendation. That shortcut is retained for phrase
+// compatibility, but the behaviour is now routed through the Scenario
+// 1 decision engine so voice answers stay consistent with the app's
+// Decision Assistant — no fee-only heuristic, no invented rankings.
 
 import AppIntents
-import CoreLocation
 import SwiftData
 
-/// Recommends the best payment card based on the user's current location.
+/// Responds to "Which card should I use?" via the Scenario 1 engine.
 ///
-/// Checks the user's accounts and suggests the one with the lowest
-/// foreign transaction fee for their current country. Falls back to
-/// a general recommendation if location is unavailable.
+/// NomadFi does not yet ship a generic merchant-agnostic card
+/// recommendation engine, so this intent is intentionally honest:
+/// today it can only answer the saved Amazon arrival-order decision,
+/// and it defers to `ScenarioDecisionEngine` for the ruling. If the
+/// user has not entered any scenario inputs yet, the dialog says so
+/// instead of fabricating an answer.
 ///
-/// Usage: "Hey Siri, which card should I use?"
+/// Usage: "Hey Siri, which card should I use in NomadFi?"
 struct ActiveCardIntent: AppIntent {
 
     static let title: LocalizedStringResource = "Which Card Should I Use?"
 
-    static let description: IntentDescription = "Get a recommendation for the best card to use at your current location."
+    static let description: IntentDescription = IntentDescription(
+        "Get NomadFi's current saved Amazon arrival-order recommendation from the Decision Assistant."
+    )
 
+    /// Voice-first: the dialog summarises the engine's ruling and
+    /// asks the user to finish the brief in-app when checks remain.
     static let openAppWhenRun = false
 
     // MARK: - Perform
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let container = try ModelContainer(for: Account.self)
-        let context = container.mainContext
-
-        // Sort by foreign transaction fee in the query to avoid in-memory sorting.
-        let descriptor = FetchDescriptor<Account>(
-            sortBy: [SortDescriptor(\.foreignTransactionFeePercent)]
-        )
-        let accounts = try context.fetch(descriptor)
-
-        guard let bestCard = accounts.first else {
-            return .result(dialog: "You don't have any accounts set up yet. Open NomadFi to add your cards.")
-        }
-
-        let fee = bestCard.foreignTransactionFeePercent
-        let provenance = bestCard.foreignTransactionFeeProvenance
-        let effective = SourceFreshness.effectiveConfidence(
-            for: provenance,
-            domain: .issuerCardTerms
-        )
-        // The caveat distinguishes three cases so the spoken dialog is
-        // honest about *why* a fee is not verified: never verified,
-        // verified but now stale, or verified and fresh.
-        let caveat: String
-        switch effective {
-        case .verifiedPrimary, .verifiedSecondary:
-            caveat = ""
-        case .unverified where provenance.confidence.isVerified:
-            caveat = " Heads up, your issuer terms for this card haven't been re-checked lately, so it's worth verifying."
-        default:
-            caveat = " This is based on fee data you saved, not confirmed with the issuer."
-        }
-
-        if fee == 0 {
-            return .result(
-                dialog: "Use your \(bestCard.name). It has no foreign transaction fees on record.\(caveat)"
-            )
-        } else {
-            let feeFormatted = fee.formatted(.number.precision(.fractionLength(1)))
-            return .result(
-                dialog: "Use your \(bestCard.name). It has the lowest foreign transaction fee on record at \(feeFormatted)%.\(caveat)"
-            )
-        }
+        let brief = try DecisionAssistantIntentContext.loadAmazonArrivalBrief()
+        let dialog = DecisionAssistantIntentDialog.whichCardAnswer(brief: brief)
+        return .result(dialog: "\(dialog)")
     }
 }

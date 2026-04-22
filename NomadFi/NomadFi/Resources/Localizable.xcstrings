@@ -182,7 +182,6 @@
 
     },
     "Active decision" : {
-
     },
     "Add" : {
 
@@ -281,7 +280,6 @@
 
     },
     "As of %@" : {
-
     },
     "At 80%, 90%, and 100%" : {
 
@@ -495,7 +493,6 @@
 
     },
     "Decision Assistant" : {
-
     },
     "Decision Assistant, Not a Ledger" : {
 
@@ -504,10 +501,8 @@
 
     },
     "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference, and never labels AI-assisted drafts as verified." : {
-
     },
     "Decisions" : {
-
     },
     "Delete" : {
 
@@ -522,7 +517,6 @@
 
     },
     "Describe a purchase in your own words — routed into NomadFi's deterministic engine." : {
-
     },
     "Details" : {
 
@@ -689,10 +683,8 @@
 
     },
     "Gather intelligence" : {
-
     },
     "Gather intelligence for a new decision. Coming soon: typed scenarios, Siri shortcuts, and optional Apple Intelligence context. Today's recommendations come from NomadFi's deterministic source-backed engine." : {
-
     },
     "Get a recommendation for the best card to use at your current location." : {
 
@@ -828,7 +820,6 @@
 
     },
     "More decisions will appear here as NomadFi ships deterministic engines for them." : {
-
     },
     "Move %@ into credit limit" : {
 
@@ -876,6 +867,7 @@
 
     },
     "NomadFi already shows a credit-card badge next to this account, so the suffix is redundant." : {
+
     },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
 
@@ -950,21 +942,24 @@
 
     },
     "off" : {
+
     },
     "Off" : {
+
     },
     "OK" : {
 
     },
     "on" : {
+
     },
     "On" : {
+
     },
     "On-Device Only" : {
 
     },
     "Open a decision from the Now section to start a record NomadFi can reopen later." : {
-
     },
     "Opens a form to add a bank account or card." : {
 
@@ -994,18 +989,17 @@
 
     },
     "Opens the subscription tracker and savings comparison." : {
-
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
     "Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking." : {
-
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
     },
     "Optional. Your account name is only changed when you tap this row." : {
+
     },
     "Owed %@" : {
 
@@ -1068,7 +1062,6 @@
 
     },
     "Recurring-charge detection and cross-border pricing review." : {
-
     },
     "Region" : {
 
@@ -1086,8 +1079,10 @@
 
     },
     "Removes the trailing credit tag from this account name." : {
+
     },
     "Rename to “%@”" : {
+
     },
     "Renews %@" : {
 
@@ -1322,12 +1317,12 @@
 
     },
     "Tidy Account Name" : {
+
     },
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
     },
     "Today, NomadFi's actionable recommendations come from its own deterministic, source-backed engine — not from a generic language model. New intake channels will route into that engine as they ship." : {
-
     },
     "Total net worth" : {
 

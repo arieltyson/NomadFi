@@ -146,6 +146,12 @@ AI can parse the request, ask clarifying questions, summarize tradeoffs, and
 explain the result. The recommendation itself must come from deterministic,
 cited rules and known user context.
 
+Voice entry points — Siri, App Shortcuts, and any future conversational
+surface — follow the same rule. They must route into NomadFi's deterministic,
+source-backed decision engines and must not answer financial questions from
+generic heuristics (for example, foreign-transaction-fee ranking alone) or from
+an LLM's free-form reasoning.
+
 ---
 
 ## Navigation Principle

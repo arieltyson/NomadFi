@@ -13,22 +13,43 @@ import SwiftUI
 /// Subscriptions, Ledger, and Tax Vault live under Settings →
 /// Advanced Tools rather than on the tab bar — they're valuable but
 /// secondary to the decision surface.
+///
+/// Tab selection is persisted via `@AppStorage` so an App Intent can
+/// write ``MainTabSelection/storageKey`` before `openAppWhenRun`
+/// activates the app, and the tab bar honours the requested route
+/// reactively on first appearance.
 struct MainTabView: View {
+
+    @AppStorage(MainTabSelection.storageKey)
+    private var storedSelection: MainTabSelection = .default
+
     var body: some View {
-        TabView {
-            Tab("Dashboard", systemImage: "globe") {
+        TabView(selection: $storedSelection) {
+            Tab(
+                "Dashboard",
+                systemImage: "globe",
+                value: MainTabSelection.dashboard
+            ) {
                 NavigationStack {
                     DashboardView()
                 }
             }
 
-            Tab("Decisions", systemImage: "scale.3d") {
+            Tab(
+                "Decisions",
+                systemImage: "scale.3d",
+                value: MainTabSelection.decisions
+            ) {
                 NavigationStack {
                     DecisionAssistantView()
                 }
             }
 
-            Tab("Settings", systemImage: "gearshape") {
+            Tab(
+                "Settings",
+                systemImage: "gearshape",
+                value: MainTabSelection.settings
+            ) {
                 NavigationStack {
                     SettingsView()
                 }

@@ -237,6 +237,30 @@ Trinidad and Tobago, Wise, and other cross-border accounts.
 
 **Goal:** Let the user ask for a card recommendation in natural language.
 
+### Current Sub-Phase: App Shortcuts aligned with Decision Assistant
+
+The Siri / App Shortcuts surface now routes into the Decision Assistant
+and Scenario 1 engine instead of answering from foreign-transaction-fee
+sorting alone. Shortcuts ship with deliberately honest phrasing:
+
+- **Open Decision Assistant** — a navigation-only intent that opens the
+  app on the Decisions tab.
+- **Review Amazon Arrival Decision** — a voice-first summary that reads
+  the saved Scenario 1 record, runs `ScenarioDecisionEngine`, and
+  speaks the current ruling plus outstanding-check count.
+- **Continue Amazon Arrival Decision** — opens the app on the Decisions
+  tab and speaks a short scene-setter carrying the engine's ruling.
+- **Which Card Should I Use?** — legacy phrase kept for discoverability,
+  but the intent now defers to the Scenario 1 engine. It explicitly
+  states that NomadFi cannot yet answer a merchant-agnostic card
+  question and directs the user to the Amazon arrival-order decision.
+
+No generic scenario parser, Apple Intelligence integration, or
+reinforcement-learning layer is shipped in this sub-phase — only the
+deterministic routing. Tab deep-linking is done with a persisted
+`MainTabSelection` that App Intents write to `UserDefaults` before
+`openAppWhenRun` activates the app.
+
 ### Example User Request
 
 "I am in San Francisco at Target, buying groceries for this week's meal prep,
