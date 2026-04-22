@@ -19,8 +19,6 @@ struct DashboardView: View {
     @State private var viewModel = DashboardViewModel()
     @State private var showError = false
     @State private var hasContentAppeared = false
-    @State private var scenarioViewModel: ScenarioDecisionBriefViewModel?
-    @State private var isScenarioBriefPresented = false
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -50,7 +48,6 @@ struct DashboardView: View {
         .refreshable { await refreshRates() }
         .task {
             AddMoreAccountsTip.accountCount = accounts.count
-            bootstrapScenarioViewModelIfNeeded()
             await refreshRates()
         }
         .task(id: widgetSnapshotSignature) {
@@ -76,14 +73,6 @@ struct DashboardView: View {
             }
         }
         .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
-        .sheet(isPresented: $isScenarioBriefPresented) {
-            if let scenarioViewModel {
-                ScenarioDecisionBriefView(
-                    viewModel: scenarioViewModel,
-                    creditCardAccounts: creditCardAccounts
-                )
-            }
-        }
     }
 }
 
@@ -113,20 +102,6 @@ private extension DashboardView {
 
     var homeCurrency: CurrencyCode {
         viewModel.homeCurrency(from: jurisdictions)
-    }
-
-    /// All credit-card accounts, sorted to match the Settings order
-    /// so the Scenario brief's linked-card picker is consistent with
-    /// the Credit Card Calendar section.
-    var creditCardAccounts: [Account] {
-        accounts
-            .filter { $0.accountType == .creditCard }
-            .sorted { lhs, rhs in
-                if lhs.institutionName == rhs.institutionName {
-                    return lhs.name < rhs.name
-                }
-                return lhs.institutionName < rhs.institutionName
-            }
     }
 
     /// Whether this is the initial load (no data yet from the network).
@@ -185,14 +160,6 @@ private extension DashboardView {
             TipView(AddMoreAccountsTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
-
-            if let scenarioViewModel {
-                ScenarioDashboardCard(
-                    ruling: scenarioViewModel.decision.ruling,
-                    action: { isScenarioBriefPresented = true }
-                )
-                .padding(.horizontal, SpacingTokens.medium)
-            }
 
             if !viewModel.insights.isEmpty {
                 InsightsSection(insights: viewModel.insights)
@@ -275,14 +242,6 @@ private extension DashboardView {
         emptyState
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(.horizontal, SpacingTokens.medium)
-    }
-
-    func bootstrapScenarioViewModelIfNeeded() {
-        guard scenarioViewModel == nil else { return }
-        let record = ScenarioDecisionBriefViewModel.fetchOrCreateScenario1Record(
-            in: modelContext
-        )
-        scenarioViewModel = ScenarioDecisionBriefViewModel(record: record)
     }
 
     func refreshRates() async {

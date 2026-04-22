@@ -30,62 +30,64 @@ struct SubscriptionsView: View {
     @State private var isShowingAddSubscription = false
     @State private var showError = false
 
+    // Subscriptions is now an optional companion under Settings →
+    // Advanced Tools rather than a primary tab, so it relies on the
+    // ambient `NavigationStack` from Settings. Nesting a second stack
+    // here would double up the nav bar.
     var body: some View {
-        NavigationStack {
-            Group {
-                if subscriptions.isEmpty && viewModel.detectedSubscriptions.isEmpty {
-                    emptyState
-                } else {
-                    subscriptionList
+        Group {
+            if subscriptions.isEmpty && viewModel.detectedSubscriptions.isEmpty {
+                emptyState
+            } else {
+                subscriptionList
+            }
+        }
+        .navigationTitle("Subscriptions")
+        .glassToolbar()
+        .searchable(text: $viewModel.searchText, prompt: "Search subscriptions")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Add Subscription", systemImage: "plus") {
+                    isShowingAddSubscription = true
                 }
             }
-            .navigationTitle("Subscriptions")
-            .glassToolbar()
-            .searchable(text: $viewModel.searchText, prompt: "Search subscriptions")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Add Subscription", systemImage: "plus") {
-                        isShowingAddSubscription = true
-                    }
-                }
-            }
-            .sheet(isPresented: $isShowingAddSubscription) {
-                AddSubscriptionView()
-                    .glassSheet()
-            }
-            .task {
-                viewModel.detectSubscriptions(
-                    transactions: transactions,
-                    existingSubscriptions: subscriptions
-                )
+        }
+        .sheet(isPresented: $isShowingAddSubscription) {
+            AddSubscriptionView()
+                .glassSheet()
+        }
+        .task {
+            viewModel.detectSubscriptions(
+                transactions: transactions,
+                existingSubscriptions: subscriptions
+            )
 
-                let homeCurrency = viewModel.homeCurrency(from: jurisdictions)
-                await viewModel.compareSubscriptions(
-                    subscriptions: subscriptions,
-                    jurisdictions: jurisdictions,
-                    homeCurrency: homeCurrency
-                )
-            }
-            .alert("Comparison Error", isPresented: $showError) {
-                Button("Retry") {
-                    Task {
-                        let homeCurrency = viewModel.homeCurrency(from: jurisdictions)
-                        await viewModel.compareSubscriptions(
-                            subscriptions: subscriptions,
-                            jurisdictions: jurisdictions,
-                            homeCurrency: homeCurrency
-                        )
-                    }
+            let homeCurrency = viewModel.homeCurrency(from: jurisdictions)
+            await viewModel.compareSubscriptions(
+                subscriptions: subscriptions,
+                jurisdictions: jurisdictions,
+                homeCurrency: homeCurrency
+            )
+        }
+        .alert("Comparison Error", isPresented: $showError) {
+            Button("Retry") {
+                Task {
+                    let homeCurrency = viewModel.homeCurrency(from: jurisdictions)
+                    await viewModel.compareSubscriptions(
+                        subscriptions: subscriptions,
+                        jurisdictions: jurisdictions,
+                        homeCurrency: homeCurrency
+                    )
                 }
-                Button("Dismiss", role: .cancel) {
-                    viewModel.errorMessage = nil
-                }
-            } message: {
-                Text(viewModel.errorMessage ?? "Could not compare subscription prices.")
             }
-            .onChange(of: viewModel.errorMessage) { _, newValue in
-                showError = newValue != nil
+            Button("Dismiss", role: .cancel) {
+                viewModel.errorMessage = nil
             }
+        } message: {
+            Text(viewModel.errorMessage ?? "Could not compare subscription prices.")
+        }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            showError = newValue != nil
         }
     }
 }
@@ -275,15 +277,17 @@ private extension SubscriptionsView {
 }
 
 #Preview {
-    SubscriptionsView()
-        .modelContainer(for: [
-            Subscription.self,
-            Transaction.self,
-            JurisdictionProfile.self,
-            Account.self,
-            ExchangeRate.self,
-            TaxDocument.self,
-            Currency.self,
-            Budget.self,
-        ], inMemory: true)
+    NavigationStack {
+        SubscriptionsView()
+    }
+    .modelContainer(for: [
+        Subscription.self,
+        Transaction.self,
+        JurisdictionProfile.self,
+        Account.self,
+        ExchangeRate.self,
+        TaxDocument.self,
+        Currency.self,
+        Budget.self,
+    ], inMemory: true)
 }

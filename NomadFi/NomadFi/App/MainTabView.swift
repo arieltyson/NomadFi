@@ -3,13 +3,16 @@ import SwiftUI
 
 /// The app's primary tab bar.
 ///
-/// NomadFi is a decision assistant, not a manual ledger — the tabs
-/// here are limited to the surfaces that drive day-to-day decisions:
-/// Dashboard for net worth and scenarios, Subscriptions for recurring
-/// spend arbitrage, and Settings for configuration plus optional
-/// manual tools (Ledger, Tax Vault). Ledger and Tax Vault remain
-/// fully functional; they just no longer anchor primary navigation
-/// until automatic aggregation and stronger tax-planning flows exist.
+/// NomadFi is a cross-border financial decision assistant, so the
+/// bottom tabs surface exactly the three workflows that matter every
+/// day: a Dashboard that grounds the user in their money context, a
+/// Decision Assistant that routes them into source-backed scenario
+/// recommendations, and a Settings hub that hosts financial setup
+/// plus optional companion tools (Subscriptions, Ledger, Tax Vault).
+///
+/// Subscriptions, Ledger, and Tax Vault live under Settings →
+/// Advanced Tools rather than on the tab bar — they're valuable but
+/// secondary to the decision surface.
 struct MainTabView: View {
     var body: some View {
         TabView {
@@ -19,8 +22,10 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Subscriptions", systemImage: "arrow.triangle.2.circlepath") {
-                SubscriptionsView()
+            Tab("Decisions", systemImage: "scale.3d") {
+                NavigationStack {
+                    DecisionAssistantView()
+                }
             }
 
             Tab("Settings", systemImage: "gearshape") {
@@ -44,6 +49,7 @@ struct MainTabView: View {
                 TaxDocument.self,
                 Subscription.self,
                 Budget.self,
+                ScenarioDecisionRecord.self,
             ],
             inMemory: true
         )

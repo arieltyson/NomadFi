@@ -137,6 +137,7 @@
       }
     },
     "3 days before renewal" : {
+
     },
     "A credit limit is capacity, not a balance. Current balance and available credit are optional snapshots from your issuer app — they will be timestamped and flagged when stale." : {
 
@@ -178,6 +179,9 @@
 
     },
     "Active Card Recommendation" : {
+
+    },
+    "Active decision" : {
 
     },
     "Add" : {
@@ -268,6 +272,7 @@
 
     },
     "App Lock, privacy policy, and data controls." : {
+
     },
     "App version %@" : {
 
@@ -275,7 +280,11 @@
     "Arbitrage" : {
 
     },
+    "As of %@" : {
+
+    },
     "At 80%, 90%, and 100%" : {
+
     },
     "Authenticate to access your financial data." : {
 
@@ -485,7 +494,20 @@
     "Date" : {
 
     },
+    "Decision Assistant" : {
+
+    },
     "Decision Assistant, Not a Ledger" : {
+
+    },
+    "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference — and never labels AI-assisted drafts as verified." : {
+
+    },
+    "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference, and never labels AI-assisted drafts as verified." : {
+
+    },
+    "Decisions" : {
+
     },
     "Delete" : {
 
@@ -497,6 +519,9 @@
 
     },
     "Delete Everything" : {
+
+    },
+    "Describe a purchase in your own words — routed into NomadFi's deterministic engine." : {
 
     },
     "Details" : {
@@ -621,6 +646,7 @@
       }
     },
     "Financial Setup" : {
+
     },
     "Finish Setup" : {
 
@@ -662,6 +688,12 @@
     "FX Rate Alerts" : {
 
     },
+    "Gather intelligence" : {
+
+    },
+    "Gather intelligence for a new decision. Coming soon: typed scenarios, Siri shortcuts, and optional Apple Intelligence context. Today's recommendations come from NomadFi's deterministic source-backed engine." : {
+
+    },
     "Get a recommendation for the best card to use at your current location." : {
 
     },
@@ -699,6 +731,7 @@
 
     },
     "Jurisdictions, accounts, and credit-card calendar." : {
+
     },
     "Last confirmed" : {
 
@@ -722,6 +755,7 @@
 
     },
     "Ledger and Tax Vault — optional manual workflows." : {
+
     },
     "Limit %@" : {
 
@@ -793,6 +827,9 @@
     "Monthly Subscription Cost" : {
 
     },
+    "More decisions will appear here as NomadFi ships deterministic engines for them." : {
+
+    },
     "Move %@ into credit limit" : {
 
     },
@@ -817,6 +854,9 @@
     "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
 
     },
+    "No previous decisions yet" : {
+
+    },
     "No Receipt Image" : {
 
     },
@@ -835,6 +875,8 @@
     "NomadFi" : {
 
     },
+    "NomadFi already shows a credit-card badge next to this account, so the suffix is redundant." : {
+    },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
 
     },
@@ -848,11 +890,13 @@
 
     },
     "NomadFi helps you pick the right card, protect credit, reduce FX waste, and learn jurisdiction-aware tax concepts — without manual bookkeeping." : {
+
     },
     "NomadFi is built specifically for international students managing money across borders" : {
 
     },
     "NomadFi is designed so the app is equally usable whether you rely on VoiceOver, larger text, or increased contrast. Adjust your preferences in the iOS Settings app." : {
+
     },
     "NomadFi is Locked" : {
 
@@ -876,6 +920,7 @@
 
     },
     "NomadFi works without manually tracking every transaction. These tools stay here for users who want them." : {
+
     },
     "NomadFi. Wealth without borders." : {
 
@@ -904,10 +949,21 @@
     "Now it has one home." : {
 
     },
+    "off" : {
+    },
+    "Off" : {
+    },
     "OK" : {
 
     },
+    "on" : {
+    },
+    "On" : {
+    },
     "On-Device Only" : {
+
+    },
+    "Open a decision from the Now section to start a record NomadFi can reopen later." : {
 
     },
     "Opens a form to add a bank account or card." : {
@@ -937,14 +993,19 @@
     "Opens the statement calendar editor for this card." : {
 
     },
+    "Opens the subscription tracker and savings comparison." : {
+
+    },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
-    "Optional companions. NomadFi's recommendations are built from your accounts and scenarios — you do not need to track every transaction or archive every receipt for the app to work." : {
+    "Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking." : {
 
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
+    },
+    "Optional. Your account name is only changed when you tap this row." : {
     },
     "Owed %@" : {
 
@@ -965,6 +1026,7 @@
 
     },
     "Privacy & Security" : {
+
     },
     "Privacy Policy" : {
 
@@ -1005,10 +1067,14 @@
     "Receipts and tax documents for later planning." : {
 
     },
+    "Recurring-charge detection and cross-border pricing review." : {
+
+    },
     "Region" : {
 
     },
     "Reminders" : {
+
     },
     "Remove" : {
 
@@ -1018,6 +1084,10 @@
     },
     "Removes the saved balance snapshot. Your account profile stays intact." : {
 
+    },
+    "Removes the trailing credit tag from this account name." : {
+    },
+    "Rename to “%@”" : {
     },
     "Renews %@" : {
 
@@ -1189,6 +1259,7 @@
 
     },
     "Subscription, budget, FX, and credit-card reminders." : {
+
     },
     "Subscriptions" : {
 
@@ -1250,7 +1321,12 @@
     "This transaction will appear in your Tax Vault" : {
 
     },
+    "Tidy Account Name" : {
+    },
     "To recommend your best card where you are, NomadFi needs location permission." : {
+
+    },
+    "Today, NomadFi's actionable recommendations come from its own deterministic, source-backed engine — not from a generic language model. New intake channels will route into that engine as they ship." : {
 
     },
     "Total net worth" : {
@@ -1316,6 +1392,7 @@
 
     },
     "Version and product direction." : {
+
     },
     "View how NomadFi protects your data" : {
 
@@ -1324,6 +1401,7 @@
 
     },
     "VoiceOver, Dynamic Type, and contrast." : {
+
     },
     "Waiting for iOS Permission…" : {
 
@@ -1347,6 +1425,7 @@
 
     },
     "When rates move more than 2%" : {
+
     },
     "When tax season arrives, export a structured report organized by jurisdiction. Compatible with Sprintax and TurboTax for NRA filing." : {
 

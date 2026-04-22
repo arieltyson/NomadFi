@@ -87,8 +87,11 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Subscriptions"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Subscriptions"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Settings"].tap()
+
+        tapButton(containing: "Advanced Tools", in: app)
+        tapButton(containing: "Subscriptions", in: app)
 
         XCTAssertTrue(app.buttons["Add Subscription"].waitForExistence(timeout: 8))
         app.buttons["Add Subscription"].tap()

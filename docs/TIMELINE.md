@@ -172,7 +172,21 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Account Profiles + Live Snapshots
+### Current Sub-Phase: Decision Assistant as the Core Surface
+
+The Decision Assistant (bottom tab: **Decisions**) is now NomadFi's
+core product surface. It hosts the Active Decision (Scenario 1 — Amazon
+arrival order today), Previous Decisions, and a "Gather Intelligence"
+scaffold naming future intake channels (typed scenarios, Siri / App
+Intents, optional Apple Intelligence context) without shipping fake
+behaviour. All recommendations continue to come from NomadFi's
+deterministic, source-backed engines.
+
+Subscriptions, Ledger, and Tax Vault moved to Settings → Advanced Tools.
+They stay fully functional — they're just no longer primary tabs until
+an automatic-aggregation or stronger tax-planning flow exists.
+
+### Sub-Phase: Account Profiles + Live Snapshots (still in flight)
 
 This sub-phase separates stable account profile data (credit limit, account
 type, currency, jurisdiction) from volatile live amounts (current balance,

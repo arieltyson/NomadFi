@@ -152,15 +152,22 @@ cited rules and known user context.
 
 Primary navigation should reflect the decision-assistant mission.
 
-The main app surfaces should prioritize:
+The bottom tab bar is exactly three surfaces:
 
-- Dashboard
-- card and scenario recommendations
-- subscription arbitrage
-- settings and financial ecosystem setup
+- **Dashboard** — money context: global net worth, accounts, FX, and
+  insights. It should never become a settings page or a ledger.
+- **Decisions** (Decision Assistant) — the core product surface. Hosts the
+  Active Decision, Previous Decisions, and future intake channels for
+  typed scenarios, Siri / App Intents, and optional Apple Intelligence
+  context. Recommendations come from NomadFi's deterministic,
+  source-backed engines — never from a generic LLM.
+- **Settings** — a concise hub for financial setup (jurisdictions,
+  accounts, credit-card calendar), notifications, privacy & security,
+  and the Advanced Tools subpage.
 
-Manual tools such as Ledger and Tax Vault can remain available, but they should
-not dominate the bottom tab bar until automatic import/sync or stronger
+Companion tools such as **Subscriptions**, **Ledger**, and **Tax Vault**
+live under Settings → Advanced Tools. They remain fully functional but
+are not daily-driver tabs until automatic import / sync or stronger
 decision-assistant flows make them central.
 
 ---

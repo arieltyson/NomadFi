@@ -145,7 +145,7 @@ private extension JurisdictionManagementView {
                 jurisdictionName: profile.countryName,
                 report: report
             )
-        } catch let JurisdictionManager.JurisdictionOperationError.cannotRemoveHome {
+        } catch JurisdictionManager.JurisdictionOperationError.cannotRemoveHome {
             errorMessage = "Pick a different home jurisdiction, then try removing this one again."
         } catch {
             errorMessage = error.localizedDescription
