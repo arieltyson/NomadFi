@@ -172,10 +172,48 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Siri / App Shortcut Draft Intake v1
+### Current Sub-Phase: Credit Timing Decision v1
 
-Voice intake for decision drafts now ships as a background App
-Intent, `CaptureDecisionDraftIntent`. Users can say
+The Decision Assistant now ships a second deterministic engine:
+`CreditTimingDecisionEngine`. It reads the user's saved credit-card
+accounts — their `creditLimit`, `currentBalance`, `availableCredit`,
+snapshot freshness, and confirmed statement schedules — and
+produces a calm, source-backed timing ruling. The engine never
+predicts a credit-score outcome; it stays strictly on timing,
+reported utilization, and statement-close planning.
+
+Per-card rulings land in one of six calm states:
+`needsSetup`, `snapshotStale`, `scheduleMissing`, `readyNoUrgentAction`,
+`payDownBeforeClose`, `nearLimitAvoidMoreSpend`. Portfolio ruling is
+the worst per-card state: `noCreditCardsOnFile`, `someNearLimit`,
+`somePayDownBeforeClose`, `missingData`, `allCardsReady`.
+
+Source anchors (all cited on the brief sheet as Official):
+CFPB — *What is a credit score?* and *Should I pay my credit card
+bill in full?*; myFICO — *Amounts Owed* and *How credit card
+balances are reported to the bureaus*. Utilization is computed as
+`currentBalance / creditLimit` and banded at 10% / 30% / 60% / 90%.
+Nil balances are never treated as zero. Stale or unconfirmed data
+never produces a strong ruling. Hard rules pinned on every brief:
+pay the statement balance in full by the due date, never carry a
+balance for score reasons, and use absolute dates for planning.
+
+The Decision Assistant tab now renders two hero cards (Amazon
+arrival order + Credit timing check), a new `CreditTimingBriefView`
+sheet, per-card assessment rows with `StatusBadge` rulings, a
+missing-data checklist, hard rules, and the cited sources. The
+view model's `DecisionSummary` value type generalises the hero
+rendering so adding future engines is additive, not a view-level
+refactor.
+
+Non-goals stay strict: no credit-score prediction, no guarantee of
+limit increase, no "carry a balance" guidance, no App Intent yet
+(in-app surface is the priority), no network calls.
+
+### Previous Sub-Phase: Siri / App Shortcut Draft Intake v1
+
+Voice intake for decision drafts ships as a background App Intent,
+`CaptureDecisionDraftIntent`. Users can say
 *"Capture a decision in NomadFi"*, *"Save a decision draft in
 NomadFi"*, or *"Remember this financial decision in NomadFi"* and
 dictate the scenario; the intent saves a new `DecisionDraftRecord`

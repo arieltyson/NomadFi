@@ -17,6 +17,11 @@ enum DecisionID: String, Codable, Hashable, Sendable, CaseIterable {
     /// Amazon.com arrival order — Scenario 1 in the docs. Backed by
     /// ``ScenarioDecisionEngine`` and `ScenarioDecisionRecord.scenario1ID`.
     case amazonArrivalOrder
+
+    /// Portfolio-wide credit-timing readiness. Backed by
+    /// ``CreditTimingDecisionEngine`` and sourced from the user's
+    /// saved `Account` rows rather than a dedicated persistence record.
+    case creditTimingCheck
 }
 
 /// Display-level metadata that the Decision Assistant lists use to
@@ -47,6 +52,7 @@ extension DecisionIdentity {
     var hasDeterministicEngine: Bool {
         switch id {
         case .amazonArrivalOrder: true
+        case .creditTimingCheck: true
         }
     }
 }

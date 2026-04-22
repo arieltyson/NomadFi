@@ -72,6 +72,7 @@ struct DecisionAssistantView: View {
         ScrollView {
             DecisionAssistantContent(
                 viewModel: viewModel,
+                allAccounts: accounts,
                 creditCardAccounts: creditCardAccounts,
                 drafts: drafts,
                 archivedDrafts: archivedDrafts,
@@ -97,6 +98,9 @@ struct DecisionAssistantView: View {
                     creditCardAccounts: creditCardAccounts
                 )
             }
+        }
+        .sheet(isPresented: $viewModel.isCreditTimingBriefPresented) {
+            CreditTimingBriefView(accounts: accounts)
         }
         .sheet(isPresented: $viewModel.isDraftFormPresented) {
             DecisionDraftFormView()
@@ -164,6 +168,7 @@ private extension DecisionAssistantView {
 private struct DecisionAssistantContent: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
+    let allAccounts: [Account]
     let creditCardAccounts: [Account]
     let drafts: [DecisionDraftRecord]
     let archivedDrafts: [DecisionDraftRecord]
@@ -171,9 +176,15 @@ private struct DecisionAssistantContent: View {
 
     var body: some View {
         LazyVStack(spacing: SpacingTokens.large) {
-            DecisionAssistantActiveSection(viewModel: viewModel)
+            DecisionAssistantActiveSection(
+                viewModel: viewModel,
+                allAccounts: allAccounts
+            )
 
-            DecisionAssistantHistorySection(viewModel: viewModel)
+            DecisionAssistantHistorySection(
+                viewModel: viewModel,
+                allAccounts: allAccounts
+            )
 
             DecisionAssistantNewSection(viewModel: viewModel)
 
@@ -201,22 +212,31 @@ private struct DecisionAssistantContent: View {
 private struct DecisionAssistantActiveSection: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
+    let allAccounts: [Account]
 
     var body: some View {
-        if let active = viewModel.activeDecision {
+        if !viewModel.activeDecisions.isEmpty {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 DecisionAssistantSectionHeader(
                     title: "Now",
                     subtitle: "Where NomadFi has a deterministic recommendation."
                 )
 
-                ActiveDecisionHeroCard(
-                    identity: active,
-                    ruling: viewModel.activeDecisionRuling,
-                    lastUpdatedAt: viewModel.activeDecisionLastUpdatedAt,
-                    outstandingCheckCount: viewModel.activeDecisionOutstandingCheckCount,
-                    action: { viewModel.openActiveDecision() }
-                )
+                VStack(spacing: SpacingTokens.small) {
+                    ForEach(viewModel.activeDecisions) { identity in
+                        let summary = viewModel.summary(
+                            for: identity.id,
+                            accounts: allAccounts
+                        )
+                        ActiveDecisionHeroCard(
+                            identity: identity,
+                            ruling: summary.ruling,
+                            lastUpdatedAt: summary.lastUpdatedAt,
+                            outstandingCheckCount: summary.outstandingCheckCount,
+                            action: { viewModel.openDecision(identity.id) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -227,6 +247,7 @@ private struct DecisionAssistantActiveSection: View {
 private struct DecisionAssistantHistorySection: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
+    let allAccounts: [Account]
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
@@ -238,7 +259,10 @@ private struct DecisionAssistantHistorySection: View {
             if viewModel.historicalDecisions.isEmpty {
                 DecisionAssistantHistoryEmptyState()
             } else {
-                DecisionAssistantHistoryList(viewModel: viewModel)
+                DecisionAssistantHistoryList(
+                    viewModel: viewModel,
+                    allAccounts: allAccounts
+                )
             }
         }
     }
@@ -247,19 +271,24 @@ private struct DecisionAssistantHistorySection: View {
 private struct DecisionAssistantHistoryList: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
+    let allAccounts: [Account]
 
     var body: some View {
         VStack(spacing: SpacingTokens.xSmall) {
             ForEach(viewModel.historicalDecisions) { identity in
+                let summary = viewModel.summary(
+                    for: identity.id,
+                    accounts: allAccounts
+                )
                 Button {
                     viewModel.openDecision(identity.id)
                 } label: {
                     GlassCard {
                         DecisionHistoryRow(
                             identity: identity,
-                            ruling: viewModel.activeDecisionRuling,
-                            lastUpdatedAt: viewModel.activeDecisionLastUpdatedAt,
-                            isInteracted: viewModel.hasInteractedWithActiveDecision
+                            ruling: summary.ruling,
+                            lastUpdatedAt: summary.lastUpdatedAt,
+                            isInteracted: isInteracted(with: identity)
                         )
                     }
                 }
@@ -269,6 +298,19 @@ private struct DecisionAssistantHistoryList: View {
             if viewModel.historicalDecisions.count == 1 {
                 DecisionAssistantHistoryHorizon()
             }
+        }
+    }
+
+    /// Per-decision interaction flag. Scenario 1 uses the VM's
+    /// existing helper; Credit Timing treats "interacted" as "at
+    /// least one credit card exists on file" since the engine doesn't
+    /// require additional user input beyond the saved cards.
+    private func isInteracted(with identity: DecisionIdentity) -> Bool {
+        switch identity.id {
+        case .amazonArrivalOrder:
+            return viewModel.hasInteractedWithActiveDecision
+        case .creditTimingCheck:
+            return allAccounts.contains(where: \.isCreditCard)
         }
     }
 }

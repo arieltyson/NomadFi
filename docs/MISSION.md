@@ -169,6 +169,12 @@ never triggers analysis or generates a recommendation. Captured drafts become
 candidates for analysis only when a deterministic, source-backed engine ships
 for their kind and the user opts in.
 
+Credit-timing guidance is timing guidance, not a credit-score predictor.
+NomadFi's Credit Timing engine helps users plan around statement-close dates
+and reported utilization using CFPB and myFICO anchors. It never promises a
+score outcome, never suggests carrying a balance, and never treats a missing
+or stale snapshot as a live number.
+
 ---
 
 ## Navigation Principle

@@ -349,7 +349,9 @@ struct DecisionDraftLifecycleTests {
 
         let catalogIDs = Set(DecisionCatalog.all.map(\.id.rawValue))
         #expect(!catalogIDs.contains(fixture.draftID.uuidString))
-        #expect(DecisionCatalog.all.count == 1)
-        #expect(DecisionCatalog.all.first?.id == .amazonArrivalOrder)
+        // Catalog entries are tightly controlled — both current
+        // engines (Amazon arrival order and Credit timing check) are
+        // in the catalog; drafts are not.
+        #expect(DecisionCatalog.all.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
     }
 }

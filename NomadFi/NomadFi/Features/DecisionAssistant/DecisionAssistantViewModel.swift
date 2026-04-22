@@ -1,10 +1,16 @@
 // DecisionAssistantViewModel.swift
 // NomadFi
 //
-// Owns the Decision Assistant's persistent state: the catalog-backed
-// active decision, the brief view-model it opens, and a few derived
-// values used by the view (last-updated timestamps, empty-state
-// flags). View logic stays here — the view stays a thin render.
+// Owns the Decision Assistant's persistent state across every
+// deterministic engine:
+//
+//   - Scenario 1 (Amazon arrival order) — backed by
+//     `ScenarioDecisionBriefViewModel` and a SwiftData record.
+//   - Credit Timing — backed by the pure
+//     `CreditTimingDecisionEngine`; no persistence of its own, the
+//     user's `Account` rows are the source of truth.
+//
+// View logic stays here — the view stays a thin render.
 
 import Foundation
 import Observation
@@ -16,25 +22,36 @@ import SwiftData
 @Observable
 final class DecisionAssistantViewModel {
 
-    // MARK: - State
+    // MARK: - Catalog
 
-    /// The currently-promoted active decision. Derived from the
-    /// catalog so adding a decision later doesn't require touching
-    /// the view model.
+    /// The primary active decision — currently Scenario 1 (Amazon
+    /// arrival order). Kept for back-compat with callers that still
+    /// address a single "active decision"; prefer ``activeDecisions``
+    /// for new code.
     let activeDecision: DecisionIdentity?
+
+    /// Every catalog decision with a deterministic engine, in catalog
+    /// order. Each one renders its own hero card.
+    let activeDecisions: [DecisionIdentity]
 
     /// Decisions that can appear in the history / previous list,
     /// regardless of whether they have a persisted record yet.
     let historicalDecisions: [DecisionIdentity]
 
-    /// Brief view-model behind the active decision. Lazily materialised
-    /// once the owning view hands the view model a `ModelContext` via
+    // MARK: - Per-engine state
+
+    /// Brief view-model behind Scenario 1. Lazily materialised once
+    /// the owning view hands the view model a `ModelContext` via
     /// ``bootstrap(modelContext:)``.
     private(set) var scenario1BriefViewModel: ScenarioDecisionBriefViewModel?
 
-    /// True when the brief sheet is presented. Owned by the view
-    /// model so Siri / App Intent deep links can flip it programmatically.
+    /// True when the Scenario 1 brief sheet is presented. Owned by
+    /// the view model so Siri / App Intent deep links can flip it
+    /// programmatically.
     var isBriefPresented: Bool = false
+
+    /// True when the Credit Timing brief sheet is presented.
+    var isCreditTimingBriefPresented: Bool = false
 
     /// True when the decision-draft capture sheet is presented.
     /// Owned by the view model so the capture affordance on
@@ -51,9 +68,11 @@ final class DecisionAssistantViewModel {
 
     init(
         activeDecision: DecisionIdentity? = DecisionCatalog.activeDecision,
+        activeDecisions: [DecisionIdentity] = DecisionCatalog.all.filter(\.hasDeterministicEngine),
         historicalDecisions: [DecisionIdentity] = DecisionCatalog.historicalCandidates
     ) {
         self.activeDecision = activeDecision
+        self.activeDecisions = activeDecisions
         self.historicalDecisions = historicalDecisions
     }
 
@@ -73,9 +92,10 @@ final class DecisionAssistantViewModel {
 
     // MARK: - Intents
 
-    /// Opens the brief for the active decision. Currently only
-    /// Scenario 1 is wired; guards so Siri / intent-driven callers
-    /// can't accidentally present an empty sheet.
+    /// Opens the Scenario 1 brief. Currently the only catalog entry
+    /// with an app-side sheet backed by a ``ScenarioDecisionRecord``;
+    /// guards so Siri / intent-driven callers can't accidentally
+    /// present an empty sheet.
     func openActiveDecision() {
         guard scenario1BriefViewModel != nil else {
             Self.logger.warning("openActiveDecision called before bootstrap completed")
@@ -84,13 +104,20 @@ final class DecisionAssistantViewModel {
         isBriefPresented = true
     }
 
+    /// Presents the Credit Timing brief. No bootstrap required — the
+    /// engine reads the `@Query<Account>` live from the view.
+    func openCreditTimingBrief() {
+        isCreditTimingBriefPresented = true
+    }
+
     /// Opens a specific decision by identifier. Used by the history
-    /// list and reserved for future App Intent deep links
-    /// (`DecisionID` is already `Codable`).
+    /// list and reserved for future App Intent deep links.
     func openDecision(_ id: DecisionID) {
         switch id {
         case .amazonArrivalOrder:
             openActiveDecision()
+        case .creditTimingCheck:
+            openCreditTimingBrief()
         }
     }
 
@@ -100,36 +127,46 @@ final class DecisionAssistantViewModel {
         isDraftFormPresented = true
     }
 
-    // MARK: - Derived
+    // MARK: - Summaries
 
-    /// Human-readable ruling string for the active decision, or a
-    /// calm placeholder while the engine spins up.
+    /// One-line summary for the hero row corresponding to `id`.
+    /// The view passes the current `[Account]` so the Credit Timing
+    /// summary stays in lockstep with the Decisions tab's live query.
+    func summary(
+        for id: DecisionID,
+        accounts: [Account],
+        now: Date = .now
+    ) -> DecisionSummary {
+        switch id {
+        case .amazonArrivalOrder:
+            return scenario1Summary()
+        case .creditTimingCheck:
+            return creditTimingSummary(accounts: accounts, now: now)
+        }
+    }
+
+    // MARK: - Scenario 1 helpers (kept for back-compat)
+
+    /// Human-readable ruling string for Scenario 1, or a calm
+    /// placeholder while the engine spins up.
     var activeDecisionRuling: String {
         scenario1BriefViewModel?.decision.ruling
             ?? "Preparing decision support…"
     }
 
-    /// Last time the user edited the active decision's inputs.
-    /// Surfaces as an absolute "as of" timestamp in the UI — never a
-    /// relative phrase.
+    /// Last time the user edited Scenario 1's inputs. Absolute
+    /// timestamp — never a relative phrase.
     var activeDecisionLastUpdatedAt: Date? {
         scenario1BriefViewModel?.record.updatedAt
     }
 
-    /// How many user-side checks the engine still wants the user to
-    /// clear. Drives the hero's "\(count) checks remaining" chip.
+    /// How many user-side checks Scenario 1 still wants cleared.
     var activeDecisionOutstandingCheckCount: Int {
         scenario1BriefViewModel?.decision.outstandingChecks.count ?? 0
     }
 
-    /// Whether the user has supplied any meaningful input to the
-    /// active decision yet. Drives the history section's choice
-    /// between showing a real row or an empty-state pointer.
-    ///
-    /// We intentionally inspect the record's derived state instead
-    /// of comparing timestamps: `ScenarioDecisionRecord.updatedAt`
-    /// defaults to `.now` on creation, so a timestamp check would
-    /// report every freshly-created record as "interacted".
+    /// Whether the user has supplied any meaningful input to
+    /// Scenario 1 yet. Drives the history section's empty-state.
     var hasInteractedWithActiveDecision: Bool {
         guard let state = scenario1BriefViewModel?.state else { return false }
         return state.cartShippingReviewed
@@ -140,5 +177,34 @@ final class DecisionAssistantViewModel {
             || state.wiseUSDBalanceUSD != nil
             || state.wiseCardAcceptedByAmazon
             || state.hasLinkedChaseAccount
+    }
+
+    // MARK: - Private summary builders
+
+    private func scenario1Summary() -> DecisionSummary {
+        DecisionSummary(
+            ruling: activeDecisionRuling,
+            lastUpdatedAt: activeDecisionLastUpdatedAt,
+            outstandingCheckCount: activeDecisionOutstandingCheckCount
+        )
+    }
+
+    private func creditTimingSummary(
+        accounts: [Account],
+        now: Date
+    ) -> DecisionSummary {
+        let decision = CreditTimingDecisionEngine.decide(
+            accounts: accounts,
+            now: now
+        )
+        let lastUpdatedAt = accounts
+            .filter(\.isCreditCard)
+            .compactMap(\.financialSnapshotUpdatedAt)
+            .max()
+        return DecisionSummary(
+            ruling: decision.ruling.displaySummary,
+            lastUpdatedAt: lastUpdatedAt,
+            outstandingCheckCount: decision.outstandingCheckCount
+        )
     }
 }

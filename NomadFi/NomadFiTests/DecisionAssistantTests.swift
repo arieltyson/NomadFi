@@ -56,11 +56,15 @@ struct DecisionAssistantTests {
 
     // MARK: - View model
 
-    @Test("Fresh view model exposes the Amazon identity and empty history state")
+    @Test("Fresh view model exposes both catalog decisions and empty Scenario 1 history state")
     func freshViewModelExposesActiveIdentity() {
         let viewModel = DecisionAssistantViewModel()
+        // Scenario 1 stays the primary active decision for back-compat
+        // callers; both deterministic decisions render as heroes and
+        // history rows now that Credit Timing has landed.
         #expect(viewModel.activeDecision?.id == .amazonArrivalOrder)
-        #expect(viewModel.historicalDecisions.map(\.id) == [.amazonArrivalOrder])
+        #expect(viewModel.activeDecisions.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
+        #expect(viewModel.historicalDecisions.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
         #expect(!viewModel.hasInteractedWithActiveDecision)
         #expect(viewModel.activeDecisionOutstandingCheckCount == 0)
     }

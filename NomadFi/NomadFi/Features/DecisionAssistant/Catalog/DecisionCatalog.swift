@@ -18,8 +18,9 @@ enum DecisionCatalog {
 
     /// All decisions known to the app, in display order. The first
     /// entry is currently promoted to the "Active Decision" hero on
-    /// the Decision Assistant surface.
-    static let all: [DecisionIdentity] = [amazonArrivalOrder]
+    /// the Decision Assistant surface; additional entries render as
+    /// sibling heroes beneath it.
+    static let all: [DecisionIdentity] = [amazonArrivalOrder, creditTimingCheck]
 
     /// Amazon.com arrival order — Scenario 1. Cross-border purchase
     /// from Canada into a U.S. summer address, backed by
@@ -31,6 +32,20 @@ enum DecisionCatalog {
         systemImage: "cart.fill.badge.plus",
         locationContext: "U.S. summer address",
         currencyContext: "USD vs. CAD"
+    )
+
+    /// Portfolio-wide credit-timing check. Backed by
+    /// ``CreditTimingDecisionEngine`` — reads the user's saved credit
+    /// cards, their schedules, and their latest snapshots to surface
+    /// paydown-before-close and near-limit guidance. Strictly a
+    /// timing / utilization engine; never a credit-score predictor.
+    static let creditTimingCheck = DecisionIdentity(
+        id: .creditTimingCheck,
+        title: "Credit timing check",
+        summary: "Statement close and utilization readiness",
+        systemImage: "calendar.badge.clock",
+        locationContext: "Your saved credit cards",
+        currencyContext: "Per-card currency"
     )
 
     /// Fetches a decision by its stable identifier. Returns nil for
