@@ -56,6 +56,17 @@ struct NomadFiShortcuts: AppShortcutsProvider {
         )
 
         AppShortcut(
+            intent: CaptureDecisionDraftIntent(),
+            phrases: [
+                "Capture a decision in \(.applicationName)",
+                "Save a decision draft in \(.applicationName)",
+                "Remember this financial decision in \(.applicationName)",
+            ],
+            shortTitle: "Capture Decision",
+            systemImageName: "square.and.pencil"
+        )
+
+        AppShortcut(
             intent: ActiveCardIntent(),
             phrases: [
                 "Which card should I use in \(.applicationName)",

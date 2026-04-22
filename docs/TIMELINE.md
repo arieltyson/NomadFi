@@ -172,7 +172,36 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Decision Draft Lifecycle v1
+### Current Sub-Phase: Siri / App Shortcut Draft Intake v1
+
+Voice intake for decision drafts now ships as a background App
+Intent, `CaptureDecisionDraftIntent`. Users can say
+*"Capture a decision in NomadFi"*, *"Save a decision draft in
+NomadFi"*, or *"Remember this financial decision in NomadFi"* and
+dictate the scenario; the intent saves a new `DecisionDraftRecord`
+with status `needsEngine` and returns a dialog that says explicitly:
+*"Saved this as a decision draft in NomadFi. It is marked Needs
+engine, so NomadFi will not recommend anything from it until a
+deterministic source-backed engine covers this kind of decision."*
+
+Shared persistence: the pure `DecisionDraftStore.insertDraft`
+helper trims every field, enforces non-empty scenario text, and
+stamps `createdAt == updatedAt`. Both the in-app capture form and
+the voice path converge on that single insert path. The intent runs
+with `supportedModes = .background` — it never opens the app — and
+the kind picker is surfaced through a tiny `DecisionDraftKindAppEnum`
+adapter so the core `DecisionDraftKind` stays free of any
+`AppIntents` dependency.
+
+Non-goals for this sub-phase stay strict: no analysis of captured
+scenarios, no ScenarioDecisionEngine routing, no Apple Intelligence
+integration, no recommendation copy. Voice can speak a draft into
+NomadFi; it cannot get a card recommendation out.
+
+The **Gather intelligence** card now marks *Siri & Shortcuts intake*
+as Available; Apple Intelligence context remains Planned.
+
+### Previous Sub-Phase: Decision Draft Lifecycle v1
 
 Building on Decision Draft Intake v1, this refinement gives users
 full control over the raw context they capture. `DecisionDraftFormView`

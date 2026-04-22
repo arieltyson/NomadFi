@@ -163,6 +163,12 @@ restored, or permanently deleted from its detail sheet — permanent delete is
 always confirmed explicitly. NomadFi never needs a full data wipe to remove a
 single mistyped or accidentally-sensitive draft.
 
+Voice intake follows the same contract. Siri and App Shortcuts can capture
+user-dictated scenarios as drafts on-device (status `needsEngine`), but voice
+never triggers analysis or generates a recommendation. Captured drafts become
+candidates for analysis only when a deterministic, source-backed engine ships
+for their kind and the user opts in.
+
 ---
 
 ## Navigation Principle

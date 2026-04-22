@@ -29,6 +29,63 @@ enum DecisionDraftStore {
         category: "DecisionDraftStore"
     )
 
+    // MARK: - Insert
+
+    /// Inserts a fresh ``DecisionDraftRecord`` from already-supplied
+    /// strings. Trims every text field, enforces that the scenario
+    /// body is non-empty after trimming, stamps `createdAt` ==
+    /// `updatedAt`, and persists the new record with status
+    /// ``DecisionDraftStatus/needsEngine``.
+    ///
+    /// Called by both the in-app capture path (`DecisionDraftFormViewModel`,
+    /// indirectly) and the Siri / Shortcuts intake path
+    /// (`CaptureDecisionDraftIntent`) so voice and typed captures can
+    /// never drift apart on validation or storage rules.
+    ///
+    /// - Returns: The inserted record, or `nil` when the scenario text
+    ///   is empty / whitespace-only.
+    @MainActor
+    @discardableResult
+    static func insertDraft(
+        scenarioText: String,
+        title: String = "",
+        kind: DecisionDraftKind = .purchase,
+        merchantName: String = "",
+        locationText: String = "",
+        amount: Double? = nil,
+        currencyCode: CurrencyCode = .usd,
+        timingText: String = "",
+        notes: String = "",
+        in modelContext: ModelContext,
+        now: Date = .now
+    ) -> DecisionDraftRecord? {
+        let trimmedScenario = scenarioText.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+        guard !trimmedScenario.isEmpty else {
+            logger.debug("insertDraft refused — scenario text is empty after trimming")
+            return nil
+        }
+
+        let record = DecisionDraftRecord(
+            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            scenarioText: trimmedScenario,
+            kind: kind,
+            merchantName: merchantName.trimmingCharacters(in: .whitespacesAndNewlines),
+            locationText: locationText.trimmingCharacters(in: .whitespacesAndNewlines),
+            amount: amount,
+            currencyCode: currencyCode,
+            timingText: timingText.trimmingCharacters(in: .whitespacesAndNewlines),
+            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+            status: .needsEngine,
+            createdAt: now,
+            updatedAt: now
+        )
+        modelContext.insert(record)
+        persist(modelContext, action: "insert")
+        return record
+    }
+
     // MARK: - Archive / restore
 
     /// Marks the draft as ``DecisionDraftStatus/archived`` and stamps

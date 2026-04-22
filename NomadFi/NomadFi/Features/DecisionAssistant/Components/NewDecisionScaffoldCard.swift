@@ -87,8 +87,8 @@ private struct NewDecisionScaffoldIntakeList: View {
             NewDecisionIntakeRow(
                 systemImage: "mic.circle.fill",
                 title: "Siri & Shortcuts intake",
-                subtitle: "Dictating new drafts is planned — today the voice path reviews saved decisions.",
-                status: .planned
+                subtitle: "Say “Capture a decision in NomadFi” and dictate the scenario. Stored on-device as a draft.",
+                status: .available
             )
             NewDecisionIntakeRow(
                 systemImage: "apple.intelligence",

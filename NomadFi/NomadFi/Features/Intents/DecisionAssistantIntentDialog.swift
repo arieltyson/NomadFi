@@ -100,6 +100,38 @@ enum DecisionAssistantIntentDialog {
     static let openDecisionAssistant: String =
         "Opening your Decision Assistant in NomadFi. Today it covers your Amazon arrival order; more decisions land as the deterministic engines do."
 
+    // MARK: - "Capture a decision" (Siri / Shortcuts intake)
+
+    /// Dialog returned when the voice intake can't save because the
+    /// user dictated nothing substantive. Never claims NomadFi
+    /// analyzed or rejected a scenario — it just explains that a
+    /// short description is required.
+    static let draftCaptureMissingScenario: String =
+        "I need a short description of the decision before I can save it. Try saying what you're weighing and run the shortcut again."
+
+    /// Dialog returned after a successful draft capture. Intentionally
+    /// explicit about three honesty constraints:
+    ///
+    ///   1. The draft is saved — not analyzed.
+    ///   2. It is marked ``DecisionDraftStatus/needsEngine``.
+    ///   3. NomadFi will not generate a recommendation from it until a
+    ///      deterministic, source-backed engine covers the draft's
+    ///      kind.
+    ///
+    /// These three rules are why the copy never uses "best", "lowest",
+    /// "recommended", "analyzed", or "verified".
+    static func draftCaptureSuccess(title: String) -> String {
+        let trimmedTitle = title.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+        let titleClause = trimmedTitle.isEmpty
+            ? ""
+            : " Titled “\(trimmedTitle)”."
+        return "Saved this as a decision draft in NomadFi.\(titleClause) "
+            + "It is marked Needs engine, so NomadFi will not recommend anything from it "
+            + "until a deterministic source-backed engine covers this kind of decision."
+    }
+
     // MARK: - Helpers
 
     /// Core sentence shared by every dialog that describes the Amazon
