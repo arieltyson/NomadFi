@@ -259,7 +259,20 @@ No generic scenario parser, Apple Intelligence integration, or
 reinforcement-learning layer is shipped in this sub-phase — only the
 deterministic routing. Tab deep-linking is done with a persisted
 `MainTabSelection` that App Intents write to `UserDefaults` before
-`openAppWhenRun` activates the app.
+the system brings NomadFi to the foreground.
+
+All intents have been modernized to the iOS 18+ `supportedModes`
+API; the deprecated `openAppWhenRun` flag is gone from the codebase.
+Navigation intents (`OpenDecisionAssistantIntent`,
+`ContinueAmazonArrivalDecisionIntent`) declare
+`.foreground(.immediate)` so the `UserDefaults` write happens against
+the foregrounded host process and the Decisions tab is the first
+surface the user sees. Voice-only intents (`ActiveCardIntent`,
+`ReviewAmazonArrivalDecisionIntent`, and the supporting
+`CheckBudgetIntent` / `CheckNetWorthIntent` / `LogExpenseIntent`)
+declare `.background` — they never need to bring the app forward.
+App Shortcuts metadata extraction is confirmed in the main app
+target's `Metadata.appintents` bundle on every build.
 
 ### Example User Request
 

@@ -29,7 +29,9 @@ struct ReviewAmazonArrivalDecisionIntent: AppIntent {
     )
 
     /// Voice-first summary — the app is not required for the answer.
-    static let openAppWhenRun = false
+    /// `.background` is the iOS 18+ replacement for the deprecated
+    /// `openAppWhenRun = false`.
+    static let supportedModes: IntentModes = .background
 
     // MARK: - Perform
 

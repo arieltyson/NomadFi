@@ -20,7 +20,9 @@ struct LogExpenseIntent: AppIntent {
 
     static let description: IntentDescription = "Quickly log a transaction with an amount and category."
 
-    static let openAppWhenRun = false
+    /// Voice-first write. `.background` is the iOS 18+ replacement
+    /// for the deprecated `openAppWhenRun = false`.
+    static let supportedModes: IntentModes = .background
 
     // MARK: - Parameters
 

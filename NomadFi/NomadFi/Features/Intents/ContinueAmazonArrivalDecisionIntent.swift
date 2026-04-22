@@ -10,11 +10,17 @@ import SwiftData
 
 /// Resumes the Amazon arrival-order decision in-app.
 ///
-/// Pairs `openAppWhenRun = true` with a `MainTabSelection` hand-off
-/// to land the user on the Decisions tab, then speaks a short
-/// dialog that carries the engine's current ruling. If the record
-/// has no user inputs, the dialog says exactly that instead of
-/// pretending a path has been chosen.
+/// Pairs a foreground-immediate mode with a ``MainTabSelection``
+/// hand-off to land the user on the Decisions tab, then speaks a
+/// short dialog that carries the engine's current ruling. If the
+/// record has no user inputs, the dialog says exactly that instead
+/// of pretending a path has been chosen.
+///
+/// **Supported mode:** `.foreground(.immediate)` — the app is
+/// brought forward before `perform()` executes so the
+/// `UserDefaults` write and the subsequent `MainTabView` read happen
+/// against the foregrounded host process, guaranteeing the Decisions
+/// tab is the surface the user sees first.
 struct ContinueAmazonArrivalDecisionIntent: AppIntent {
 
     static let title: LocalizedStringResource = "Continue Amazon Arrival Decision"
@@ -24,7 +30,9 @@ struct ContinueAmazonArrivalDecisionIntent: AppIntent {
     )
 
     /// Resumes the decision in-app — this is a navigation intent.
-    static let openAppWhenRun = true
+    /// `.foreground(.immediate)` is the iOS 18+ replacement for the
+    /// deprecated `openAppWhenRun = true`.
+    static let supportedModes: IntentModes = .foreground(.immediate)
 
     // MARK: - Perform
 

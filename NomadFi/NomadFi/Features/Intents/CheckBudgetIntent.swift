@@ -20,7 +20,9 @@ struct CheckBudgetIntent: AppIntent {
 
     static let description: IntentDescription = "Check how much you have left in your budget."
 
-    static let openAppWhenRun = false
+    /// Voice-only read. `.background` is the iOS 18+ replacement
+    /// for the deprecated `openAppWhenRun = false`.
+    static let supportedModes: IntentModes = .background
 
     // MARK: - Perform
 

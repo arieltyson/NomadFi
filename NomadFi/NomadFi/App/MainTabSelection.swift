@@ -12,9 +12,9 @@ import Foundation
 
 /// The three primary surfaces on NomadFi's bottom tab bar.
 ///
-/// Intentionally minimal — this type exists so App Intents can route
-/// a launch (`openAppWhenRun = true`) straight to the Decision
-/// Assistant without fragile string matching.
+/// Intentionally minimal — this type exists so App Intents running
+/// in `.foreground(.immediate)` mode can route a launch straight to
+/// the Decision Assistant without fragile string matching.
 enum MainTabSelection: String, CaseIterable, Sendable, Hashable {
 
     case dashboard

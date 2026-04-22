@@ -14,10 +14,16 @@ import Foundation
 /// recommendation. It only performs navigation — the app's Decision
 /// Assistant is what the user actually interacts with once open.
 ///
-/// Uses `@AppStorage`-backed `MainTabSelection` routing: this intent
-/// writes the target tab to `UserDefaults`, then `openAppWhenRun`
-/// activates the app; `MainTabView` reads the same key reactively on
-/// appearance and honours the requested tab.
+/// Uses `@AppStorage`-backed ``MainTabSelection`` routing: this
+/// intent writes the target tab to `UserDefaults` before the system
+/// brings NomadFi to the foreground, then `MainTabView` reads the
+/// same key reactively on appearance and honours the requested tab.
+///
+/// **Supported mode:** `.foreground(.immediate)` — the user's
+/// explicit purpose is navigation, so NomadFi should appear before
+/// `perform()` runs. `.foreground(.deferred)` would risk surfacing
+/// the dialog before the tab bar has re-read `MainTabSelection`,
+/// which would leave the user on the wrong tab for a beat.
 struct OpenDecisionAssistantIntent: AppIntent {
 
     static let title: LocalizedStringResource = "Open Decision Assistant"
@@ -27,7 +33,9 @@ struct OpenDecisionAssistantIntent: AppIntent {
     )
 
     /// Explicit app launch — the user is asking NomadFi to navigate.
-    static let openAppWhenRun = true
+    /// `.foreground(.immediate)` is the iOS 18+ replacement for the
+    /// deprecated `openAppWhenRun = true`.
+    static let supportedModes: IntentModes = .foreground(.immediate)
 
     // MARK: - Perform
 

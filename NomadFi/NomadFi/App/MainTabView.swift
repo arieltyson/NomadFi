@@ -14,10 +14,11 @@ import SwiftUI
 /// Advanced Tools rather than on the tab bar — they're valuable but
 /// secondary to the decision surface.
 ///
-/// Tab selection is persisted via `@AppStorage` so an App Intent can
-/// write ``MainTabSelection/storageKey`` before `openAppWhenRun`
-/// activates the app, and the tab bar honours the requested route
-/// reactively on first appearance.
+/// Tab selection is persisted via `@AppStorage` so an App Intent
+/// running in `.foreground(.immediate)` mode can write
+/// ``MainTabSelection/storageKey`` before the system brings the app
+/// forward, and the tab bar honours the requested route reactively
+/// on first appearance.
 struct MainTabView: View {
 
     @AppStorage(MainTabSelection.storageKey)

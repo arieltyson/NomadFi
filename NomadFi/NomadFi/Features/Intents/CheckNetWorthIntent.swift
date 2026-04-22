@@ -20,7 +20,9 @@ struct CheckNetWorthIntent: AppIntent {
 
     static let description: IntentDescription = "Get your global net worth across all accounts."
 
-    static let openAppWhenRun = false
+    /// Voice-only read. `.background` is the iOS 18+ replacement
+    /// for the deprecated `openAppWhenRun = false`.
+    static let supportedModes: IntentModes = .background
 
     // MARK: - Perform
 

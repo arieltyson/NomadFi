@@ -33,7 +33,10 @@ struct ActiveCardIntent: AppIntent {
 
     /// Voice-first: the dialog summarises the engine's ruling and
     /// asks the user to finish the brief in-app when checks remain.
-    static let openAppWhenRun = false
+    /// `.background` is the iOS 18+ replacement for the deprecated
+    /// `openAppWhenRun = false` — the intent never needs to bring
+    /// NomadFi to the foreground.
+    static let supportedModes: IntentModes = .background
 
     // MARK: - Perform
 
