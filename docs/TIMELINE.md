@@ -7,7 +7,7 @@ and learn jurisdiction-aware tax and investing concepts; it does not assume
 Apple Pay or Wallet should be used just because they are available.
 
 This file is public-safe. It must not duplicate private personal facts from
-`docs/ARIEL.md`.
+[`docs/ARIEL.md`](./ARIEL.md).
 
 ---
 
@@ -23,9 +23,12 @@ In one sentence:
 > rewards, avoid debt, reduce FX waste, protect credit health, and learn tax and
 > investing strategy using verified, privacy-preserving financial context.
 
-This roadmap is governed by [`docs/MISSION.md`](./MISSION.md). Features that do
-not advance the decision-assistant mission should be delayed, demoted to
-optional tools, or removed from primary navigation.
+This roadmap is governed by [`docs/MISSION.md`](./MISSION.md) and the evidence
+standards in [`docs/README.md`](./README.md). Features that do not advance the
+decision-assistant mission should be delayed, demoted to optional tools, or
+removed from primary navigation.
+
+---
 
 ## Solidified Product Goals
 
@@ -52,6 +55,148 @@ optional tools, or removed from primary navigation.
    optional support tools, but they should not define the primary experience
    until automatic import/sync or stronger decision-assistant use cases make
    them central.
+
+---
+
+## Roadmap Status Legend
+
+- `[x]` **Shipped** — code is in the repo and covered by tests or user-visible UI.
+- `[~]` **Partially shipped** — the capability exists for a subset of use cases
+  (e.g. Scenario 1 only) or the scaffolding is in place but the user-facing
+  surface is incomplete.
+- `[ ]` **Planned** — on the roadmap, not implemented yet.
+- `[!]` **Deferred** — intentionally not being built now; may be revisited only
+  if a concrete product need appears.
+
+Every `[x]` below is backed by a code path. Where relevant, the evidence note
+points at the test file that pins the behaviour.
+
+---
+
+## Roadmap Progress
+
+### Governance and safety foundation
+
+- [x] Source governance document — [`docs/README.md`](./README.md).
+- [x] Mission document — [`docs/MISSION.md`](./MISSION.md).
+- [x] Private testbed isolation — `docs/ARIEL.md` exists and is kept out of
+  this public file by policy.
+- [x] Source provenance modelling — `SourceProvenance`, `SourceConfidence`
+  in `Core/Models/`. _Evidence: `NomadFiTests/SourceProvenanceTests.swift`,
+  `SourceProvenancePhase2Tests.swift`._
+- [x] Complete on-device data wipe — `DataGovernancePolicy.deleteAllUserData`
+  deletes every SwiftData model, Keychain entries, receipt images, Spotlight
+  entries, and pending notifications.
+- [x] Zero analytics / zero third-party SDKs.
+
+### Navigation and surface
+
+- [x] Decision Assistant is the primary tab — `MainTabView` bottom tabs are
+  Dashboard / Decisions / Settings.
+- [x] Ledger, Tax Vault, and Subscriptions live under Settings →
+  Advanced Tools — `Features/Settings/Hub/AdvancedToolsSettingsView.swift`.
+- [x] Editable jurisdictions after onboarding —
+  `Features/Settings/Jurisdictions/JurisdictionManagementView.swift`.
+  _Evidence: `JurisdictionManagerTests.swift`._
+
+### Account and credit-card data model
+
+- [x] Account profile vs. live snapshot separation — `Account` carries
+  `creditLimit` (profile) distinct from `currentBalance` / `availableCredit` /
+  `statementBalance` (snapshots). _Evidence:
+  `AccountFinancialSnapshotTests.swift`._
+- [x] Snapshot source provenance and freshness — `FinancialSnapshotSource`
+  with per-source `freshnessWindow`; `Account.isFinancialSnapshotStale(now:)`.
+- [x] Credit-card statement calendar — `CreditCardSchedule`,
+  `CreditCardScheduleState`, `Features/Settings/CreditCardScheduleEditView.swift`.
+  _Evidence: `CreditCardScheduleTests.swift`._
+- [x] Credit-card reminders — `CreditCardReminderPlanner` +
+  `NotificationManager+CreditCardReminders`. _Evidence:
+  `CreditCardReminderPlannerTests.swift`._
+- [x] Nil balances are never treated as zero — exclusion from net worth
+  for credit cards without a saved balance.
+
+### Deterministic decision engines
+
+- [x] Scenario 1: Amazon arrival-order engine — `ScenarioDecisionEngine` +
+  `ScenarioDecisionRecord`. _Evidence: `ScenarioDecisionEngineTests.swift`,
+  `ScenarioDecisionRecordTests.swift`._
+- [x] Credit Timing Decision v1 — `CreditTimingDecisionEngine` with CFPB +
+  myFICO citations, six per-card rulings (`needsSetup`, `snapshotStale`,
+  `scheduleMissing`, `readyNoUrgentAction`, `payDownBeforeClose`,
+  `nearLimitAvoidMoreSpend`), near-limit / paydown guidance, stale-snapshot
+  and unconfirmed-schedule gates. _Evidence:
+  `CreditTimingDecisionEngineTests.swift`._
+- [~] "Which card should I use?" — routed through Scenario 1 honestly but
+  not yet answering arbitrary merchant / category questions. See Phase 3.
+- [ ] Generic merchant / category scenario engine.
+- [ ] Cross-card payment-allocation planning.
+- [ ] Credit-limit-increase readiness checklist.
+
+### Decision drafts (user-captured raw context)
+
+- [x] Draft capture form — `DecisionDraftFormView` (create mode) + VM.
+- [x] Draft detail sheet — `DecisionDraftDetailView`.
+- [x] Draft lifecycle — edit mode, archive, restore, and individual
+  `confirmationDialog`-guarded delete via `DecisionDraftStore`. _Evidence:
+  `DecisionDraftLifecycleTests.swift`, `DecisionDraftRecordTests.swift`._
+- [x] Draft archive / active section separation in the Decision Assistant.
+- [x] Drafts are never auto-analyzed, never promoted to the catalog,
+  never routed into `ScenarioDecisionEngine`.
+
+### Voice / App Intents surface
+
+- [x] App Intents modernised to iOS 18+ `supportedModes` (no deprecated
+  `openAppWhenRun`). _Evidence: `DecisionAssistantIntentModeTests.swift`._
+- [x] `OpenDecisionAssistantIntent`, `ReviewAmazonArrivalDecisionIntent`,
+  `ContinueAmazonArrivalDecisionIntent`, `ActiveCardIntent` (rewired to
+  the Scenario 1 engine, no FX-fee-only ranking).
+- [x] `CaptureDecisionDraftIntent` — voice intake for decision drafts;
+  status `needsEngine`, no analysis. _Evidence:
+  `DecisionDraftIntentTests.swift`._
+- [x] Honest dialog formatters — no "analyzed", "recommended", "best card",
+  or "verified" language for unverified paths. _Evidence:
+  `DecisionAssistantIntentDialogTests.swift`._
+- [ ] `ReviewCreditTimingIntent` (background voice review of Credit Timing).
+- [ ] `RecommendCardIntent` for generic merchant / category questions
+  (blocked on the generic scenario engine).
+
+### Transaction capture / aggregation
+
+- [~] Manual transaction entry — `Features/Ledger/AddTransactionView.swift`
+  exists; demoted to Settings → Advanced Tools until a decision surface
+  needs it.
+- [~] Receipt scanning — `ReceiptScannerService`, `ReceiptCategorizer`,
+  `TaxVault` flows exist; still kept in Advanced Tools.
+- [ ] CSV import for bank/card exports.
+- [ ] Merchant normalisation.
+- [ ] Merchant categorisation ML.
+- [ ] Recurring charge detection across the portfolio (Subscriptions
+  detection exists as a separate flow — `SubscriptionDetector` — for
+  that specific domain).
+- [ ] Spend anomaly detection.
+
+### Tax and investing education
+
+- [~] Tax Vault (document storage, receipt capture) exists but is a
+  passive archive — not an education module.
+- [ ] Gamified tax education path (Canada / U.S. / Trinidad and Tobago).
+- [ ] Investing education + index-fund tracking.
+
+### Apple capability tracks
+
+- [ ] FinanceKit evaluation + adapter.
+- [!] Apple Pay integration — deferred until NomadFi sells something.
+- [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
+  does not expose this.
+- [ ] Apple Intelligence on-device context (optional input to the
+  scenario engine when entitlements and user consent are in place).
+- [!] Generic-AI financial recommendations — deferred indefinitely by
+  product decision; violates the deterministic source-backed rule.
+- [!] Credit-score prediction — deferred; scoring models are proprietary.
+- [!] Personalized investment advice — deferred; regulatory risk.
+- [!] Guaranteed credit-limit-increase promises — deferred; issuer models
+  are proprietary.
 
 ---
 
@@ -139,6 +284,8 @@ remain the decision authority.
 
 ## Phase 0 — Governance and Scope Lock
 
+**Status:** `[x]` Shipped.
+
 **Goal:** Keep the roadmap technically honest before adding integrations.
 
 ### Build
@@ -170,167 +317,47 @@ capabilities Apple does not expose and protects user trust.
 
 ## Phase 1 — On-Device Financial Testbed and Manual Truth
 
+**Status:** `[x]` Core surface shipped. The testbed is complete for Scenario 1
+and Credit Timing v1; automatic aggregation (Phase 4 / Phase 5) is still out.
+
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Credit Timing Decision v1
+### Sub-phase ledger
 
-The Decision Assistant now ships a second deterministic engine:
-`CreditTimingDecisionEngine`. It reads the user's saved credit-card
-accounts — their `creditLimit`, `currentBalance`, `availableCredit`,
-snapshot freshness, and confirmed statement schedules — and
-produces a calm, source-backed timing ruling. The engine never
-predicts a credit-score outcome; it stays strictly on timing,
-reported utilization, and statement-close planning.
+- `[x]` **Decision Assistant as the core surface.** Decisions tab hosts Active
+  Decision, Previous Decisions, captured drafts, archived drafts, and a
+  "Gather intelligence" intake card. Ledger / Tax Vault / Subscriptions are
+  demoted to Settings → Advanced Tools.
+- `[x]` **Account Profiles + Live Snapshots.** `Account` separates profile
+  facts (type, currency, jurisdiction, credit limit) from live snapshots
+  (current balance, available credit, statement balance), each timestamped
+  with a `FinancialSnapshotSource`. Credit limits are capacity, never counted
+  as net worth; credit cards without a balance snapshot are excluded and
+  labelled, never treated as zero debt.
+- `[x]` **Credit-card statement calendar.** Users enter period start, closing,
+  due, and confirmation state; schedule state drives reminder eligibility and
+  engine guardrails.
+- `[x]` **Credit-card reminders.** Statement-close (two-day lead) and
+  payment-due (three-day lead) reminders fire only off a confirmed schedule.
+- `[x]` **Scenario 1 — Amazon arrival order.** Deterministic `ScenarioDecisionEngine`
+  with Amazon / Chase / Wise source citations and a per-scenario record.
+- `[x]` **Credit Timing Decision v1.** Portfolio-wide readiness engine —
+  per-card rulings, paydown-to-30% / paydown-to-10% planning, near-limit
+  guidance, stale-snapshot and unconfirmed-schedule gates, CFPB and myFICO
+  citations, and three pinned hard rules. No score prediction, no
+  carry-a-balance guidance.
+- `[x]` **Decision Draft intake v1.** `DecisionDraftRecord` stores user-written
+  scenarios on-device with status `needsEngine`; drafts render in a dedicated
+  "Gathered intelligence" section, visually distinct from analyzed decisions.
+- `[x]` **Decision Draft lifecycle v1.** Create + edit, archive, restore, and
+  per-draft destructive delete with `confirmationDialog`. Archived drafts get
+  their own quieter section.
+- `[x]` **Siri / App Shortcut draft intake v1.** `CaptureDecisionDraftIntent`
+  captures a dictated scenario as a draft on-device, `.background` mode,
+  never analyzed. Dialog copy explicitly marks the result as needing an
+  engine.
 
-Per-card rulings land in one of six calm states:
-`needsSetup`, `snapshotStale`, `scheduleMissing`, `readyNoUrgentAction`,
-`payDownBeforeClose`, `nearLimitAvoidMoreSpend`. Portfolio ruling is
-the worst per-card state: `noCreditCardsOnFile`, `someNearLimit`,
-`somePayDownBeforeClose`, `missingData`, `allCardsReady`.
-
-Source anchors (all cited on the brief sheet as Official):
-CFPB — *What is a credit score?* and *Should I pay my credit card
-bill in full?*; myFICO — *Amounts Owed* and *How credit card
-balances are reported to the bureaus*. Utilization is computed as
-`currentBalance / creditLimit` and banded at 10% / 30% / 60% / 90%.
-Nil balances are never treated as zero. Stale or unconfirmed data
-never produces a strong ruling. Hard rules pinned on every brief:
-pay the statement balance in full by the due date, never carry a
-balance for score reasons, and use absolute dates for planning.
-
-The Decision Assistant tab now renders two hero cards (Amazon
-arrival order + Credit timing check), a new `CreditTimingBriefView`
-sheet, per-card assessment rows with `StatusBadge` rulings, a
-missing-data checklist, hard rules, and the cited sources. The
-view model's `DecisionSummary` value type generalises the hero
-rendering so adding future engines is additive, not a view-level
-refactor.
-
-Non-goals stay strict: no credit-score prediction, no guarantee of
-limit increase, no "carry a balance" guidance, no App Intent yet
-(in-app surface is the priority), no network calls.
-
-### Previous Sub-Phase: Siri / App Shortcut Draft Intake v1
-
-Voice intake for decision drafts ships as a background App Intent,
-`CaptureDecisionDraftIntent`. Users can say
-*"Capture a decision in NomadFi"*, *"Save a decision draft in
-NomadFi"*, or *"Remember this financial decision in NomadFi"* and
-dictate the scenario; the intent saves a new `DecisionDraftRecord`
-with status `needsEngine` and returns a dialog that says explicitly:
-*"Saved this as a decision draft in NomadFi. It is marked Needs
-engine, so NomadFi will not recommend anything from it until a
-deterministic source-backed engine covers this kind of decision."*
-
-Shared persistence: the pure `DecisionDraftStore.insertDraft`
-helper trims every field, enforces non-empty scenario text, and
-stamps `createdAt == updatedAt`. Both the in-app capture form and
-the voice path converge on that single insert path. The intent runs
-with `supportedModes = .background` — it never opens the app — and
-the kind picker is surfaced through a tiny `DecisionDraftKindAppEnum`
-adapter so the core `DecisionDraftKind` stays free of any
-`AppIntents` dependency.
-
-Non-goals for this sub-phase stay strict: no analysis of captured
-scenarios, no ScenarioDecisionEngine routing, no Apple Intelligence
-integration, no recommendation copy. Voice can speak a draft into
-NomadFi; it cannot get a card recommendation out.
-
-The **Gather intelligence** card now marks *Siri & Shortcuts intake*
-as Available; Apple Intelligence context remains Planned.
-
-### Previous Sub-Phase: Decision Draft Lifecycle v1
-
-Building on Decision Draft Intake v1, this refinement gives users
-full control over the raw context they capture. `DecisionDraftFormView`
-now serves both creation and edit modes: `init()` starts a new draft,
-`init(draft:)` pre-populates fields and mutates the same record on
-save (preserving `createdAt`, refreshing `updatedAt`). `DecisionDraftDetailView`
-surfaces an **Edit** primary toolbar button plus a **More actions**
-menu with **Archive** / **Restore** and a destructive **Delete draft…**
-path guarded by `confirmationDialog`. All lifecycle mutations route
-through the pure `DecisionDraftStore` namespace so the UI never
-touches SwiftData directly.
-
-The Decision Assistant now runs two SwiftData queries: one for
-active (`needsEngine`) drafts, one for archived. Archived drafts
-render in a quieter secondary **Archived drafts** section that only
-appears when non-empty. Active, archived, and analyzed decisions
-stay visually separate — drafts remain outside `DecisionCatalog`
-and are never promoted to analyzed decisions.
-
-Privacy posture is unchanged and strengthened by per-draft delete:
-users no longer need a full "delete all data" wipe to remove an
-accidentally sensitive capture.
-
-### Previous Sub-Phase: Decision Draft Intake v1
-
-After the App Intents hardening landed, the Decision Assistant's
-**Gather intelligence** section gained a real capture flow. Users
-can save a future scenario in their own words: `DecisionDraftRecord`
-is a SwiftData model that stores a title, a free-form scenario
-body, a user-chosen `DecisionDraftKind`, optional merchant/location/
-timing/amount/notes fields, and a `DecisionDraftStatus` that starts
-at `needsEngine`. Drafts render in a dedicated **Gathered intelligence**
-section — visually distinct from **Previous decisions** — so the user
-can never mistake a raw capture for an analyzed decision.
-
-Non-goals for this sub-phase are intentionally strict: no generic AI
-analyzer, no second deterministic engine, no Apple Intelligence, no
-reinforcement learning, no Apple Pay / Wallet / FinanceKit dependency,
-and no tax / investment / credit-score predictions derived from
-drafts. Drafts are raw user-provided context, period. When a future
-deterministic engine ships for a kind, drafts of that kind become
-candidates for analysis.
-
-Privacy posture is unchanged: drafts stay on-device (SwiftData, no
-network), the capture form warns against entering account numbers
-or full addresses, and `DataGovernancePolicy.deleteAllUserData`
-wipes `DecisionDraftRecord` alongside every other user record.
-
-### Sub-Phase: Decision Assistant as the Core Surface
-
-The Decision Assistant (bottom tab: **Decisions**) is now NomadFi's
-core product surface. It hosts the Active Decision (Scenario 1 — Amazon
-arrival order today), Previous Decisions, and **Gathered intelligence**
-(captured drafts awaiting a deterministic engine). All recommendations
-continue to come from NomadFi's deterministic, source-backed engines.
-
-Subscriptions, Ledger, and Tax Vault moved to Settings → Advanced Tools.
-They stay fully functional — they're just no longer primary tabs until
-an automatic-aggregation or stronger tax-planning flow exists.
-
-### Sub-Phase: Account Profiles + Live Snapshots (still in flight)
-
-This sub-phase separates stable account profile data (credit limit, account
-type, currency, jurisdiction) from volatile live amounts (current balance,
-available credit, statement balance). Profiles are entered once; live amounts
-are stored as optional, timestamped snapshots — never as stable facts. Credit
-limits are explicitly modelled as capacity, not as balances, and are never
-counted as net worth. Credit cards without a saved current-balance snapshot
-are excluded from net worth and labelled "not counted" rather than treated
-as zero debt.
-
-This lands before any automatic aggregation so that when FinanceKit,
-imports, or other live sources arrive later, they write into a model that
-already represents snapshots honestly.
-
-### Build
-
-- User-managed accounts and cards as stable profile records.
-- Account-type-aware amount entry (credit card: credit limit, current
-  balance, available credit; non-credit: optional current balance).
-- Timestamped, source-labelled live snapshots with stale/unknown markers.
-- Credit-card statement close dates and payment due dates.
-- Card-level foreign-transaction-fee provenance.
-- Exchange-rate provenance and freshness labels.
-- Scenario-specific decision engines, starting with real cross-border purchase
-  cases. Scenarios may read the linked card's saved snapshot but never
-  assume snapshot values are live.
-- Local notifications for statement close and payment due dates.
-- Clear privacy controls and complete local data wipe.
-
-### Why This Comes First
+### Why this comes first
 
 This data is already enough to answer high-value questions:
 
@@ -349,81 +376,40 @@ Trinidad and Tobago, Wise, and other cross-border accounts.
 
 ## Phase 2 — Siri and App Intent Card Recommendation
 
+**Status:** `[~]` Partially shipped. The App Shortcuts surface is modernised
+and wired to Decision Assistant / Scenario 1 / draft capture. A merchant- and
+category-agnostic `RecommendCardIntent` is **not** yet shipped and is
+dependent on Phase 3.
+
 **Goal:** Let the user ask for a card recommendation in natural language.
 
-### Current Sub-Phase: App Shortcuts aligned with Decision Assistant
+### Shipped this phase
 
-The Siri / App Shortcuts surface now routes into the Decision Assistant
-and Scenario 1 engine instead of answering from foreign-transaction-fee
-sorting alone. Shortcuts ship with deliberately honest phrasing:
+- `[x]` Modernised App Intents using `supportedModes` (no deprecated
+  `openAppWhenRun`).
+- `[x]` `OpenDecisionAssistantIntent` (foreground, routes to the Decisions
+  tab via a persisted `MainTabSelection`).
+- `[x]` `ReviewAmazonArrivalDecisionIntent` (background, runs the
+  Scenario 1 engine and speaks the current ruling).
+- `[x]` `ContinueAmazonArrivalDecisionIntent` (foreground, opens the app
+  and speaks a short scene-setter).
+- `[x]` `ActiveCardIntent` — legacy "Which card?" phrase kept for
+  discoverability, now explicitly honest about NomadFi's scenario
+  coverage rather than giving a generic FX-fee ranking.
+- `[x]` `CaptureDecisionDraftIntent` — voice draft intake.
+- `[x]` App Shortcuts metadata extraction confirmed in every build.
 
-- **Open Decision Assistant** — a navigation-only intent that opens the
-  app on the Decisions tab.
-- **Review Amazon Arrival Decision** — a voice-first summary that reads
-  the saved Scenario 1 record, runs `ScenarioDecisionEngine`, and
-  speaks the current ruling plus outstanding-check count.
-- **Continue Amazon Arrival Decision** — opens the app on the Decisions
-  tab and speaks a short scene-setter carrying the engine's ruling.
-- **Which Card Should I Use?** — legacy phrase kept for discoverability,
-  but the intent now defers to the Scenario 1 engine. It explicitly
-  states that NomadFi cannot yet answer a merchant-agnostic card
-  question and directs the user to the Amazon arrival-order decision.
+### Still to build
 
-No generic scenario parser, Apple Intelligence integration, or
-reinforcement-learning layer is shipped in this sub-phase — only the
-deterministic routing. Tab deep-linking is done with a persisted
-`MainTabSelection` that App Intents write to `UserDefaults` before
-the system brings NomadFi to the foreground.
+- `[ ]` `ReviewCreditTimingIntent` — voice-only background review of the
+  Credit Timing engine.
+- `[ ]` `RecommendCardIntent` with merchant, category, amount, currency,
+  and location-context parameters. Blocked on Phase 3's generic engine.
 
-All intents have been modernized to the iOS 18+ `supportedModes`
-API; the deprecated `openAppWhenRun` flag is gone from the codebase.
-Navigation intents (`OpenDecisionAssistantIntent`,
-`ContinueAmazonArrivalDecisionIntent`) declare
-`.foreground(.immediate)` so the `UserDefaults` write happens against
-the foregrounded host process and the Decisions tab is the first
-surface the user sees. Voice-only intents (`ActiveCardIntent`,
-`ReviewAmazonArrivalDecisionIntent`, and the supporting
-`CheckBudgetIntent` / `CheckNetWorthIntent` / `LogExpenseIntent`)
-declare `.background` — they never need to bring the app forward.
-App Shortcuts metadata extraction is confirmed in the main app
-target's `Metadata.appintents` bundle on every build.
-
-### Example User Request
+### Example user request
 
 "I am in San Francisco at Target, buying groceries for this week's meal prep,
 and I need to know which card I should use and how I should approach this."
-
-### Build
-
-- An App Intent such as `RecommendCardIntent`.
-- Inputs:
-  - merchant name
-  - purchase category
-  - amount
-  - currency
-  - location context
-  - travel / home / internship mode
-  - optional urgency notes
-- Output:
-  - recommended card or payment method
-  - reason
-  - confidence label
-  - required checks
-  - deadline if statement close or due date matters
-  - fallback option
-
-### Decision Inputs
-
-- Card availability.
-- Current balances and limits.
-- Statement close dates.
-- Payment due dates.
-- FX fees.
-- Rewards category.
-- User's jurisdiction and current country.
-- Current spending trend.
-- Purchase category.
-- Verified vs. unverified source status.
 
 ### Tradeoff
 
@@ -434,6 +420,10 @@ the data NomadFi already has.
 ---
 
 ## Phase 3 — Context-Aware Card Decision Engine
+
+**Status:** `[ ]` Planned. This is the next major engineering target (see
+[Current Next Step](#current-next-step)). Scenario 1 is the only concrete
+precedent.
 
 **Goal:** Make the recommendation engine robust enough to operate across real
 life contexts.
@@ -477,20 +467,30 @@ auditable, testable, and safer for financial decisions.
 
 ## Phase 4 — Transaction Capture Without Wallet Dependency
 
+**Status:** `[~]` Partially shipped. Manual transaction entry and receipt
+scanning exist as optional tools in Advanced Tools; CSV import, merchant
+normalisation, and categorisation ML are not implemented.
+
 **Goal:** Improve spending intelligence before FinanceKit is available.
 
-### Build
+### Already shipped
 
-- Better manual transaction entry.
-- Receipt scanning and confirmation.
-- CSV import for bank/card exports.
-- Transaction deduplication.
-- Merchant normalization.
-- Recurring charge detection.
-- Spending trend summaries.
-- Tax-category suggestions with clear confidence labels.
+- `[x]` Manual transaction entry (`Features/Ledger/AddTransactionView.swift`).
+- `[x]` Receipt scanning and confirmation (`ReceiptScannerService`,
+  `ReceiptCategorizer`, Tax Vault flows).
+- `[x]` Subscription detection (`SubscriptionDetector`, separate flow
+  scoped to subscriptions).
 
-### Optional Later
+### Still to build
+
+- `[ ]` CSV import for bank/card exports.
+- `[ ]` Merchant normalisation.
+- `[ ]` Transaction deduplication across sources.
+- `[ ]` Recurring-charge detection beyond the Subscriptions flow.
+- `[ ]` Spending trend summaries.
+- `[ ]` Tax-category suggestions with confidence labels.
+
+### Optional later
 
 - Email receipt import, only if privacy and permissions can be handled well.
 - Bank export parsing by institution.
@@ -504,6 +504,9 @@ aggregators, broad credential access, and unavailable Wallet data.
 ---
 
 ## Phase 5 — FinanceKit Evaluation and Adapter
+
+**Status:** `[ ]` Planned. Not started in code; the abstraction will land once
+Phase 4 has a working manual/CSV provider to serve as the fallback.
 
 **Goal:** Add Apple-native financial data only if it materially improves the
 app and Apple grants access.
@@ -547,30 +550,29 @@ early creates entitlement, coverage, and review risk.
 
 ## Phase 6 — Credit Leverage and Payment Timing
 
+**Status:** `[~]` Partially shipped. Statement-close reminders, payment-due
+reminders, utilization banding, near-limit guidance, and per-card paydown
+targets are live (Credit Timing v1). Cross-card payment allocation and a
+credit-limit-increase readiness checklist are still outstanding.
+
 **Goal:** Help users build credit without debt.
 
-### Build
+### Already shipped
 
-- Statement close reminders.
-- Payment due reminders.
-- Current utilization projection.
-- Available credit guardrails.
-- Near-limit warnings.
-- "Pay before close" planning where issuer reporting assumptions are clearly
-  caveated.
-- Payment allocation suggestions across cards.
-- Credit-limit-increase readiness checklist.
+- `[x]` Statement-close reminders and payment-due reminders with
+  confirmed-schedule gating (`CreditCardReminderPlanner`).
+- `[x]` Current and projected utilization bands (Credit Timing engine).
+- `[x]` Available-credit guardrails in Scenario 1 (Chase Freedom Rise
+  path requires user-confirmed available credit plus buffer).
+- `[x]` Near-limit warnings (Credit Timing `nearLimitAvoidMoreSpend` ruling).
+- `[x]` "Pay before close" planning with issuer-reporting caveats and
+  absolute-date copy.
 
-### Intelligence Needed
+### Still to build
 
-- Current balance.
-- Available credit.
-- Total credit limit.
-- Statement close date.
-- Due date.
-- Recent spend trend.
-- Whether the user can pay before the statement closes.
-- Whether data is verified or stale.
+- `[ ]` Payment allocation suggestions across multiple cards.
+- `[ ]` Credit-limit-increase readiness checklist.
+- `[ ]` Spend-trend context inside Credit Timing (depends on Phase 4).
 
 ### Tradeoff
 
@@ -581,6 +583,9 @@ Credit scoring and issuer risk models are proprietary.
 ---
 
 ## Phase 7 — Tax Efficiency Education
+
+**Status:** `[ ]` Planned. A Tax Vault storage surface exists as an Advanced
+Tool, but no education path ships yet.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -613,6 +618,8 @@ requires more source coverage, disclaimers, and potentially professional review.
 
 ## Phase 8 — Investment Education and Index Fund Tracking
 
+**Status:** `[ ]` Planned.
+
 **Goal:** Help users learn and track long-term investing without becoming an
 unregistered investment advisor.
 
@@ -636,10 +643,10 @@ unregistered investment advisor.
 
 ### Do Not Build Initially
 
-- "Tell me exactly which fund to buy."
-- Automated portfolio advice.
-- Suitability recommendations.
-- Guaranteed-return framing.
+- "Tell me exactly which fund to buy." (`[!]` Deferred by product rule.)
+- Automated portfolio advice. (`[!]` Deferred by product rule.)
+- Suitability recommendations. (`[!]` Deferred by product rule.)
+- Guaranteed-return framing. (`[!]` Deferred by product rule.)
 
 ### Tradeoff
 
@@ -650,6 +657,9 @@ tracking, and transparent comparisons.
 ---
 
 ## Phase 9 — AI and Machine Learning Layer
+
+**Status:** `[ ]` Planned. Nothing in the app runs a language model today;
+every decision is deterministic.
 
 **Goal:** Make NomadFi feel intelligent while preserving financial rigor.
 
@@ -675,12 +685,14 @@ tracking, and transparent comparisons.
 
 ### AI Must Not
 
-- Invent source-backed facts.
-- Replace official issuer, regulator, or tax sources.
-- Guarantee score outcomes.
-- Recommend carrying balances.
-- Recommend securities as personalized investment advice.
-- Make final tax or immigration determinations.
+- Invent source-backed facts. `[!]` Deferred indefinitely.
+- Replace official issuer, regulator, or tax sources. `[!]` Deferred
+  indefinitely.
+- Guarantee score outcomes. `[!]` Deferred indefinitely.
+- Recommend carrying balances. `[!]` Deferred indefinitely.
+- Recommend securities as personalized investment advice. `[!]` Deferred
+  indefinitely.
+- Make final tax or immigration determinations. `[!]` Deferred indefinitely.
 
 ### Tradeoff
 
@@ -690,6 +702,9 @@ citations preserve trust.
 ---
 
 ## Phase 10 — Optional Apple Pay and Wallet Features
+
+**Status:** `[!]` Deferred. Add only if a concrete product need appears — see
+the matrix above.
 
 **Goal:** Add Apple Pay or Wallet only when a clear product need appears.
 
@@ -726,46 +741,78 @@ tracking.
 
 ---
 
-## Recommended Build Order
+## Current Build Order
 
-1. Finish local card schedule reminders.
-2. Build the Siri/App Intent "Recommend Card" flow.
-3. Improve the scenario engine so it can handle arbitrary merchant/category
-   inputs, not only Scenario 1.
-4. Add transaction import and merchant categorization.
-5. Add credit-leverage planning around utilization, payment timing, and
-   statement close dates.
-6. Add tax education modules by region.
-7. Add index-fund education and tracking.
-8. Evaluate FinanceKit entitlement and adapter design.
-9. Add FinanceKit only if entitlement access and institution coverage justify
-   the complexity.
-10. Add Apple Pay only if NomadFi needs to accept payments.
-11. Add Wallet passes only if a pass has a concrete user value.
+Each item shows status relative to the code in this repo, not an aspirational
+plan. Shipped items stay listed so future phases can build on them without
+re-debating whether the foundation exists.
+
+1. `[x]` Source governance and product mission in place.
+2. `[x]` Account profiles, snapshots, and credit limits modelled honestly.
+3. `[x]` Credit-card statement calendar and user-confirmed schedule gating.
+4. `[x]` Local statement-close and payment-due reminders.
+5. `[x]` Deterministic Scenario 1 — Amazon arrival-order brief.
+6. `[x]` Modernised App Intents + App Shortcuts pointed at the Decision
+   Assistant (no deprecated APIs, no FX-fee-only answers).
+7. `[x]` Decision Draft intake, lifecycle (create / edit / archive / restore /
+   delete), and Siri capture.
+8. `[x]` Deterministic Credit Timing v1 (portfolio-wide readiness).
+9. `[ ]` **Next:** Generic merchant / category scenario engine (see Current
+   Next Step below).
+10. `[ ]` `RecommendCardIntent` on top of the generic engine, plus the
+    small `ReviewCreditTimingIntent` voice parity.
+11. `[ ]` Transaction capture fan-out: CSV import, merchant normalisation,
+    recurring-charge detection beyond Subscriptions.
+12. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
+    readiness checklist (completes Phase 6).
+13. `[ ]` Region-specific tax education path (Phase 7).
+14. `[ ]` Investing education and index-fund tracking (Phase 8).
+15. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
+    access and institution coverage.
+16. `[!]` Apple Pay — only if NomadFi starts accepting payments.
+17. `[!]` Wallet passes — only if NomadFi ships a pass with concrete user
+    value.
 
 ---
 
-## Current Best Next Step
+## Current Next Step
 
-The highest-leverage next feature is a Siri/App Intent card recommendation
-flow:
+**Target:** a generic merchant / category scenario engine (Phase 3) —
+specifically, the pure, deterministic value types and engine that will let
+NomadFi answer "Which card should I use at <merchant> for <amount>?" without
+inventing data.
 
-> "I am in San Francisco at Target, buying groceries for this week's meal prep.
-> Which card should I use?"
+**Why this over the alternatives:**
 
-This should return:
+- It is the single biggest honesty gap. The voice surface already has to say
+  *"NomadFi can't yet answer which card to use for any merchant"* (see
+  `ActiveCardIntent`). Closing this gap is the clearest user-visible win.
+- `RecommendCardIntent` is blocked on it — the Siri phrase is free once the
+  engine exists.
+- It reuses the foundations we just shipped: `Account` snapshots, `CreditCardSchedule`,
+  the `SourceProvenance` evidence model, and the `ScenarioCitation` pattern
+  from Credit Timing and Scenario 1. No new data model is required for v1.
+- It keeps the "no generic AI" invariant — the engine stays deterministic and
+  source-cited, matching the pattern that already passes tests.
 
-- recommended card or payment method
-- confidence label
-- source-backed rationale
-- payment timing warning if statement close matters
-- utilization warning if credit limit or balance matters
-- FX warning if away from home jurisdiction
-- fallback option
-- missing data checklist
+**Scoping suggestion for a first slice:**
 
-This path is free, robust, privacy-preserving, technically feasible, and aligned
-with NomadFi's long-term AI vision.
+1. Define `MerchantCategory` (groceries, dining, travel, online-shopping,
+   utilities, subscriptions, other) and a small `PurchaseContext` value type
+   (merchant name, category, amount, currency, travel-mode, due-by).
+2. Write a pure ranking engine that consumes `PurchaseContext` + `[Account]`
+   and returns a structured recommendation: best option, why, when-not, fallback,
+   source confidence. Apply the existing hard rules (no debt for rewards, no
+   cash advance, no guarantees).
+3. Lean on user-confirmed card terms only — never inferred issuer category
+   bonuses. Unverified bonus categories surface as "needs verification" checks.
+4. Surface as a new catalog entry / brief sheet; do not replace Scenario 1.
+5. Follow up with `RecommendCardIntent` + the still-outstanding
+   `ReviewCreditTimingIntent` (the smaller Credit Timing v1 follow-up).
+
+Target tests mirror the shape of `CreditTimingDecisionEngineTests` and
+`ScenarioDecisionEngineTests`: pin every claim, pin every refusal, pin
+absolute-date phrasing, and pin the prohibited-vocabulary list.
 
 ---
 
