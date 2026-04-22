@@ -284,6 +284,7 @@
 
     },
     "Chase Freedom Rise is only recommended when your linked card's statement calendar is confirmed, your entered available credit clears checkout plus a safety buffer, your current balance is known, and you commit to paying before statement close. Without all of these, this tool routes to Wise USD or blocks on user input. Paying before statement close can reduce reported utilization, but issuer reporting can vary." : {
+
     },
     "Chase utilization guardrail" : {
 
@@ -319,6 +320,7 @@
 
     },
     "Closes %@" : {
+
     },
     "Comparing prices across jurisdictions..." : {
 
@@ -361,6 +363,18 @@
     },
     "Credit Card Calendar" : {
 
+    },
+    "Credit Card Reminders" : {
+    },
+    "Credit card reminders fire %lld days before each confirmed statement close date and %lld days before each confirmed payment due date. Paying before statement close can reduce reported utilization, but issuer reporting can vary." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Credit card reminders fire %1$lld days before each confirmed statement close date and %2$lld days before each confirmed payment due date. Paying before statement close can reduce reported utilization, but issuer reporting can vary."
+          }
+        }
+      }
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -420,6 +434,7 @@
 
     },
     "Dismisses the keyboard." : {
+
     },
     "Dismisses this detected subscription suggestion." : {
 
@@ -460,8 +475,7 @@
     "Enable Notifications" : {
 
     },
-    "Enable notifications to receive subscription reminders, budget alerts, and FX rate movement warnings." : {
-
+    "Enable notifications to receive subscription reminders, budget alerts, FX rate movement warnings, and credit-card statement reminders." : {
     },
     "Enter account name and institution to save this account." : {
 
@@ -524,6 +538,8 @@
     "Fix the highlighted date conflict before saving." : {
 
     },
+    "For confirmed statement close and payment due dates" : {
+    },
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
     },
@@ -582,6 +598,7 @@
 
     },
     "Linked card" : {
+
     },
     "Live Exchange Rates" : {
 
@@ -663,6 +680,7 @@
 
     },
     "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
+
     },
     "No Receipt Image" : {
 
@@ -901,6 +919,16 @@
     "Scanning receipt, please wait" : {
 
     },
+    "Schedules reminders on your device %lld days before each confirmed statement close date and %lld days before each confirmed payment due date." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Schedules reminders on your device %1$lld days before each confirmed statement close date and %2$lld days before each confirmed payment due date."
+          }
+        }
+      }
+    },
     "Search receipts" : {
 
     },
@@ -923,6 +951,7 @@
 
     },
     "Select which saved credit-card account is your Chase Freedom Rise." : {
+
     },
     "Selected" : {
 
@@ -1003,6 +1032,7 @@
 
     },
     "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
+
     },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
