@@ -1,17 +1,65 @@
 # NomadFi Product Timeline
 
-Phased roadmap for Apple Pay, Apple Wallet, FinanceKit, Siri, AI, and
-financial-intelligence features. This document intentionally accounts only for
-what NomadFi needs to become a reliable cross-border personal finance
-coordinator; it does not assume Apple Pay or Wallet should be used just because
-they are available.
+Phased roadmap for turning NomadFi into a cross-border financial decision
+assistant. This document intentionally accounts only for what NomadFi needs to
+help users choose payment methods, protect credit leverage, reduce FX waste,
+and learn jurisdiction-aware tax and investing concepts; it does not assume
+Apple Pay or Wallet should be used just because they are available.
 
 This file is public-safe. It must not duplicate private personal facts from
 `docs/ARIEL.md`.
 
 ---
 
+## Mission Anchor
+
+NomadFi helps cross-border students, temporary residents, interns, immigrants,
+and other multi-country earners make better financial decisions without
+requiring full manual bookkeeping.
+
+In one sentence:
+
+> NomadFi is a cross-border financial decision engine that helps users maximize
+> rewards, avoid debt, reduce FX waste, protect credit health, and learn tax and
+> investing strategy using verified, privacy-preserving financial context.
+
+This roadmap is governed by [`docs/MISSION.md`](./MISSION.md). Features that do
+not advance the decision-assistant mission should be delayed, demoted to
+optional tools, or removed from primary navigation.
+
+## Solidified Product Goals
+
+1. **Choose the best card or payment method.** Recommend the best available
+   card, debit rail, Wise balance, or local payment method for a specific
+   purchase using currency, location, rewards, FX fees, utilization, statement
+   timing, and source confidence.
+2. **Protect and improve credit leverage.** Track credit limits, balance
+   snapshots, available credit, statement close dates, due dates, and payment
+   timing without ever recommending debt or interest.
+3. **Reduce cross-border money leakage.** Surface avoidable costs from FX fees,
+   dynamic currency conversion, issuer conversion spreads, and cross-border
+   subscription pricing.
+4. **Guide financial setup across jurisdictions.** Represent jurisdictions,
+   cards, accounts, currencies, and life context as stable profile data plus
+   optional live snapshots.
+5. **Teach tax and investing concepts safely.** Provide source-backed education
+   for region-specific tax and investing concepts while avoiding professional
+   tax, legal, immigration, or investment advice.
+6. **Use AI as the interface, not the source of truth.** Let AI parse user
+   intent and explain tradeoffs, while deterministic, cited rules remain the
+   recommendation authority.
+7. **Keep manual tools secondary.** Ledger and Tax Vault remain available as
+   optional support tools, but they should not define the primary experience
+   until automatic import/sync or stronger decision-assistant use cases make
+   them central.
+
+---
+
 ## Product Direction
+
+NomadFi should be designed around decisions, not around manual transaction
+entry. Apple Pay, Apple Wallet, and FinanceKit are evaluated only by whether
+they advance the mission above.
 
 NomadFi should not start by integrating Apple Pay or Apple Wallet.
 

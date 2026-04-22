@@ -7,6 +7,9 @@ must follow before turning a claim into user-facing advice.
 This file is **public-safe documentation**. It contains no account numbers,
 government IDs, balances, addresses, employer, or school details.
 
+For product direction, see [`docs/MISSION.md`](./MISSION.md). For phased
+implementation sequencing, see [`docs/TIMELINE.md`](./TIMELINE.md).
+
 ---
 
 ## Purpose
