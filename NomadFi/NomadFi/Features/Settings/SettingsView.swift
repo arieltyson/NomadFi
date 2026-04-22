@@ -85,6 +85,7 @@ struct SettingsView: View {
             appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
             await syncCreditCardRemindersIfNeeded()
+            repairHomeJurisdictionIfNeeded()
         }
     }
 }
@@ -132,10 +133,17 @@ private extension SettingsView {
             ForEach(jurisdictions) { jurisdiction in
                 JurisdictionSettingsRow(jurisdiction: jurisdiction)
             }
+
+            NavigationLink {
+                JurisdictionManagementView()
+            } label: {
+                Label("Manage Jurisdictions", systemImage: "globe.badge.chevron.backward")
+            }
+            .accessibilityHint("Opens a screen to add, remove, or change your home jurisdiction.")
         } header: {
             Text("Your Jurisdictions")
         } footer: {
-            Text("Manage the countries where your money lives. To add or remove jurisdictions, re-run onboarding.")
+            Text("Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed.")
         }
         .accessibilityLabel("Jurisdictions section")
     }
@@ -389,6 +397,20 @@ private extension SettingsView {
         for index in offsets.sorted().reversed() {
             let account = sortedAccounts[index]
             modelContext.delete(account)
+        }
+    }
+
+    /// Quietly repairs a jurisdiction set that lost (or duplicated) its
+    /// home flag — can happen on old CloudKit data from before the
+    /// manager enforced a single home. No-op when the state is already
+    /// consistent.
+    func repairHomeJurisdictionIfNeeded() {
+        do {
+            _ = try JurisdictionManager(modelContext: modelContext)
+                .repairHomeJurisdictionIfNeeded()
+        } catch {
+            // Soft failure — the management screen can still be used to
+            // set a home manually. Logged at the manager layer.
         }
     }
 
