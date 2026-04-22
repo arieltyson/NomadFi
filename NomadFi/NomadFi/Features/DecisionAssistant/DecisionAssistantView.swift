@@ -31,10 +31,8 @@ struct DecisionAssistantView: View {
 
     @Query private var accounts: [Account]
 
-    /// Captured decision drafts, newest first. `.archived` drafts are
-    /// excluded so the primary list stays focused on drafts that
-    /// still need a deterministic engine; archived history can come
-    /// back in a later phase if the product needs it.
+    /// Active decision drafts, newest first. Archived drafts are
+    /// excluded — they render in their own section below.
     @Query(
         filter: #Predicate<DecisionDraftRecord> {
             $0.statusRawValue == "needsEngine"
@@ -44,13 +42,31 @@ struct DecisionAssistantView: View {
     )
     private var drafts: [DecisionDraftRecord]
 
+    /// Archived drafts, newest first. Rendered in a quieter,
+    /// secondary section that only appears when non-empty so the
+    /// main Decision Assistant surface stays focused.
+    @Query(
+        filter: #Predicate<DecisionDraftRecord> {
+            $0.statusRawValue == "archived"
+        },
+        sort: \DecisionDraftRecord.updatedAt,
+        order: .reverse
+    )
+    private var archivedDrafts: [DecisionDraftRecord]
+
     @State private var viewModel = DecisionAssistantViewModel()
 
-    /// Currently-selected draft for the read-only detail sheet. Kept
-    /// as view-local state because the sheet presentation binds to
-    /// an `Identifiable` record, which stays cleaner here than on
-    /// the view model.
+    /// Currently-selected draft for the detail sheet. Kept as
+    /// view-local state because the sheet presentation binds to an
+    /// `Identifiable` record, which stays cleaner here than on the
+    /// view model.
     @State private var selectedDraft: DecisionDraftRecord?
+
+    /// Draft being edited. Mutually exclusive with `selectedDraft`
+    /// by construction: Edit requests from the detail sheet first
+    /// clear `selectedDraft` and then set `draftBeingEdited`, so we
+    /// never have two sheets open at once (Apple HIG).
+    @State private var draftBeingEdited: DecisionDraftRecord?
 
     var body: some View {
         ScrollView {
@@ -58,6 +74,7 @@ struct DecisionAssistantView: View {
                 viewModel: viewModel,
                 creditCardAccounts: creditCardAccounts,
                 drafts: drafts,
+                archivedDrafts: archivedDrafts,
                 onDraftTapped: { selectedDraft = $0 }
             )
         }
@@ -85,7 +102,38 @@ struct DecisionAssistantView: View {
             DecisionDraftFormView()
         }
         .sheet(item: $selectedDraft) { draft in
-            DecisionDraftDetailView(draft: draft)
+            DecisionDraftDetailView(
+                draft: draft,
+                onRequestEdit: handleRequestEdit,
+                onRequestDelete: handleRequestDelete
+            )
+        }
+        .sheet(item: $draftBeingEdited) { draft in
+            DecisionDraftFormView(draft: draft)
+        }
+    }
+
+    // MARK: - Lifecycle handlers
+
+    /// Closes the detail sheet and, on the next runloop turn, opens
+    /// the edit form for the same draft. The tiny `Task` defer keeps
+    /// SwiftUI from fighting a "dismiss one sheet + present another"
+    /// in the same frame, which can leave the edit sheet stranded.
+    private func handleRequestEdit(_ draft: DecisionDraftRecord) {
+        selectedDraft = nil
+        Task { @MainActor in
+            draftBeingEdited = draft
+        }
+    }
+
+    /// Deletes a draft after the confirmation dialog has already
+    /// been accepted by the user. Dismisses the detail sheet first
+    /// so SwiftData's delete doesn't race a sheet that's still
+    /// reading the record.
+    private func handleRequestDelete(_ draft: DecisionDraftRecord) {
+        selectedDraft = nil
+        Task { @MainActor in
+            DecisionDraftStore.delete(draft, in: modelContext)
         }
     }
 }
@@ -118,6 +166,7 @@ private struct DecisionAssistantContent: View {
     @Bindable var viewModel: DecisionAssistantViewModel
     let creditCardAccounts: [Account]
     let drafts: [DecisionDraftRecord]
+    let archivedDrafts: [DecisionDraftRecord]
     let onDraftTapped: (DecisionDraftRecord) -> Void
 
     var body: some View {
@@ -132,6 +181,13 @@ private struct DecisionAssistantContent: View {
                 drafts: drafts,
                 onDraftTapped: onDraftTapped
             )
+
+            if !archivedDrafts.isEmpty {
+                DecisionAssistantArchivedDraftsSection(
+                    drafts: archivedDrafts,
+                    onDraftTapped: onDraftTapped
+                )
+            }
 
             DecisionAssistantFooterNote()
         }
@@ -334,6 +390,43 @@ private struct DecisionAssistantDraftsEmptyState: View {
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+// MARK: - Archived drafts section
+
+/// Quieter secondary list of archived drafts. Only renders when the
+/// user actually has archived drafts, so the Decision Assistant's
+/// primary surface stays focused on actionable captures. Archived
+/// rows are dimmed to make the status visually unambiguous without
+/// relying on colour alone.
+private struct DecisionAssistantArchivedDraftsSection: View {
+
+    let drafts: [DecisionDraftRecord]
+    let onDraftTapped: (DecisionDraftRecord) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            DecisionAssistantSectionHeader(
+                title: "Archived drafts",
+                subtitle: "Hidden from the main list. Tap to restore or delete permanently."
+            )
+
+            VStack(spacing: SpacingTokens.xSmall) {
+                ForEach(drafts) { draft in
+                    Button {
+                        onDraftTapped(draft)
+                    } label: {
+                        GlassCard {
+                            DecisionDraftRow(draft: draft)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .opacity(0.72)
+                    .accessibilityHint("Opens the archived draft. Restore or delete from the detail sheet.")
+                }
             }
         }
     }

@@ -158,6 +158,11 @@ stay on-device, are labelled *needs engine*, and never receive an automatic
 AI-generated answer. Drafts become candidates for analysis only when a
 deterministic engine ships for their kind and the user opts in.
 
+Users control the drafts they capture. Every draft can be edited, archived,
+restored, or permanently deleted from its detail sheet — permanent delete is
+always confirmed explicitly. NomadFi never needs a full data wipe to remove a
+single mistyped or accidentally-sensitive draft.
+
 ---
 
 ## Navigation Principle

@@ -1,11 +1,17 @@
 // DecisionDraftFormView.swift
 // NomadFi
 //
-// Capture sheet for the Decision Assistant's "Gathered intelligence"
-// flow. The form is intentionally plain on the surface — no AI
-// affordance, no "analyze" button — because NomadFi does not yet
-// ship a deterministic engine for user-captured drafts. Save
-// confirms the draft is stored on-device and marked "needs engine".
+// Capture / edit sheet for the Decision Assistant's "Gathered
+// intelligence" flow. The form is intentionally plain on the
+// surface — no AI affordance, no "analyze" button — because NomadFi
+// does not yet ship a deterministic engine for user-captured drafts.
+// Save confirms the draft is stored on-device and marked
+// "needs engine".
+//
+// Two entry points:
+//   - `DecisionDraftFormView()` captures a new draft.
+//   - `DecisionDraftFormView(draft:)` edits an existing draft;
+//     fields are pre-populated and save mutates the same record.
 //
 // Accessibility:
 //   - Every field has an explicit `accessibilityLabel`.
@@ -19,14 +25,28 @@
 import SwiftData
 import SwiftUI
 
-/// Modal sheet for capturing a new decision draft.
+/// Modal sheet for capturing or editing a decision draft.
 struct DecisionDraftFormView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var viewModel = DecisionDraftFormViewModel()
+    @State private var viewModel: DecisionDraftFormViewModel
     @FocusState private var focusedField: Field?
+
+    /// Starts a new draft.
+    init() {
+        _viewModel = State(wrappedValue: DecisionDraftFormViewModel())
+    }
+
+    /// Opens the form pre-populated with an existing draft's fields.
+    /// Save will mutate `draft` in place rather than inserting a new
+    /// record.
+    init(draft: DecisionDraftRecord) {
+        _viewModel = State(
+            wrappedValue: DecisionDraftFormViewModel(editing: draft)
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -38,7 +58,7 @@ struct DecisionDraftFormView: View {
                 integritySection
             }
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Capture decision")
+            .navigationTitle(viewModel.mode.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
         }
@@ -221,8 +241,29 @@ private extension DecisionDraftFormView {
     }
 }
 
-#Preview {
+#Preview("Create") {
     DecisionDraftFormView()
+        .modelContainer(
+            for: [
+                DecisionDraftRecord.self,
+            ],
+            inMemory: true
+        )
+}
+
+#Preview("Edit") {
+    let existing = DecisionDraftRecord(
+        title: "Summer laptop upgrade",
+        scenarioText: "Buying a 14-inch MacBook for the U.S. internship.",
+        kind: .purchase,
+        merchantName: "Amazon",
+        locationText: "San Francisco",
+        amount: 1_899,
+        currencyCode: .usd,
+        timingText: "Before arrival",
+        notes: "Check Airbnb package policy."
+    )
+    DecisionDraftFormView(draft: existing)
         .modelContainer(
             for: [
                 DecisionDraftRecord.self,

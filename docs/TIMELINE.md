@@ -172,11 +172,35 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Decision Draft Intake v1
+### Current Sub-Phase: Decision Draft Lifecycle v1
+
+Building on Decision Draft Intake v1, this refinement gives users
+full control over the raw context they capture. `DecisionDraftFormView`
+now serves both creation and edit modes: `init()` starts a new draft,
+`init(draft:)` pre-populates fields and mutates the same record on
+save (preserving `createdAt`, refreshing `updatedAt`). `DecisionDraftDetailView`
+surfaces an **Edit** primary toolbar button plus a **More actions**
+menu with **Archive** / **Restore** and a destructive **Delete draft…**
+path guarded by `confirmationDialog`. All lifecycle mutations route
+through the pure `DecisionDraftStore` namespace so the UI never
+touches SwiftData directly.
+
+The Decision Assistant now runs two SwiftData queries: one for
+active (`needsEngine`) drafts, one for archived. Archived drafts
+render in a quieter secondary **Archived drafts** section that only
+appears when non-empty. Active, archived, and analyzed decisions
+stay visually separate — drafts remain outside `DecisionCatalog`
+and are never promoted to analyzed decisions.
+
+Privacy posture is unchanged and strengthened by per-draft delete:
+users no longer need a full "delete all data" wipe to remove an
+accidentally sensitive capture.
+
+### Previous Sub-Phase: Decision Draft Intake v1
 
 After the App Intents hardening landed, the Decision Assistant's
 **Gather intelligence** section gained a real capture flow. Users
-can now save a future scenario in their own words: `DecisionDraftRecord`
+can save a future scenario in their own words: `DecisionDraftRecord`
 is a SwiftData model that stores a title, a free-form scenario
 body, a user-chosen `DecisionDraftKind`, optional merchant/location/
 timing/amount/notes fields, and a `DecisionDraftStatus` that starts

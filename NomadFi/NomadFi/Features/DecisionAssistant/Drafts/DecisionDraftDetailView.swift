@@ -1,25 +1,49 @@
 // DecisionDraftDetailView.swift
 // NomadFi
 //
-// Read-only detail sheet for a saved ``DecisionDraftRecord``. Shows
-// every field the user captured, flagged clearly as "Needs engine"
-// so the sheet cannot be misread as a recommendation.
+// Detail sheet for a saved ``DecisionDraftRecord``. Shows every field
+// the user captured, flagged clearly as "Needs engine" (or
+// "Archived") so the sheet cannot be misread as a recommendation.
 //
-// Edit and archive flows are intentionally out of scope for this
-// phase — the detail sheet exists so the user can re-read their own
-// notes, not so NomadFi can start synthesising an answer.
+// Lifecycle actions live here rather than on the row:
+//
+//   - **Edit** is a primary toolbar button that hands the request
+//     back to the parent (via `onRequestEdit`). The parent dismisses
+//     this detail sheet and presents the edit form, so we never end
+//     up with a sheet-inside-a-sheet. Apple's sheet guidance is
+//     clear: one modal at a time.
+//   - **Archive / Restore** are reversible, so they run inline
+//     without a confirmation (HIG alert guidance: don't interrupt
+//     for reversible actions).
+//   - **Delete** is irreversible. It uses `confirmationDialog` with
+//     an explicit destructive role; once confirmed, the parent
+//     removes the record and the sheet dismisses cleanly.
 
 import SwiftData
 import SwiftUI
 
-/// Read-only presentation of a single captured draft. Intentionally
+/// Read-only presentation of a single captured draft, with a
+/// lifecycle toolbar (Edit, Archive/Restore, Delete). Intentionally
 /// verbose — every field the user entered is rendered, with absolute
 /// timestamps, so the sheet doubles as the user's own audit trail.
 struct DecisionDraftDetailView: View {
 
     let draft: DecisionDraftRecord
 
+    /// Invoked when the user taps Edit. The parent should dismiss
+    /// this detail sheet and present ``DecisionDraftFormView`` in
+    /// edit mode to avoid nested sheets.
+    let onRequestEdit: (DecisionDraftRecord) -> Void
+
+    /// Invoked when the user confirms permanent deletion. The parent
+    /// is responsible for the SwiftData delete and for dismissing
+    /// this sheet so the now-dangling reference is released.
+    let onRequestDelete: (DecisionDraftRecord) -> Void
+
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+
+    @State private var isDeleteConfirmationPresented = false
 
     var body: some View {
         NavigationStack {
@@ -65,11 +89,75 @@ struct DecisionDraftDetailView: View {
             .scrollIndicators(.hidden)
             .navigationTitle("Captured draft")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+            .toolbar { toolbarContent }
+            .confirmationDialog(
+                "Delete this draft from this device?",
+                isPresented: $isDeleteConfirmationPresented,
+                titleVisibility: .visible
+            ) {
+                Button("Delete draft", role: .destructive) {
+                    onRequestDelete(draft)
                 }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone.")
             }
+        }
+    }
+
+    // MARK: - Toolbar
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .cancellationAction) {
+            Button("Done") { dismiss() }
+        }
+
+        ToolbarItem(placement: .primaryAction) {
+            Button {
+                onRequestEdit(draft)
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            .accessibilityLabel("Edit draft")
+            .accessibilityHint("Opens the draft in the edit form.")
+        }
+
+        ToolbarItem(placement: .secondaryAction) {
+            Menu {
+                archiveOrRestoreButton
+
+                Divider()
+
+                Button(role: .destructive) {
+                    isDeleteConfirmationPresented = true
+                } label: {
+                    Label("Delete draft…", systemImage: "trash")
+                }
+            } label: {
+                Label("More actions", systemImage: "ellipsis.circle")
+            }
+            .accessibilityLabel("More draft actions")
+        }
+    }
+
+    @ViewBuilder
+    private var archiveOrRestoreButton: some View {
+        switch draft.status {
+        case .needsEngine:
+            Button {
+                DecisionDraftStore.archive(draft, in: modelContext)
+            } label: {
+                Label("Archive draft", systemImage: "archivebox")
+            }
+            .accessibilityHint("Hides the draft from the main list. You can restore it later.")
+        case .archived:
+            Button {
+                DecisionDraftStore.restore(draft, in: modelContext)
+            } label: {
+                Label("Restore draft", systemImage: "tray.and.arrow.up")
+            }
+            .accessibilityHint("Moves the draft back to the Gathered intelligence list.")
         }
     }
 
@@ -97,10 +185,17 @@ struct DecisionDraftDetailView: View {
 
             StatusBadge(
                 label: draft.status.displayLabel,
-                color: ColorTokens.warning,
+                color: statusColor,
                 systemImage: draft.status.systemImage
             )
             .accessibilityLabel(draft.status.accessibilityLabel)
+        }
+    }
+
+    private var statusColor: Color {
+        switch draft.status {
+        case .needsEngine: ColorTokens.warning
+        case .archived: ColorTokens.neutral
         }
     }
 
@@ -227,5 +322,10 @@ private struct DraftDetailRow: View {
         timingText: "Before arrival",
         notes: "Need arrival timing aligned with Airbnb check-in."
     )
-    DecisionDraftDetailView(draft: draft)
+    DecisionDraftDetailView(
+        draft: draft,
+        onRequestEdit: { _ in },
+        onRequestDelete: { _ in }
+    )
+    .modelContainer(for: [DecisionDraftRecord.self], inMemory: true)
 }
