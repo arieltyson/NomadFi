@@ -32,7 +32,8 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "Financial Setup",
                     subtitle: "Jurisdictions, accounts, and credit-card calendar.",
-                    systemImage: "globe.americas.fill"
+                    systemImage: "globe.americas.fill",
+                    tint: ColorTokens.brandPrimary
                 ) {
                     FinancialSetupSettingsView()
                 }
@@ -40,7 +41,10 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "Notifications",
                     subtitle: "Subscription, budget, FX, and credit-card reminders.",
-                    systemImage: "bell.badge.fill"
+                    systemImage: "bell.badge.fill",
+                    tint: ColorTokens.warning,
+                    accessory: notificationsAccessory,
+                    accessibilityStatus: notificationsAccessibilityStatus
                 ) {
                     NotificationSettingsView()
                 }
@@ -48,7 +52,8 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "Privacy & Security",
                     subtitle: "App Lock, privacy policy, and data controls.",
-                    systemImage: "lock.shield.fill"
+                    systemImage: "lock.shield.fill",
+                    tint: ColorTokens.positive
                 ) {
                     PrivacySecuritySettingsView()
                 }
@@ -58,7 +63,8 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "Advanced Tools",
                     subtitle: "Ledger and Tax Vault — optional manual workflows.",
-                    systemImage: "slider.horizontal.3"
+                    systemImage: "slider.horizontal.3",
+                    tint: ColorTokens.neutral
                 ) {
                     AdvancedToolsSettingsView()
                 }
@@ -70,7 +76,8 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "Accessibility",
                     subtitle: "VoiceOver, Dynamic Type, and contrast.",
-                    systemImage: "accessibility"
+                    systemImage: "accessibility",
+                    tint: ColorTokens.brandSecondary
                 ) {
                     AccessibilitySettingsView()
                 }
@@ -78,7 +85,8 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     "About NomadFi",
                     subtitle: "Version and product direction.",
-                    systemImage: "info.circle.fill"
+                    systemImage: "info.circle.fill",
+                    tint: ColorTokens.neutral
                 ) {
                     AboutSettingsView()
                 }
@@ -92,6 +100,25 @@ struct SettingsView: View {
             await syncCreditCardRemindersIfNeeded()
             repairHomeJurisdictionIfNeeded()
         }
+    }
+}
+
+// MARK: - Hub accessories
+
+private extension SettingsView {
+
+    /// Value-accessory shown at the trailing edge of the Notifications
+    /// row — mirrors Apple Settings' "On" / "Off" affordance so the
+    /// user can glance at the hub and know whether reminders are live
+    /// without opening the subpage.
+    var notificationsAccessory: LocalizedStringKey {
+        notificationManager.isAuthorized ? "On" : "Off"
+    }
+
+    /// VoiceOver expansion of the accessory. Apple Settings rows read
+    /// like "Notifications, on" — this matches that phrasing.
+    var notificationsAccessibilityStatus: LocalizedStringKey {
+        notificationManager.isAuthorized ? "on" : "off"
     }
 }
 

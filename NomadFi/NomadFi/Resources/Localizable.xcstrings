@@ -136,9 +136,13 @@
         }
       }
     },
+    "3 days before renewal" : {
+    },
     "A credit limit is capacity, not a balance. Current balance and available credit are optional snapshots from your issuer app — they will be timestamped and flagged when stale." : {
+
     },
     "A credit limit is capacity, not a balance. NomadFi never counts it toward your net worth." : {
+
     },
     "About NomadFi" : {
 
@@ -165,8 +169,10 @@
 
     },
     "Actions for %@" : {
+
     },
     "Active" : {
+
     },
     "Active Card can now recommend the best account for your current country." : {
 
@@ -178,6 +184,7 @@
 
     },
     "Add %@" : {
+
     },
     "Add a credit-card account above to track statement close and payment due dates here." : {
 
@@ -198,6 +205,7 @@
 
     },
     "Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later." : {
+
     },
     "Add Transaction" : {
 
@@ -212,10 +220,13 @@
 
     },
     "Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed." : {
+
     },
     "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
+
     },
     "Adds %@ to your active jurisdictions." : {
+
     },
     "Adds this account to your onboarding list." : {
 
@@ -256,11 +267,15 @@
     "App Lock" : {
 
     },
+    "App Lock, privacy policy, and data controls." : {
+    },
     "App version %@" : {
 
     },
     "Arbitrage" : {
 
+    },
+    "At 80%, 90%, and 100%" : {
     },
     "Authenticate to access your financial data." : {
 
@@ -272,13 +287,16 @@
 
     },
     "Available" : {
+
     },
     "Available credit (optional)" : {
+
     },
     "Back" : {
 
     },
     "Balance not set" : {
+
     },
     "Before checkout" : {
 
@@ -289,15 +307,20 @@
     "Billing" : {
 
     },
+    "Budget Alerts" : {
+
+    },
     "Built for International Students" : {
 
     },
     "Can't Remove Yet" : {
+
     },
     "Cancel" : {
 
     },
     "Card Amounts (Optional)" : {
+
     },
     "Cart reviewed — shipping and Subscribe & Save" : {
 
@@ -345,11 +368,13 @@
 
     },
     "Clear snapshot" : {
+
     },
     "Close" : {
 
     },
     "Close date, payment due date, and last-confirmed timestamp." : {
+
     },
     "Closes %@" : {
 
@@ -388,6 +413,7 @@
 
     },
     "Copies the available credit and current balance you saved on this card into the fields below." : {
+
     },
     "Cost breakdown" : {
 
@@ -396,6 +422,7 @@
 
     },
     "Credit Card Amounts" : {
+
     },
     "Credit Card Calendar" : {
 
@@ -414,15 +441,19 @@
       }
     },
     "Credit Card Terms" : {
+
     },
     "Credit limit" : {
 
     },
     "Credit limit (optional)" : {
+
     },
     "Credit limit is capacity, not a balance. You can skip all three and add them later from Settings." : {
+
     },
     "Credit limits are not balances. This moves the value you previously entered into the credit limit field." : {
+
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -431,15 +462,19 @@
 
     },
     "Currency & FX" : {
+
     },
     "Current (%@)" : {
 
     },
     "Current balance" : {
+
     },
     "Current balance (amount owed)" : {
+
     },
     "Current balance (optional)" : {
+
     },
     "Dashboard" : {
 
@@ -449,6 +484,8 @@
     },
     "Date" : {
 
+    },
+    "Decision Assistant, Not a Ledger" : {
     },
     "Delete" : {
 
@@ -543,6 +580,9 @@
     "Enter the real numbers from Chase and Wise. Values are stored only on this device and can be wiped from Settings → Privacy." : {
 
     },
+    "Every Saturday morning" : {
+
+    },
     "Every screen narrates as a coherent financial story." : {
 
     },
@@ -580,6 +620,8 @@
         }
       }
     },
+    "Financial Setup" : {
+    },
     "Finish Setup" : {
 
     },
@@ -587,6 +629,7 @@
 
     },
     "Fix Mis-Entered Data" : {
+
     },
     "Fix the highlighted date conflict before saving." : {
 
@@ -614,6 +657,9 @@
 
     },
     "FX Fee %" : {
+
+    },
+    "FX Rate Alerts" : {
 
     },
     "Get a recommendation for the best card to use at your current location." : {
@@ -652,6 +698,8 @@
     "Jurisdictions section" : {
 
     },
+    "Jurisdictions, accounts, and credit-card calendar." : {
+    },
     "Last confirmed" : {
 
     },
@@ -659,17 +707,24 @@
 
     },
     "Last updated" : {
+
     },
     "Latest Balance" : {
+
     },
     "Latest Balance (Optional)" : {
+
     },
     "Latest Snapshot" : {
+
     },
     "Ledger" : {
 
     },
+    "Ledger and Tax Vault — optional manual workflows." : {
+    },
     "Limit %@" : {
+
     },
     "Linked card" : {
 
@@ -706,6 +761,7 @@
       }
     },
     "Manage Jurisdictions" : {
+
     },
     "Manage jurisdictions, currencies, privacy, and account preferences." : {
 
@@ -714,6 +770,7 @@
 
     },
     "Manual transaction review and entry." : {
+
     },
     "Mark Confirmed Today" : {
 
@@ -737,6 +794,7 @@
 
     },
     "Move %@ into credit limit" : {
+
     },
     "Needs review" : {
 
@@ -781,6 +839,7 @@
 
     },
     "NomadFi currently supports %lld jurisdictions. Your active set already covers them." : {
+
     },
     "NomadFi detects your current country to recommend the lowest-fee payment card for where you are." : {
 
@@ -788,8 +847,12 @@
     "NomadFi detects your location and recommends the card with the lowest foreign transaction fees." : {
 
     },
+    "NomadFi helps you pick the right card, protect credit, reduce FX waste, and learn jurisdiction-aware tax concepts — without manual bookkeeping." : {
+    },
     "NomadFi is built specifically for international students managing money across borders" : {
 
+    },
+    "NomadFi is designed so the app is equally usable whether you rely on VoiceOver, larger text, or increased contrast. Adjust your preferences in the iOS Settings app." : {
     },
     "NomadFi is Locked" : {
 
@@ -811,6 +874,8 @@
     },
     "NomadFi uses zero analytics, zero tracking, and zero third-party SDKs." : {
 
+    },
+    "NomadFi works without manually tracking every transaction. These tools stay here for users who want them." : {
     },
     "NomadFi. Wealth without borders." : {
 
@@ -852,18 +917,22 @@
 
     },
     "Opens a screen to add, remove, or change your home jurisdiction." : {
+
     },
     "Opens the account editor to correct balances, limits, and other details." : {
+
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
     },
     "Opens the manual transaction ledger." : {
+
     },
     "Opens the official source in Safari" : {
 
     },
     "Opens the receipts and tax document archive." : {
+
     },
     "Opens the statement calendar editor for this card." : {
 
@@ -872,10 +941,13 @@
 
     },
     "Optional companions. NomadFi's recommendations are built from your accounts and scenarios — you do not need to track every transaction or archive every receipt for the app to work." : {
+
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
+
     },
     "Owed %@" : {
+
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
@@ -892,6 +964,8 @@
     "Privacy & Data" : {
 
     },
+    "Privacy & Security" : {
+    },
     "Privacy Policy" : {
 
     },
@@ -899,6 +973,7 @@
 
     },
     "Profile" : {
+
     },
     "Quickly log a transaction with an amount and category." : {
 
@@ -928,16 +1003,21 @@
 
     },
     "Receipts and tax documents for later planning." : {
+
     },
     "Region" : {
 
     },
+    "Reminders" : {
+    },
     "Remove" : {
+
     },
     "Removes every statement calendar date from this card." : {
 
     },
     "Removes the saved balance snapshot. Your account profile stays intact." : {
+
     },
     "Renews %@" : {
 
@@ -997,6 +1077,7 @@
 
     },
     "Saves your changes to this account and returns to Settings." : {
+
     },
     "Savings Opportunities" : {
 
@@ -1069,6 +1150,7 @@
 
     },
     "Set as Home" : {
+
     },
     "Settings" : {
 
@@ -1080,11 +1162,13 @@
 
     },
     "Snapshots are point-in-time readings. NomadFi timestamps them and flags them as stale over time — it never treats an outdated snapshot as live." : {
+
     },
     "Something Went Wrong" : {
 
     },
     "Source" : {
+
     },
     "Sources" : {
 
@@ -1093,11 +1177,18 @@
 
     },
     "Statement balance (optional)" : {
+
     },
     "Statement Calendar" : {
+
     },
     "Subscription Arbitrage" : {
 
+    },
+    "Subscription Reminders" : {
+
+    },
+    "Subscription, budget, FX, and credit-card reminders." : {
     },
     "Subscriptions" : {
 
@@ -1148,6 +1239,7 @@
 
     },
     "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
+
     },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
@@ -1189,6 +1281,7 @@
 
     },
     "Use saved snapshot" : {
+
     },
     "Use your %@. It has no foreign transaction fees on record.%@" : {
       "localizations" : {
@@ -1222,11 +1315,15 @@
     "Version" : {
 
     },
+    "Version and product direction." : {
+    },
     "View how NomadFi protects your data" : {
 
     },
     "VoiceOver Optimized" : {
 
+    },
+    "VoiceOver, Dynamic Type, and contrast." : {
     },
     "Waiting for iOS Permission…" : {
 
@@ -1237,6 +1334,9 @@
     "Wealth without borders" : {
 
     },
+    "Weekly Summary" : {
+
+    },
     "What is your home currency?" : {
 
     },
@@ -1245,6 +1345,8 @@
     },
     "When enabled, your device passcode is required to access your financial data." : {
 
+    },
+    "When rates move more than 2%" : {
     },
     "When tax season arrives, export a structured report organized by jurisdiction. Compatible with Sprintax and TurboTax for NRA filing." : {
 
@@ -1280,6 +1382,7 @@
 
     },
     "You can skip this and add it later from Settings. Saved balances are timestamped as snapshots." : {
+
     },
     "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
 
@@ -1332,6 +1435,7 @@
 
     },
     "Your home jurisdiction is where NomadFi reports your net worth. Data attached to a jurisdiction keeps living on its own records — removing a jurisdiction never deletes your accounts, transactions, budgets, subscriptions, or tax documents." : {
+
     },
     "Your Jurisdictions" : {
 

@@ -91,12 +91,63 @@ final class AccountDetailViewModel {
             && account.creditLimit == nil
     }
 
+    /// The name with any trailing "(Credit)"-style suffix removed,
+    /// or nil when the name is already clean or the account isn't a
+    /// credit card.
+    ///
+    /// Users added these suffixes as a workaround before the UI had a
+    /// visible credit-card marker. Now that ``AccountTypeMarker``
+    /// renders the type alongside every card row, the suffix is
+    /// redundant and the editor offers a one-tap cleanup.
+    var nameWithoutRedundantCreditSuffix: String? {
+        guard isCreditCard else { return nil }
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        for suffix in Self.redundantCreditSuffixes {
+            if let range = trimmed.range(
+                of: suffix,
+                options: [.caseInsensitive, .backwards, .anchored]
+            ) {
+                let dropped = trimmed[..<range.lowerBound]
+                    .trimmingCharacters(in: .whitespaces)
+                if !dropped.isEmpty {
+                    return dropped
+                }
+            }
+        }
+        return nil
+    }
+
+    /// Gate used by the view to show the one-tap cleanup row.
+    var hasRedundantCreditSuffix: Bool {
+        nameWithoutRedundantCreditSuffix != nil
+    }
+
+    /// Ordered list of trailing fragments we consider redundant once
+    /// the visual credit-card marker is in place. Anything else is
+    /// left to the user to edit manually — we never infer intent past
+    /// these unambiguous trailing tags.
+    private static let redundantCreditSuffixes: [String] = [
+        " (Credit Card)",
+        " (Credit)",
+        " — Credit",
+        " – Credit",
+        " - Credit",
+    ]
+
     var canSave: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
             && !institutionName.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     // MARK: - Actions
+
+    /// Strips a redundant "(Credit)"-style suffix from the working
+    /// name. No-op when the name is already clean. Explicit,
+    /// user-initiated — never called automatically from persistence.
+    func stripRedundantCreditSuffix() {
+        guard let cleaned = nameWithoutRedundantCreditSuffix else { return }
+        name = cleaned
+    }
 
     /// Moves the legacy ``Account/balance`` value into
     /// ``Account/creditLimit``. Intentionally one-way and only exposed

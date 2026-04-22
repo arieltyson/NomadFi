@@ -1,21 +1,25 @@
 // AccountTypeMarker.swift
 // NomadFi
 //
-// A small, Dynamic-Type-safe SF-symbol chip shown alongside account
-// names to convey account type without requiring the user to write
-// "(Credit)" or similar into the name field. Chip layout collapses
-// gracefully at accessibility text sizes.
+// Design-system primitive: a small, Dynamic-Type-safe capsule chip
+// that labels an account by type (credit card, checking, wallet, …)
+// without the user having to encode the type into the account name.
+//
+// Lives in the design system so every surface that shows account
+// identity — Settings rows, credit-card calendar rows, Dashboard
+// account cards, scenario linked-card pickers, onboarding lists —
+// can adopt a single visual language for the type marker.
+//
+// The chip is decorative by default; the enclosing view carries the
+// account-type phrase in its VoiceOver label via
+// ``AccountTypeMarker/accessibilityPhrase(for:)``.
 
 import SwiftUI
 
-/// Inline type marker displayed next to account titles (e.g. the
-/// `creditcard.fill` chip after an Amex Cobalt card's name).
-///
-/// The marker is purely decorative: VoiceOver gets an explicit
-/// "credit card" phrase from the row's accessibility label, never
-/// from this symbol. That keeps the audio story correct even when the
-/// user hides symbols via the Differentiate Without Color setting —
-/// and avoids shouting "image" over every account row.
+/// Inline capsule chip that names an account type next to its row
+/// title. Collapses gracefully at accessibility text sizes because
+/// the caller nests it inside `ViewThatFits` (or similar) — this
+/// component itself never wraps or truncates.
 struct AccountTypeMarker: View {
 
     let accountType: AccountType
@@ -39,8 +43,9 @@ struct AccountTypeMarker: View {
             .accessibilityHidden(true)
     }
 
-    /// Readable label — used by parent rows to build VoiceOver
-    /// descriptions that explicitly name the account type.
+    /// Readable VoiceOver phrase — parent rows splice this into their
+    /// combined accessibility label so the audio story explicitly
+    /// names the type even when the visual chip is hidden.
     static func accessibilityPhrase(for accountType: AccountType) -> String {
         accountType.displayName.lowercased()
     }

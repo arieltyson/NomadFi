@@ -22,6 +22,7 @@ struct AccountDetailView: View {
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
 
     @State private var viewModel: AccountDetailViewModel?
+    @State private var creditSuffixCleanupCount: Int = 0
     @FocusState private var focusedField: Field?
 
     enum Field: Hashable {
@@ -41,6 +42,9 @@ struct AccountDetailView: View {
                     profileSection(viewModel: viewModel)
 
                     if viewModel.isCreditCard {
+                        if viewModel.hasRedundantCreditSuffix {
+                            creditSuffixCleanupSection(viewModel: viewModel)
+                        }
                         creditCardTermsSection(viewModel: viewModel)
                         if viewModel.canMoveLegacyBalanceIntoLimit {
                             legacyBalanceMigrationSection(viewModel: viewModel)
@@ -54,6 +58,7 @@ struct AccountDetailView: View {
                     }
                 }
                 .scrollDismissesKeyboard(.interactively)
+                .sensoryFeedback(.success, trigger: creditSuffixCleanupCount)
             } else {
                 ProgressView()
                     .task { viewModel = AccountDetailViewModel(account: account) }
@@ -165,6 +170,39 @@ private extension AccountDetailView {
             Text("Fix Mis-Entered Data")
         } footer: {
             Text("This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance.")
+        }
+    }
+
+    /// Explicit, opt-in cleanup for "(Credit)"-style suffixes that
+    /// users added to names before the visual credit marker existed.
+    /// Shown only when the current name actually ends with one of the
+    /// known trailing fragments — never inferred or auto-applied.
+    func creditSuffixCleanupSection(viewModel: AccountDetailViewModel) -> some View {
+        let proposed = viewModel.nameWithoutRedundantCreditSuffix ?? ""
+
+        return Section {
+            Button {
+                viewModel.stripRedundantCreditSuffix()
+                creditSuffixCleanupCount &+= 1
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                        Text("Rename to “\(proposed)”")
+                            .font(TypographyTokens.body)
+                        Text("NomadFi already shows a credit-card badge next to this account, so the suffix is redundant.")
+                            .font(TypographyTokens.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "textformat.abc")
+                        .foregroundStyle(ColorTokens.brandPrimary)
+                }
+            }
+            .accessibilityHint("Removes the trailing credit tag from this account name.")
+        } header: {
+            Text("Tidy Account Name")
+        } footer: {
+            Text("Optional. Your account name is only changed when you tap this row.")
         }
     }
 

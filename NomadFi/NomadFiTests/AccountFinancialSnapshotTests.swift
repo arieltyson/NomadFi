@@ -354,6 +354,60 @@ struct AccountFinancialSnapshotTests {
         #expect(account.isExcludedFromNetWorth)
     }
 
+    @Test("Detail view model detects and strips trailing credit suffixes on credit cards")
+    func detailViewModelStripsRedundantCreditSuffix() {
+        let variants: [(input: String, expected: String)] = [
+            ("Amex Cobalt Canada (Credit)", "Amex Cobalt Canada"),
+            ("Chase Freedom Rise (Credit Card)", "Chase Freedom Rise"),
+            ("CIBC Dividend - Credit", "CIBC Dividend"),
+            ("CIBC Dividend – Credit", "CIBC Dividend"),
+            ("Visa — Credit", "Visa"),
+        ]
+
+        for variant in variants {
+            let account = Account(
+                name: variant.input,
+                institutionName: "Issuer",
+                accountType: .creditCard,
+                currencyCode: .cad,
+                jurisdiction: "CA"
+            )
+            let viewModel = AccountDetailViewModel(account: account)
+            #expect(viewModel.hasRedundantCreditSuffix, "Expected cleanup to be offered for \(variant.input)")
+            #expect(viewModel.nameWithoutRedundantCreditSuffix == variant.expected)
+            viewModel.stripRedundantCreditSuffix()
+            #expect(viewModel.name == variant.expected)
+            #expect(!viewModel.hasRedundantCreditSuffix)
+        }
+    }
+
+    @Test("Detail view model never offers suffix cleanup for non-credit accounts")
+    func detailViewModelDoesNotStripOnNonCreditAccounts() {
+        let account = Account(
+            name: "Joint Credit Line (Credit)",
+            institutionName: "Bank",
+            accountType: .checking,
+            currencyCode: .usd,
+            jurisdiction: "US"
+        )
+        let viewModel = AccountDetailViewModel(account: account)
+        #expect(!viewModel.hasRedundantCreditSuffix)
+        #expect(viewModel.nameWithoutRedundantCreditSuffix == nil)
+    }
+
+    @Test("Detail view model does not offer cleanup on already-clean credit card names")
+    func detailViewModelLeavesCleanNamesAlone() {
+        let account = Account(
+            name: "Amex Cobalt Canada",
+            institutionName: "American Express",
+            accountType: .creditCard,
+            currencyCode: .cad,
+            jurisdiction: "CA"
+        )
+        let viewModel = AccountDetailViewModel(account: account)
+        #expect(!viewModel.hasRedundantCreditSuffix)
+    }
+
     @Test("Detail view model stamps snapshot timestamp and source when user edits a balance")
     func detailViewModelStampsSnapshotOnEdit() {
         let account = Account(
