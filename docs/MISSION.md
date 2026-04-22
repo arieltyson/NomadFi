@@ -152,6 +152,12 @@ source-backed decision engines and must not answer financial questions from
 generic heuristics (for example, foreign-transaction-fee ranking alone) or from
 an LLM's free-form reasoning.
 
+User-captured decision drafts (the **Gathered intelligence** section of the
+Decision Assistant) are raw user-provided context, not recommendations. They
+stay on-device, are labelled *needs engine*, and never receive an automatic
+AI-generated answer. Drafts become candidates for analysis only when a
+deterministic engine ships for their kind and the user opts in.
+
 ---
 
 ## Navigation Principle

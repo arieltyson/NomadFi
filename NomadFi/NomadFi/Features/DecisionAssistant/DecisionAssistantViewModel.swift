@@ -36,6 +36,12 @@ final class DecisionAssistantViewModel {
     /// model so Siri / App Intent deep links can flip it programmatically.
     var isBriefPresented: Bool = false
 
+    /// True when the decision-draft capture sheet is presented.
+    /// Owned by the view model so the capture affordance on
+    /// `NewDecisionScaffoldCard` can be driven through a tested
+    /// `@Observable` surface instead of scattered `@State`.
+    var isDraftFormPresented: Bool = false
+
     // MARK: - Dependencies
 
     private static let logger = Logger(
@@ -86,6 +92,12 @@ final class DecisionAssistantViewModel {
         case .amazonArrivalOrder:
             openActiveDecision()
         }
+    }
+
+    /// Presents the decision-draft capture sheet. Tapped from the
+    /// "Capture decision" button on ``NewDecisionScaffoldCard``.
+    func presentDraftForm() {
+        isDraftFormPresented = true
     }
 
     // MARK: - Derived

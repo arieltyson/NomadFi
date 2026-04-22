@@ -31,13 +31,34 @@ struct DecisionAssistantView: View {
 
     @Query private var accounts: [Account]
 
+    /// Captured decision drafts, newest first. `.archived` drafts are
+    /// excluded so the primary list stays focused on drafts that
+    /// still need a deterministic engine; archived history can come
+    /// back in a later phase if the product needs it.
+    @Query(
+        filter: #Predicate<DecisionDraftRecord> {
+            $0.statusRawValue == "needsEngine"
+        },
+        sort: \DecisionDraftRecord.updatedAt,
+        order: .reverse
+    )
+    private var drafts: [DecisionDraftRecord]
+
     @State private var viewModel = DecisionAssistantViewModel()
+
+    /// Currently-selected draft for the read-only detail sheet. Kept
+    /// as view-local state because the sheet presentation binds to
+    /// an `Identifiable` record, which stays cleaner here than on
+    /// the view model.
+    @State private var selectedDraft: DecisionDraftRecord?
 
     var body: some View {
         ScrollView {
             DecisionAssistantContent(
                 viewModel: viewModel,
-                creditCardAccounts: creditCardAccounts
+                creditCardAccounts: creditCardAccounts,
+                drafts: drafts,
+                onDraftTapped: { selectedDraft = $0 }
             )
         }
         .scrollIndicators(.hidden)
@@ -59,6 +80,12 @@ struct DecisionAssistantView: View {
                     creditCardAccounts: creditCardAccounts
                 )
             }
+        }
+        .sheet(isPresented: $viewModel.isDraftFormPresented) {
+            DecisionDraftFormView()
+        }
+        .sheet(item: $selectedDraft) { draft in
+            DecisionDraftDetailView(draft: draft)
         }
     }
 }
@@ -90,6 +117,8 @@ private struct DecisionAssistantContent: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
     let creditCardAccounts: [Account]
+    let drafts: [DecisionDraftRecord]
+    let onDraftTapped: (DecisionDraftRecord) -> Void
 
     var body: some View {
         LazyVStack(spacing: SpacingTokens.large) {
@@ -97,7 +126,12 @@ private struct DecisionAssistantContent: View {
 
             DecisionAssistantHistorySection(viewModel: viewModel)
 
-            DecisionAssistantNewSection()
+            DecisionAssistantNewSection(viewModel: viewModel)
+
+            DecisionAssistantDraftsSection(
+                drafts: drafts,
+                onDraftTapped: onDraftTapped
+            )
 
             DecisionAssistantFooterNote()
         }
@@ -221,14 +255,86 @@ private struct DecisionAssistantHistoryHorizon: View {
 
 private struct DecisionAssistantNewSection: View {
 
+    @Bindable var viewModel: DecisionAssistantViewModel
+
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
             DecisionAssistantSectionHeader(
                 title: "Gather intelligence",
-                subtitle: "Future intake channels for new decisions."
+                subtitle: "Capture a scenario locally — NomadFi stores it until a deterministic engine can analyze it."
             )
 
-            NewDecisionScaffoldCard()
+            NewDecisionScaffoldCard(
+                onCaptureTapped: { viewModel.presentDraftForm() }
+            )
+        }
+    }
+}
+
+// MARK: - Drafts section
+
+/// Shows captured drafts separately from the catalog-backed "Previous
+/// decisions" list so the user can never mistake a raw draft for an
+/// analyzed decision. Renders an empty-state pointer when no drafts
+/// exist yet, or a glass-card list sorted by `updatedAt` descending.
+private struct DecisionAssistantDraftsSection: View {
+
+    let drafts: [DecisionDraftRecord]
+    let onDraftTapped: (DecisionDraftRecord) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            DecisionAssistantSectionHeader(
+                title: "Gathered intelligence",
+                subtitle: "Saved drafts on this device. Not yet analyzed."
+            )
+
+            if drafts.isEmpty {
+                DecisionAssistantDraftsEmptyState()
+            } else {
+                DecisionAssistantDraftsList(
+                    drafts: drafts,
+                    onDraftTapped: onDraftTapped
+                )
+            }
+        }
+    }
+}
+
+private struct DecisionAssistantDraftsList: View {
+
+    let drafts: [DecisionDraftRecord]
+    let onDraftTapped: (DecisionDraftRecord) -> Void
+
+    var body: some View {
+        VStack(spacing: SpacingTokens.xSmall) {
+            ForEach(drafts) { draft in
+                Button {
+                    onDraftTapped(draft)
+                } label: {
+                    GlassCard {
+                        DecisionDraftRow(draft: draft)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Opens the captured draft details. Read-only.")
+            }
+        }
+    }
+}
+
+private struct DecisionAssistantDraftsEmptyState: View {
+
+    var body: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                Text("No drafts captured yet")
+                    .font(TypographyTokens.body)
+                Text("Tap Capture decision above to save a scenario. Drafts stay on this device and are marked Needs engine until a deterministic NomadFi engine covers them.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }
@@ -283,5 +389,6 @@ private struct DecisionAssistantSectionHeader: View {
         Subscription.self,
         Budget.self,
         ScenarioDecisionRecord.self,
+        DecisionDraftRecord.self,
     ], inMemory: true)
 }

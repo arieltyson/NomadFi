@@ -105,6 +105,7 @@ struct NomadFiApp: App {
             Subscription.self,
             Budget.self,
             ScenarioDecisionRecord.self,
+            DecisionDraftRecord.self,
         ])
     }
 }

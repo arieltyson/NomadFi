@@ -72,6 +72,7 @@ struct MainTabView: View {
                 Subscription.self,
                 Budget.self,
                 ScenarioDecisionRecord.self,
+                DecisionDraftRecord.self,
             ],
             inMemory: true
         )

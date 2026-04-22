@@ -172,15 +172,38 @@ capabilities Apple does not expose and protects user trust.
 
 **Goal:** Make NomadFi useful without external account aggregation.
 
-### Current Sub-Phase: Decision Assistant as the Core Surface
+### Current Sub-Phase: Decision Draft Intake v1
+
+After the App Intents hardening landed, the Decision Assistant's
+**Gather intelligence** section gained a real capture flow. Users
+can now save a future scenario in their own words: `DecisionDraftRecord`
+is a SwiftData model that stores a title, a free-form scenario
+body, a user-chosen `DecisionDraftKind`, optional merchant/location/
+timing/amount/notes fields, and a `DecisionDraftStatus` that starts
+at `needsEngine`. Drafts render in a dedicated **Gathered intelligence**
+section — visually distinct from **Previous decisions** — so the user
+can never mistake a raw capture for an analyzed decision.
+
+Non-goals for this sub-phase are intentionally strict: no generic AI
+analyzer, no second deterministic engine, no Apple Intelligence, no
+reinforcement learning, no Apple Pay / Wallet / FinanceKit dependency,
+and no tax / investment / credit-score predictions derived from
+drafts. Drafts are raw user-provided context, period. When a future
+deterministic engine ships for a kind, drafts of that kind become
+candidates for analysis.
+
+Privacy posture is unchanged: drafts stay on-device (SwiftData, no
+network), the capture form warns against entering account numbers
+or full addresses, and `DataGovernancePolicy.deleteAllUserData`
+wipes `DecisionDraftRecord` alongside every other user record.
+
+### Sub-Phase: Decision Assistant as the Core Surface
 
 The Decision Assistant (bottom tab: **Decisions**) is now NomadFi's
 core product surface. It hosts the Active Decision (Scenario 1 — Amazon
-arrival order today), Previous Decisions, and a "Gather Intelligence"
-scaffold naming future intake channels (typed scenarios, Siri / App
-Intents, optional Apple Intelligence context) without shipping fake
-behaviour. All recommendations continue to come from NomadFi's
-deterministic, source-backed engines.
+arrival order today), Previous Decisions, and **Gathered intelligence**
+(captured drafts awaiting a deterministic engine). All recommendations
+continue to come from NomadFi's deterministic, source-backed engines.
 
 Subscriptions, Ledger, and Tax Vault moved to Settings → Advanced Tools.
 They stay fully functional — they're just no longer primary tabs until
