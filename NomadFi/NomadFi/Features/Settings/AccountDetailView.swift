@@ -55,6 +55,7 @@ struct AccountDetailView: View {
 
                     if viewModel.isCreditCard {
                         statementCalendarLinkSection
+                        rewardsTermsLinkSection
                     }
                 }
                 .scrollDismissesKeyboard(.interactively)
@@ -275,6 +276,31 @@ private extension AccountDetailView {
             }
         } header: {
             Text("Statement Calendar")
+        }
+    }
+
+    var rewardsTermsLinkSection: some View {
+        Section {
+            NavigationLink {
+                CreditCardRewardsEditView(account: account)
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                        Text("Rewards Terms")
+                            .font(TypographyTokens.body)
+                        Text("Program name, base earn rate, category overrides, and source verification.")
+                            .font(TypographyTokens.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "star.circle")
+                        .foregroundStyle(ColorTokens.brandPrimary)
+                }
+            }
+        } header: {
+            Text("Rewards Terms")
+        } footer: {
+            Text("NomadFi uses rewards in the purchase engine only when they're verified against an official issuer source and still inside the freshness window.")
         }
     }
 }

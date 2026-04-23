@@ -52,6 +52,27 @@ final class Account {
     var financialSnapshotUpdatedAt: Date? = nil
     var financialSnapshotSourceRawValue: String? = nil
 
+    // Verified rewards terms. Only meaningful when
+    // `accountType == .creditCard`. Every field is optional and has
+    // a safe default so CloudKit-synced stores stay schema-stable
+    // across installs that haven't filled any of this in.
+    //
+    // The category overrides are stored as a single JSON String
+    // (`rewardCategoryOverridesRaw`) so a new `MerchantCategory`
+    // case is additive rather than a schema migration. The
+    // accompanying provenance fields mirror the shape used for
+    // `foreignTransactionFee*`, letting `SourceFreshness` gate
+    // reward trust identically to FX trust.
+    var rewardProgramName: String? = nil
+    var rewardUnitRawValue: String? = nil
+    var baseRewardRate: Double? = nil
+    var rewardCategoryOverridesRaw: String? = nil
+    var rewardSourceName: String? = nil
+    var rewardSourceURL: String? = nil
+    var rewardSourceConfidenceRaw: String? = nil
+    var rewardSourceVerifiedAt: Date? = nil
+    var rewardSourceNotes: String? = nil
+
     var jurisdictionProfile: JurisdictionProfile?
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
@@ -127,6 +148,15 @@ final class Account {
         statementBalance: Double? = nil,
         financialSnapshotUpdatedAt: Date? = nil,
         financialSnapshotSource: FinancialSnapshotSource? = nil,
+        rewardProgramName: String? = nil,
+        rewardUnit: RewardUnit? = nil,
+        baseRewardRate: Double? = nil,
+        rewardCategoryOverrides: [MerchantCategory: Double] = [:],
+        rewardSourceName: String? = nil,
+        rewardSourceURL: String? = nil,
+        rewardSourceConfidence: SourceConfidence? = nil,
+        rewardSourceVerifiedAt: Date? = nil,
+        rewardSourceNotes: String? = nil,
         jurisdictionProfile: JurisdictionProfile? = nil,
         transactions: [Transaction]? = nil,
         subscriptions: [Subscription]? = nil
@@ -156,6 +186,16 @@ final class Account {
         self.statementBalance = statementBalance
         self.financialSnapshotUpdatedAt = financialSnapshotUpdatedAt
         self.financialSnapshotSourceRawValue = financialSnapshotSource?.rawValue
+        self.rewardProgramName = rewardProgramName
+        self.rewardUnitRawValue = rewardUnit?.rawValue
+        self.baseRewardRate = baseRewardRate
+        self.rewardCategoryOverridesRaw = RewardProfile
+            .encodedCategoryOverrides(rewardCategoryOverrides)
+        self.rewardSourceName = rewardSourceName
+        self.rewardSourceURL = rewardSourceURL
+        self.rewardSourceConfidenceRaw = rewardSourceConfidence?.rawValue
+        self.rewardSourceVerifiedAt = rewardSourceVerifiedAt
+        self.rewardSourceNotes = rewardSourceNotes
         self.jurisdictionProfile = jurisdictionProfile
         self.transactions = transactions
         self.subscriptions = subscriptions
@@ -239,6 +279,118 @@ extension Account {
         if let snapshot = currentBalance { return snapshot }
         if balance != 0 { return balance }
         return nil
+    }
+}
+
+// MARK: - Reward helpers
+
+extension Account {
+
+    /// Pure value projection of the reward fields. Always safe to
+    /// call — missing fields fall back to calm defaults (unknown
+    /// unit, empty overrides, unverified provenance). Only credit
+    /// cards are expected to populate this in practice; non-credit
+    /// callers get the same empty profile.
+    var rewardProfile: RewardProfile {
+        let unit = RewardUnit.fromRawValue(rewardUnitRawValue)
+        let overrides = RewardProfile.decodedCategoryOverrides(
+            rewardCategoryOverridesRaw
+        )
+        return RewardProfile(
+            programName: rewardProgramName ?? "",
+            unit: unit,
+            baseRate: baseRewardRate,
+            categoryOverrides: overrides,
+            provenance: rewardProvenance,
+            notes: rewardSourceNotes ?? ""
+        )
+    }
+
+    /// ``SourceProvenance`` reconstructed from the reward provenance
+    /// fields. Mirrors ``foreignTransactionFeeProvenance`` so the
+    /// same ``SourceFreshness`` gates apply.
+    var rewardProvenance: SourceProvenance {
+        let confidence = rewardSourceConfidenceRaw
+            .flatMap(SourceConfidence.init(rawValue:))
+            ?? .userProvided
+
+        let scope = JurisdictionScope(countryCode: jurisdiction)
+
+        if let name = rewardSourceName, !name.isEmpty {
+            return SourceProvenance(
+                name: name,
+                urlString: rewardSourceURL,
+                type: confidence.isVerified ? .issuerDisclosure : .userEntered,
+                confidence: confidence,
+                jurisdiction: scope,
+                accessedAt: rewardSourceVerifiedAt,
+                publishedAt: nil,
+                notes: rewardSourceNotes
+            )
+        }
+
+        var provenance = RewardProfile.unverifiedUserEntered
+        provenance.jurisdiction = scope
+        provenance.accessedAt = rewardSourceVerifiedAt
+        if let notes = rewardSourceNotes, !notes.isEmpty {
+            provenance.notes = notes
+        }
+        return provenance
+    }
+
+    /// Builds a ``RewardRateEvaluation`` for `category` and `now`.
+    /// The engine (and tests) consume this rather than poking
+    /// individual fields — it keeps the gating logic (freshness,
+    /// unit known, rate present, category override present) in one
+    /// place.
+    func evaluateReward(
+        for category: MerchantCategory,
+        now: Date = .now
+    ) -> RewardRateEvaluation {
+        let profile = rewardProfile
+
+        guard profile.hasAnyRate else {
+            return .empty
+        }
+        guard profile.unit != .unknown else {
+            return .empty
+        }
+
+        let override = profile.categoryOverrides[category]
+        let rate = override ?? profile.baseRate
+
+        let effective = SourceFreshness.effectiveConfidence(
+            for: profile.provenance,
+            domain: .issuerCardTerms,
+            now: now
+        )
+        let isVerifiedAndFresh = effective.isVerified
+
+        let explanation: String?
+        if let rate, rate > 0, let suffix = profile.unit.valueSuffix {
+            let formattedRate = rate.formatted(
+                .number.precision(.fractionLength(0...2))
+            )
+            let categoryClause = override == nil
+                ? "base rate"
+                : "\(category.displayLabel.lowercased()) category override"
+            if isVerifiedAndFresh {
+                explanation = "\(formattedRate)\(suffix) — \(categoryClause), verified against \(profile.provenance.name)."
+            } else {
+                explanation = "\(formattedRate)\(suffix) — \(categoryClause), source not verified or outside the freshness window. NomadFi will not rank on this rate until you confirm it against the issuer's current product page."
+            }
+        } else {
+            explanation = nil
+        }
+
+        return RewardRateEvaluation(
+            rate: rate,
+            unit: profile.unit,
+            effectiveConfidence: effective,
+            isVerifiedAndFresh: isVerifiedAndFresh,
+            categoryOverrideApplied: override != nil,
+            explanation: explanation
+        )
     }
 }
 

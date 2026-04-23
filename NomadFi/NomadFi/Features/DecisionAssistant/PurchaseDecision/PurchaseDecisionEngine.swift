@@ -35,7 +35,7 @@ enum PurchaseDecisionEngine {
     static let hardRules: [String] = [
         "Always pay the statement balance in full by the due date. NomadFi never recommends carrying a balance or taking a cash advance for rewards.",
         "Credit scoring is multi-factor. NomadFi cannot promise a specific credit-score outcome from any single purchase decision.",
-        "Rewards require verified card terms. NomadFi does not model category multipliers yet — verify any claimed bonus on the issuer's current product page before treating it as a factor.",
+        "Rewards are used only when a verified source is on file and still inside its freshness window, and only when the unit is comparable across candidates. Unverified or stale rates are shown as context and never drive ranking.",
         "NomadFi never guarantees card acceptance, credit-limit increases, or that any method will be the cheapest in every future cycle.",
     ]
 
@@ -244,6 +244,23 @@ private extension PurchaseDecisionEngine {
         }
         checks.append(contentsOf: fxInfo.checks)
 
+        // Reward signal. The engine only factors rewards into
+        // ranking when verified + fresh + unit-comparable; here we
+        // just surface the narrative explanation on the per-card
+        // row so the UI and voice surface can read it back honestly.
+        let rewardEvaluation = account.evaluateReward(
+            for: context.category,
+            now: now
+        )
+        if let rewardExplanation = rewardEvaluation.explanation {
+            reasons.append(rewardExplanation)
+        }
+        if rewardEvaluation.rate != nil, !rewardEvaluation.isVerifiedAndFresh {
+            checks.append(
+                "Verify reward terms on \(displayName) against the issuer's current product page and stamp the source in Settings."
+            )
+        }
+
         // Decide on stance: if schedule confirmed + coverage OK + no
         // hard caveat, we consider this a candidate. The picker in
         // `decorate(candidates:)` will promote exactly one as
@@ -434,7 +451,8 @@ private extension PurchaseDecisionEngine {
             availableCredit: projectedAvailableCredit(for: account),
             isCreditCard: account.isCreditCard,
             foreignTransactionFeePercent: nil,
-            foreignTransactionFeeIsVerified: sameCurrency
+            foreignTransactionFeeIsVerified: sameCurrency,
+            rewardEvaluation: rewardEvaluation(for: account, context: context, now: now)
         )
     }
 
@@ -463,36 +481,110 @@ private extension PurchaseDecisionEngine {
             availableCredit: projectedAvailableCredit(for: account),
             isCreditCard: account.isCreditCard,
             foreignTransactionFeePercent: fxInfo.feePercent,
-            foreignTransactionFeeIsVerified: fxInfo.isVerified
+            foreignTransactionFeeIsVerified: fxInfo.isVerified,
+            rewardEvaluation: rewardEvaluation(for: account, context: context, now: now)
         )
+    }
+
+    /// Evaluate the account's rewards for the purchase. Deposit and
+    /// non-credit-card accounts always get an empty evaluation —
+    /// NomadFi does not model debit-card rewards in v1.
+    static func rewardEvaluation(
+        for account: Account,
+        context: PurchaseContext,
+        now: Date
+    ) -> RewardRateEvaluation {
+        guard account.isCreditCard else { return .empty }
+        return account.evaluateReward(for: context.category, now: now)
     }
 
     // MARK: - Ranking
 
     /// Score tuple for ranking usable candidates. Lower is better.
     ///
-    /// Ordering:
+    /// Ordering (decreasing priority):
     ///   1. Same-currency accounts beat cross-currency ones.
-    ///   2. Non-credit (deposit / wallet) beats credit card —
-    ///      NomadFi avoids promoting debt-risk paths over
-    ///      pay-now-from-funds paths when no verified rewards
-    ///      data differentiates them.
-    ///   3. Credit cards with a fully verified FX fee beat ones
-    ///      with an unverified FX fee, when both are usable.
-    ///   4. Stable tiebreaker: institution + account name.
+    ///   2. Credit cards with a fully verified FX fee beat ones with
+    ///      an unverified FX fee.
+    ///   3. Verified + comparable reward rate (see
+    ///      ``rewardAdvantageScore(_:amongComparableUnit:)``).
+    ///      Zero when rewards can't be compared, so this tier is a
+    ///      no-op and the ranking falls through unchanged.
+    ///   4. Non-credit (deposit / wallet) beats credit card — NomadFi
+    ///      avoids promoting debt-risk paths over pay-now-from-funds
+    ///      paths when rewards don't differentiate them.
+    ///   5. Stable tiebreaker: institution + account name.
+    ///
+    /// The numeric `Int` values follow "lower is better" so Swift's
+    /// default tuple comparison picks the expected winner without
+    /// custom comparators.
     static func rankingScore(
-        _ assessment: PurchaseCandidateAssessment
-    ) -> (Int, Int, Int, String, String) {
+        _ assessment: PurchaseCandidateAssessment,
+        comparableRewardUnit: RewardUnit?
+    ) -> (Int, Int, Int, Int, String, String) {
         let currencyScore = assessment.matchesPurchaseCurrency ? 0 : 1
-        let debtRiskScore = assessment.isCreditCard ? 1 : 0
         let fxVerifiedScore = assessment.foreignTransactionFeeIsVerified ? 0 : 1
+        let rewardScore = rewardAdvantageScore(
+            assessment,
+            amongComparableUnit: comparableRewardUnit
+        )
+        let debtRiskScore = assessment.isCreditCard ? 1 : 0
         return (
             currencyScore,
-            debtRiskScore,
             fxVerifiedScore,
+            rewardScore,
+            debtRiskScore,
             assessment.institutionName,
             assessment.accountName
         )
+    }
+
+    /// Negative integer reward score used by ``rankingScore`` —
+    /// smaller (more negative) is better, matching the
+    /// "lower is better" contract the tuple comparator relies on.
+    ///
+    /// Returns 0 when:
+    ///   - the assessment has no usable reward signal (missing rate,
+    ///     unverified, stale, unknown unit), OR
+    ///   - the unit doesn't match the comparable-unit argument
+    ///     (rewards are apples-to-oranges across the usable set, so
+    ///     we refuse to rank on them).
+    static func rewardAdvantageScore(
+        _ assessment: PurchaseCandidateAssessment,
+        amongComparableUnit comparableUnit: RewardUnit?
+    ) -> Int {
+        let evaluation = assessment.rewardEvaluation
+        guard evaluation.isUsableForRanking,
+              let rate = evaluation.rate,
+              let comparableUnit,
+              evaluation.unit == comparableUnit
+        else {
+            return 0
+        }
+        // Multiply by -100 so "2.5%" → -250, "1.25%" → -125.
+        // Integer values keep tuple comparison deterministic.
+        return Int((-rate * 100).rounded())
+    }
+
+    /// Returns the unit shared by every usable candidate's verified
+    /// reward evaluation — the "apples to apples" tier that
+    /// ``rewardAdvantageScore`` checks against. `nil` when no two
+    /// candidates share a verified unit, which means rewards stop
+    /// being a ranker and become context only.
+    static func comparableRewardUnit(
+        among usables: [PurchaseCandidateAssessment]
+    ) -> RewardUnit? {
+        let units = usables.compactMap { candidate -> RewardUnit? in
+            guard candidate.rewardEvaluation.isUsableForRanking else {
+                return nil
+            }
+            return candidate.rewardEvaluation.unit
+        }
+        let distinct = Set(units)
+        guard distinct.count == 1, let only = distinct.first else {
+            return nil
+        }
+        return only
     }
 
     /// Severity ordering for the brief sheet. Usable candidates
@@ -517,7 +609,11 @@ private extension PurchaseDecisionEngine {
         let lhsRank = severityRank(lhs.stance)
         let rhsRank = severityRank(rhs.stance)
         if lhsRank != rhsRank { return lhsRank < rhsRank }
-        return rankingScore(lhs) < rankingScore(rhs)
+        // Severity sort precedes the reward-aware re-rank in
+        // `decorate`, so we use a nil comparable unit here and let
+        // the decoration pass do the reward-aware ordering.
+        return rankingScore(lhs, comparableRewardUnit: nil)
+            < rankingScore(rhs, comparableRewardUnit: nil)
     }
 
     /// Promotes the best usable candidate to `.recommended` and the
@@ -532,10 +628,19 @@ private extension PurchaseDecisionEngine {
             return candidates
         }
 
-        // Usable candidates in ranking order.
-        let usables = candidates
+        let rawUsables = candidates
             .filter { $0.stance == .usableWithCaveats }
-            .sorted { rankingScore($0) < rankingScore($1) }
+
+        // Figure out whether verified rewards are comparable across
+        // the usable set before we rank. If units differ, rewards
+        // revert to context-only and the ranking falls back to the
+        // pre-rewards tier order.
+        let comparableUnit = comparableRewardUnit(among: rawUsables)
+
+        let usables = rawUsables.sorted {
+            rankingScore($0, comparableRewardUnit: comparableUnit)
+                < rankingScore($1, comparableRewardUnit: comparableUnit)
+        }
 
         guard !usables.isEmpty else {
             return candidates
@@ -601,13 +706,20 @@ private extension PurchaseDecisionEngine {
                 ordered.append(check)
             }
         }
-        // Add the single "rewards not modelled" check for
-        // rewards-sensitive categories — consolidated across the
-        // portfolio so the UI isn't noisy.
+        // Portfolio-level rewards nudge, scoped to rewards-sensitive
+        // categories. We show the nudge only when no candidate has a
+        // verified + fresh rate on file — once the user records one
+        // on any credit card, the engine trusts the per-card narrative
+        // above and stops repeating the umbrella check.
         if context.category.isRewardsSensitive {
-            let rewardsNote = "Verify any category rewards bonus (\(context.category.displayLabel)) on the issuer's current product page — NomadFi does not model verified rewards yet."
-            if seen.insert(rewardsNote).inserted {
-                ordered.append(rewardsNote)
+            let anyVerified = candidates.contains {
+                $0.rewardEvaluation.isVerifiedAndFresh
+            }
+            if !anyVerified {
+                let rewardsNote = "Verify any category rewards bonus (\(context.category.displayLabel)) on the issuer's current product page and record it in Settings → Account → Rewards Terms before NomadFi can include rewards in the ranking."
+                if seen.insert(rewardsNote).inserted {
+                    ordered.append(rewardsNote)
+                }
             }
         }
         return ordered
@@ -681,7 +793,8 @@ private extension PurchaseCandidateAssessment {
             availableCredit: availableCredit,
             isCreditCard: isCreditCard,
             foreignTransactionFeePercent: foreignTransactionFeePercent,
-            foreignTransactionFeeIsVerified: foreignTransactionFeeIsVerified
+            foreignTransactionFeeIsVerified: foreignTransactionFeeIsVerified,
+            rewardEvaluation: rewardEvaluation
         )
     }
 }

@@ -69,4 +69,12 @@ struct PurchaseCandidateAssessment: Identifiable, Sendable, Equatable {
     /// per ``SourceFreshness``. The engine never treats an
     /// unverified fee as verified.
     let foreignTransactionFeeIsVerified: Bool
+
+    // MARK: - Reward signal
+
+    /// Engine-side evaluation of the account's reward terms for the
+    /// purchase category. Always present (defaults to
+    /// ``RewardRateEvaluation/empty``) so the UI never has to
+    /// branch on `nil`.
+    let rewardEvaluation: RewardRateEvaluation
 }

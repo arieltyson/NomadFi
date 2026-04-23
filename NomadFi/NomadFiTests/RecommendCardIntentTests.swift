@@ -223,11 +223,11 @@ struct RecommendCardIntentTests {
 
     // MARK: - recommendCardAnswer — rewards-sensitive category triggers caveat
 
-    @Test("Rewards-sensitive category triggers the verify-rewards caveat")
+    @Test("Rewards-sensitive category without any verified rate surfaces the umbrella reminder")
     func rewardsSensitiveCategoryAddsCaveat() {
         // `dining` is a rewards-sensitive category; engine picks the
-        // same-currency debit account, so only the caveat should be
-        // the differentiator from the base "ready" case.
+        // same-currency debit account. No credit card on file has
+        // verified rewards → umbrella reminder appears.
         let decision = Self.purchaseDecision(
             context: Self.baseContext(category: .dining),
             accounts: [Self.usdChecking()]
@@ -235,7 +235,76 @@ struct RecommendCardIntentTests {
         let dialog = DecisionAssistantIntentDialog.recommendCardAnswer(
             decision: decision
         )
-        #expect(dialog.localizedStandardContains("does not model verified rewards"))
+        #expect(dialog.localizedStandardContains("Rewards Terms"))
+        #expect(dialog.localizedStandardContains("verified rewards"))
+    }
+
+    // MARK: - Verified rewards copy
+
+    private static func verifiedRewardsCard(
+        unit: RewardUnit = .cashBackPercent,
+        baseRate: Double? = 2.0
+    ) -> Account {
+        Account(
+            name: "Verified Rewards Card",
+            institutionName: "Verified Issuer",
+            accountType: .creditCard,
+            currencyCode: .usd,
+            statementPeriodStartDate: date(year: 2026, month: 4, day: 1),
+            statementClosingDate: date(year: 2026, month: 4, day: 28),
+            paymentDueDate: date(year: 2026, month: 5, day: 25),
+            statementScheduleLastConfirmedAt: date(year: 2026, month: 4, day: 21),
+            creditLimit: 5_000,
+            currentBalance: 500,
+            financialSnapshotUpdatedAt: now,
+            financialSnapshotSource: .userSnapshot,
+            rewardProgramName: "Program",
+            rewardUnit: unit,
+            baseRewardRate: baseRate,
+            rewardSourceName: "Issuer product page",
+            rewardSourceURL: "https://example.com/card",
+            rewardSourceConfidence: .verifiedPrimary,
+            rewardSourceVerifiedAt: now
+        )
+    }
+
+    @Test("Verified fresh rewards are mentioned in the recommendation dialog")
+    func verifiedRewardsMentionedInDialog() {
+        let decision = Self.purchaseDecision(
+            accounts: [Self.verifiedRewardsCard()]
+        )
+        let dialog = DecisionAssistantIntentDialog
+            .recommendCardAnswer(decision: decision)
+        #expect(dialog.localizedStandardContains("Verified rewards on file"))
+        #expect(dialog.localizedStandardContains("2%"))
+    }
+
+    @Test("Unverified rewards rate is explicitly flagged as not used for ranking")
+    func unverifiedRewardsFlaggedInDialog() {
+        // Credit card with a rate but no source → provenance falls
+        // back to user-provided / unverified.
+        let unverified = Account(
+            name: "Manual Rewards",
+            institutionName: "Manual Issuer",
+            accountType: .creditCard,
+            currencyCode: .usd,
+            statementPeriodStartDate: Self.date(year: 2026, month: 4, day: 1),
+            statementClosingDate: Self.date(year: 2026, month: 4, day: 28),
+            paymentDueDate: Self.date(year: 2026, month: 5, day: 25),
+            statementScheduleLastConfirmedAt: Self.date(year: 2026, month: 4, day: 21),
+            creditLimit: 5_000,
+            currentBalance: 500,
+            financialSnapshotUpdatedAt: Self.now,
+            financialSnapshotSource: .userSnapshot,
+            rewardProgramName: "Manual",
+            rewardUnit: .cashBackPercent,
+            baseRewardRate: 2.5
+        )
+        let decision = Self.purchaseDecision(accounts: [unverified])
+        let dialog = DecisionAssistantIntentDialog
+            .recommendCardAnswer(decision: decision)
+        #expect(dialog.localizedStandardContains("was not used to rank"))
+        #expect(dialog.localizedStandardContains("Rewards Terms"))
     }
 
     // MARK: - recommendCardAnswer — FX unverified caveat

@@ -137,7 +137,18 @@ points at the test file that pins the behaviour.
 - [~] "Which card should I use?" — routed through Scenario 1 today. With
   the generic engine in place, the voice surface can be widened in the
   next phase via `RecommendCardIntent`.
-- [ ] Verified rewards / category-bonus model on `Account`.
+- [x] Verified rewards / category-bonus model on `Account` —
+  CloudKit-safe primitive fields (`rewardProgramName`,
+  `rewardUnitRawValue`, `baseRewardRate`,
+  `rewardCategoryOverridesRaw` (JSON), plus source provenance)
+  projected through `RewardProfile` / `RewardRateEvaluation`. The
+  engine uses rewards for ranking only when a verified source is on
+  file, it's still inside the 30-day issuer-terms freshness window,
+  and the reward units are comparable across candidates.
+  Dedicated Settings editor at **Account → Rewards Terms** mirrors
+  the credit-card calendar flow. _Evidence: `RewardProfileTests.swift`,
+  `CreditCardRewardsEditViewModelTests.swift`, reward-aware cases in
+  `PurchaseDecisionEngineTests.swift` and `RecommendCardIntentTests.swift`._
 - [ ] Cross-card payment-allocation planning.
 - [ ] Credit-limit-increase readiness checklist.
 
@@ -785,12 +796,14 @@ re-debating whether the foundation exists.
     the credit-timing engine). Both run `.background`, cite the
     engines' existing deterministic output, never invent rewards
     or predict credit-score outcomes.
-11. `[ ]` **Next:** Verified rewards / category-bonus model on
-    `Account` — lifts the "rewards are not ranked" caveat in the
-    generic engine so `RecommendCardIntent` can include rewards in
-    the ranking (currently it only emits a verification caveat).
-12. `[ ]` Transaction capture fan-out: CSV import, merchant normalisation,
-    recurring-charge detection beyond Subscriptions.
+11. `[x]` Verified rewards / category-bonus model on `Account`
+    (`RewardProfile`, `RewardRateEvaluation`, `RewardUnit`,
+    `CreditCardRewardsEditView`) — rewards now enter the ranking
+    only when verified + fresh + unit-comparable.
+12. `[ ]` **Next:** Transaction capture fan-out (Phase 4): CSV import,
+    merchant normalisation, recurring-charge detection beyond
+    Subscriptions. Highest-leverage remaining gap — spend data is
+    the next deterministic signal after account + rewards profile.
 13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
     readiness checklist (completes Phase 6).
 14. `[ ]` Region-specific tax education path (Phase 7).
@@ -805,53 +818,57 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Target:** `RecommendCardIntent` — the voice surface that sits on top of
-the freshly-shipped Generic Purchase Decision Engine v1. Users should be
-able to say *"Which card should I use at Target for 80 dollars in San
-Francisco"* and hear the engine's ruling, without the app ever inventing
-rewards or promising score outcomes.
+**Target:** Phase 4 — **Transaction capture fan-out**. With rewards
+now enterable as a verified source on `Account`, the next
+deterministic signal the engine lacks is actual spending history.
+Shipping real CSV import + merchant normalisation + recurring-charge
+detection (beyond the existing Subscriptions flow) would unblock:
+
+- Statement-balance projection from saved transactions rather than
+  user-entered snapshots alone.
+- Category-specific spend trends to surface **where rewards have
+  actually been earning the most** — instead of asking the user to
+  verify category bonuses in the abstract.
+- Honest anomaly / duplicate detection, which today is not wired.
 
 **Why this over the alternatives:**
 
-- The engine and brief sheet for a generic merchant / category / amount
-  ranking are now in the repo (`PurchaseDecisionEngine`,
-  `PurchaseDecisionBriefView`). The voice intent is now the single
-  user-visible gap — `ActiveCardIntent` still says NomadFi cannot answer
-  arbitrary purchases.
-- All scaffolding is ready: `DecisionDraftKindAppEnum` shows how to mirror
-  a core enum into `AppEnum` for parameter pickers. `MerchantCategory` and
-  `CurrencyCode` already conform to `Codable`/`Sendable` and can be
-  adapted the same way.
-- The intent runs `.background` and returns a concise dialog — no new
-  persistence is required; the engine is pure and already covered by tests.
-- The remaining small intent, `ReviewCreditTimingIntent`, is a natural
-  companion: both shipping together closes voice parity across the three
-  deterministic engines.
+- Credit Timing and Purchase Decision engines both benefit from a
+  richer balance / spend picture. Neither needs new rules; they
+  only need better inputs.
+- Cross-card payment allocation (Phase 6 remainder) depends on
+  per-card spend by category, which transaction capture provides.
+- It keeps the "no generic AI" invariant intact — transaction
+  capture is deterministic parsing, not recommendation synthesis.
+- The `Transaction` SwiftData model, `ReceiptScannerService`,
+  `ReceiptCategorizer`, and `SubscriptionDetector` already exist as
+  seeds. Phase 4 is mostly integration work — CSV import adapter,
+  merchant-name normalisation, recurring-detection widened from
+  subscriptions to general recurring charges, and a spending-trend
+  surface on the Dashboard.
 
-**Scoping suggestion for the voice pass:**
+**Scoping suggestion for a first slice:**
 
-1. Mirror `MerchantCategory` into a small `MerchantCategoryAppEnum` under
-   `Features/Intents/`, mirroring the `DecisionDraftKindAppEnum` pattern
-   (keep the core model free of `AppIntents`).
-2. Add `RecommendCardIntent` with parameters: `merchantName` (optional),
-   `category` (`MerchantCategoryAppEnum`), `amount` (Double), `currency`
-   (`CurrencyCode` via an AppEnum adapter or a `String` with a whitelisted
-   picker), `locationHint` (optional).
-3. `perform()` opens a `ModelContainer` registering
-   `PurchaseDecisionRecord.self` + `Account.self`, persists the inputs
-   onto the active record so the in-app brief sheet reflects the voice
-   capture, runs `PurchaseDecisionEngine.decide`, and speaks a concise
-   dialog.
-4. Dialog must avoid "best", "guaranteed", "always", and "rewards" —
-   pin that with a test modelled on
-   `DecisionAssistantIntentDialogTests.swift`.
-5. Add `ReviewCreditTimingIntent` at the same time (`.background`, runs
-   `CreditTimingDecisionEngine`) — it's small and was already on the
-   follow-up list.
+1. Define a pure `CSVImportProfile` value type keyed to the common
+   bank/issuer exports (Chase, CIBC, American Express Canada,
+   Wise). Pure parsing only; no UI coupling.
+2. Add a `TransactionImportService` (pure, testable) that ingests a
+   CSV, normalises merchant names via a small dictionary, dedupes
+   against existing rows, and returns a preview the user confirms.
+3. Generalise `SubscriptionDetector` into a
+   `RecurringChargeDetector` that works on any account's
+   transaction stream — the existing subscriptions flow stays the
+   primary surface for those, but the engine now sees all recurring
+   charges.
+4. Add a spending-trend Card on the Dashboard (category × month
+   grid) driven from `Transaction` data. Keep it read-only.
 
-Target tests mirror the shape of `CreditTimingDecisionEngineTests` and
-`ScenarioDecisionEngineTests`: pin every claim, pin every refusal, pin
-absolute-date phrasing, and pin the prohibited-vocabulary list.
+Tests mirror the shape of `PurchaseDecisionEngineTests` and
+`CreditTimingDecisionEngineTests`: pin every claim, pin every
+refusal, pin absolute-date phrasing, and pin the prohibited
+vocabulary. No spoken-copy generation in Phase 4 — voice parity is
+already shipped for engines; new data goes through the in-app
+surfaces first, voice follows later only if needed.
 
 ---
 

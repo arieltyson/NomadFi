@@ -304,13 +304,51 @@ enum DecisionAssistantIntentDialog {
             )
         }
 
-        if decision.context.category.isRewardsSensitive {
-            parts.append(
-                "NomadFi does not model verified rewards yet — verify any category bonus on the issuer's current product page."
-            )
-        }
+        appendRewardCopy(for: decision, into: &parts)
 
         return parts.joined(separator: " ")
+    }
+
+    /// Appends reward-specific copy to the `.ready` dialog. Covers
+    /// three honesty cases:
+    ///   1. Recommendation carries a verified + fresh rate → mention it.
+    ///   2. Recommendation carries a rate but the source is
+    ///      unverified or stale → say the rate was not used for
+    ///      ranking and point at the editor.
+    ///   3. Rewards-sensitive category and no candidate has a
+    ///      verified rate on file → umbrella reminder to record one.
+    private static func appendRewardCopy(
+        for decision: PurchaseDecision,
+        into parts: inout [String]
+    ) {
+        let rec = decision.recommendation
+        let rewardEvaluation = rec?.rewardEvaluation ?? .empty
+
+        if rewardEvaluation.isUsableForRanking,
+           let rate = rewardEvaluation.displayRate {
+            parts.append(
+                "Verified rewards on file: \(rate). NomadFi included this in the ranking only because the source is verified and still fresh."
+            )
+            return
+        }
+
+        if rewardEvaluation.rate != nil {
+            parts.append(
+                "NomadFi has a rewards rate on file for this card but the source isn't verified or is past its freshness window — the rate was not used to rank. Confirm it in Settings → Account → Rewards Terms to include rewards next time."
+            )
+            return
+        }
+
+        if decision.context.category.isRewardsSensitive {
+            let anyVerified = decision.candidates.contains {
+                $0.rewardEvaluation.isVerifiedAndFresh
+            }
+            if !anyVerified {
+                parts.append(
+                    "NomadFi does not have verified rewards on file for your cards — record them in Settings → Account → Rewards Terms so the engine can include rewards in the ranking."
+                )
+            }
+        }
     }
 
     /// Name of the first assessment whose ruling matches `ruling`, or

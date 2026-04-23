@@ -326,8 +326,8 @@ struct PurchaseDecisionEngineTests {
 
     // MARK: - Rewards
 
-    @Test("Rewards are never used for ranking — a rewards-sensitive category only adds a verification check")
-    func rewardsDoNotRank() {
+    @Test("Unverified rewards card still loses to a same-currency debit — rewards don't rank without a verified source")
+    func unverifiedRewardsDoNotOutrankDebit() {
         let creditWithBonus = creditCard(
             name: "Dining Rewards",
             institution: "Generic Bank"
@@ -338,19 +338,20 @@ struct PurchaseDecisionEngineTests {
             accounts: [creditWithBonus, checking],
             now: Self.now
         )
-        // Even with a nominally "dining-rewards" card name, the
-        // engine still picks the non-credit account first.
+        // Nominal "dining" card name is not a verified source;
+        // deposit keeps the top spot.
         let recommendation = try! #require(decision.recommendation)
         #expect(recommendation.accountName == "Chase Checking")
 
-        // Category triggers a single consolidated verification check.
+        // Rewards-sensitive category without any verified rate
+        // surfaces the umbrella reminder so the user can record one.
         let joined = decision.missingDataChecklist.joined(separator: "\n")
         #expect(joined.localizedStandardContains("Dining"))
-        #expect(joined.localizedStandardContains("does not model verified rewards"))
+        #expect(joined.localizedStandardContains("Rewards Terms"))
     }
 
-    @Test("Non-rewards-sensitive category does not add the rewards verification check")
-    func generalCategorySkipsRewardsCheck() {
+    @Test("Non-rewards-sensitive category does not add the umbrella rewards reminder")
+    func generalCategorySkipsRewardsReminder() {
         let checking = checkingAccount(balance: 500)
         let decision = PurchaseDecisionEngine.decide(
             context: baseContext(amount: 80, category: .general),
@@ -358,7 +359,162 @@ struct PurchaseDecisionEngineTests {
             now: Self.now
         )
         let joined = decision.missingDataChecklist.joined(separator: "\n")
-        #expect(!joined.localizedStandardContains("verified rewards"))
+        #expect(!joined.localizedStandardContains("rewards"))
+    }
+
+    // MARK: - Verified rewards (v2 behavior)
+
+    private func verifiedRewardsCreditCard(
+        name: String = "Verified Rewards Card",
+        institution: String = "Verified Issuer",
+        unit: RewardUnit = .cashBackPercent,
+        baseRate: Double? = 2.0,
+        categoryOverrides: [MerchantCategory: Double] = [:],
+        limit: Double = 5_000,
+        currentBalance: Double = 500,
+        verifiedAt: Date? = PurchaseDecisionEngineTests.now,
+        currency: CurrencyCode = .usd
+    ) -> Account {
+        Account(
+            name: name,
+            institutionName: institution,
+            accountType: .creditCard,
+            currencyCode: currency,
+            statementPeriodStartDate: Self.date(year: 2026, month: 4, day: 1),
+            statementClosingDate: Self.date(year: 2026, month: 4, day: 28),
+            paymentDueDate: Self.date(year: 2026, month: 5, day: 25),
+            statementScheduleLastConfirmedAt: Self.date(year: 2026, month: 4, day: 21),
+            creditLimit: limit,
+            currentBalance: currentBalance,
+            financialSnapshotUpdatedAt: Self.now,
+            financialSnapshotSource: .userSnapshot,
+            rewardProgramName: "Program",
+            rewardUnit: unit,
+            baseRewardRate: baseRate,
+            rewardCategoryOverrides: categoryOverrides,
+            rewardSourceName: "Issuer product page",
+            rewardSourceURL: "https://example.com/card",
+            rewardSourceConfidence: .verifiedPrimary,
+            rewardSourceVerifiedAt: verifiedAt
+        )
+    }
+
+    @Test("Verified cash-back credit card is promoted over a same-currency deposit when safety gates clear")
+    func verifiedCashBackBeatsDeposit() {
+        let verified = verifiedRewardsCreditCard(baseRate: 2.0)
+        let checking = checkingAccount(balance: 500)
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 80, category: .general),
+            accounts: [verified, checking],
+            now: Self.now
+        )
+        let recommendation = try! #require(decision.recommendation)
+        #expect(recommendation.accountName == verified.name)
+        #expect(recommendation.isCreditCard)
+        #expect(recommendation.rewardEvaluation.isUsableForRanking)
+    }
+
+    @Test("Category override drives the quoted rate when it beats the base")
+    func categoryOverrideDrivesRankingQuote() {
+        let verified = verifiedRewardsCreditCard(
+            baseRate: 1.0,
+            categoryOverrides: [.groceries: 3.0]
+        )
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 80, category: .groceries),
+            accounts: [verified, checkingAccount(balance: 500)],
+            now: Self.now
+        )
+        let recommendation = try! #require(decision.recommendation)
+        #expect(recommendation.rewardEvaluation.rate == 3.0)
+        #expect(recommendation.rewardEvaluation.categoryOverrideApplied)
+    }
+
+    @Test("Stale verified reward source is downgraded and the card does not win on rewards")
+    func staleRewardSourceIsNotRanker() {
+        // Issuer-terms freshness window is 30 days.
+        let fourMonthsAgo = Self.now.addingTimeInterval(-60 * 60 * 24 * 120)
+        let stale = verifiedRewardsCreditCard(
+            baseRate: 3.0,
+            verifiedAt: fourMonthsAgo
+        )
+        let checking = checkingAccount(balance: 500)
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 80, category: .general),
+            accounts: [stale, checking],
+            now: Self.now
+        )
+        let recommendation = try! #require(decision.recommendation)
+        // Rewards were not trusted → debit keeps the top spot.
+        #expect(recommendation.accountName == "Chase Checking")
+        let staleAssessment = try! #require(
+            decision.candidates.first { $0.accountName == stale.name }
+        )
+        #expect(!staleAssessment.rewardEvaluation.isVerifiedAndFresh)
+        #expect(!staleAssessment.rewardEvaluation.isUsableForRanking)
+    }
+
+    @Test("Rewards never override insufficient credit coverage")
+    func rewardsNeverOverrideInsufficientCoverage() {
+        // Low-limit card with a verified high rate cannot cover the purchase.
+        let tightVerified = verifiedRewardsCreditCard(
+            name: "Tiny Limit Verified",
+            baseRate: 5.0,
+            limit: 50,
+            currentBalance: 30
+        )
+        let checking = checkingAccount(balance: 500)
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 100, category: .general),
+            accounts: [tightVerified, checking],
+            now: Self.now
+        )
+        let recommendation = try! #require(decision.recommendation)
+        #expect(recommendation.accountName == "Chase Checking")
+
+        let tightAssessment = try! #require(
+            decision.candidates.first { $0.accountName == tightVerified.name }
+        )
+        #expect(tightAssessment.stance == .insufficientCreditCoverage)
+    }
+
+    @Test("Incomparable reward units make rewards context-only — debit keeps the top spot")
+    func incomparableUnitsFallBackToPreRewardRanking() {
+        // Two credit cards: one in cash-back, one in points. Units
+        // are incomparable → engine refuses to rank on rewards.
+        let cashBack = verifiedRewardsCreditCard(
+            name: "Cash Back Card",
+            unit: .cashBackPercent,
+            baseRate: 2.0
+        )
+        let points = verifiedRewardsCreditCard(
+            name: "Points Card",
+            institution: "Points Issuer",
+            unit: .pointsPerDollar,
+            baseRate: 3.0
+        )
+        let checking = checkingAccount(balance: 500)
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 80, category: .general),
+            accounts: [cashBack, points, checking],
+            now: Self.now
+        )
+        // With rewards unranked, the debit account wins by the
+        // pre-rewards safety preference.
+        let recommendation = try! #require(decision.recommendation)
+        #expect(recommendation.accountName == "Chase Checking")
+    }
+
+    @Test("Umbrella rewards reminder disappears once at least one card has verified fresh rewards")
+    func umbrellaReminderDisappearsWithVerifiedRate() {
+        let verified = verifiedRewardsCreditCard(baseRate: 2.0)
+        let decision = PurchaseDecisionEngine.decide(
+            context: baseContext(amount: 80, category: .dining),
+            accounts: [verified, checkingAccount(balance: 500)],
+            now: Self.now
+        )
+        let joined = decision.missingDataChecklist.joined(separator: "\n")
+        #expect(!joined.localizedStandardContains("Rewards Terms"))
     }
 
     // MARK: - Hard rules + copy safety
@@ -371,7 +527,10 @@ struct PurchaseDecisionEngineTests {
         #expect(joined.contains("pay the statement balance in full"))
         #expect(joined.contains("never recommends carrying a balance"))
         #expect(joined.contains("any single purchase decision"))
-        #expect(joined.contains("rewards require verified card terms"))
+        // Rewards invariant: only used when verified + comparable;
+        // unverified/stale rates never drive ranking.
+        #expect(joined.contains("verified source"))
+        #expect(joined.contains("never drive ranking"))
     }
 
     @Test("Engine copy never uses prohibited score / guarantee / 'always best' phrases")
