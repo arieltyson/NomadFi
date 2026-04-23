@@ -1,7 +1,11 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "—" : {
+
+    },
     "%@" : {
+
     },
     "%@ — %@" : {
       "localizations" : {
@@ -9,6 +13,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
           }
         }
       }
@@ -69,6 +83,9 @@
     "%@ filter" : {
 
     },
+    "%@ override rate" : {
+
+    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -119,8 +136,28 @@
         }
       }
     },
+    "%@. %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@. %2$@ %3$@"
+          }
+        }
+      }
+    },
     "%lld" : {
 
+    },
+    "%lld %@ in another currency and %@ not shown." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@ in another currency and %3$@ not shown."
+          }
+        }
+      }
     },
     "%lld active subscription%@" : {
       "localizations" : {
@@ -161,6 +198,9 @@
     "3 days before renewal" : {
 
     },
+    "30%% total %@" : {
+
+    },
     "A credit limit is capacity, not a balance. Current balance and available credit are optional snapshots from your issuer app — they will be timestamped and flagged when stale." : {
 
     },
@@ -168,10 +208,13 @@
 
     },
     "A short hint like a city name. Don't enter a full street address." : {
+
     },
     "A short location hint, not a full address." : {
+
     },
     "A short title helps you recognise this draft in the Gathered intelligence list." : {
+
     },
     "About NomadFi" : {
 
@@ -218,7 +261,13 @@
     "Add %@" : {
 
     },
+    "Add a credit card to see readiness checks. NomadFi does not request limits on your behalf." : {
+
+    },
     "Add a credit-card account above to track statement close and payment due dates here." : {
+
+    },
+    "Add a source name or URL before marking as verified." : {
 
     },
     "Add Account" : {
@@ -297,8 +346,20 @@
 
     },
     "Amount (optional)" : {
+
     },
     "Amount, optional" : {
+
+    },
+    "And %lld more %@ with smaller totals." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "And %1$lld more %2$@ with smaller totals."
+          }
+        }
+      }
     },
     "App Lock" : {
 
@@ -309,6 +370,8 @@
     "App version %@" : {
 
     },
+    "Applied when no category override matches the purchase category." : {
+    },
     "Arbitrage" : {
 
     },
@@ -316,6 +379,9 @@
 
     },
     "As of %@" : {
+
+    },
+    "Ask NomadFi which saved payment method clears the hard rules for a purchase. The engine is deterministic — it will not invent rewards claims or predict a credit-score outcome." : {
 
     },
     "At 80%, 90%, and 100%" : {
@@ -342,6 +408,12 @@
     "Balance not set" : {
 
     },
+    "Base earn rate" : {
+
+    },
+    "Base rate" : {
+
+    },
     "Before checkout" : {
 
     },
@@ -357,6 +429,9 @@
     "Built for International Students" : {
 
     },
+    "CAD — Canadian Dollar" : {
+
+    },
     "Can't Remove Yet" : {
 
     },
@@ -364,14 +439,19 @@
 
     },
     "Capture a scenario now, in your own words. NomadFi keeps it on-device until a deterministic engine can analyze it." : {
+
     },
     "Capture decision" : {
+
     },
     "Capture Decision" : {
+
     },
     "Capture Decision Draft" : {
+
     },
     "Captured draft" : {
+
     },
     "Card Amounts (Optional)" : {
 
@@ -383,6 +463,9 @@
 
     },
     "Category" : {
+
+    },
+    "Category overrides" : {
 
     },
     "Chase Freedom Rise" : {
@@ -406,14 +489,23 @@
     "Check Net Worth" : {
 
     },
+    "Choose a Different File" : {
+
+    },
+    "Choose CSV File…" : {
+
+    },
     "Choose how long NomadFi waits before locking after you leave the app" : {
 
     },
     "City or context" : {
+
     },
     "City or short location hint" : {
+
     },
     "City or short location hint (optional)" : {
+
     },
     "Clear" : {
 
@@ -425,6 +517,15 @@
 
     },
     "Clear Dates" : {
+
+    },
+    "Clear Rewards" : {
+
+    },
+    "Clear Rewards Terms" : {
+
+    },
+    "Clear rewards terms?" : {
 
     },
     "Clear snapshot" : {
@@ -439,10 +540,16 @@
     "Closes %@" : {
 
     },
+    "CNY — Chinese Yuan" : {
+
+    },
     "Comparing prices across jurisdictions..." : {
 
     },
     "Comparison Error" : {
+
+    },
+    "Confirm Import" : {
 
     },
     "Confirm Receipt" : {
@@ -458,13 +565,16 @@
 
     },
     "Context" : {
+
     },
     "Continue" : {
 
     },
     "Continue Amazon Arrival Decision" : {
+
     },
     "Continue Decision" : {
+
     },
     "Continue Without Location" : {
 
@@ -522,8 +632,10 @@
 
     },
     "Credit timing" : {
+
     },
     "Credit timing check" : {
+
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -532,6 +644,19 @@
 
     },
     "Currency & FX" : {
+
+    },
+    "Currency group %@. Thirty percent total %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Currency group %1$@. Thirty percent total %2$@."
+          }
+        }
+      }
+    },
+    "Currency the merchant will bill you in." : {
 
     },
     "Current (%@)" : {
@@ -547,6 +672,7 @@
 
     },
     "Current ruling" : {
+
     },
     "Dashboard" : {
 
@@ -564,6 +690,7 @@
 
     },
     "Decision kind" : {
+
     },
     "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference — and never labels AI-assisted drafts as verified." : {
 
@@ -584,6 +711,7 @@
 
     },
     "Delete draft" : {
+
     },
     "Delete draft…" : {
 
@@ -592,8 +720,10 @@
 
     },
     "Delete this draft from this device?" : {
+
     },
     "Describe the decision in your own words — what you're weighing, and any context that matters." : {
+
     },
     "Describe the scenario" : {
 
@@ -605,6 +735,9 @@
 
     },
     "Detected Subscriptions" : {
+
+    },
+    "Dining" : {
 
     },
     "Dismiss" : {
@@ -638,6 +771,7 @@
 
     },
     "Don't enter card numbers, account numbers, or full addresses. The engine doesn't need them." : {
+
     },
     "Done" : {
 
@@ -654,6 +788,15 @@
     "Double tap to select" : {
 
     },
+    "Duplicate" : {
+
+    },
+    "Duplicate rows match an existing transaction by external ID or by merchant + amount + date within a few days. Skipped rows show the reason below." : {
+
+    },
+    "Duplicates skipped" : {
+
+    },
     "Dynamic Type" : {
 
     },
@@ -664,6 +807,7 @@
 
     },
     "Edit draft" : {
+
     },
     "Enable Notifications" : {
 
@@ -683,12 +827,23 @@
     "Enter service name and amount to enable saving." : {
 
     },
+    "Enter the rate the issuer publishes as the \"everywhere else\" earn rate. Leave empty if you don't want a base rate on file." : {
+
+    },
     "Enter the real numbers from Chase and Wise. Values are stored only on this device and can be wiped from Settings → Privacy." : {
 
     },
+    "Error: %@" : {
+
+    },
+    "EUR — Euro" : {
+
+    },
     "Evaluated %@" : {
+
     },
     "Evaluated as of %@" : {
+
     },
     "Every Saturday morning" : {
 
@@ -751,6 +906,8 @@
     "For cross-border transactions, NomadFi compares your actual exchange rate against the mid-market rate to reveal hidden FX fees." : {
 
     },
+    "For example, the exact issuer product page title." : {
+    },
     "Frequency" : {
 
     },
@@ -776,7 +933,14 @@
     "Gather intelligence" : {
 
     },
+    "GBP — British Pound" : {
+
+    },
+    "General purchase" : {
+
+    },
     "Get NomadFi's current saved Amazon arrival-order recommendation from the Decision Assistant." : {
+
     },
     "Get Started" : {
 
@@ -787,23 +951,58 @@
     "Global Net Worth" : {
 
     },
+    "Groceries" : {
+
+    },
     "Hard rules" : {
 
     },
+    "Health" : {
+
+    },
     "Hear NomadFi's current source-backed ruling for your Amazon arrival-order decision." : {
+
+    },
+    "Hear NomadFi's deterministic credit-timing check across your saved credit cards — near-limit warnings, paydown-before-close prompts, or a calm \"all cards ready\" read." : {
+
     },
     "Hides the draft from the main list. You can restore it later." : {
+
     },
     "Home" : {
+
+    },
+    "Home currency" : {
 
     },
     "Home Currency" : {
 
     },
+    "How much you expect to pay, in the purchase currency." : {
+
+    },
     "I will pay before statement close" : {
 
     },
+    "Import a CSV statement" : {
+
+    },
+    "Import Another File" : {
+
+    },
+    "Import complete" : {
+
+    },
+    "Imported" : {
+
+    },
+    "Imported rows attach to this account. Cross-currency rows import with an unverified exchange rate until you confirm one manually." : {
+
+    },
     "Indicates you verified these dates against your issuer app." : {
+
+    },
+    "INR — Indian Rupee" : {
 
     },
     "Institution" : {
@@ -822,8 +1021,20 @@
 
     },
     "Keep location to a city or short hint. Don't enter addresses, card numbers, or account details." : {
+
     },
     "Kind" : {
+
+    },
+    "Last %lld %@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last %1$lld %2$@ • %3$@"
+          }
+        }
+      }
     },
     "Last confirmed" : {
 
@@ -832,6 +1043,12 @@
 
     },
     "Last updated" : {
+
+    },
+    "Last verified" : {
+
+    },
+    "Last verified %@" : {
 
     },
     "Latest Balance" : {
@@ -843,6 +1060,8 @@
     "Latest Snapshot" : {
 
     },
+    "Leave empty to use the base rate." : {
+    },
     "Ledger" : {
 
     },
@@ -852,6 +1071,15 @@
     "Limit %@" : {
 
     },
+    "Limit readiness" : {
+
+    },
+    "Line %lld" : {
+
+    },
+    "Link to the issuer's official product page or cardmember agreement." : {
+
+    },
     "Linked card" : {
 
     },
@@ -859,6 +1087,7 @@
 
     },
     "Location" : {
+
     },
     "Location Access Enabled" : {
 
@@ -906,6 +1135,9 @@
     "Mark schedule as confirmed" : {
 
     },
+    "Mark Verified Today" : {
+
+    },
     "Matches" : {
 
     },
@@ -913,6 +1145,7 @@
 
     },
     "Merchant (optional)" : {
+
     },
     "Merchant name" : {
 
@@ -921,25 +1154,31 @@
 
     },
     "Merchant or counterparty" : {
+
     },
     "Merchant or counterparty you expect to pay. Optional." : {
+
     },
     "Missing data" : {
+
     },
     "Monthly Subscription Cost" : {
 
     },
     "More actions" : {
+
     },
     "More decisions will appear here as NomadFi ships deterministic engines for them." : {
 
     },
     "More draft actions" : {
+
     },
     "Move %@ into credit limit" : {
 
     },
     "Moves the draft back to the Gathered intelligence list." : {
+
     },
     "Needs review" : {
 
@@ -947,13 +1186,22 @@
     "Needs Review" : {
 
     },
+    "New" : {
+
+    },
     "Next renewal" : {
+
+    },
+    "NGN — Nigerian Naira" : {
 
     },
     "No Accounts" : {
 
     },
     "No Accounts Yet" : {
+
+    },
+    "No card currently needs a paydown plan. Keep paying the statement balance in full by the due date." : {
 
     },
     "No Credit Cards Yet" : {
@@ -963,6 +1211,10 @@
 
     },
     "No drafts captured yet" : {
+
+    },
+    "No new rows to import — choose a different file." : {
+
     },
     "No previous decisions yet" : {
 
@@ -1015,6 +1267,9 @@
     "NomadFi is locked. Authenticate to access your financial data." : {
 
     },
+    "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
+
+    },
     "NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible" : {
 
     },
@@ -1027,7 +1282,12 @@
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
     },
+    "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
+    },
     "NomadFi unifies your international finances into a single dashboard — eliminating hidden FX fees, automating tax compliance, and optimizing every cross-border payment." : {
+
+    },
+    "NomadFi uses rewards in the purchase engine only when they're verified against an official issuer source and still inside the freshness window." : {
 
     },
     "NomadFi uses your jurisdictions to detect FX fees, optimize card usage, and organize tax documents by country." : {
@@ -1061,6 +1321,7 @@
 
     },
     "Notes, optional" : {
+
     },
     "Notifications" : {
 
@@ -1086,16 +1347,22 @@
     "On-Device Only" : {
 
     },
+    "Online shopping" : {
+    },
     "Open a decision from the Now section to start a record NomadFi can reopen later." : {
 
     },
     "Open Decision Assistant" : {
+
     },
     "Open Decisions" : {
+
     },
     "Open NomadFi directly on the Decisions tab." : {
+
     },
     "Open NomadFi on the Decisions tab so you can finish your Amazon arrival-order decision." : {
+
     },
     "Opens a form to add a bank account or card." : {
 
@@ -1104,6 +1371,7 @@
 
     },
     "Opens a local form to capture a new decision draft on this device." : {
+
     },
     "Opens a screen to add, remove, or change your home jurisdiction." : {
 
@@ -1112,10 +1380,19 @@
 
     },
     "Opens the archived draft. Restore or delete from the detail sheet." : {
+
     },
     "Opens the captured draft details. Read-only." : {
+
+    },
+    "Opens the CSV import preview flow. No data leaves this device." : {
+
     },
     "Opens the draft in the edit form." : {
+
+    },
+    "Opens the file picker. Parsing happens on this device only." : {
+
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
@@ -1127,6 +1404,7 @@
 
     },
     "Opens the official source in your browser." : {
+
     },
     "Opens the receipts and tax document archive." : {
 
@@ -1140,34 +1418,76 @@
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
+    "Optional — urgency note in your own words (\"before the trip\")." : {
+
+    },
     "Optional — when the decision needs to be made, in your own words." : {
+
     },
     "Optional — who the money is going to or coming from." : {
+
     },
     "Optional category for this decision." : {
+
+    },
+    "Optional city or short location hint. Do not enter a full address." : {
+
     },
     "Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking." : {
 
     },
     "Optional extra notes." : {
+
+    },
+    "Optional merchant or counterparty name." : {
+
+    },
+    "Optional purchase category." : {
+
     },
     "Optional short city or context hint. Do not enter a full address." : {
+
     },
     "Optional short title that will help you recognise this draft later." : {
+
+    },
+    "Optional stronger 10%% total %@. NomadFi does not predict credit-score outcomes." : {
+
+    },
+    "Optional. A short name like the issuer's program, for example Freedom Rise or Cobalt." : {
+
+    },
+    "Optional. Add caveats the engine should show alongside the rate." : {
+
+    },
+    "Optional. Enter only the categories where the issuer publishes a different rate. Empty fields use the base rate." : {
+
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
     },
     "Optional. Leave blank if the decision isn't primarily financial." : {
+
     },
     "Optional. Your account name is only changed when you tap this row." : {
 
     },
     "Other" : {
+
     },
     "Other accounts" : {
+
+    },
+    "Override" : {
+
     },
     "Owed %@" : {
+
+    },
+    "Parse and preview a CSV statement locally before writing anything." : {
+
+    },
+    "Parsing rows…" : {
 
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
@@ -1176,12 +1496,27 @@
     "Payment options" : {
 
     },
+    "Payment plan" : {
+    },
     "Per-card assessment" : {
+
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
     },
+    "Pick an account first." : {
+
+    },
+    "Plan lines cover more than one currency. NomadFi does not convert between currencies without a verified rate, so totals are reported per currency." : {
+
+    },
     "Precise: On" : {
+
+    },
+    "Preview" : {
+
+    },
+    "Priority number %lld." : {
 
     },
     "Privacy & Data" : {
@@ -1199,13 +1534,28 @@
     "Profile" : {
 
     },
+    "Program" : {
+
+    },
+    "Program name" : {
+    },
+    "Program name, base earn rate, category overrides, and source verification." : {
+
+    },
     "Purchase" : {
+
     },
     "Purchase card check" : {
+
+    },
+    "Purchase category" : {
+
     },
     "Purchase currency" : {
+
     },
     "Purchase details" : {
+
     },
     "Quickly log a transaction with an amount and category." : {
 
@@ -1237,6 +1587,9 @@
     "Receipts and tax documents for later planning." : {
 
     },
+    "Recommend a Card" : {
+
+    },
     "Recurring-charge detection and cross-border pricing review." : {
 
     },
@@ -1250,6 +1603,9 @@
 
     },
     "Removes every statement calendar date from this card." : {
+
+    },
+    "Removes the program, rates, and source for this card." : {
 
     },
     "Removes the saved balance snapshot. Your account profile stays intact." : {
@@ -1277,6 +1633,7 @@
 
     },
     "Restore draft" : {
+
     },
     "Retry" : {
 
@@ -1285,10 +1642,32 @@
 
     },
     "Review Amazon Arrival Decision" : {
+
     },
     "Review Amazon Order" : {
+
+    },
+    "Review Credit Timing" : {
+
     },
     "Review the fields below and adjust as needed." : {
+
+    },
+    "Review the new rows in the Ledger. You can edit category or merchant on any row after import." : {
+    },
+    "Rewards notes" : {
+
+    },
+    "Rewards program name" : {
+
+    },
+    "Rewards Terms" : {
+
+    },
+    "Rows" : {
+
+    },
+    "Rows skipped with errors" : {
 
     },
     "Ruling" : {
@@ -1307,17 +1686,25 @@
 
     },
     "Save a decision you're weighing as a private, on-device draft. NomadFi will not analyze or recommend anything from it until a deterministic engine covers this kind of decision." : {
+
     },
     "Saved drafts stay on this device and are marked **Needs engine** until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
+
     },
     "Saved drafts stay on this device and are marked needs engine until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
+
     },
     "Saved drafts stay on-device and are marked needs engine until a deterministic NomadFi engine covers them. NomadFi does not auto-analyze drafts with generic AI." : {
+
     },
     "Saves the credit-card calendar." : {
 
     },
     "Saves the draft on this device. NomadFi does not analyze it yet." : {
+
+    },
+    "Saves the rewards terms for this card." : {
+
     },
     "Saves this account to your profile." : {
 
@@ -1362,8 +1749,10 @@
 
     },
     "Scenario" : {
+
     },
     "Scenario description" : {
+
     },
     "Schedules reminders on your device %lld days before each confirmed statement close date and %lld days before each confirmed payment due date." : {
       "localizations" : {
@@ -1375,6 +1764,9 @@
         }
       }
     },
+    "School" : {
+
+    },
     "Search receipts" : {
 
     },
@@ -1385,6 +1777,9 @@
 
     },
     "Security" : {
+
+    },
+    "Select an account" : {
 
     },
     "Select at least %lld more" : {
@@ -1424,8 +1819,13 @@
 
     },
     "Short title (optional)" : {
+
     },
     "Short title, optional" : {
+
+    },
+    "Skipped" : {
+
     },
     "Snapshots are point-in-time readings. NomadFi timestamps them and flags them as stale over time — it never treats an outdated snapshot as live." : {
 
@@ -1436,7 +1836,19 @@
     "Source" : {
 
     },
+    "Source confidence" : {
+
+    },
+    "Source name" : {
+
+    },
+    "Source URL" : {
+
+    },
     "Sources" : {
+
+    },
+    "Stamps today's date as the last time you verified these rewards terms against the issuer." : {
 
     },
     "Stamps today's date as the last time you verified this schedule." : {
@@ -1460,18 +1872,26 @@
     "Subscriptions" : {
 
     },
+    "Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration." : {
+
+    },
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 
     },
     "Tap Capture decision above to save a scenario. Drafts stay on this device and are marked Needs engine until a deterministic NomadFi engine covers them." : {
+
     },
     "Tap the button below to add your first account." : {
+
+    },
+    "Target account" : {
 
     },
     "Tax" : {
 
     },
     "Tax & education" : {
+
     },
     "Tax Category" : {
 
@@ -1509,6 +1929,9 @@
     "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
 
     },
+    "The verified-today stamp is informational only. NomadFi does not contact your issuer." : {
+
+    },
     "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
 
     },
@@ -1518,6 +1941,9 @@
     "This removes every statement calendar date from this card. You can re-enter them at any time." : {
 
     },
+    "This removes the program name, rates, and source for this card. You can re-enter them at any time." : {
+
+    },
     "This transaction will appear in your Tax Vault" : {
 
     },
@@ -1525,16 +1951,24 @@
 
     },
     "Timing" : {
+
     },
     "Timing (optional)" : {
+
     },
     "Timing in your own words" : {
+
     },
     "Timing note" : {
+
     },
     "Title" : {
+
     },
     "To recommend your best card where you are, NomadFi needs location permission." : {
+
+    },
+    "Total" : {
 
     },
     "Total net worth" : {
@@ -1543,15 +1977,31 @@
     "Track" : {
 
     },
+    "Transaction Import" : {
+
+    },
+    "Transit" : {
+
+    },
     "Travel" : {
+
     },
     "Try Again" : {
+
+    },
+    "TTD — Trinidad and Tobago Dollar" : {
 
     },
     "Type & Currency" : {
 
     },
     "Type & Jurisdiction" : {
+
+    },
+    "Unit" : {
+
+    },
+    "Unit determines what the rate means (for example, 1.5% cash back versus 1 point per dollar). NomadFi does not convert between units." : {
 
     },
     "Unlock NomadFi" : {
@@ -1563,6 +2013,9 @@
     "Updated %@" : {
 
     },
+    "USD — US Dollar" : {
+
+    },
     "Use %@" : {
 
     },
@@ -1570,8 +2023,15 @@
 
     },
     "Use your own words — merchant, context, and what you're weighing. This is the only required field." : {
+
+    },
+    "Utilities" : {
+
     },
     "Validation issue: %@" : {
+
+    },
+    "Verification" : {
 
     },
     "Verification Status" : {
@@ -1611,6 +2071,7 @@
 
     },
     "What kind of decision is it?" : {
+
     },
     "When enabled, %@ is required to access your financial data." : {
 
@@ -1619,6 +2080,7 @@
 
     },
     "When not to use these" : {
+
     },
     "When rates move more than 2%" : {
 
@@ -1627,6 +2089,7 @@
 
     },
     "When, in your own words" : {
+
     },
     "Where does your money live?" : {
 
@@ -1634,16 +2097,22 @@
     "Where you spent the money" : {
 
     },
+    "Where your money went" : {
+
+    },
     "Which Card Should I Use?" : {
 
     },
-    "Which Card?" : {
+    "Why some cards aren't in the plan" : {
 
     },
     "Wise" : {
 
     },
     "Wise card accepted by Amazon" : {
+
+    },
+    "Writes the new rows to your ledger. Duplicates and skipped rows are not saved." : {
 
     },
     "You can add accounts later from the dashboard" : {

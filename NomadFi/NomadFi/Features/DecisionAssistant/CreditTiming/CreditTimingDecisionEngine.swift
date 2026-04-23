@@ -68,7 +68,8 @@ enum CreditTimingDecisionEngine {
     ///     pin staleness boundaries and schedule anchors.
     static func decide(
         accounts: [Account],
-        now: Date = .now
+        now: Date = .now,
+        paymentBudget: CreditPaymentAllocationBudget? = nil
     ) -> CreditTimingDecision {
         let creditCards = accounts.filter(\.isCreditCard)
 
@@ -81,6 +82,15 @@ enum CreditTimingDecisionEngine {
                 ],
                 hardRules: hardRules,
                 citations: CreditTimingCitationCatalog.creditTiming,
+                paymentAllocation: CreditPaymentAllocationPlanner.plan(
+                    assessments: [],
+                    now: now,
+                    budget: paymentBudget
+                ),
+                limitReadiness: CreditLimitReadinessEvaluator.evaluate(
+                    assessments: [],
+                    now: now
+                ),
                 evaluatedAt: now
             )
         }
@@ -91,6 +101,15 @@ enum CreditTimingDecisionEngine {
 
         let aggregatedChecks = aggregateChecks(from: assessments)
         let ruling = topLevelRuling(for: assessments)
+        let allocation = CreditPaymentAllocationPlanner.plan(
+            assessments: assessments,
+            now: now,
+            budget: paymentBudget
+        )
+        let readiness = CreditLimitReadinessEvaluator.evaluate(
+            assessments: assessments,
+            now: now
+        )
 
         return CreditTimingDecision(
             ruling: ruling,
@@ -98,6 +117,8 @@ enum CreditTimingDecisionEngine {
             missingDataChecklist: aggregatedChecks,
             hardRules: hardRules,
             citations: CreditTimingCitationCatalog.creditTiming,
+            paymentAllocation: allocation,
+            limitReadiness: readiness,
             evaluatedAt: now
         )
     }

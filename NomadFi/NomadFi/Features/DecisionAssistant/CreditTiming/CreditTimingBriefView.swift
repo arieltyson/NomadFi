@@ -45,6 +45,14 @@ struct CreditTimingBriefView: View {
                         )
                     }
 
+                    CreditTimingPaymentAllocationSection(
+                        plan: decision.paymentAllocation
+                    )
+
+                    CreditTimingLimitReadinessSection(
+                        checklist: decision.limitReadiness
+                    )
+
                     CreditTimingHardRulesSection(rules: decision.hardRules)
 
                     CreditTimingSourcesSection(citations: decision.citations)
@@ -490,6 +498,323 @@ private struct CreditTimingEvaluatedAtNote: View {
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityLabel("Evaluated as of \(evaluatedAt.formatted(.dateTime.year().month(.wide).day().hour().minute()))")
+    }
+}
+
+// MARK: - Payment allocation section
+
+private struct CreditTimingPaymentAllocationSection: View {
+
+    let plan: CreditPaymentAllocationPlan
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            Text("Payment plan")
+                .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
+
+            if plan.groups.isEmpty {
+                emptyState
+            } else {
+                ForEach(plan.groups) { group in
+                    currencyGroup(group)
+                }
+            }
+
+            if plan.isMultiCurrency {
+                multiCurrencyCaveat
+            }
+
+            if !plan.blockers.isEmpty {
+                blockersList
+            }
+        }
+    }
+
+    private var emptyState: some View {
+        GlassCard {
+            HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
+                Image(systemName: "checkmark.circle")
+                    .foregroundStyle(ColorTokens.positive)
+                    .accessibilityHidden(true)
+                Text("No card currently needs a paydown plan. Keep paying the statement balance in full by the due date.")
+                    .font(TypographyTokens.body)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func currencyGroup(
+        _ group: CreditPaymentAllocationCurrencyGroup
+    ) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(group.currencyCode)
+                        .font(TypographyTokens.sectionHeader)
+                    Spacer(minLength: SpacingTokens.xSmall)
+                    Text("30% total \(currencyString(group.totalPaydownToConservativeTarget, code: group.currencyCode))")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Currency group \(group.currencyCode). Thirty percent total \(currencyString(group.totalPaydownToConservativeTarget, code: group.currencyCode)).")
+
+                ForEach(group.lines) { line in
+                    lineRow(line)
+                }
+
+                if group.totalPaydownToStrongTarget > 0 {
+                    Text("Optional stronger 10% total \(currencyString(group.totalPaydownToStrongTarget, code: group.currencyCode)). NomadFi does not predict credit-score outcomes.")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isStaticText)
+                }
+            }
+        }
+    }
+
+    private func lineRow(_ line: CreditPaymentAllocationLine) -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                Image(systemName: line.ruling.systemImage)
+                    .foregroundStyle(ColorTokens.brandPrimary)
+                    .frame(width: 22, alignment: .center)
+                    .accessibilityHidden(true)
+
+                Text(line.accountName)
+                    .font(TypographyTokens.body)
+                    .bold()
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Spacer(minLength: SpacingTokens.xxSmall)
+
+                StatusBadge(
+                    label: "#\(line.priority + 1)",
+                    color: ColorTokens.neutral,
+                    systemImage: "list.number"
+                )
+                .accessibilityLabel("Priority number \(line.priority + 1).")
+            }
+
+            if let conservative = line.paydownToConservativeTarget {
+                metricLine(
+                    label: CreditPaymentAllocationTarget.conservativeThirtyPercent.displayLabel,
+                    value: currencyString(conservative, code: line.currencyCode)
+                )
+            }
+            if let strong = line.paydownToStrongTarget {
+                metricLine(
+                    label: CreditPaymentAllocationTarget.strongTenPercent.displayLabel,
+                    value: currencyString(strong, code: line.currencyCode)
+                )
+            }
+            if let suggestion = line.suggestedPayment, suggestion > 0 {
+                metricLine(
+                    label: "Your plan covers",
+                    value: currencyString(suggestion, code: line.currencyCode)
+                )
+            }
+            if let close = line.statementClosingDate {
+                metricLine(
+                    label: "Statement closes",
+                    value: close.formatted(.dateTime.year().month(.wide).day())
+                )
+            }
+            Text(line.reason)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, SpacingTokens.xxSmall)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var multiCurrencyCaveat: some View {
+        Label {
+            Text("Plan lines cover more than one currency. NomadFi does not convert between currencies without a verified rate, so totals are reported per currency.")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle")
+                .foregroundStyle(ColorTokens.warning)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var blockersList: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text("Why some cards aren't in the plan")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(plan.blockers) { blocker in
+                Label {
+                    Text("\(blocker.accountName) — \(blocker.reason.displayLabel)")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundStyle(ColorTokens.neutral)
+                        .accessibilityHidden(true)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(blocker.accountName). \(blocker.reason.accessibilityLabel)")
+            }
+        }
+    }
+
+    private func metricLine(
+        label: String,
+        value: String
+    ) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: SpacingTokens.small)
+            Text(value)
+                .font(TypographyTokens.body)
+                .monospacedDigit()
+                .multilineTextAlignment(.trailing)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(value)")
+    }
+
+    private func currencyString(_ amount: Double, code: String) -> String {
+        amount.formatted(.currency(code: code))
+    }
+}
+
+// MARK: - Limit readiness section
+
+private struct CreditTimingLimitReadinessSection: View {
+
+    let checklist: CreditLimitReadinessChecklist
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            Text("Limit readiness")
+                .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
+
+            if checklist.cardSummaries.isEmpty {
+                GlassCard {
+                    Text("Add a credit card to see readiness checks. NomadFi does not request limits on your behalf.")
+                        .font(TypographyTokens.body)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                caveatList
+
+                ForEach(checklist.cardSummaries) { summary in
+                    summaryCard(summary)
+                }
+            }
+        }
+    }
+
+    private var caveatList: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            ForEach(checklist.globalCaveats, id: \.self) { caveat in
+                Label {
+                    Text(caveat)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(ColorTokens.neutral)
+                        .accessibilityHidden(true)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
+
+    private func summaryCard(
+        _ summary: CreditLimitReadinessCardSummary
+    ) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                    VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                        Text(summary.accountName)
+                            .font(TypographyTokens.body)
+                            .bold()
+                            .fixedSize(horizontal: false, vertical: true)
+                        if !summary.institutionName.isEmpty {
+                            Text(summary.institutionName)
+                                .font(TypographyTokens.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer(minLength: SpacingTokens.xSmall)
+                    StatusBadge(
+                        label: summary.summary.displayLabel,
+                        color: badgeColor(for: summary.summary),
+                        systemImage: summary.summary == .readyToReview
+                            ? "checkmark.seal.fill"
+                            : "questionmark.circle.fill"
+                    )
+                    .accessibilityLabel(summary.summary.accessibilityLabel)
+                }
+
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    ForEach(summary.items) { item in
+                        itemRow(item)
+                    }
+                }
+            }
+        }
+    }
+
+    private func itemRow(_ item: CreditLimitReadinessItem) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+            Image(systemName: item.status.systemImage)
+                .foregroundStyle(statusColor(for: item.status))
+                .frame(width: 22, alignment: .center)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                Text(item.title)
+                    .font(TypographyTokens.body)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(item.detail)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.title). \(item.status.accessibilityLabel) \(item.detail)")
+    }
+
+    private func badgeColor(
+        for summary: CreditLimitReadinessSummary
+    ) -> Color {
+        switch summary {
+        case .readyToReview: ColorTokens.positive
+        case .needsMoreEvidence: ColorTokens.warning
+        }
+    }
+
+    private func statusColor(
+        for status: CreditLimitReadinessStatus
+    ) -> Color {
+        switch status {
+        case .met: ColorTokens.positive
+        case .notMet: ColorTokens.warning
+        case .missing: ColorTokens.neutral
+        case .issuerOnly: ColorTokens.neutral
+        }
     }
 }
 

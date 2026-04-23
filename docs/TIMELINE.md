@@ -149,8 +149,24 @@ points at the test file that pins the behaviour.
   the credit-card calendar flow. _Evidence: `RewardProfileTests.swift`,
   `CreditCardRewardsEditViewModelTests.swift`, reward-aware cases in
   `PurchaseDecisionEngineTests.swift` and `RecommendCardIntentTests.swift`._
-- [ ] Cross-card payment-allocation planning.
-- [ ] Credit-limit-increase readiness checklist.
+- [x] Cross-card payment-allocation planning —
+  `CreditPaymentAllocationPlanner` projects per-card assessments
+  into a currency-grouped plan with deterministic priority
+  (near-limit → earliest statement close → higher utilization →
+  stable alphabetical). Supports an optional, non-persisted
+  `CreditPaymentAllocationBudget` that fills conservative 30 %
+  targets in priority order before bleeding into the optional
+  stronger 10 % target, never exceeding the strong per-line
+  amount. Multi-currency portfolios stay grouped — NomadFi never
+  sums USD + CAD as if an FX rate were known. _Evidence:
+  `CreditPaymentAllocationPlannerTests.swift`._
+- [x] Credit-limit-increase **readiness checklist** —
+  `CreditLimitReadinessEvaluator` produces a per-card
+  `readyToReview` / `needsMoreEvidence` summary, never an approval
+  claim. Issuer-only facts (income, on-time payment history,
+  account age, hard-inquiry policy, issuer eligibility) always
+  surface as `.issuerOnly` caveats and are never flipped to met.
+  _Evidence: `CreditLimitReadinessEvaluatorTests.swift`._
 
 ### Decision drafts (user-captured raw context)
 
@@ -654,9 +670,11 @@ early creates entitlement, coverage, and review risk.
 ## Phase 6 — Credit Leverage and Payment Timing
 
 **Status:** `[~]` Partially shipped. Statement-close reminders, payment-due
-reminders, utilization banding, near-limit guidance, and per-card paydown
-targets are live (Credit Timing v1). Cross-card payment allocation and a
-credit-limit-increase readiness checklist are still outstanding.
+reminders, utilization banding, near-limit guidance, per-card paydown targets,
+**cross-card payment-allocation planning**, and a **credit-limit-increase
+readiness checklist** are all live (Credit Timing v1 + Phase 6A). Spend-trend
+context inside Credit Timing (depends on Phase 4 trend data) is still
+outstanding.
 
 **Goal:** Help users build credit without debt.
 
@@ -670,12 +688,46 @@ credit-limit-increase readiness checklist are still outstanding.
 - `[x]` Near-limit warnings (Credit Timing `nearLimitAvoidMoreSpend` ruling).
 - `[x]` "Pay before close" planning with issuer-reporting caveats and
   absolute-date copy.
+- `[x]` **Cross-card payment-allocation planner** (Phase 6A) — pure
+  value-layer planner under
+  `Features/DecisionAssistant/CreditTiming/PaymentAllocation/`.
+  Inputs are the engine's per-card assessments; outputs are a
+  currency-grouped `CreditPaymentAllocationPlan` with deterministic
+  priority, per-line conservative (30 %) and optional strong (10 %)
+  paydown targets, blockers for cards that can't participate, and
+  an optional non-persisted budget that's distributed across the
+  matching currency only. Surfaced on the Credit Timing brief as a
+  calm **Payment plan** section. _Evidence:
+  `CreditPaymentAllocationPlannerTests.swift` (11 tests:
+  eligibility, stale/unconfirmed blockers, priority ordering by
+  severity → close date → utilization → alphabetical,
+  paydown totals, multi-currency grouping, budget distribution
+  across passes, copy guard for the banned vocabulary)._
+- `[x]` **Credit-limit-increase readiness checklist** (Phase 6A) —
+  `CreditLimitReadinessEvaluator` under
+  `Features/DecisionAssistant/CreditTiming/CreditLimitReadiness/`.
+  Six NomadFi-visible checks (credit limit on file, balance
+  snapshot on file, snapshot freshness, statement calendar
+  confirmed, utilization inside a conservative planning band, no
+  near-limit signal) plus five permanent issuer-only caveats
+  (income, on-time payment history, account age, hard-inquiry
+  policy, issuer eligibility). Summary rolls up to **Ready to
+  review** / **Needs more evidence** — never "you should request"
+  or "you'll be approved". Surfaced on the brief as a **Limit
+  readiness** section. _Evidence:
+  `CreditLimitReadinessEvaluatorTests.swift` (8 tests: ready path,
+  high/near-limit/stale/unconfirmed/missing-limit not-ready paths,
+  issuer-only invariant across best- and worst-case inputs, sort
+  order, copy guard)._
+- `[x]` CFPB Regulation Z § 1026.53 payment-allocation citation
+  added to `CreditTimingCitationCatalog` so the brief's Sources
+  section can back the "NomadFi can't see your issuer's specific
+  APR buckets" caveat.
 
 ### Still to build
 
-- `[ ]` Payment allocation suggestions across multiple cards.
-- `[ ]` Credit-limit-increase readiness checklist.
-- `[ ]` Spend-trend context inside Credit Timing (depends on Phase 4).
+- `[ ]` Spend-trend context inside Credit Timing (depends on
+  Phase 4 trend data already being piped into the engine).
 
 ### Tradeoff
 
@@ -881,8 +933,15 @@ re-debating whether the foundation exists.
     (`SpendingTrendComputer` + `SpendingTrendCard`). Follow-ups
     (tax-category suggestions, spend anomaly detection, merchant
     categorisation ML) remain scoped to later phases.
-13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
-    readiness checklist (completes Phase 6).
+13. `[x]` Phase 6A — Cross-card payment-allocation planning
+    (`CreditPaymentAllocationPlanner`) and credit-limit-increase
+    readiness checklist (`CreditLimitReadinessEvaluator`). Both are
+    pure value-layer services under
+    `Features/DecisionAssistant/CreditTiming/`, integrated into
+    `CreditTimingDecision` and rendered as new **Payment plan** and
+    **Limit readiness** sections on the brief view. The only
+    Phase 6 item still outstanding is spend-trend context *inside*
+    the Credit Timing engine.
 14. `[ ]` Region-specific tax education path (Phase 7).
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
@@ -895,32 +954,34 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 4 is complete for this milestone.** The deterministic
-transaction-capture fan-out (CSV import, merchant normalisation,
-dedupe, generalised recurring-charge detection, read-only
-spending-trend card) is live. The next highest-leverage work is
-picking from:
+**Phase 6A is complete for this milestone.** The Credit Timing
+brief now ships two new sections — **Payment plan** (cross-card
+allocation with optional, non-persisted budget) and **Limit
+readiness** (review checklist that never crosses into "you'll be
+approved" territory) — both powered by pure value-layer services
+under `Features/DecisionAssistant/CreditTiming/`.
 
-- **Cross-card payment-allocation planning** (Phase 6 remainder).
-  Uses the per-card balance and limit data already on `Account`
-  plus the new spending signal from recurring detection.
-- **Credit-limit-increase readiness checklist** (Phase 6
-  remainder). Uses confirmed statement schedules + utilization
-  bands already produced by the Credit Timing engine.
-- **Tax-category suggestions with confidence labels** (Phase 4
-  stretch / Phase 7 entry). Builds on `MerchantCategoryInferrer`
-  plus `TaxVault` to pre-fill tax-deductible flags on imported
-  rows — every suggestion still requires user confirmation.
-- **Spend anomaly detection** (Phase 4 stretch). Piggybacks on the
-  recurring detector by treating expected-but-missing charges as
-  anomalies, and unexpected amount spikes as caveats.
+Highest-leverage remaining work:
 
-The choice depends on where verified data is most available right
-now. If issuer payment-allocation tables can be cited from CFPB
-guidance, Phase 6 allocation planning is unblocked; otherwise
-tax-category suggestions are the most compounding next step since
-they make the already-shipped import pipeline more useful without
-requiring new source coverage.
+- **Spend-trend context inside Credit Timing** (Phase 6 remainder).
+  Pipe the Phase 4 `SpendingTrendSummary` into the engine so a
+  card's paydown suggestion can be caveated ("based on $X of
+  recent spend" / "trend is climbing") without making a
+  score-outcome claim. Deterministic, no new sources required.
+- **Tax-category suggestions with confidence labels** (Phase 7
+  entry). Builds on `MerchantCategoryInferrer` plus `TaxVault` to
+  pre-fill tax-deductible flags on imported rows — every
+  suggestion still requires user confirmation.
+- **Spend anomaly detection** (Phase 4 stretch). Treats
+  expected-but-missing recurring charges as anomalies and
+  unexpected amount spikes as caveats, using the existing
+  `RecurringChargeDetector` as the baseline.
+
+The next pick depends on which surface is most YC-legible. If the
+pitch emphasises "credit without debt", Phase 6 spend-trend
+context compounds directly on today's shipped allocation +
+readiness work. If the pitch leans on "cross-border tax friction",
+the tax-category suggestions path opens that narrative.
 
 ---
 

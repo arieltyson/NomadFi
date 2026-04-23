@@ -32,6 +32,19 @@ struct CreditTimingDecision: Sendable, Equatable {
     /// only linked for user verification.
     let citations: [ScenarioCitation]
 
+    /// Portfolio-wide cross-card payment-allocation plan. Always
+    /// present — empty `groups` means no eligible cards. The plan is
+    /// a target sheet unless the UI passed a budget, in which case
+    /// `appliedBudget` echoes the user's input and each line carries
+    /// a `suggestedPayment`.
+    let paymentAllocation: CreditPaymentAllocationPlan
+
+    /// Credit-limit-increase **readiness checklist**. Not a
+    /// recommendation to request an increase — the surface stays in
+    /// "ready to review" / "needs more evidence" language so users
+    /// approach their issuer with evidence, not promises.
+    let limitReadiness: CreditLimitReadinessChecklist
+
     /// `now` the engine used when evaluating snapshot freshness.
     /// Surfaced so the UI can show an honest "evaluated as of" label
     /// and tests can pin the value.

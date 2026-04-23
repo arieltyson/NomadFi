@@ -49,5 +49,13 @@ enum CreditTimingCitationCatalog {
             summary: "myFICO blog: issuers typically report the statement balance. Paying before the statement closes is how cardholders influence the balance that shows up on the credit report.",
             evidence: .officialSource
         ),
+        ScenarioCitation(
+            id: "cfpb_regulation_z_payment_allocation",
+            title: "Regulation Z § 1026.53 — allocation of payments",
+            publisher: "CFPB",
+            url: URL(string: "https://www.consumerfinance.gov/rules-policy/regulations/1026/53/")!,
+            summary: "CFPB Regulation Z: any payment above the minimum is generally allocated to the highest-APR balance first. Specific APR buckets are issuer-dependent — confirm with your issuer before assuming where a payment lands.",
+            evidence: .officialSource
+        ),
     ]
 }

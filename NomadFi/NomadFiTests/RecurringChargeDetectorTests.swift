@@ -140,9 +140,12 @@ struct RecurringChargeDetectorTests {
 
     @Test("Amounts outside the ±5 % window do NOT merge into one candidate")
     func amountsBeyondToleranceDoNotMerge() {
+        // Two $30 charges are kept on consecutive months so they
+        // satisfy the monthly cadence bucket; the $90 sits in a
+        // separate amount bucket and can never join.
         let transactions = [
-            Self.makeTransaction(merchant: "Utility Co", amount: -30, date: Self.date(year: 2026, month: 2, day: 1)),
-            Self.makeTransaction(merchant: "Utility Co", amount: -90, date: Self.date(year: 2026, month: 3, day: 1)),
+            Self.makeTransaction(merchant: "Utility Co", amount: -30, date: Self.date(year: 2026, month: 3, day: 1)),
+            Self.makeTransaction(merchant: "Utility Co", amount: -90, date: Self.date(year: 2026, month: 3, day: 15)),
             Self.makeTransaction(merchant: "Utility Co", amount: -30, date: Self.date(year: 2026, month: 4, day: 1)),
         ]
         let candidates = RecurringChargeDetector.detect(from: transactions, now: Self.now)
