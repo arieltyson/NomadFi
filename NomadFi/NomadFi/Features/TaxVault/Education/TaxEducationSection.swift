@@ -24,8 +24,10 @@ struct TaxEducationSection: View {
     let nextStep: (TaxEducationRegionBundle) -> TaxEducationNextStep?
     let isLessonReviewed: (TaxEducationLesson) -> Bool
     let isChecklistItemCompleted: (TaxEducationChecklistItem, TaxEducationRegion) -> Bool
+    let isQuizUnlocked: (TaxEducationRegionBundle) -> Bool
     let onSelectLesson: (TaxEducationLesson) -> Void
     let onToggleChecklistItem: (TaxEducationChecklistItem, TaxEducationRegion) -> Void
+    let onOpenQuiz: (TaxEducationQuiz) -> Void
 
     var body: some View {
         Section {
@@ -71,6 +73,14 @@ struct TaxEducationSection: View {
             )
             if !bundle.lessons.isEmpty {
                 lessonsList(for: bundle)
+            }
+            if let quiz = bundle.quiz {
+                TaxEducationQuizRow(
+                    quiz: quiz,
+                    summary: regionSummary,
+                    isUnlocked: isQuizUnlocked(bundle),
+                    onOpen: { onOpenQuiz(quiz) }
+                )
             }
         }
         .padding(.vertical, SpacingTokens.xxSmall)

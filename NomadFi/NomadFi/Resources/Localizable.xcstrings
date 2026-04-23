@@ -93,16 +93,6 @@
         }
       }
     },
-    "%@ lesson. %@. Education only." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ lesson. %2$@. Education only."
-          }
-        }
-      }
-    },
     "%@ override rate" : {
 
     },
@@ -423,6 +413,7 @@
 
     },
     "Ask a professional" : {
+
     },
     "Ask NomadFi which saved payment method clears the hard rules for a purchase. The engine is deterministic — it will not invent rewards claims or predict a credit-score outcome." : {
 
@@ -865,6 +856,7 @@
 
     },
     "Education only. Not a substitute for a qualified professional. NomadFi does not file on your behalf." : {
+
     },
     "Enable Notifications" : {
 
@@ -1040,6 +1032,7 @@
 
     },
     "Home jurisdiction." : {
+
     },
     "How much you expect to pay, in the purchase currency." : {
 
@@ -1124,6 +1117,7 @@
 
     },
     "Learn for your jurisdictions" : {
+
     },
     "Leave empty to use the base rate." : {
 
@@ -1135,8 +1129,10 @@
 
     },
     "Lesson" : {
+
     },
     "Lessons" : {
+
     },
     "Limit %@" : {
 
@@ -1202,11 +1198,21 @@
     "Mark Confirmed Today" : {
 
     },
+    "Mark not reviewed yet" : {
+    },
+    "Mark reviewed" : {
+    },
     "Mark schedule as confirmed" : {
 
     },
     "Mark Verified Today" : {
 
+    },
+    "Marked reviewed." : {
+    },
+    "Marks this item not reviewed yet." : {
+    },
+    "Marks this item reviewed." : {
     },
     "Matches" : {
 
@@ -1261,6 +1267,11 @@
     },
     "Next renewal" : {
 
+    },
+    "Next to review" : {
+
+    },
+    "Next to review. %@." : {
     },
     "NGN — Nigerian Naira" : {
 
@@ -1416,6 +1427,7 @@
 
     },
     "Official sources" : {
+
     },
     "OK" : {
 
@@ -1481,6 +1493,7 @@
 
     },
     "Opens the full lesson detail." : {
+
     },
     "Opens the manual transaction ledger." : {
 
@@ -1731,6 +1744,8 @@
     "Requires your device passcode to open NomadFi" : {
 
     },
+    "Resets this lesson so it shows up again in the next-to-review queue." : {
+    },
     "Restore draft" : {
 
     },
@@ -1756,6 +1771,9 @@
 
     },
     "Review the new rows in the Ledger. You can edit category or merchant on any row after import." : {
+
+    },
+    "Reviewed means you read the education content. It does not mean a tax return is done and it does not make the underlying expense deductible." : {
 
     },
     "Rewards notes" : {
@@ -1811,6 +1829,8 @@
     },
     "Saves this account to your profile." : {
 
+    },
+    "Saves this lesson as reviewed. NomadFi does not file on your behalf — this is a review flag only." : {
     },
     "Saves this receipt to Tax Vault with the current details." : {
 
@@ -2208,6 +2228,7 @@
 
     },
     "What to review next" : {
+
     },
     "When enabled, %@ is required to access your financial data." : {
 
@@ -2243,6 +2264,7 @@
 
     },
     "Why it matters" : {
+
     },
     "Why NomadFi surfaced this" : {
 
@@ -2345,6 +2367,8 @@
           }
         }
       }
+    },
+    "Your review" : {
     },
     "Your Subscriptions" : {
 

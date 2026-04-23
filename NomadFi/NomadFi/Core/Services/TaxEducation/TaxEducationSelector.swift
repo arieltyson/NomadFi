@@ -27,6 +27,24 @@ struct TaxEducationRegionBundle: Sendable, Equatable, Identifiable {
     let isHome: Bool
     let checklist: TaxEducationChecklist
     let lessons: [TaxEducationLesson]
+    /// Region knowledge-check quiz, when the quiz catalogue covers
+    /// this region. `nil` when no quiz has been authored yet so
+    /// the UI can hide the row instead of rendering a stub.
+    let quiz: TaxEducationQuiz?
+
+    init(
+        region: TaxEducationRegion,
+        isHome: Bool,
+        checklist: TaxEducationChecklist,
+        lessons: [TaxEducationLesson],
+        quiz: TaxEducationQuiz? = nil
+    ) {
+        self.region = region
+        self.isHome = isHome
+        self.checklist = checklist
+        self.lessons = lessons
+        self.quiz = quiz
+    }
 }
 
 /// Pure namespace — no state.
@@ -71,11 +89,14 @@ enum TaxEducationSelector {
             let lessons = TaxEducationCatalog
                 .lessons(for: region)
                 .filter(TaxEducationCatalog.isValid)
+            let quiz = TaxEducationQuizCatalog.quiz(for: region)
+                .flatMap { TaxEducationQuizCatalog.isValid($0) ? $0 : nil }
             return TaxEducationRegionBundle(
                 region: region,
                 isHome: region == homeRegion,
                 checklist: TaxEducationCatalog.checklist(for: region),
-                lessons: lessons
+                lessons: lessons,
+                quiz: quiz
             )
         }
     }

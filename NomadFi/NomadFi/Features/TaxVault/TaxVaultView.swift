@@ -88,6 +88,12 @@ struct TaxVaultView: View {
                 }
             )
         }
+        .sheet(item: $education.quizSelection) { quiz in
+            TaxEducationQuizSheet(
+                quiz: quiz,
+                records: progressRecords
+            )
+        }
         .overlay {
             if viewModel.isScanning {
                 scanningOverlay
@@ -148,6 +154,9 @@ struct TaxVaultView: View {
                             in: progressRecords
                         )
                     },
+                    isQuizUnlocked: { bundle in
+                        education.isQuizUnlocked(for: bundle, in: progressRecords)
+                    },
                     onSelectLesson: { education.select($0) },
                     onToggleChecklistItem: { item, region in
                         education.toggleChecklistItem(
@@ -156,7 +165,8 @@ struct TaxVaultView: View {
                             in: modelContext,
                             records: progressRecords
                         )
-                    }
+                    },
+                    onOpenQuiz: { education.selectQuiz($0) }
                 )
             }
 

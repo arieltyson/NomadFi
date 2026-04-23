@@ -27,6 +27,11 @@ final class TaxEducationViewModel {
     /// presentation binds to `selection != nil`.
     var selection: TaxEducationLesson?
 
+    /// Quiz currently open in the knowledge-check sheet. Separate
+    /// from `selection` so a user who opens a lesson and a quiz
+    /// doesn't collide.
+    var quizSelection: TaxEducationQuiz?
+
     // MARK: - Refresh
 
     /// Rebuilds `regionBundles` from the user's active
@@ -44,6 +49,14 @@ final class TaxEducationViewModel {
 
     func clearSelection() {
         selection = nil
+    }
+
+    func selectQuiz(_ quiz: TaxEducationQuiz) {
+        quizSelection = quiz
+    }
+
+    func clearQuizSelection() {
+        quizSelection = nil
     }
 
     // MARK: - Progress reads
@@ -88,6 +101,14 @@ final class TaxEducationViewModel {
             region: region,
             in: records
         ) == .completed
+    }
+
+    /// Quiz unlock status — pure wrapper over the service rule.
+    func isQuizUnlocked(
+        for bundle: TaxEducationRegionBundle,
+        in records: [TaxEducationProgressRecord]
+    ) -> Bool {
+        TaxEducationProgressService.isQuizUnlocked(for: bundle, in: records)
     }
 
     // MARK: - Progress writes (explicit user actions)
@@ -137,6 +158,21 @@ final class TaxEducationViewModel {
             in: modelContext,
             existing: records,
             now: now
+        )
+    }
+
+    /// Persists a quiz attempt result. Called from the quiz
+    /// sheet's Submit handler.
+    @discardableResult
+    func recordQuizAttempt(
+        _ result: TaxEducationQuizResult,
+        in modelContext: ModelContext,
+        records: [TaxEducationProgressRecord]
+    ) -> TaxEducationProgressRecord {
+        TaxEducationProgressService.recordQuizAttempt(
+            result,
+            in: modelContext,
+            existing: records
         )
     }
 

@@ -1,25 +1,31 @@
 // TaxEducationProgressService.swift
 // NomadFi
 //
-// Pure read + explicit write service for the Phase 7B education
-// progression. Reads compute summaries and the next recommended
-// step deterministically. Writes are the only path that can flip
-// a record to `.completed` — there is no implicit transition on
-// lesson open in this slice.
+// Pure read + explicit write service for the Phase 7B / 7C
+// education progression. Reads compute summaries and the next
+// recommended step deterministically. Writes are the only path
+// that can flip a record — there is no implicit transition on
+// lesson open or quiz open.
 //
-// Rules pinned in `TaxEducationProgressServiceTests`:
+// Rules pinned in `TaxEducationProgressServiceTests` and
+// `TaxEducationQuizServiceTests`:
 //
 //   • A lesson with no matching record reads as `.notStarted`.
 //   • A checklist item with no matching record reads as
 //     `.notStarted`.
+//   • A quiz with no matching record reads as `.notStarted`. A
+//     failed attempt sets `.inProgress`; a passing attempt sets
+//     `.completed`. Retakes overwrite the single record for the
+//     quiz id.
 //   • `markLessonReviewed(...)` is idempotent — calling it twice
 //     on the same lesson produces exactly one record.
 //   • `toggleChecklistItem(...)` flips between `.notStarted` and
 //     `.completed`; no `.inProgress` state in 7B.
 //   • Next-step priority: first uncompleted checklist item in the
 //     region's checklist order, then first uncompleted lesson in
-//     the region's lesson order, then `nil` when the region is
-//     reviewed.
+//     the region's lesson order, then the knowledge-check quiz
+//     (only after every lesson and every checklist item is
+//     complete), then `nil` when the region is fully reviewed.
 //   • Duplicate persisted records for the same key are tolerated:
 //     reads treat the newest `.completed` entry as authoritative,
 //     and writes update the first match without removing clones.
@@ -70,6 +76,47 @@ enum TaxEducationProgressService {
         return resolveStatus(from: matches)
     }
 
+    /// Resolves the persisted status for a single knowledge-check
+    /// quiz. `.notStarted` when no record exists, `.inProgress`
+    /// after a failing attempt, `.completed` after a passing
+    /// attempt. Retakes always overwrite the latest record.
+    @MainActor
+    static func status(
+        forQuizID quizID: String,
+        region: TaxEducationRegion,
+        in records: [TaxEducationProgressRecord]
+    ) -> TaxEducationProgressStatus {
+        let matches = records.filter { record in
+            record.kindRawValue == TaxEducationProgressKind.quiz.rawValue
+                && record.regionRawValue == region.rawValue
+                && record.quizID == quizID
+        }
+        return resolveStatus(from: matches)
+    }
+
+    /// Returns the most recent persisted record for a quiz, when
+    /// one exists. Used by the summary and UI to surface the
+    /// latest score alongside the status.
+    @MainActor
+    static func latestRecord(
+        forQuizID quizID: String,
+        region: TaxEducationRegion,
+        in records: [TaxEducationProgressRecord]
+    ) -> TaxEducationProgressRecord? {
+        let matches = records.filter { record in
+            record.kindRawValue == TaxEducationProgressKind.quiz.rawValue
+                && record.regionRawValue == region.rawValue
+                && record.quizID == quizID
+        }
+        if let completed = matches.first(where: { $0.status == .completed }) {
+            return completed
+        }
+        return matches.max { lhs, rhs in
+            (lhs.lastInteractedAt ?? .distantPast)
+                < (rhs.lastInteractedAt ?? .distantPast)
+        }
+    }
+
     /// Collapses duplicate records for the same key into a single
     /// authoritative status. Any `.completed` beats all other
     /// values; otherwise the newest `lastInteractedAt` wins.
@@ -110,12 +157,30 @@ enum TaxEducationProgressService {
             }
         }
 
+        var quizStatus: TaxEducationProgressStatus = .notStarted
+        var quizScorePercent: Double? = nil
+        var quizQuestionCount: Int? = nil
+        var quizCorrectCount: Int? = nil
+        if let quiz = bundle.quiz {
+            quizStatus = status(forQuizID: quiz.id, region: region, in: records)
+            if let record = latestRecord(forQuizID: quiz.id, region: region, in: records) {
+                quizScorePercent = record.quizScorePercent
+                quizQuestionCount = record.quizQuestionCount
+                quizCorrectCount = record.quizCorrectCount
+            }
+        }
+
         return TaxEducationRegionProgressSummary(
             region: region,
             lessonsReviewed: lessonsReviewed,
             lessonsTotal: bundle.lessons.count,
             checklistItemsCompleted: checklistCompleted,
-            checklistItemsTotal: bundle.checklist.items.count
+            checklistItemsTotal: bundle.checklist.items.count,
+            hasQuiz: bundle.quiz != nil,
+            quizStatus: quizStatus,
+            quizScorePercent: quizScorePercent,
+            quizQuestionCount: quizQuestionCount,
+            quizCorrectCount: quizCorrectCount
         )
     }
 
@@ -123,8 +188,10 @@ enum TaxEducationProgressService {
 
     /// Deterministic "Next to review" pointer. Prefers checklist
     /// items (quick wins) before lessons; both respect catalogue
-    /// order. Returns `nil` when every step in the region is
-    /// already marked completed.
+    /// order. After every checklist item and every lesson is
+    /// completed, the knowledge-check quiz (when present) becomes
+    /// the next step until it has been passed. Returns `nil` when
+    /// the region is fully reviewed.
     @MainActor
     static func nextStep(
         for bundle: TaxEducationRegionBundle,
@@ -145,7 +212,6 @@ enum TaxEducationProgressService {
                     kind: .checklistItem,
                     title: item.text,
                     subtitle: "",
-                    lessonID: "",
                     checklistItemID: item.id
                 )
             }
@@ -164,13 +230,86 @@ enum TaxEducationProgressService {
                     kind: .lesson,
                     title: lesson.title,
                     subtitle: lesson.whatItIs,
-                    lessonID: lesson.id,
-                    checklistItemID: ""
+                    lessonID: lesson.id
+                )
+            }
+        }
+
+        if let quiz = bundle.quiz {
+            let quizStatus = status(forQuizID: quiz.id, region: region, in: records)
+            if quizStatus != .completed {
+                return TaxEducationNextStep(
+                    id: "quiz-\(region.rawValue)-\(quiz.id)",
+                    region: region,
+                    kind: .quiz,
+                    title: quiz.title,
+                    subtitle: quiz.summary,
+                    quizID: quiz.id
                 )
             }
         }
 
         return nil
+    }
+
+    // MARK: - Quiz unlock + writes
+
+    /// Returns `true` when the user has completed every lesson
+    /// and checklist item for the region — the quiz unlock
+    /// condition. Pure; mirrors the test harness.
+    @MainActor
+    static func isQuizUnlocked(
+        for bundle: TaxEducationRegionBundle,
+        in records: [TaxEducationProgressRecord]
+    ) -> Bool {
+        guard bundle.quiz != nil else { return false }
+        return summary(for: bundle, in: records).hasCompletedLessonsAndChecklist
+    }
+
+    /// Persists an explicit quiz attempt. Upserts a single record
+    /// keyed on (region, .quiz, quizID). A passing result flips
+    /// the record to `.completed`; a failing result keeps it as
+    /// `.inProgress` so the UI can surface "needs review" until a
+    /// later retake passes.
+    @MainActor
+    @discardableResult
+    static func recordQuizAttempt(
+        _ result: TaxEducationQuizResult,
+        in modelContext: ModelContext,
+        existing records: [TaxEducationProgressRecord]
+    ) -> TaxEducationProgressRecord {
+        let newStatus: TaxEducationProgressStatus = result.didPass ? .completed : .inProgress
+        let matching = records.first { record in
+            record.kindRawValue == TaxEducationProgressKind.quiz.rawValue
+                && record.regionRawValue == result.region.rawValue
+                && record.quizID == result.quizID
+        }
+
+        if let existing = matching {
+            existing.statusRawValue = newStatus.rawValue
+            existing.lastInteractedAt = result.attemptedAt
+            existing.quizScorePercent = result.scorePercent
+            existing.quizCorrectCount = result.correctCount
+            existing.quizQuestionCount = result.questionCount
+            save(modelContext)
+            return existing
+        }
+
+        let record = TaxEducationProgressRecord(
+            regionRawValue: result.region.rawValue,
+            kindRawValue: TaxEducationProgressKind.quiz.rawValue,
+            lessonID: "",
+            checklistItemID: "",
+            quizID: result.quizID,
+            quizScorePercent: result.scorePercent,
+            quizCorrectCount: result.correctCount,
+            quizQuestionCount: result.questionCount,
+            statusRawValue: newStatus.rawValue,
+            lastInteractedAt: result.attemptedAt
+        )
+        modelContext.insert(record)
+        save(modelContext)
+        return record
     }
 
     // MARK: - Writes

@@ -1,11 +1,12 @@
 // TaxEducationProgressRecord.swift
 // NomadFi
 //
-// Persisted progress marker for the Phase 7B education scaffolding.
-// One record per (region, kind, identifier) tuple:
+// Persisted progress marker for the Phase 7B+7C education
+// scaffolding. One record per (region, kind, identifier) tuple:
 //
-//   • (.lesson, regionRawValue, lessonID, "")
-//   • (.checklistItem, regionRawValue, "", checklistItemID)
+//   • (.lesson, regionRawValue, lessonID, "", "")
+//   • (.checklistItem, regionRawValue, "", checklistItemID, "")
+//   • (.quiz, regionRawValue, "", "", quizID)
 //
 // Uniqueness is enforced in the service layer via a deterministic
 // lookup — CloudKit sync does not support `@Attribute(.unique)` in
@@ -30,8 +31,8 @@ final class TaxEducationProgressRecord {
     /// the enum gains cases later.
     var regionRawValue: String = ""
 
-    /// `TaxEducationProgressKind.rawValue` — `"lesson"` or
-    /// `"checklistItem"`.
+    /// `TaxEducationProgressKind.rawValue` — `"lesson"` /
+    /// `"checklistItem"` / `"quiz"`.
     var kindRawValue: String = TaxEducationProgressKind.lesson.rawValue
 
     /// Lesson identifier when `kind == .lesson`, empty otherwise.
@@ -40,6 +41,24 @@ final class TaxEducationProgressRecord {
     /// Checklist-item identifier when `kind == .checklistItem`,
     /// empty otherwise.
     var checklistItemID: String = ""
+
+    /// Quiz identifier when `kind == .quiz`, empty otherwise.
+    /// Added in Phase 7C; existing lesson / checklist records
+    /// migrate forward with the default empty string.
+    var quizID: String = ""
+
+    /// Latest quiz attempt's score (0–100). `nil` for lesson /
+    /// checklist records and for quiz records that have never been
+    /// attempted. CloudKit-safe: optional, no default inference.
+    var quizScorePercent: Double? = nil
+
+    /// Latest attempt's correct-answer count.
+    var quizCorrectCount: Int? = nil
+
+    /// Number of questions at the latest attempt. Tracked so UI
+    /// can render "X of Y correct" honestly even if the quiz
+    /// catalogue's length changes later.
+    var quizQuestionCount: Int? = nil
 
     /// `TaxEducationProgressStatus.rawValue`. Defaults to
     /// `"notStarted"` so a freshly-inserted record is a no-op
@@ -55,6 +74,10 @@ final class TaxEducationProgressRecord {
         kindRawValue: String = TaxEducationProgressKind.lesson.rawValue,
         lessonID: String = "",
         checklistItemID: String = "",
+        quizID: String = "",
+        quizScorePercent: Double? = nil,
+        quizCorrectCount: Int? = nil,
+        quizQuestionCount: Int? = nil,
         statusRawValue: String = TaxEducationProgressStatus.notStarted.rawValue,
         lastInteractedAt: Date? = nil
     ) {
@@ -62,6 +85,10 @@ final class TaxEducationProgressRecord {
         self.kindRawValue = kindRawValue
         self.lessonID = lessonID
         self.checklistItemID = checklistItemID
+        self.quizID = quizID
+        self.quizScorePercent = quizScorePercent
+        self.quizCorrectCount = quizCorrectCount
+        self.quizQuestionCount = quizQuestionCount
         self.statusRawValue = statusRawValue
         self.lastInteractedAt = lastInteractedAt
     }

@@ -273,26 +273,33 @@ points at the test file that pins the behaviour.
 
 - [~] Tax Vault — document storage, receipt capture, tax-category
   suggestion review queue (Phase 7 entry), a jurisdiction-aware
-  **education starter** (Phase 7A), and persisted user progress on
-  lessons and checklist items (Phase 7B). Full gamified path
-  (quizzes, badges, streaks, deeper investment-account lessons)
-  still `[ ]`.
-- [~] Region-specific tax education (Phase 7A + 7B) —
+  **education starter** (Phase 7A), persisted lesson / checklist
+  progress (Phase 7B), and region-aware **knowledge-check
+  quizzes** (Phase 7C). Remaining gamification (badges, streaks,
+  deeper investment-account lessons) still `[ ]`.
+- [~] Region-specific tax education (Phase 7A + 7B + 7C) —
   locally-authored, source-backed starter covering United States
-  (3 lessons + 1 checklist), Canada (3 lessons + 1 checklist), and
-  Trinidad and Tobago (2 lessons + 1 checklist). Every lesson
-  cites at least one official source from `docs/README.md` (IRS /
-  CRA / BIR / Ministry of Finance / FIUTT). Surfaced inside
-  `TaxVaultView` as the **Learn for your jurisdictions** section,
-  driven by `JurisdictionProfile` with home-first ordering. Phase
-  7B adds explicit **Mark reviewed** and checklist-toggle actions
-  plus a **Next to review** pointer, all backed by a CloudKit-safe
+  (3 lessons + 1 checklist + 1 quiz), Canada
+  (3 lessons + 1 checklist + 1 quiz), and Trinidad and Tobago
+  (2 lessons + 1 checklist + 1 quiz). Every lesson — and every
+  quiz question — cites only official sources already enumerated
+  in `docs/README.md` (IRS / CRA / BIR / Ministry of Finance /
+  FIUTT). Surfaced inside `TaxVaultView` as the **Learn for your
+  jurisdictions** section, driven by `JurisdictionProfile` with
+  home-first ordering. Phase 7B added explicit **Mark reviewed**
+  and checklist-toggle actions plus a **Next to review** pointer;
+  Phase 7C added a **Knowledge check** row inside each region
+  block that unlocks once the checklist and lessons are reviewed
+  and persists attempt scores via the same CloudKit-safe
   `TaxEducationProgressRecord` `@Model`. _Evidence:
   `TaxEducationCatalogTests.swift`,
   `TaxEducationSelectorTests.swift`,
-  `TaxEducationProgressServiceTests.swift`._
-- [ ] Full gamified tax education path (region-aware quizzes,
-  badges, streaks, deeper investment-account deep dives).
+  `TaxEducationProgressServiceTests.swift`,
+  `TaxEducationQuizCatalogTests.swift`,
+  `TaxEducationQuizScoringTests.swift`,
+  `TaxEducationQuizServiceTests.swift`._
+- [ ] Remaining gamified tax education path (badges, streaks,
+  deeper investment-account deep dives).
 - [ ] Investing education + index-fund tracking.
 
 ### Apple capability tracks
@@ -831,11 +838,12 @@ Credit scoring and issuer risk models are proprietary.
 
 **Status:** `[~]` Partially shipped. Phase 7 entry (tax-category suggestion
 bridge), Phase 7A (education starter with source-backed lessons and
-region-aware checklists), and Phase 7B (persisted user progress with
+region-aware checklists), Phase 7B (persisted user progress with
 explicit "Mark reviewed" / checklist-toggle actions and a "Next to review"
-pointer) are all live. The full gamified path — region-aware quizzes,
-badges, streaks, and deeper investment-account lessons — is still
-outstanding.
+pointer), and Phase 7C (region-aware knowledge-check quizzes with explicit
+submit + retake, deterministic scoring, and quiz-aware next-step /
+progress-summary logic) are all live. Badges, streaks, and deeper
+investment-account lessons are still outstanding.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -893,10 +901,31 @@ tax advice.
   lesson detail sheet. No quizzes, no badges, no streaks, no
   auto-complete on lesson open. _Evidence:
   `TaxEducationProgressServiceTests.swift`._
+- `[x]` **Region-aware knowledge-check quizzes** (Phase 7C) —
+  locally-authored quizzes under `Core/Services/TaxEducation/Quiz/`
+  (`TaxEducationQuizCatalog`, `TaxEducationQuizScoring`,
+  `TaxEducationQuiz` + `Question` + `Option` + `Result`). One
+  quiz per supported region (U.S. / Canada / Trinidad and Tobago),
+  3 questions each, single-answer MC, every question cites an
+  existing lesson via `sourceLessonID`. No new source coverage.
+  Persistence re-uses the Phase 7B `TaxEducationProgressRecord`
+  with a `.quiz` kind and four new optional / defaulted fields
+  (`quizID`, `quizScorePercent`, `quizCorrectCount`,
+  `quizQuestionCount`) — CloudKit-safe, no new `@Model`. Unlocks
+  only after every lesson and every checklist item for the region
+  is completed; pass threshold 80 %; retakes overwrite the
+  single record for the (region, quizID) tuple. Surfaced as a
+  **Knowledge check** row inside each region block with four
+  visual states (locked / ready / needs review / passed), a
+  `TaxEducationQuizSheet` for taking the quiz, and deterministic
+  fall-through from checklist → lessons → quiz in the "Next to
+  review" pointer. _Evidence:
+  `TaxEducationQuizCatalogTests.swift`,
+  `TaxEducationQuizScoringTests.swift`,
+  `TaxEducationQuizServiceTests.swift`._
 
 ### Still to build
 
-- Region-aware quizzes that re-use the same source-backed catalogue.
 - Progression badges / streaks layered onto the existing
   `TaxEducationProgressRecord`.
 - Deeper investment-account lessons (IRA for the U.S., TFSA/RRSP for Canada
@@ -1100,8 +1129,15 @@ re-debating whether the foundation exists.
     progress — `TaxEducationProgressRecord` `@Model` plus a pure
     `TaxEducationProgressService` powering explicit Mark-reviewed
     / checklist-toggle actions, per-region "X of Y steps reviewed"
-    chips, and a deterministic Next-to-review pointer. Quizzes,
-    badges, and streaks are the remaining gamified-path work.
+    chips, and a deterministic Next-to-review pointer. 7C:
+    region-aware **knowledge-check quizzes** under
+    `Core/Services/TaxEducation/Quiz/` with explicit submit +
+    retake, deterministic 80 %-pass scoring, unlock after the
+    checklist and lessons are completed, and quiz-aware
+    next-step / summary logic — same `TaxEducationProgressRecord`,
+    four new optional fields, no new `@Model`. Badges, streaks,
+    and deeper investment-account lessons remain the gamified-path
+    follow-ups.
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
@@ -1113,27 +1149,24 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete, Phase 7A + 7B have shipped, and the Phase 4
-stretch (spend anomaly detection) is live.** Tax Vault now carries
-four Phase 7 surfaces side by side: the **suggestion review
-queue**, the **education starter** (U.S. / Canada / Trinidad and
-Tobago, every lesson source-backed and calm), persisted
+**Phase 6 is complete, Phase 7A + 7B + 7C have shipped, and the
+Phase 4 stretch (spend anomaly detection) is live.** Tax Vault now
+carries five Phase 7 surfaces side by side: the **suggestion
+review queue**, the **education starter** (U.S. / Canada / Trinidad
+and Tobago, every lesson source-backed and calm), persisted
 **education progression** (Mark reviewed / checklist toggles /
-per-region summaries / Next to review), and the existing
-**receipts + documents archive**. Progress survives relaunches via
-the CloudKit-safe `TaxEducationProgressRecord` model. The
-Dashboard's `InsightEngine` continues to emit deterministic anomaly
-cards.
+per-region summaries / Next to review), region-aware
+**knowledge-check quizzes** (explicit submit / retake, 80 % pass
+threshold, unlock after checklist + lessons, score persisted
+inside the existing `TaxEducationProgressRecord`), and the
+existing **receipts + documents archive**. The Dashboard's
+`InsightEngine` continues to emit deterministic anomaly cards.
 
 Highest-leverage remaining work:
 
-- **Region-aware quizzes** — smallest next compounding pick. The
-  source-backed lesson catalogue is the reference; the quiz surface
-  layers onto the already-persisted progress model without new
-  source coverage.
-- **Progression badges / streaks** — optional add-on to the same
-  `TaxEducationProgressRecord` model; treat it as a quiz-path
-  follow-up rather than an independent slice.
+- **Progression badges / streaks** — optional gamification layer
+  on top of `TaxEducationProgressRecord`. Smallest next
+  compounding pick after 7C.
 - **Deeper investment-account lessons** — IRA for the U.S.,
   TFSA / RRSP deep dives beyond the current high-level starter.
 - **Phase 8 investing education + index-fund tracking**.
