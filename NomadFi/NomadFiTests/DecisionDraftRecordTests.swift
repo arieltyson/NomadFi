@@ -20,27 +20,24 @@ import Testing
 
 @testable import NomadFi
 
+/// SwiftData model-container tests are serialized to avoid a Swift
+/// Testing / SwiftData parallel-init race: the test host aborts with
+/// `SIGABRT` when multiple `ModelContainer(…)` calls happen concurrently
+/// inside a single suite under the simulator's Main Thread Checker +
+/// `SQLITE_ENABLE_THREAD_ASSERTIONS` env. Production logic is not
+/// stateful — only the test harness needs this trait.
 @MainActor
+@Suite(.serialized)
 struct DecisionDraftRecordTests {
 
     // MARK: - Helpers
 
+    /// Routes through ``SwiftDataTestContainerFactory`` so every
+    /// `@Model` that `DataGovernancePolicy.deleteAllUserData` wipes is
+    /// registered. Adding a future `@Model` type is a one-file edit
+    /// in the factory; this suite stays green without further churn.
     private func makeContext() throws -> ModelContext {
-        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: DecisionDraftRecord.self,
-            Account.self,
-            Transaction.self,
-            Subscription.self,
-            Budget.self,
-            ExchangeRate.self,
-            JurisdictionProfile.self,
-            Currency.self,
-            TaxDocument.self,
-            ScenarioDecisionRecord.self,
-            configurations: configuration
-        )
-        return ModelContext(container)
+        try SwiftDataTestContainerFactory.makeFullSchemaContext()
     }
 
     // MARK: - Defaults

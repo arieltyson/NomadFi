@@ -22,23 +22,12 @@ struct PurchaseDecisionRecordTests {
 
     // MARK: - Helpers
 
+    /// Routes through ``SwiftDataTestContainerFactory`` so every
+    /// `@Model` that `DataGovernancePolicy.deleteAllUserData` wipes is
+    /// registered. Adding a future `@Model` type is a one-file edit
+    /// in the factory; this suite stays green without further churn.
     private func makeContext() throws -> ModelContext {
-        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: PurchaseDecisionRecord.self,
-            Account.self,
-            Transaction.self,
-            Subscription.self,
-            Budget.self,
-            ExchangeRate.self,
-            JurisdictionProfile.self,
-            Currency.self,
-            TaxDocument.self,
-            ScenarioDecisionRecord.self,
-            DecisionDraftRecord.self,
-            configurations: configuration
-        )
-        return ModelContext(container)
+        try SwiftDataTestContainerFactory.makeFullSchemaContext()
     }
 
     // MARK: - Defaults
