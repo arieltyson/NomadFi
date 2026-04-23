@@ -11,6 +11,14 @@
 // @Observable + @MainActor, per the project's Swift 6.2 / strict
 // concurrency house rules. The VM never hops off the main actor;
 // long-running coordinator work happens inside explicit async calls.
+//
+// Phase 5C additions:
+// - Tracks per-provider sync outcomes so the UI can honestly say
+//   "Authorized, no eligible accounts" when FinanceKit returns zero
+//   rows under a valid authorization.
+// - Tracks the last successful sync timestamp per provider and
+//   renders it as an absolute (static) date string, matching the
+//   repo rule "static date formatting, not relative".
 
 import Foundation
 import OSLog
@@ -27,7 +35,8 @@ final class FinancialConnectionsViewModel {
     )
 
     /// Rows rendered on the page, one per registered provider.
-    /// Computed from the last coordinator status pass.
+    /// Computed from the last coordinator status pass plus the last
+    /// sync's per-provider outcomes.
     private(set) var rows: [Row] = []
 
     /// Set while an authorization prompt or sync is in flight. The
@@ -41,6 +50,10 @@ final class FinancialConnectionsViewModel {
     /// Human-readable, localised summary of the last sync. Nil when
     /// no sync has run yet; calm factual copy otherwise.
     private(set) var lastSyncSummary: LocalizedStringResource?
+
+    /// Per-provider outcome from the most recent sync pass, keyed by
+    /// `FinancialDataProviderKind.logKey`. Populated by `syncNow`.
+    private var lastOutcomesByKey: [String: SyncOutcome] = [:]
 
     private let coordinator: FinancialDataSyncCoordinator
     private let homeCurrency: CurrencyCode
@@ -67,7 +80,8 @@ final class FinancialConnectionsViewModel {
                 kind: status.kind,
                 availability: status.availability,
                 authorization: status.authorization,
-                connection: connections.first { $0.providerKind == status.kind }
+                connection: connections.first { $0.providerKind == status.kind },
+                lastOutcome: lastOutcomesByKey[status.kind.logKey]
             )
         }
     }
@@ -125,10 +139,30 @@ final class FinancialConnectionsViewModel {
         )
         lastReconciliation = result
         lastSyncSummary = Self.summary(for: result)
+
+        for outcome in report.outcomes {
+            lastOutcomesByKey[outcome.providerKind.logKey] = SyncOutcome(
+                accountCount: outcome.accountCount,
+                transactionCount: outcome.transactionCount,
+                result: outcome.result,
+                completedAt: report.completedAt
+            )
+        }
         await refresh()
     }
 
     // MARK: - Derived UI state
+
+    /// Per-provider sync outcome retained on the VM. Narrow subset of
+    /// ``FinancialDataSyncReport/ProviderOutcome`` so the Row stays
+    /// `Sendable` and `Equatable` without hauling framework-facing
+    /// associated values through the `Equatable` derivation.
+    struct SyncOutcome: Sendable, Equatable {
+        let accountCount: Int
+        let transactionCount: Int
+        let result: FinancialDataSyncReport.ProviderOutcome.Result
+        let completedAt: Date
+    }
 
     /// Row projection for the list. Includes a precomputed UI state
     /// so the view body stays short and the tests can assert against
@@ -139,6 +173,23 @@ final class FinancialConnectionsViewModel {
         let availability: FinancialDataProviderAvailability
         let authorization: FinancialDataAuthorizationStatus
         let connection: FinancialDataConnection?
+        let lastOutcome: SyncOutcome?
+
+        init(
+            id: String,
+            kind: FinancialDataProviderKind,
+            availability: FinancialDataProviderAvailability,
+            authorization: FinancialDataAuthorizationStatus,
+            connection: FinancialDataConnection?,
+            lastOutcome: SyncOutcome? = nil
+        ) {
+            self.id = id
+            self.kind = kind
+            self.availability = availability
+            self.authorization = authorization
+            self.connection = connection
+            self.lastOutcome = lastOutcome
+        }
 
         /// Localised title for the row. Mirrors the provider kind's
         /// honest display label — never a marketing claim.
@@ -151,23 +202,44 @@ final class FinancialConnectionsViewModel {
             }
         }
 
+        /// True when the provider succeeded in its last sync but
+        /// returned zero account snapshots under a valid
+        /// authorization — user is authorized, but Apple has no
+        /// eligible accounts to expose (no Apple Card / Apple Cash /
+        /// Apple Savings in the US; no supported open-banking
+        /// institution in the UK).
+        var isAuthorizedWithZeroAccounts: Bool {
+            guard availability.isAvailable, authorization == .authorized else {
+                return false
+            }
+            guard let lastOutcome else { return false }
+            switch lastOutcome.result {
+            case .succeeded: return lastOutcome.accountCount == 0
+            default: return false
+            }
+        }
+
         /// Calm, factual status line. Copy is pinned by tests so the
         /// page never starts claiming coverage NomadFi does not have.
         var statusLabel: LocalizedStringResource {
             switch availability {
             case .unavailable(let reason):
                 switch reason {
-                case .notSupportedOnPlatform: "Not supported on this platform"
-                case .notSupportedOnDevice: "Not available on this device"
-                case .entitlementNotProvisioned: "Available on supported devices"
-                case .integrationNotImplemented: "Not enabled in this build"
+                case .notSupportedOnPlatform: return "Not supported on this platform"
+                case .notSupportedOnDevice: return "Not available on this device"
+                case .entitlementNotProvisioned: return "Available on supported devices"
+                case .integrationNotImplemented: return "Not enabled in this build"
                 }
             case .availableNoConnections, .available:
                 switch authorization {
-                case .authorized: "Connected"
-                case .denied: "Authorization required"
-                case .notDetermined: "Authorization required"
-                case .unavailable: "Not available on this device"
+                case .authorized:
+                    if isAuthorizedWithZeroAccounts {
+                        return "Authorized — no eligible accounts found"
+                    }
+                    return "Connected"
+                case .denied: return "Authorization required"
+                case .notDetermined: return "Authorization required"
+                case .unavailable: return "Available on supported devices"
                 }
             }
         }
@@ -183,13 +255,29 @@ final class FinancialConnectionsViewModel {
             }
         }
 
-        /// Calm last-sync detail, only populated when the coordinator
-        /// reports a successful sync for this provider.
+        /// Calm last-sync detail. Uses a static absolute-date format
+        /// per repo UI rules ("static date formatting, not relative
+        /// date formatting"). Returns `nil` when no successful sync
+        /// has happened for this provider.
         var lastSyncDetail: LocalizedStringResource? {
-            guard let connection, let lastSync = connection.lastSyncAt else {
-                return nil
+            guard let completedAt = lastSuccessfulSyncAt else { return nil }
+            let formatted = completedAt.formatted(
+                date: .abbreviated,
+                time: .shortened
+            )
+            return "Last synced \(formatted)"
+        }
+
+        /// Returns the absolute timestamp of the last *successful*
+        /// sync for this provider. Skipped and failed outcomes don't
+        /// count as a last-successful-sync — they'd otherwise
+        /// mislead the user into thinking the provider refreshed.
+        var lastSuccessfulSyncAt: Date? {
+            guard let lastOutcome else { return nil }
+            switch lastOutcome.result {
+            case .succeeded: return lastOutcome.completedAt
+            default: return nil
             }
-            return "Last synced \(lastSync.formatted(.relative(presentation: .named)))"
         }
     }
 

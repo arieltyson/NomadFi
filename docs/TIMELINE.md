@@ -313,20 +313,19 @@ points at the test file that pins the behaviour.
 
 ### Apple capability tracks
 
-- [~] **Financial-data access strategy (Phase 5A + 5B shipped; 5C + 5D
-  research next).**
-  Phase 5A shipped the provider-neutral architecture under
+- [~] **Financial-data access strategy (Phase 5A + 5B + 5C shipped
+  in-code; Apple entitlement + real-device validation outstanding;
+  5D = provider bakeoff research).**
+  5A shipped the provider-neutral architecture under
   `Core/Services/FinancialData/`: `FinancialDataProvider`,
   `FinancialDataProviderKind` (manual / csvImport / financeKit /
   externalAggregator), typed availability / authorization / connection
   surfaces, provider-neutral `FinancialAccountSnapshot` +
   `FinancialTransactionSnapshot`, and a `FinancialDataSyncCoordinator`
   that fans out across every registered provider with graceful
-  degradation. FinanceKit lives in `FinanceKitFinancialDataProvider`
-  with real availability / authorization calls and a typed mapping
-  seam; the external-aggregator placeholder pins the boundary for a
-  later Plaid-vs-Akoya bakeoff without shipping any vendor SDK.
-  Phase 5B wired the architecture into product plumbing:
+  degradation. The external-aggregator placeholder pins the boundary
+  for a later bakeoff without shipping any vendor SDK.
+  5B wired the architecture into product plumbing:
   `FinancialDataReconciler` under
   `Core/Services/FinancialData/Reconciliation/` merges a
   `FinancialDataSyncReport` into the SwiftData store with pinned
@@ -338,20 +337,45 @@ points at the test file that pins the behaviour.
   `Transaction` grew a provider-neutral `providerKindRawValue`; and
   Settings → Financial Setup → **Financial Connections** renders
   per-provider availability / authorization / connection state with
-  an explicit **Sync Now** action. `NSFinancialDataUsageDescription`
-  is present. The next gates are explicit and research-backed:
-  5C = Apple-managed entitlement + real-device FinanceKit validation;
-  5D = provider bakeoff research (Plaid first practicality check,
-  Akoya first privacy/API comparison, MX + Finicity reserved as later
-  enterprise candidates) using official docs, sandbox validation,
-  pricing models, and CFPB/FDX-aligned consent criteria.
-  added to the app target so the FinanceKit consent prompt has the
-  required purpose string. _Evidence:
+  an explicit **Sync Now** action.
+  5C replaced the FinanceKit no-op fetches with real
+  `FinanceStore.shared.accounts(query:)` /
+  `accountBalances(query:)` /
+  `transactions(query:)` calls behind the existing
+  `ensureAuthorized()` gate. A pure `FinanceKitSnapshotMapper`
+  projects `FinanceKit.Account` / `AccountBalance` / `Transaction`
+  rows onto the provider-neutral snapshot contract
+  (liability → credit card with credit info; asset → checking;
+  `CreditDebitIndicator` drives the debit-negative sign convention;
+  unsupported currencies are honestly dropped rather than coerced).
+  `FinanceError.dataRestricted` maps to
+  `.providerUnavailable(.entitlementNotProvisioned)` and
+  `.unavailable` authorization, so the Settings page surfaces the
+  entitlement-missing state calmly. The VM now retains per-provider
+  sync outcomes and surfaces a new "Authorized — no eligible
+  accounts found" state when FinanceKit succeeds with zero rows.
+  Last-sync detail is rendered using static absolute-date formatting
+  (`.abbreviated` date + `.shortened` time), never relative phrasing.
+  `NSFinancialDataUsageDescription` remains in the app target.
+  `com.apple.developer.financekit` is **not** added to the
+  entitlements file in this slice — Apple's capability is managed
+  and provisioning must happen first. The feasibility dossier at
+  `docs/research/FinanceKitFeasibility.md` captures the manual
+  provisioning steps, coverage facts, error matrix, real-device
+  test matrix, and the explicit go/no-go criteria for Phase 5D.
+  _Evidence:
   `FinancialDataProviderArchitectureTests.swift`,
   `FinancialDataReconcilerTests.swift`,
-  `FinancialConnectionsViewModelTests.swift`._
-  Remaining for later: real device / managed-entitlement rollout and
-  a concrete third-party aggregator bakeoff.
+  `FinancialConnectionsViewModelTests.swift`,
+  `FinanceKitSnapshotMapperTests.swift`,
+  `FinanceKitErrorMappingTests.swift`._
+  Still outstanding — blockers outside the repo: Apple-managed
+  `com.apple.developer.financekit` provisioning on
+  `com.arieljtyson.NomadFi`; real-device validation on a
+  FinanceKit-eligible account; the background-delivery extension
+  (iOS 26+) lives as a declared seam but is not wired.
+  Phase 5D frames the later provider bakeoff as research, not as
+  an assumed Plaid integration.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
@@ -1486,34 +1510,42 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 5A and 5B are shipped, and Phase 5C is now the highest-leverage
-next step.** NomadFi already has the provider-neutral layer
-(`Core/Services/FinancialData/`), reconciliation into SwiftData, and a
-Settings → Financial Setup → **Financial Connections** page with an
-explicit **Sync Now** action. What it does not have yet is validated
-live upstream coverage. The roadmap should therefore move through the
-remaining Phase 5 gates in order rather than drifting back to adjacent
-secondary-feature work.
+**Phase 5A, 5B, and the in-code parts of 5C are shipped.** The
+FinanceKit adapter now calls real `FinanceStore` query APIs behind
+its authorization gate, maps rows through the pure
+`FinanceKitSnapshotMapper`, and surfaces every error / state
+distinction Apple's `FinanceError` and `AuthorizationStatus` make
+available today — including an explicit "Authorized — no eligible
+accounts found" state on the Settings page. The feasibility dossier
+at [`docs/research/FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md)
+records the API surface, coverage facts, error matrix, real-device
+test matrix, and the explicit go/no-go criteria for Phase 5D.
 
 Highest-leverage remaining work, in order:
 
-- **Phase 5C — FinanceKit entitlement + real-device validation** —
-  provision `com.apple.developer.finance-kit` with Apple, finish the
-  `FinanceStore.accounts(query:)` / `transactions(query:)` paths in
-  `FinanceKitFinancialDataProvider`, and verify them on supported
-  devices and supported products. This is a research-and-validation
-  phase first, not a marketing claim. If FinanceKit clears the bar,
-  background delivery can be validated behind the same entitlement.
-- **Phase 5D — external-provider bakeoff research** — do not pick a
-  paid vendor by intuition. Run a measured comparison using official
-  docs and sandbox validation:
-  - Plaid first as the practicality benchmark
-  - Akoya first as the privacy / API-first benchmark
-  - MX and Mastercard / Finicity as reserve candidates
-  - score them on coverage, freshness, OAuth/API quality, consent /
-    revocation UX, cost, and operational burden
+- **Phase 5C — Apple entitlement + real-device validation (outside
+  the repo).** Request `com.apple.developer.financekit` for
+  `com.arieljtyson.NomadFi` through the Apple Developer capabilities
+  flow, wait for Apple to approve, then add the entitlement key to
+  `NomadFi/NomadFi.entitlements` and run the real-device test
+  matrix from the feasibility dossier. Nothing in the app needs
+  further code changes to start ingesting live FinanceKit data;
+  every new row flows through the reconciler into the existing
+  `Account` / `Transaction` store.
+- **Phase 5C / background delivery extension** — iOS 26's
+  `enableBackgroundDelivery(for:frequency:)` path requires a
+  `BackgroundDeliveryExtension` app extension. Build this once the
+  managed entitlement is provisioned and real-device validation is
+  passing.
+- **Phase 5D — provider bakeoff research.** Explicitly a research
+  phase, not an assumed Plaid integration. Compare candidates
+  (Plaid, Akoya, MX, Mastercard / Finicity, or a direct FDX
+  integration) on coverage per NomadFi's home jurisdictions, OAuth
+  / API quality, CFPB 1033-aligned consent model, privacy posture,
+  cost, and operational burden. Output a written recommendation
+  before any SDK is added.
 - **Phase 5E — one concrete external adapter** — only after the
-  bakeoff chooses a provider. Land it behind
+  bakeoff chooses. Land it behind
   `ExternalAggregatorFinancialDataProvider`; keep vendor SDK imports
   confined to that boundary and keep the reconciler / core engines
   unchanged.
@@ -1522,8 +1554,8 @@ Highest-leverage remaining work, in order:
   live upstream.
 - **Deeper investment-account lessons** (IRA / TFSA / RRSP) and
   **receipt / document organisation prompts** remain open as Tax
-  Vault follow-ups but are explicitly lower priority than the
-  provider work above.
+  Vault follow-ups, explicitly lower priority than the provider
+  work above.
 
 ---
 

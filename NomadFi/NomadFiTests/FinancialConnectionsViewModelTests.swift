@@ -244,6 +244,130 @@ struct FinancialConnectionsViewModelTests {
         #expect(!row.canRequestAuthorization)
     }
 
+    // MARK: - Phase 5C — authorized-no-accounts state
+
+    @Test("Authorized FinanceKit with zero accounts under a succeeded sync reads as 'no eligible accounts'")
+    func authorizedWithZeroAccountsSurfacesHonestCopy() {
+        let outcome = FinancialConnectionsViewModel.SyncOutcome(
+            accountCount: 0,
+            transactionCount: 0,
+            result: .succeeded,
+            completedAt: Date(timeIntervalSince1970: 1_714_000_000)
+        )
+        let row = FinancialConnectionsViewModel.Row(
+            id: "finance_kit",
+            kind: .financeKit,
+            availability: .available,
+            authorization: .authorized,
+            connection: nil,
+            lastOutcome: outcome
+        )
+        #expect(row.isAuthorizedWithZeroAccounts)
+        #expect(localizedEnglish(row.statusLabel) == "Authorized — no eligible accounts found")
+        #expect(!row.canRequestAuthorization)
+    }
+
+    @Test("Authorized FinanceKit with accounts reads 'Connected', not 'no eligible accounts'")
+    func authorizedWithAccountsStaysConnected() {
+        let outcome = FinancialConnectionsViewModel.SyncOutcome(
+            accountCount: 2,
+            transactionCount: 5,
+            result: .succeeded,
+            completedAt: Date(timeIntervalSince1970: 1_714_000_000)
+        )
+        let row = FinancialConnectionsViewModel.Row(
+            id: "finance_kit",
+            kind: .financeKit,
+            availability: .available,
+            authorization: .authorized,
+            connection: nil,
+            lastOutcome: outcome
+        )
+        #expect(!row.isAuthorizedWithZeroAccounts)
+        #expect(localizedEnglish(row.statusLabel) == "Connected")
+    }
+
+    @Test("A failed-sync outcome does not masquerade as 'no eligible accounts'")
+    func failedSyncDoesNotTriggerZeroAccountsCopy() {
+        let outcome = FinancialConnectionsViewModel.SyncOutcome(
+            accountCount: 0,
+            transactionCount: 0,
+            result: .failed(.refreshFailed),
+            completedAt: Date(timeIntervalSince1970: 1_714_000_000)
+        )
+        let row = FinancialConnectionsViewModel.Row(
+            id: "finance_kit",
+            kind: .financeKit,
+            availability: .available,
+            authorization: .authorized,
+            connection: nil,
+            lastOutcome: outcome
+        )
+        #expect(!row.isAuthorizedWithZeroAccounts)
+        #expect(localizedEnglish(row.statusLabel) == "Connected")
+    }
+
+    // MARK: - Phase 5C — static date formatting
+
+    @Test("Last-sync detail renders an absolute date, never a relative phrasing")
+    func lastSyncDetailIsStaticDateFormatting() {
+        // Fixed reference date far enough in the past that any
+        // relative formatter would produce "1 year ago" or similar.
+        let completedAt = Date(timeIntervalSince1970: 1_650_000_000)
+        let outcome = FinancialConnectionsViewModel.SyncOutcome(
+            accountCount: 1,
+            transactionCount: 3,
+            result: .succeeded,
+            completedAt: completedAt
+        )
+        let row = FinancialConnectionsViewModel.Row(
+            id: "finance_kit",
+            kind: .financeKit,
+            availability: .available,
+            authorization: .authorized,
+            connection: nil,
+            lastOutcome: outcome
+        )
+        guard let detail = row.lastSyncDetail else {
+            Issue.record("Expected a last-sync detail label for a succeeded sync")
+            return
+        }
+        let text = localizedEnglish(detail).lowercased()
+        let forbiddenRelative = [
+            " ago", "yesterday", "tomorrow", "last week", "in a year", "minutes ago",
+            "hours ago", "seconds ago"
+        ]
+        for phrase in forbiddenRelative {
+            #expect(
+                !text.contains(phrase),
+                "Last-sync detail leaked relative formatting: \"\(phrase)\" in \(text)"
+            )
+        }
+        // Static format: starts with "Last synced " and includes
+        // the abbreviated date (year present).
+        #expect(text.hasPrefix("last synced "))
+        #expect(text.contains("2022"))
+    }
+
+    @Test("A skipped / failed outcome produces no last-sync label")
+    func failedOutcomeHidesLastSyncDetail() {
+        let outcome = FinancialConnectionsViewModel.SyncOutcome(
+            accountCount: 0,
+            transactionCount: 0,
+            result: .skippedAuthorizationRequired,
+            completedAt: Date(timeIntervalSince1970: 1_714_000_000)
+        )
+        let row = FinancialConnectionsViewModel.Row(
+            id: "finance_kit",
+            kind: .financeKit,
+            availability: .available,
+            authorization: .authorized,
+            connection: nil,
+            lastOutcome: outcome
+        )
+        #expect(row.lastSyncDetail == nil)
+    }
+
     // MARK: - Helpers
 
     /// Resolves a `LocalizedStringResource` through the bundle's
