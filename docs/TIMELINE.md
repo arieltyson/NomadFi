@@ -127,9 +127,17 @@ points at the test file that pins the behaviour.
   `nearLimitAvoidMoreSpend`), near-limit / paydown guidance, stale-snapshot
   and unconfirmed-schedule gates. _Evidence:
   `CreditTimingDecisionEngineTests.swift`._
-- [~] "Which card should I use?" — routed through Scenario 1 honestly but
-  not yet answering arbitrary merchant / category questions. See Phase 3.
-- [ ] Generic merchant / category scenario engine.
+- [x] Generic Purchase Decision Engine v1 — `PurchaseDecisionEngine` with
+  merchant / category / amount / currency / location context, per-account
+  stances (`recommended`, `fallback`, `usableWithCaveats`, `insufficientFunds`,
+  `insufficientCreditCoverage`, `snapshotStale`, `needsSetup`,
+  `excludedInvestment`), FX-verification caveats, and CFPB + myFICO
+  citations. Rewards are intentionally *not* used for ranking. _Evidence:
+  `PurchaseDecisionEngineTests.swift`, `PurchaseDecisionRecordTests.swift`._
+- [~] "Which card should I use?" — routed through Scenario 1 today. With
+  the generic engine in place, the voice surface can be widened in the
+  next phase via `RecommendCardIntent`.
+- [ ] Verified rewards / category-bonus model on `Account`.
 - [ ] Cross-card payment-allocation planning.
 - [ ] Credit-limit-increase readiness checklist.
 
@@ -421,9 +429,15 @@ the data NomadFi already has.
 
 ## Phase 3 — Context-Aware Card Decision Engine
 
-**Status:** `[ ]` Planned. This is the next major engineering target (see
-[Current Next Step](#current-next-step)). Scenario 1 is the only concrete
-precedent.
+**Status:** `[~]` Partially shipped. Generic Purchase Decision Engine v1
+(see [`PurchaseDecisionEngine`](../NomadFi/NomadFi/Features/DecisionAssistant/PurchaseDecision/PurchaseDecisionEngine.swift)
+and tests `PurchaseDecisionEngineTests.swift` / `PurchaseDecisionRecordTests.swift`)
+now ranks the user's saved accounts for a typed merchant / category /
+amount / currency / location purchase. Rewards ranking is intentionally
+out of scope until verified issuer rewards data exists; the engine only
+emits a consolidated "verify rewards" checklist entry for
+rewards-sensitive categories. A merchant-aware Siri
+`RecommendCardIntent` is still `[ ]`.
 
 **Goal:** Make the recommendation engine robust enough to operate across real
 life contexts.
@@ -757,58 +771,73 @@ re-debating whether the foundation exists.
 7. `[x]` Decision Draft intake, lifecycle (create / edit / archive / restore /
    delete), and Siri capture.
 8. `[x]` Deterministic Credit Timing v1 (portfolio-wide readiness).
-9. `[ ]` **Next:** Generic merchant / category scenario engine (see Current
-   Next Step below).
-10. `[ ]` `RecommendCardIntent` on top of the generic engine, plus the
-    small `ReviewCreditTimingIntent` voice parity.
-11. `[ ]` Transaction capture fan-out: CSV import, merchant normalisation,
+9. `[x]` Generic Purchase Decision Engine v1 (`PurchaseDecisionEngine`) with
+   per-account stances, FX-verification caveats, no rewards ranking, and an
+   in-app brief sheet.
+10. `[ ]` **Next:** `RecommendCardIntent` (voice surface on top of the
+    generic engine) + the still-outstanding `ReviewCreditTimingIntent` voice
+    parity.
+11. `[ ]` Verified rewards / category-bonus model on `Account` — lifts the
+    "rewards are not ranked" caveat in the generic engine.
+12. `[ ]` Transaction capture fan-out: CSV import, merchant normalisation,
     recurring-charge detection beyond Subscriptions.
-12. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
+13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
     readiness checklist (completes Phase 6).
-13. `[ ]` Region-specific tax education path (Phase 7).
-14. `[ ]` Investing education and index-fund tracking (Phase 8).
-15. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
+14. `[ ]` Region-specific tax education path (Phase 7).
+15. `[ ]` Investing education and index-fund tracking (Phase 8).
+16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
-16. `[!]` Apple Pay — only if NomadFi starts accepting payments.
-17. `[!]` Wallet passes — only if NomadFi ships a pass with concrete user
+17. `[!]` Apple Pay — only if NomadFi starts accepting payments.
+18. `[!]` Wallet passes — only if NomadFi ships a pass with concrete user
     value.
 
 ---
 
 ## Current Next Step
 
-**Target:** a generic merchant / category scenario engine (Phase 3) —
-specifically, the pure, deterministic value types and engine that will let
-NomadFi answer "Which card should I use at <merchant> for <amount>?" without
-inventing data.
+**Target:** `RecommendCardIntent` — the voice surface that sits on top of
+the freshly-shipped Generic Purchase Decision Engine v1. Users should be
+able to say *"Which card should I use at Target for 80 dollars in San
+Francisco"* and hear the engine's ruling, without the app ever inventing
+rewards or promising score outcomes.
 
 **Why this over the alternatives:**
 
-- It is the single biggest honesty gap. The voice surface already has to say
-  *"NomadFi can't yet answer which card to use for any merchant"* (see
-  `ActiveCardIntent`). Closing this gap is the clearest user-visible win.
-- `RecommendCardIntent` is blocked on it — the Siri phrase is free once the
-  engine exists.
-- It reuses the foundations we just shipped: `Account` snapshots, `CreditCardSchedule`,
-  the `SourceProvenance` evidence model, and the `ScenarioCitation` pattern
-  from Credit Timing and Scenario 1. No new data model is required for v1.
-- It keeps the "no generic AI" invariant — the engine stays deterministic and
-  source-cited, matching the pattern that already passes tests.
+- The engine and brief sheet for a generic merchant / category / amount
+  ranking are now in the repo (`PurchaseDecisionEngine`,
+  `PurchaseDecisionBriefView`). The voice intent is now the single
+  user-visible gap — `ActiveCardIntent` still says NomadFi cannot answer
+  arbitrary purchases.
+- All scaffolding is ready: `DecisionDraftKindAppEnum` shows how to mirror
+  a core enum into `AppEnum` for parameter pickers. `MerchantCategory` and
+  `CurrencyCode` already conform to `Codable`/`Sendable` and can be
+  adapted the same way.
+- The intent runs `.background` and returns a concise dialog — no new
+  persistence is required; the engine is pure and already covered by tests.
+- The remaining small intent, `ReviewCreditTimingIntent`, is a natural
+  companion: both shipping together closes voice parity across the three
+  deterministic engines.
 
-**Scoping suggestion for a first slice:**
+**Scoping suggestion for the voice pass:**
 
-1. Define `MerchantCategory` (groceries, dining, travel, online-shopping,
-   utilities, subscriptions, other) and a small `PurchaseContext` value type
-   (merchant name, category, amount, currency, travel-mode, due-by).
-2. Write a pure ranking engine that consumes `PurchaseContext` + `[Account]`
-   and returns a structured recommendation: best option, why, when-not, fallback,
-   source confidence. Apply the existing hard rules (no debt for rewards, no
-   cash advance, no guarantees).
-3. Lean on user-confirmed card terms only — never inferred issuer category
-   bonuses. Unverified bonus categories surface as "needs verification" checks.
-4. Surface as a new catalog entry / brief sheet; do not replace Scenario 1.
-5. Follow up with `RecommendCardIntent` + the still-outstanding
-   `ReviewCreditTimingIntent` (the smaller Credit Timing v1 follow-up).
+1. Mirror `MerchantCategory` into a small `MerchantCategoryAppEnum` under
+   `Features/Intents/`, mirroring the `DecisionDraftKindAppEnum` pattern
+   (keep the core model free of `AppIntents`).
+2. Add `RecommendCardIntent` with parameters: `merchantName` (optional),
+   `category` (`MerchantCategoryAppEnum`), `amount` (Double), `currency`
+   (`CurrencyCode` via an AppEnum adapter or a `String` with a whitelisted
+   picker), `locationHint` (optional).
+3. `perform()` opens a `ModelContainer` registering
+   `PurchaseDecisionRecord.self` + `Account.self`, persists the inputs
+   onto the active record so the in-app brief sheet reflects the voice
+   capture, runs `PurchaseDecisionEngine.decide`, and speaks a concise
+   dialog.
+4. Dialog must avoid "best", "guaranteed", "always", and "rewards" —
+   pin that with a test modelled on
+   `DecisionAssistantIntentDialogTests.swift`.
+5. Add `ReviewCreditTimingIntent` at the same time (`.background`, runs
+   `CreditTimingDecisionEngine`) — it's small and was already on the
+   follow-up list.
 
 Target tests mirror the shape of `CreditTimingDecisionEngineTests` and
 `ScenarioDecisionEngineTests`: pin every claim, pin every refusal, pin

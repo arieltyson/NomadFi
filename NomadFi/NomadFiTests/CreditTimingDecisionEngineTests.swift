@@ -351,7 +351,11 @@ struct CreditTimingDecisionEngineTests {
     @Test("DecisionCatalog exposes Amazon arrival and Credit timing with distinct summaries")
     func catalogExposesBothDecisionsWithDistinctSummaries() {
         let all = DecisionCatalog.all
-        #expect(all.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
+        #expect(all.map(\.id) == [
+            .amazonArrivalOrder,
+            .creditTimingCheck,
+            .purchaseCardCheck,
+        ])
 
         let summaries = Set(all.map(\.summary))
         #expect(summaries.count == all.count)

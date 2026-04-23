@@ -45,6 +45,11 @@ final class DecisionAssistantViewModel {
     /// ``bootstrap(modelContext:)``.
     private(set) var scenario1BriefViewModel: ScenarioDecisionBriefViewModel?
 
+    /// Brief view-model behind the generic purchase decision. Same
+    /// lazy-bootstrap pattern so the SwiftData record stays stable
+    /// across view rebuilds.
+    private(set) var purchaseDecisionBriefViewModel: PurchaseDecisionBriefViewModel?
+
     /// True when the Scenario 1 brief sheet is presented. Owned by
     /// the view model so Siri / App Intent deep links can flip it
     /// programmatically.
@@ -52,6 +57,9 @@ final class DecisionAssistantViewModel {
 
     /// True when the Credit Timing brief sheet is presented.
     var isCreditTimingBriefPresented: Bool = false
+
+    /// True when the generic purchase-decision brief sheet is presented.
+    var isPurchaseDecisionBriefPresented: Bool = false
 
     /// True when the decision-draft capture sheet is presented.
     /// Owned by the view model so the capture affordance on
@@ -78,16 +86,24 @@ final class DecisionAssistantViewModel {
 
     // MARK: - Bootstrap
 
-    /// Fetches or creates the Scenario 1 record and wraps it in a
-    /// brief view-model. Safe to call more than once — subsequent
-    /// calls are no-ops so the record stays stable across view
+    /// Fetches or creates the deterministic engine records and
+    /// wraps them in brief view-models. Safe to call more than once
+    /// — each brief bootstraps once and stays stable across view
     /// rebuilds.
     func bootstrap(modelContext: ModelContext) {
-        guard scenario1BriefViewModel == nil else { return }
-        let record = ScenarioDecisionBriefViewModel.fetchOrCreateScenario1Record(
-            in: modelContext
-        )
-        scenario1BriefViewModel = ScenarioDecisionBriefViewModel(record: record)
+        if scenario1BriefViewModel == nil {
+            let record = ScenarioDecisionBriefViewModel.fetchOrCreateScenario1Record(
+                in: modelContext
+            )
+            scenario1BriefViewModel = ScenarioDecisionBriefViewModel(record: record)
+        }
+
+        if purchaseDecisionBriefViewModel == nil {
+            let record = PurchaseDecisionRecord.fetchOrCreateActiveRecord(
+                in: modelContext
+            )
+            purchaseDecisionBriefViewModel = PurchaseDecisionBriefViewModel(record: record)
+        }
     }
 
     // MARK: - Intents
@@ -110,6 +126,17 @@ final class DecisionAssistantViewModel {
         isCreditTimingBriefPresented = true
     }
 
+    /// Presents the generic purchase-decision brief. The brief's
+    /// view model must already be bootstrapped; guards so intent-
+    /// driven callers don't open an empty sheet.
+    func openPurchaseDecisionBrief() {
+        guard purchaseDecisionBriefViewModel != nil else {
+            Self.logger.warning("openPurchaseDecisionBrief called before bootstrap completed")
+            return
+        }
+        isPurchaseDecisionBriefPresented = true
+    }
+
     /// Opens a specific decision by identifier. Used by the history
     /// list and reserved for future App Intent deep links.
     func openDecision(_ id: DecisionID) {
@@ -118,6 +145,8 @@ final class DecisionAssistantViewModel {
             openActiveDecision()
         case .creditTimingCheck:
             openCreditTimingBrief()
+        case .purchaseCardCheck:
+            openPurchaseDecisionBrief()
         }
     }
 
@@ -142,6 +171,8 @@ final class DecisionAssistantViewModel {
             return scenario1Summary()
         case .creditTimingCheck:
             return creditTimingSummary(accounts: accounts, now: now)
+        case .purchaseCardCheck:
+            return purchaseDecisionSummary(accounts: accounts, now: now)
         }
     }
 
@@ -204,6 +235,25 @@ final class DecisionAssistantViewModel {
         return DecisionSummary(
             ruling: decision.ruling.displaySummary,
             lastUpdatedAt: lastUpdatedAt,
+            outstandingCheckCount: decision.outstandingCheckCount
+        )
+    }
+
+    private func purchaseDecisionSummary(
+        accounts: [Account],
+        now: Date
+    ) -> DecisionSummary {
+        guard let briefViewModel = purchaseDecisionBriefViewModel else {
+            return DecisionSummary(
+                ruling: "Tap to start a purchase card check.",
+                lastUpdatedAt: nil,
+                outstandingCheckCount: 0
+            )
+        }
+        let decision = briefViewModel.decision(accounts: accounts, now: now)
+        return DecisionSummary(
+            ruling: decision.ruling.displaySummary,
+            lastUpdatedAt: briefViewModel.record.updatedAt,
             outstandingCheckCount: decision.outstandingCheckCount
         )
     }

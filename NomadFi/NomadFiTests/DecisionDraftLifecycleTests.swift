@@ -349,9 +349,12 @@ struct DecisionDraftLifecycleTests {
 
         let catalogIDs = Set(DecisionCatalog.all.map(\.id.rawValue))
         #expect(!catalogIDs.contains(fixture.draftID.uuidString))
-        // Catalog entries are tightly controlled — both current
-        // engines (Amazon arrival order and Credit timing check) are
-        // in the catalog; drafts are not.
-        #expect(DecisionCatalog.all.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
+        // Catalog entries are tightly controlled — every
+        // deterministic engine is in the catalog; drafts are not.
+        #expect(DecisionCatalog.all.map(\.id) == [
+            .amazonArrivalOrder,
+            .creditTimingCheck,
+            .purchaseCardCheck,
+        ])
     }
 }

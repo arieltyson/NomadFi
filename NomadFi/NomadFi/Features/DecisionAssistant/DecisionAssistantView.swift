@@ -102,6 +102,14 @@ struct DecisionAssistantView: View {
         .sheet(isPresented: $viewModel.isCreditTimingBriefPresented) {
             CreditTimingBriefView(accounts: accounts)
         }
+        .sheet(isPresented: $viewModel.isPurchaseDecisionBriefPresented) {
+            if let purchaseBriefViewModel = viewModel.purchaseDecisionBriefViewModel {
+                PurchaseDecisionBriefView(
+                    accounts: accounts,
+                    viewModel: purchaseBriefViewModel
+                )
+            }
+        }
         .sheet(isPresented: $viewModel.isDraftFormPresented) {
             DecisionDraftFormView()
         }
@@ -311,6 +319,8 @@ private struct DecisionAssistantHistoryList: View {
             return viewModel.hasInteractedWithActiveDecision
         case .creditTimingCheck:
             return allAccounts.contains(where: \.isCreditCard)
+        case .purchaseCardCheck:
+            return viewModel.purchaseDecisionBriefViewModel?.record.hasUsableContext ?? false
         }
     }
 }
@@ -525,5 +535,6 @@ private struct DecisionAssistantSectionHeader: View {
         Budget.self,
         ScenarioDecisionRecord.self,
         DecisionDraftRecord.self,
+        PurchaseDecisionRecord.self,
     ], inMemory: true)
 }

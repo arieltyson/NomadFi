@@ -107,7 +107,11 @@ struct DecisionDraftIntentTests {
 
         let catalogIDs = Set(DecisionCatalog.all.map(\.id.rawValue))
         #expect(!catalogIDs.contains(inserted.draftID.uuidString))
-        #expect(DecisionCatalog.all.map(\.id) == [.amazonArrivalOrder, .creditTimingCheck])
+        #expect(DecisionCatalog.all.map(\.id) == [
+            .amazonArrivalOrder,
+            .creditTimingCheck,
+            .purchaseCardCheck,
+        ])
     }
 
     // MARK: - Intent mode

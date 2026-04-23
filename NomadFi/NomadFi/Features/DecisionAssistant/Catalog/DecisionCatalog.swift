@@ -20,7 +20,11 @@ enum DecisionCatalog {
     /// entry is currently promoted to the "Active Decision" hero on
     /// the Decision Assistant surface; additional entries render as
     /// sibling heroes beneath it.
-    static let all: [DecisionIdentity] = [amazonArrivalOrder, creditTimingCheck]
+    static let all: [DecisionIdentity] = [
+        amazonArrivalOrder,
+        creditTimingCheck,
+        purchaseCardCheck,
+    ]
 
     /// Amazon.com arrival order — Scenario 1. Cross-border purchase
     /// from Canada into a U.S. summer address, backed by
@@ -46,6 +50,20 @@ enum DecisionCatalog {
         systemImage: "calendar.badge.clock",
         locationContext: "Your saved credit cards",
         currencyContext: "Per-card currency"
+    )
+
+    /// Generic purchase ranking. Backed by
+    /// ``PurchaseDecisionEngine`` — ranks the user's non-investment
+    /// accounts for a typed merchant / category / amount, with
+    /// hard-rule guardrails around debt, stale snapshots, and
+    /// unverified FX fees.
+    static let purchaseCardCheck = DecisionIdentity(
+        id: .purchaseCardCheck,
+        title: "Purchase card check",
+        summary: "Which card or method for this purchase?",
+        systemImage: "creditcard.and.123",
+        locationContext: "Any merchant or category",
+        currencyContext: "Cross-currency aware"
     )
 
     /// Fetches a decision by its stable identifier. Returns nil for

@@ -22,6 +22,12 @@ enum DecisionID: String, Codable, Hashable, Sendable, CaseIterable {
     /// ``CreditTimingDecisionEngine`` and sourced from the user's
     /// saved `Account` rows rather than a dedicated persistence record.
     case creditTimingCheck
+
+    /// Generic purchase ranking — "Which card or method should I
+    /// use for this merchant / category / amount?" Backed by
+    /// ``PurchaseDecisionEngine`` and persisted via
+    /// ``PurchaseDecisionRecord``.
+    case purchaseCardCheck
 }
 
 /// Display-level metadata that the Decision Assistant lists use to
@@ -53,6 +59,7 @@ extension DecisionIdentity {
         switch id {
         case .amazonArrivalOrder: true
         case .creditTimingCheck: true
+        case .purchaseCardCheck: true
         }
     }
 }
