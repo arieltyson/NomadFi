@@ -614,7 +614,19 @@ categorisation ML are still out.
 
 ### Still to build
 
-- `[ ]` Tax-category suggestions with confidence labels.
+- `[x]` Tax-category suggestions with confidence labels —
+  deterministic `TaxCategorySuggestionEngine` proposes a
+  `TaxCategory` per eligible transaction with `high` /
+  `medium` / `low` confidence and a short reason list. Review
+  queue lives under **Tax Vault → Suggestions to review**; a
+  modal review sheet lets the user confirm (creates a linked
+  `TaxDocument`) or dismiss (never resurfaces). Three
+  CloudKit-safe fields added to `Transaction`
+  (`taxSuggestionStatusRawValue`, `taxSuggestionLastReviewedAt`,
+  `taxSuggestionCategoryRawValue`) — all optional / defaulted.
+  NomadFi never flips `isTaxDeductible` automatically. _Evidence:
+  `TaxCategorySuggestionEngineTests.swift`,
+  `TaxSuggestionReviewViewModelTests.swift`._
 - `[ ]` Spend anomaly detection.
 - `[ ]` On-device merchant-category ML (a tiny deterministic keyword
   map ships today in `MerchantCategoryInferrer`).
@@ -770,13 +782,38 @@ Credit scoring and issuer risk models are proprietary.
 
 ## Phase 7 — Tax Efficiency Education
 
-**Status:** `[ ]` Planned. A Tax Vault storage surface exists as an Advanced
-Tool, but no education path ships yet.
+**Status:** `[~]` Partially shipped. The **tax-category suggestion bridge**
+from imported/manual transactions into Tax Vault is live — review queue with
+confidence labels, explicit confirm/dismiss, deterministic engine, and no
+auto-deductibility. The broader education path (gamified lessons, regional
+checklists, source-backed explainers) is still outstanding.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
 
-### Build
+### Already shipped
+
+- `[x]` Tax-category suggestion engine
+  (`Core/Services/TaxSuggestions/TaxCategorySuggestionEngine.swift`) — pure,
+  deterministic, keyword-driven. Maps transaction category + merchant /
+  normalized-merchant / notes text to `TaxCategory` with three confidence
+  buckets (`high` = text + category agreement, `medium` = category only,
+  `low` = weak text-only signals for income / treaty / capital-gains). Excludes
+  transfers, zero-amount rows, rows already linked to a `TaxDocument`, and rows
+  whose `taxSuggestionStatus` is `dismissed` or `confirmed`.
+- `[x]` Review queue surface — **Tax Vault → Suggestions to review** section
+  renders pending suggestions with a confidence badge and a one-line reason
+  summary. A dedicated review sheet (`TaxSuggestionReviewView`) lets the user
+  edit the proposed category, confirm (creates a linked `TaxDocument` and
+  marks status `confirmed`), or dismiss (marks status `dismissed`, never
+  resurfaces).
+- `[x]` CloudKit-safe persistence — three optional / defaulted fields on
+  `Transaction` (`taxSuggestionStatusRawValue`,
+  `taxSuggestionLastReviewedAt`, `taxSuggestionCategoryRawValue`). No
+  `@Attribute(.unique)`, no new relationships, no silent background writes.
+  NomadFi never flips `isTaxDeductible` on the user's behalf.
+
+### Still to build
 
 - A gamified learning path for:
   - Canada: TFSA, RRSP, residency basics, student considerations.
@@ -974,7 +1011,10 @@ re-debating whether the foundation exists.
     value-layer services under
     `Features/DecisionAssistant/CreditTiming/`; none modifies
     paydown targets or promises an issuer-side outcome.
-14. `[ ]` Region-specific tax education path (Phase 7).
+14. `[~]` Phase 7 entry — Tax-category suggestion bridge shipped
+    (`Core/Services/TaxSuggestions/`,
+    `Features/TaxVault/Suggestions/`); gamified education path,
+    regional checklists, and source-backed lessons remain.
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
@@ -986,30 +1026,28 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete.** The Credit Timing brief now ships three
-shipped Phase 6 surfaces: **Payment plan** (Phase 6A cross-card
-allocation with optional non-persisted budget), **Limit readiness**
-(Phase 6A review checklist that never crosses into "you'll be
-approved" territory), and **Recent spending context** (Phase 6B
-read-only trend panel that hides when the data is too thin). All
-three are pure value-layer services under
-`Features/DecisionAssistant/CreditTiming/`; none persists state,
-none modifies paydown targets, none claims an issuer or score
-outcome.
+**Phase 6 is complete and the Phase 7 entry has shipped.** The Tax
+Vault now exposes a **Suggestions to review** queue powered by the
+deterministic `TaxCategorySuggestionEngine`. Confirm creates a
+linked `TaxDocument` and marks the transaction `confirmed`; dismiss
+marks it `dismissed` and never resurfaces. NomadFi never flips
+`isTaxDeductible` on the user's behalf — the review sheet is
+explicitly procedural and honest.
 
-Highest-leverage remaining work (all outside Phase 6):
+Highest-leverage remaining work:
 
-- **Tax-category suggestions with confidence labels** (Phase 7
-  entry). Builds on `MerchantCategoryInferrer` plus `TaxVault` to
-  pre-fill tax-deductible flags on imported rows — every
-  suggestion still requires user confirmation.
 - **Spend anomaly detection** (Phase 4 stretch). Treats
   expected-but-missing recurring charges as anomalies and
   unexpected amount spikes as caveats, using the existing
-  `RecurringChargeDetector` as the baseline.
-- **Region-specific tax education path** (Phase 7 full scope) and
-  **Investing education + index-fund tracking** (Phase 8) remain
-  on the roadmap behind these two smaller continuations.
+  `RecurringChargeDetector` as the baseline. Deterministic, no new
+  sources required.
+- **Phase 7 education path** (gamified lessons, regional
+  checklists, CRA / IRS / T&T source-backed explainers). The
+  suggestion bridge is the on-ramp; the lessons are the next
+  surface.
+- **Phase 8 investing education + index-fund tracking** and
+  **Phase 5 FinanceKit adapter** remain on the roadmap behind
+  these two continuations.
 
 ---
 

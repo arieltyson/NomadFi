@@ -58,6 +58,25 @@ final class Transaction {
     var importedAt: Date? = nil
     var importFingerprint: String? = nil
 
+    // Tax-suggestion review state. All optional + defaulted so the
+    // existing CloudKit schema stays intact and rows without a review
+    // state read as "never surfaced".
+    //
+    // `taxSuggestionStatusRawValue` parks one of
+    // `TaxCategorySuggestionStatus`'s raw values (`pending`,
+    // `dismissed`, or `confirmed`). `nil` means the engine has not
+    // yet surfaced this row to the user. Dismissed and confirmed
+    // rows are skipped by the engine so the review queue never
+    // resurfaces them.
+    //
+    // `taxSuggestionCategoryRawValue` records the category the user
+    // picked (or NomadFi proposed) when the row was last reviewed —
+    // useful when an imported row later appears in Tax Vault audit
+    // trails.
+    var taxSuggestionStatusRawValue: String? = nil
+    var taxSuggestionLastReviewedAt: Date? = nil
+    var taxSuggestionCategoryRawValue: String? = nil
+
     var account: Account?
 
     @Relationship(deleteRule: .cascade, inverse: \TaxDocument.transaction)
@@ -143,6 +162,9 @@ final class Transaction {
         externalTransactionID: String? = nil,
         importedAt: Date? = nil,
         importFingerprint: String? = nil,
+        taxSuggestionStatusRawValue: String? = nil,
+        taxSuggestionLastReviewedAt: Date? = nil,
+        taxSuggestionCategoryRawValue: String? = nil,
         account: Account? = nil,
         taxDocument: TaxDocument? = nil
     ) {
@@ -165,6 +187,9 @@ final class Transaction {
         self.externalTransactionID = externalTransactionID
         self.importedAt = importedAt
         self.importFingerprint = importFingerprint
+        self.taxSuggestionStatusRawValue = taxSuggestionStatusRawValue
+        self.taxSuggestionLastReviewedAt = taxSuggestionLastReviewedAt
+        self.taxSuggestionCategoryRawValue = taxSuggestionCategoryRawValue
         self.account = account
         self.taxDocument = taxDocument
 

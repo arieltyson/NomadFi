@@ -19,7 +19,9 @@ struct TaxVaultView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TaxDocument.documentDate, order: .reverse) private var documents: [TaxDocument]
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
+    @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @State private var viewModel = TaxVaultViewModel()
+    @State private var suggestionReview = TaxSuggestionReviewViewModel()
     @State private var selectedTaxYear: Int?
     @State private var showScanError = false
 
@@ -31,7 +33,7 @@ struct TaxVaultView: View {
     // and break `.navigationDestination` routing.
     var body: some View {
         Group {
-            if documents.isEmpty {
+            if documents.isEmpty && suggestionReview.suggestions.isEmpty {
                 emptyState
             } else {
                 documentList
@@ -41,12 +43,22 @@ struct TaxVaultView: View {
         .glassToolbar()
         .searchable(text: $viewModel.searchText, prompt: "Search receipts")
         .toolbar { toolbarContent }
+        .task(id: transactions.count) {
+            suggestionReview.refresh(from: transactions)
+        }
         .navigationDestination(for: TaxDocument.self) { document in
             TaxDocumentDetailView(document: document)
         }
         .sheet(isPresented: $viewModel.showingConfirmation) {
             ReceiptConfirmationView(viewModel: viewModel)
                 .glassSheet()
+        }
+        .sheet(item: $suggestionReview.selection) { suggestion in
+            TaxSuggestionReviewView(
+                suggestion: suggestion,
+                transactions: transactions,
+                viewModel: suggestionReview
+            )
         }
         .overlay {
             if viewModel.isScanning {
@@ -87,6 +99,13 @@ struct TaxVaultView: View {
 
             TipView(TaxExportTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
+
+            if !suggestionReview.suggestions.isEmpty {
+                TaxSuggestionsSection(
+                    suggestions: suggestionReview.suggestions,
+                    onSelect: { suggestionReview.select($0) }
+                )
+            }
 
             ForEach(yearGroups, id: \.year) { group in
                 taxYearSection(year: group.year, documents: group.documents)
