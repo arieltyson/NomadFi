@@ -26,17 +26,20 @@ enum InsightEngine {
 
     /// Generates all applicable insights from the user's financial data.
     /// - Returns: An array of insights, sorted by priority (most urgent first).
+    @MainActor
     static func generateInsights(
         transactions: [Transaction],
         accounts: [Account],
         exchangeRates: [ExchangeRateSnapshot],
-        homeCurrency: CurrencyCode
+        homeCurrency: CurrencyCode,
+        now: Date = .now
     ) -> [FinancialInsight] {
         PerformanceMonitor.measureSync(.insightEngine, name: "Generate Insights") {
-            // Pre-filter to the 7-day window used by all insight generators.
-            // Avoids redundant filtering of the full transaction history
-            // inside each individual insight method.
-            let recentWindow = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
+            // Pre-filter to the 7-day window used by the FX / card /
+            // arbitrage generators. The anomaly generator works off
+            // the full history so the recurring detector has enough
+            // context to establish a cadence.
+            let recentWindow = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
             let recentTransactions = transactions.filter { $0.date >= recentWindow }
 
             var insights: [FinancialInsight] = []
@@ -53,8 +56,38 @@ enum InsightEngine {
                 insights.append(arbitrage)
             }
 
+            insights.append(contentsOf: spendAnomalyInsights(
+                transactions: transactions,
+                now: now
+            ))
+
             logger.info("Generated \(insights.count) insights from \(recentTransactions.count) recent transactions (of \(transactions.count) total)")
             return insights
+        }
+    }
+
+    /// Produces `FinancialInsight` cards for every anomaly the pure
+    /// `SpendAnomalyDetector` surfaces. Exposed at the namespace
+    /// level so focused tests can pin the engine output with an
+    /// injected `now` without running the full insight pipeline.
+    @MainActor
+    static func spendAnomalyInsights(
+        transactions: [Transaction],
+        now: Date = .now
+    ) -> [FinancialInsight] {
+        let anomalies = SpendAnomalyDetector.detect(
+            from: transactions,
+            now: now
+        )
+        return anomalies.map { anomaly in
+            FinancialInsight(
+                title: anomaly.kind.displayTitle,
+                message: anomaly.explanation,
+                category: .anomaly,
+                // Derived from the user's own transaction history —
+                // never a verified external source.
+                confidence: .userProvided
+            )
         }
     }
 

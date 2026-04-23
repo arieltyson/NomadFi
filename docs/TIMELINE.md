@@ -249,7 +249,19 @@ points at the test file that pins the behaviour.
   quarterly / annual cadences with ±5 % amount tolerance; income
   and transfer categories are excluded. _Evidence:
   `RecurringChargeDetectorTests.swift`._
-- [ ] Spend anomaly detection.
+- [x] Spend anomaly detection — deterministic, on-device,
+  two-kind detector (`SpendAnomalyDetector`) layered on top of
+  the recurring engine. Surfaces `.missingRecurringCharge` when
+  an expected recurring charge passes its grace window without
+  a matching transaction and `.amountSpike` when the latest
+  broad-merchant match is ≥25 % above the bucket baseline and
+  ≥ $5 absolute delta. Cross-currency rows stay separate; one-off
+  merchants, transfers, and income never produce anomalies.
+  Surfaced through the existing `InsightEngine` as
+  `.anomaly`-category `FinancialInsight` cards on the Dashboard
+  — no new screen, no drilldown. _Evidence:
+  `SpendAnomalyDetectorTests.swift`,
+  `InsightEngineSpendAnomalyTests.swift`._
 - [x] Spending-trend Dashboard card — read-only category × month
   grid (`SpendingTrendComputer` + `SpendingTrendCard`). Hides when
   activity is below the floor (3 qualifying transactions in a
@@ -627,7 +639,23 @@ categorisation ML are still out.
   NomadFi never flips `isTaxDeductible` automatically. _Evidence:
   `TaxCategorySuggestionEngineTests.swift`,
   `TaxSuggestionReviewViewModelTests.swift`._
-- `[ ]` Spend anomaly detection.
+- `[x]` Spend anomaly detection — two-kind deterministic
+  detector under `Core/Services/`
+  (`SpendAnomalyKind` / `SpendAnomaly` / `SpendAnomalyDetector`).
+  Layered on top of `RecurringChargeDetector`; requires a
+  history of ≥3 matching charges before surfacing anything.
+  `.missingRecurringCharge` fires when the expected next charge
+  passes its per-cadence grace window (weekly 3d, monthly 7d,
+  quarterly 14d, annual 30d) and is inside the max-overdue
+  window (weekly 14d, monthly 45d, quarterly 120d, annual 400d).
+  `.amountSpike` fires when the latest broad merchant+currency
+  match is ≥25 % above the bucket baseline AND ≥ $5 absolute
+  delta — well beyond the recurring detector's ±5 % jitter
+  tolerance. Cross-currency rows never merge. Surfaced as
+  `.anomaly`-category `FinancialInsight` cards on the existing
+  Dashboard insight row, no new screen. _Evidence:
+  `SpendAnomalyDetectorTests.swift`,
+  `InsightEngineSpendAnomalyTests.swift`._
 - `[ ]` On-device merchant-category ML (a tiny deterministic keyword
   map ships today in `MerchantCategoryInferrer`).
 
@@ -1026,28 +1054,25 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete and the Phase 7 entry has shipped.** The Tax
-Vault now exposes a **Suggestions to review** queue powered by the
-deterministic `TaxCategorySuggestionEngine`. Confirm creates a
-linked `TaxDocument` and marks the transaction `confirmed`; dismiss
-marks it `dismissed` and never resurfaces. NomadFi never flips
-`isTaxDeductible` on the user's behalf — the review sheet is
-explicitly procedural and honest.
+**Phase 6 is complete, Phase 7 entry has shipped, and the Phase 4
+stretch (spend anomaly detection) is now live.** The Dashboard's
+`InsightEngine` now emits two deterministic anomaly kinds —
+missing recurring charge and amount spike — as calm
+`.anomaly`-category `FinancialInsight` cards. The detector sits on
+top of `RecurringChargeDetector`, honours the same cross-currency
+and eligibility rules, and never claims fraud, a billing error, or
+a guaranteed outcome.
 
 Highest-leverage remaining work:
 
-- **Spend anomaly detection** (Phase 4 stretch). Treats
-  expected-but-missing recurring charges as anomalies and
-  unexpected amount spikes as caveats, using the existing
-  `RecurringChargeDetector` as the baseline. Deterministic, no new
-  sources required.
 - **Phase 7 education path** (gamified lessons, regional
   checklists, CRA / IRS / T&T source-backed explainers). The
   suggestion bridge is the on-ramp; the lessons are the next
-  surface.
-- **Phase 8 investing education + index-fund tracking** and
-  **Phase 5 FinanceKit adapter** remain on the roadmap behind
-  these two continuations.
+  surface. Highest-leverage compounding pick because it turns the
+  already-shipped tax suggestion queue into a teachable moment.
+- **Phase 8 investing education + index-fund tracking**.
+- **Phase 5 FinanceKit adapter** — gated on entitlement access and
+  institution coverage; still behind the two continuations above.
 
 ---
 

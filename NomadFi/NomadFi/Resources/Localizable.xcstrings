@@ -83,6 +83,16 @@
     "%@ filter" : {
 
     },
+    "%@ in %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$@"
+          }
+        }
+      }
+    },
     "%@ override rate" : {
 
     },
@@ -112,6 +122,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@."
           }
         }
       }
@@ -181,6 +201,16 @@
     },
     "%lld documents" : {
 
+    },
+    "%lld other-currency %@ not included — NomadFi does not convert between currencies without a verified rate." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld other-currency %2$@ not included — NomadFi does not convert between currencies without a verified rate."
+          }
+        }
+      }
     },
     "•" : {
 
@@ -521,11 +551,13 @@
 
     },
     "Clear Rewards" : {
+
     },
     "Clear Rewards Terms" : {
 
     },
     "Clear rewards terms?" : {
+
     },
     "Clear snapshot" : {
 
@@ -548,6 +580,8 @@
     "Comparison Error" : {
 
     },
+    "Confirm and add to Tax Vault" : {
+    },
     "Confirm Import" : {
 
     },
@@ -565,6 +599,8 @@
     },
     "Context" : {
 
+    },
+    "Context only — NomadFi never says the user will spend this amount again and does not predict a credit-score outcome." : {
     },
     "Continue" : {
 
@@ -592,6 +628,8 @@
     },
     "Cost breakdown" : {
 
+    },
+    "Creates a linked tax document with the selected category. NomadFi does not mark the expense deductible automatically." : {
     },
     "Creates and exports a report for tax year %@." : {
 
@@ -742,6 +780,8 @@
     "Dismiss" : {
 
     },
+    "Dismiss suggestion" : {
+    },
     "Dismisses account entry without adding an account." : {
 
     },
@@ -794,6 +834,7 @@
 
     },
     "Duplicates skipped" : {
+
     },
     "Dynamic Type" : {
 
@@ -860,6 +901,8 @@
     },
     "Exchange Rates" : {
 
+    },
+    "Existing tag" : {
     },
     "Export %@ Tax Report" : {
 
@@ -933,6 +976,7 @@
 
     },
     "GBP — British Pound" : {
+
     },
     "General purchase" : {
 
@@ -956,11 +1000,13 @@
 
     },
     "Health" : {
+
     },
     "Hear NomadFi's current source-backed ruling for your Amazon arrival-order decision." : {
 
     },
     "Hear NomadFi's deterministic credit-timing check across your saved credit cards — near-limit warnings, paydown-before-close prompts, or a calm \"all cards ready\" read." : {
+
     },
     "Hides the draft from the main list. You can restore it later." : {
 
@@ -1075,6 +1121,7 @@
 
     },
     "Link to the issuer's official product page or cardmember agreement." : {
+
     },
     "Linked card" : {
 
@@ -1189,6 +1236,7 @@
 
     },
     "NGN — Nigerian Naira" : {
+
     },
     "No Accounts" : {
 
@@ -1216,6 +1264,8 @@
     },
     "No Receipt Image" : {
 
+    },
+    "No specific keyword signals on file." : {
     },
     "No Subscriptions" : {
 
@@ -1247,6 +1297,8 @@
     "NomadFi detects your location and recommends the card with the lowest foreign transaction fees." : {
 
     },
+    "NomadFi does not provide tax advice. Suggestions are procedural only. Nothing is written to your tax records until you confirm." : {
+    },
     "NomadFi helps you pick the right card, protect credit, reduce FX waste, and learn jurisdiction-aware tax concepts — without manual bookkeeping." : {
 
     },
@@ -1276,6 +1328,8 @@
     },
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
+    },
+    "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
     },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
 
@@ -1389,6 +1443,7 @@
 
     },
     "Opens the file picker. Parsing happens on this device only." : {
+
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
@@ -1404,6 +1459,8 @@
     },
     "Opens the receipts and tax document archive." : {
 
+    },
+    "Opens the review sheet for this suggestion." : {
     },
     "Opens the statement calendar editor for this card." : {
 
@@ -1457,6 +1514,7 @@
 
     },
     "Optional. Enter only the categories where the issuer publishes a different rate. Empty fields use the base rate." : {
+
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
@@ -1474,6 +1532,7 @@
 
     },
     "Override" : {
+
     },
     "Owed %@" : {
 
@@ -1482,6 +1541,7 @@
 
     },
     "Parsing rows…" : {
+
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
@@ -1537,6 +1597,8 @@
     "Program name, base earn rate, category overrides, and source verification." : {
 
     },
+    "Proposal" : {
+    },
     "Purchase" : {
 
     },
@@ -1582,6 +1644,8 @@
     "Receipts and tax documents for later planning." : {
 
     },
+    "Recent spending context" : {
+    },
     "Recommend a Card" : {
 
     },
@@ -1590,6 +1654,8 @@
     },
     "Region" : {
 
+    },
+    "Reminder" : {
     },
     "Reminders" : {
 
@@ -1608,6 +1674,8 @@
     },
     "Removes the trailing credit tag from this account name." : {
 
+    },
+    "Removes this row from the review queue. NomadFi never resurfaces dismissed suggestions." : {
     },
     "Rename to “%@”" : {
 
@@ -1643,6 +1711,9 @@
 
     },
     "Review Credit Timing" : {
+
+    },
+    "Review suggestion" : {
     },
     "Review the fields below and adjust as needed." : {
 
@@ -1760,6 +1831,7 @@
       }
     },
     "School" : {
+
     },
     "Search receipts" : {
 
@@ -1774,6 +1846,7 @@
 
     },
     "Select an account" : {
+
     },
     "Select at least %lld more" : {
 
@@ -1833,6 +1906,7 @@
 
     },
     "Source name" : {
+
     },
     "Source URL" : {
 
@@ -1864,7 +1938,14 @@
     "Subscriptions" : {
 
     },
+    "Suggested category" : {
+    },
+    "Suggested category: %@" : {
+    },
+    "Suggestions to review" : {
+    },
     "Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration." : {
+
     },
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 
@@ -1935,6 +2016,8 @@
     "This removes the program name, rates, and source for this card. You can re-enter them at any time." : {
 
     },
+    "This transaction may be tax-relevant. Review before including it in your tax records." : {
+    },
     "This transaction will appear in your Tax Vault" : {
 
     },
@@ -1968,10 +2051,25 @@
     "Track" : {
 
     },
+    "Tracked spend in %@" : {
+    },
+    "Tracked spend in %@: %@ in %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tracked spend in %1$@: %2$@ in %3$@."
+          }
+        }
+      }
+    },
+    "Transaction" : {
+    },
     "Transaction Import" : {
 
     },
     "Transit" : {
+
     },
     "Travel" : {
 
@@ -2022,6 +2120,7 @@
 
     },
     "Verification" : {
+
     },
     "Verification Status" : {
 
@@ -2083,6 +2182,8 @@
     "Where does your money live?" : {
 
     },
+    "Where it went" : {
+    },
     "Where you spent the money" : {
 
     },
@@ -2091,6 +2192,8 @@
     },
     "Which Card Should I Use?" : {
 
+    },
+    "Why NomadFi surfaced this" : {
     },
     "Why some cards aren't in the plan" : {
 
@@ -2106,6 +2209,8 @@
     },
     "You can add accounts later from the dashboard" : {
 
+    },
+    "You can change the suggested category before confirming. NomadFi does not decide deductibility for you." : {
     },
     "You can change this anytime in iOS Settings." : {
 

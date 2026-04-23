@@ -87,6 +87,10 @@ struct FinancialInsight: Identifiable, Sendable {
         case arbitrage
         case budget
         case subscription
+        /// Deterministic anomaly detected against the user's own
+        /// transaction history. Never framed as fraud or a billing
+        /// error — a "worth reviewing" caveat surface only.
+        case anomaly
 
         var systemImage: String {
             switch self {
@@ -94,6 +98,7 @@ struct FinancialInsight: Identifiable, Sendable {
             case .arbitrage: "arrow.triangle.swap"
             case .budget: "chart.bar.fill"
             case .subscription: "arrow.2.squarepath"
+            case .anomaly: "exclamationmark.bubble"
             }
         }
 
@@ -103,6 +108,7 @@ struct FinancialInsight: Identifiable, Sendable {
             case .arbitrage: ColorTokens.positive
             case .budget: ColorTokens.warning
             case .subscription: ColorTokens.brandPrimary
+            case .anomaly: ColorTokens.warning
             }
         }
 
@@ -112,6 +118,7 @@ struct FinancialInsight: Identifiable, Sendable {
             case .arbitrage: "Arbitrage opportunity"
             case .budget: "Budget warning"
             case .subscription: "Subscription insight"
+            case .anomaly: "Transaction anomaly worth reviewing"
             }
         }
     }
