@@ -72,6 +72,12 @@ struct DashboardView: View {
                 Task { await refreshRates() }
             }
         }
+        .onChange(of: transactions.count) { _, _ in
+            viewModel.recomputeSpendingTrend(
+                transactions: transactions,
+                homeCurrency: homeCurrency
+            )
+        }
         .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
     }
 }
@@ -160,6 +166,11 @@ private extension DashboardView {
             TipView(AddMoreAccountsTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
                 .padding(.horizontal, SpacingTokens.medium)
+
+            if let trend = viewModel.spendingTrend {
+                SpendingTrendCard(summary: trend)
+                    .padding(.horizontal, SpacingTokens.medium)
+            }
 
             if !viewModel.insights.isEmpty {
                 InsightsSection(insights: viewModel.insights)
@@ -250,6 +261,10 @@ private extension DashboardView {
         viewModel.generateInsights(
             transactions: transactions,
             accounts: accounts,
+            homeCurrency: homeCurrency
+        )
+        viewModel.recomputeSpendingTrend(
+            transactions: transactions,
             homeCurrency: homeCurrency
         )
 

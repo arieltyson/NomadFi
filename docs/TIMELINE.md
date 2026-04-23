@@ -216,13 +216,20 @@ points at the test file that pins the behaviour.
   `TransactionImportDeduperTests.swift`._
 - [ ] Merchant categorisation ML (tiny deterministic keyword map
   ships in `MerchantCategoryInferrer`; ML pass still `[ ]`).
-- [ ] Recurring charge detection across the portfolio (Subscriptions
-  detection exists as a separate flow — `SubscriptionDetector` — for
-  that specific domain). Generalisation to a broader
-  `RecurringChargeDetector` is the next Phase 4 slice.
+- [x] Recurring-charge detection across the portfolio —
+  `RecurringChargeDetector` runs on any `[Transaction]` and is
+  consumed by the existing Subscriptions surface
+  (`SubscriptionDetector` now delegates). Weekly / monthly /
+  quarterly / annual cadences with ±5 % amount tolerance; income
+  and transfer categories are excluded. _Evidence:
+  `RecurringChargeDetectorTests.swift`._
 - [ ] Spend anomaly detection.
-- [ ] Spending-trend Dashboard card driven from imported
-  transactions.
+- [x] Spending-trend Dashboard card — read-only category × month
+  grid (`SpendingTrendComputer` + `SpendingTrendCard`). Hides when
+  activity is below the floor (3 qualifying transactions in a
+  dominant currency inside the 3-month window). Excludes income
+  and transfer categories; normalises sign conventions by
+  magnitude. _Evidence: `SpendingTrendComputerTests.swift`._
 
 ### Tax and investing education
 
@@ -555,12 +562,34 @@ categorisation ML are still out.
   `importedAt`, `importFingerprint`, `normalizedMerchantName`) are
   all optional / defaulted so the schema stays CloudKit-safe.
 
+### Shipped this slice
+
+- `[x]` Generalised recurring-charge detector
+  (`Core/Services/RecurringChargeDetector.swift`) — pure value type
+  output (`RecurringChargeCandidate`) so engines and UIs can
+  consume it without a main-actor hop on the candidate itself.
+  Reuses `MerchantNormalizer` for clustering, so CSV-imported and
+  manually-entered rows collapse together. `SubscriptionDetector`
+  is now a thin adapter that projects candidates onto
+  `DetectedSubscription`, preserving every call-site in the
+  Subscriptions surface. Cadences: weekly, monthly, quarterly,
+  annual, each with a pinned tolerance. Income and transfer
+  categories are filtered before grouping.
+- `[x]` Read-only Dashboard spending-trend card
+  (`Core/Services/SpendingTrendSummary.swift`,
+  `Core/Services/SpendingTrendComputer.swift`,
+  `Features/Dashboard/Components/SpendingTrendCard.swift`). Bins by
+  calendar month × category for the last three months; rows sort
+  desc by total spend. Hides automatically when activity is below
+  the display floor or when every category row is zero after
+  filtering. Currency-dominant rows feed the grid; other-currency
+  rows are counted and surfaced as a caveat. Absolute month
+  labels ("April 2026"), never relative ones.
+
 ### Still to build
 
-- `[ ]` Recurring-charge detection beyond the Subscriptions flow
-  (generalise `SubscriptionDetector` → `RecurringChargeDetector`).
-- `[ ]` Spending trend summaries on the Dashboard.
 - `[ ]` Tax-category suggestions with confidence labels.
+- `[ ]` Spend anomaly detection.
 - `[ ]` On-device merchant-category ML (a tiny deterministic keyword
   map ships today in `MerchantCategoryInferrer`).
 
@@ -843,11 +872,15 @@ re-debating whether the foundation exists.
     (`RewardProfile`, `RewardRateEvaluation`, `RewardUnit`,
     `CreditCardRewardsEditView`) — rewards now enter the ranking
     only when verified + fresh + unit-comparable.
-12. `[~]` Transaction capture fan-out (Phase 4): CSV import, merchant
-    normalisation, and deterministic dedupe shipped
-    (`Core/Services/Import/` + `TransactionImportView`). The Phase 4
-    remainder — generalised recurring-charge detection and a
-    Dashboard spending-trend card — is still `[ ]`.
+12. `[x]` Transaction capture fan-out (Phase 4): CSV import, merchant
+    normalisation, deterministic dedupe
+    (`Core/Services/Import/` + `TransactionImportView`), a
+    generalised `RecurringChargeDetector` that the existing
+    Subscriptions surface now delegates to, and a read-only
+    Dashboard spending-trend card
+    (`SpendingTrendComputer` + `SpendingTrendCard`). Follow-ups
+    (tax-category suggestions, spend anomaly detection, merchant
+    categorisation ML) remain scoped to later phases.
 13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
     readiness checklist (completes Phase 6).
 14. `[ ]` Region-specific tax education path (Phase 7).
@@ -862,55 +895,32 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Target:** Finish Phase 4 — **generalised recurring-charge
-detection + spending-trend surface**. The CSV import + merchant
-normalisation + deterministic dedupe slice is live
-(`Core/Services/Import/`, `TransactionImportView`). The remaining
-gaps are:
+**Phase 4 is complete for this milestone.** The deterministic
+transaction-capture fan-out (CSV import, merchant normalisation,
+dedupe, generalised recurring-charge detection, read-only
+spending-trend card) is live. The next highest-leverage work is
+picking from:
 
-- Generalise `SubscriptionDetector` into a
-  `RecurringChargeDetector` that runs against *any* account's
-  `Transaction` stream, not only the Subscriptions flow. The
-  Subscriptions surface stays the primary UI for subscription-style
-  recurring charges; the broader detector becomes the input for
-  upcoming engine improvements (e.g. statement-balance projection,
-  budget-trend hints).
-- A read-only **Dashboard spending-trend card** (category × month
-  grid) driven from imported `Transaction` data, so users can see
-  where spend is actually concentrating now that CSV import can
-  populate real history.
+- **Cross-card payment-allocation planning** (Phase 6 remainder).
+  Uses the per-card balance and limit data already on `Account`
+  plus the new spending signal from recurring detection.
+- **Credit-limit-increase readiness checklist** (Phase 6
+  remainder). Uses confirmed statement schedules + utilization
+  bands already produced by the Credit Timing engine.
+- **Tax-category suggestions with confidence labels** (Phase 4
+  stretch / Phase 7 entry). Builds on `MerchantCategoryInferrer`
+  plus `TaxVault` to pre-fill tax-deductible flags on imported
+  rows — every suggestion still requires user confirmation.
+- **Spend anomaly detection** (Phase 4 stretch). Piggybacks on the
+  recurring detector by treating expected-but-missing charges as
+  anomalies, and unexpected amount spikes as caveats.
 
-**Why this order:**
-
-- The hard deterministic plumbing (parse / normalise / dedupe)
-  already landed, so the remaining work is analysis + a single UI
-  surface, not new parsers.
-- Credit Timing and Purchase Decision engines both benefit from
-  richer spend signal; neither needs new rules, only better inputs.
-- It keeps the "no generic AI" invariant intact — recurring-charge
-  detection is a deterministic period/amount/merchant clustering
-  pass, not model inference.
-
-**Scoping suggestion for the remaining Phase 4 slice:**
-
-1. Lift the period-detection logic out of `SubscriptionDetector`
-   into a shared `RecurringChargeDetector` that takes any
-   `[Transaction]`, returns structured `RecurringChargeCandidate`
-   values (period, confidence, representative merchant), and leaves
-   the Subscriptions flow as a thin adapter on top.
-2. Add a `SpendingTrendSummary` value type + a `Dashboard`
-   section that bins transactions by category and month. Read-only;
-   no edit affordances.
-3. Pin both with test suites mirroring the import slice — pure
-   domain tests for the detector, and a small `@Suite(.serialized)`
-   SwiftData test if any container work is needed.
-
-Tests mirror the shape of `PurchaseDecisionEngineTests` and
-`CreditTimingDecisionEngineTests`: pin every claim, pin every
-refusal, pin absolute-date phrasing, pin the prohibited vocabulary.
-No spoken-copy generation in Phase 4 — voice parity is already
-shipped for engines; new data goes through the in-app surfaces
-first, voice follows later only if needed.
+The choice depends on where verified data is most available right
+now. If issuer payment-allocation tables can be cited from CFPB
+guidance, Phase 6 allocation planning is unblocked; otherwise
+tax-category suggestions are the most compounding next step since
+they make the already-shipped import pipeline more useful without
+requiring new source coverage.
 
 ---
 

@@ -16,6 +16,7 @@ final class DashboardViewModel {
 
     var exchangeRates: [ExchangeRateSnapshot] = []
     var insights: [FinancialInsight] = []
+    var spendingTrend: SpendingTrendSummary?
     var isLoading = false
     var errorMessage: String?
     var lastUpdated: Date?
@@ -101,6 +102,23 @@ final class DashboardViewModel {
         }
 
         Self.logger.info("Dashboard insights: \(self.insights.count) (\(generated.count) from real data)")
+    }
+
+    /// Computes the spending-trend summary for the Dashboard's
+    /// read-only card. Returns `nil` when there is not enough
+    /// activity — the card is then hidden rather than rendering a
+    /// misleading flat row. Call after the transaction query
+    /// changes; the closure is deterministic and cheap.
+    func recomputeSpendingTrend(
+        transactions: [Transaction],
+        homeCurrency: CurrencyCode,
+        now: Date = .now
+    ) {
+        spendingTrend = SpendingTrendComputer.summary(
+            transactions: transactions,
+            now: now,
+            homeCurrency: homeCurrency
+        )
     }
 
     // MARK: - Calculations
