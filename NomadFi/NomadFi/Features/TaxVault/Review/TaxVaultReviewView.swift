@@ -75,8 +75,20 @@ struct TaxVaultReviewView: View {
                         selection: $viewModel.selectedPhotoItem,
                         matching: .images
                     ) {
-                        Label("Choose photo", systemImage: "photo.on.rectangle")
-                            .frame(maxWidth: .infinity)
+                        // `PhotosPicker`'s default label style can
+                        // resolve to title-only under
+                        // `.borderedProminent` + `.controlSize(.large)`
+                        // until the button enters its highlighted
+                        // state, which caused the icon to flash in
+                        // on press. Pinning the style forces the
+                        // symbol to render in every control state.
+                        Label {
+                            Text("Choose photo")
+                        } icon: {
+                            Image(systemName: "photo.on.rectangle")
+                        }
+                        .labelStyle(.titleAndIcon)
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
