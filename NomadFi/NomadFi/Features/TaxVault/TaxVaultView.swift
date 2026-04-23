@@ -22,6 +22,7 @@ struct TaxVaultView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @State private var viewModel = TaxVaultViewModel()
     @State private var suggestionReview = TaxSuggestionReviewViewModel()
+    @State private var education = TaxEducationViewModel()
     @State private var selectedTaxYear: Int?
     @State private var showScanError = false
 
@@ -33,7 +34,9 @@ struct TaxVaultView: View {
     // and break `.navigationDestination` routing.
     var body: some View {
         Group {
-            if documents.isEmpty && suggestionReview.suggestions.isEmpty {
+            if documents.isEmpty
+                && suggestionReview.suggestions.isEmpty
+                && !education.hasContent {
                 emptyState
             } else {
                 documentList
@@ -45,6 +48,9 @@ struct TaxVaultView: View {
         .toolbar { toolbarContent }
         .task(id: transactions.count) {
             suggestionReview.refresh(from: transactions)
+        }
+        .task(id: jurisdictions.count) {
+            education.refresh(from: jurisdictions)
         }
         .navigationDestination(for: TaxDocument.self) { document in
             TaxDocumentDetailView(document: document)
@@ -59,6 +65,9 @@ struct TaxVaultView: View {
                 transactions: transactions,
                 viewModel: suggestionReview
             )
+        }
+        .sheet(item: $education.selection) { lesson in
+            TaxEducationLessonDetailView(lesson: lesson)
         }
         .overlay {
             if viewModel.isScanning {
@@ -99,6 +108,13 @@ struct TaxVaultView: View {
 
             TipView(TaxExportTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
+
+            if education.hasContent {
+                TaxEducationSection(
+                    bundles: education.regionBundles,
+                    onSelect: { education.select($0) }
+                )
+            }
 
             if !suggestionReview.suggestions.isEmpty {
                 TaxSuggestionsSection(

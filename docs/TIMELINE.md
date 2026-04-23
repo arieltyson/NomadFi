@@ -271,9 +271,22 @@ points at the test file that pins the behaviour.
 
 ### Tax and investing education
 
-- [~] Tax Vault (document storage, receipt capture) exists but is a
-  passive archive — not an education module.
-- [ ] Gamified tax education path (Canada / U.S. / Trinidad and Tobago).
+- [~] Tax Vault — document storage, receipt capture, tax-category
+  suggestion review queue (Phase 7 entry), and a jurisdiction-aware
+  **education starter** (Phase 7A). Full gamified path still `[ ]`.
+- [~] Region-specific tax education (Phase 7A) — locally-authored,
+  source-backed starter covering United States (3 lessons + 1
+  checklist), Canada (3 lessons + 1 checklist), and Trinidad and
+  Tobago (2 lessons + 1 checklist). Every lesson cites at least one
+  official source from `docs/README.md` (IRS / CRA / BIR / Ministry
+  of Finance / FIUTT). Surfaced inside `TaxVaultView` as the
+  **Learn for your jurisdictions** section, driven by
+  `JurisdictionProfile` with home-first ordering. _Evidence:
+  `TaxEducationCatalogTests.swift`,
+  `TaxEducationSelectorTests.swift`._
+- [ ] Full gamified tax education path (progression, region-specific
+  checklists beyond the starter, CRA / IRS / T&T source-backed
+  deep dives, region-aware quizzes).
 - [ ] Investing education + index-fund tracking.
 
 ### Apple capability tracks
@@ -810,11 +823,11 @@ Credit scoring and issuer risk models are proprietary.
 
 ## Phase 7 — Tax Efficiency Education
 
-**Status:** `[~]` Partially shipped. The **tax-category suggestion bridge**
-from imported/manual transactions into Tax Vault is live — review queue with
-confidence labels, explicit confirm/dismiss, deterministic engine, and no
-auto-deductibility. The broader education path (gamified lessons, regional
-checklists, source-backed explainers) is still outstanding.
+**Status:** `[~]` Partially shipped. Phase 7 entry (tax-category suggestion
+bridge) and Phase 7A (education starter with source-backed lessons and
+region-aware checklists) are both live. The full gamified path — progression,
+badges, region-aware quizzes, and deeper investment-account lessons — is still
+outstanding.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -840,18 +853,31 @@ tax advice.
   `taxSuggestionLastReviewedAt`, `taxSuggestionCategoryRawValue`). No
   `@Attribute(.unique)`, no new relationships, no silent background writes.
   NomadFi never flips `isTaxDeductible` on the user's behalf.
+- `[x]` **Education starter** (Phase 7A) — locally-authored catalogue under
+  `Core/Services/TaxEducation/` covering United States (3 lessons + 1
+  checklist), Canada (3 lessons + 1 checklist), and Trinidad and Tobago
+  (2 lessons + 1 checklist). Every lesson cites at least one official source
+  from `docs/README.md` (IRS Pub 519, IRS foreign-students hub, 1040-NR +
+  Form 8843 pages, CRA residency / student / TFSA / RRSP pages,
+  BIR / Ministry of Finance / FIUTT pages). Each lesson is structured as
+  *what it is → why it matters → what to review next → official sources →
+  escalation note*. Deterministic region selection under
+  `TaxEducationSelector` honours home jurisdiction first, de-duplicates
+  repeated codes, and silently skips regions the catalogue does not yet
+  cover. Surfaced inside `TaxVaultView` as the **Learn for your
+  jurisdictions** section; lesson detail opens in a read-only sheet with
+  external-source links. _Evidence: `TaxEducationCatalogTests.swift`,
+  `TaxEducationSelectorTests.swift`._
 
 ### Still to build
 
-- A gamified learning path for:
-  - Canada: TFSA, RRSP, residency basics, student considerations.
-  - United States: IRA basics, nonresident vs. resident alien concepts,
-    student/intern tax filing reminders.
-  - Trinidad and Tobago: local tax and investment-account basics.
-- Region-specific checklists.
-- Source-backed lessons using CRA, IRS, and official T&T sources.
-- Receipt and document organization prompts.
-- "Ask a professional" escalation points.
+- Full gamified learning path (progression, region-aware quizzes, badges).
+  Starter content for all three regions ships in Phase 7A; the gamified
+  surface layers onto it without new source coverage.
+- Deeper investment-account lessons (IRA for the U.S., TFSA/RRSP for Canada
+  beyond the high-level starter).
+- Receipt and document organization prompts tied to the education
+  checklists.
 
 ### Do Not Build
 
@@ -1039,10 +1065,14 @@ re-debating whether the foundation exists.
     value-layer services under
     `Features/DecisionAssistant/CreditTiming/`; none modifies
     paydown targets or promises an issuer-side outcome.
-14. `[~]` Phase 7 entry — Tax-category suggestion bridge shipped
-    (`Core/Services/TaxSuggestions/`,
-    `Features/TaxVault/Suggestions/`); gamified education path,
-    regional checklists, and source-backed lessons remain.
+14. `[~]` Phase 7 — Tax Vault education. Entry: tax-category
+    suggestion bridge (`Core/Services/TaxSuggestions/`,
+    `Features/TaxVault/Suggestions/`). 7A: locally-authored
+    source-backed education starter (`Core/Services/TaxEducation/`,
+    `Features/TaxVault/Education/`) with checklists + lessons for
+    United States / Canada / Trinidad and Tobago, driven by the
+    user's active jurisdictions (home first). Full gamified path,
+    quizzes, and badges are the remaining work.
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
@@ -1054,22 +1084,21 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete, Phase 7 entry has shipped, and the Phase 4
-stretch (spend anomaly detection) is now live.** The Dashboard's
-`InsightEngine` now emits two deterministic anomaly kinds —
-missing recurring charge and amount spike — as calm
-`.anomaly`-category `FinancialInsight` cards. The detector sits on
-top of `RecurringChargeDetector`, honours the same cross-currency
-and eligibility rules, and never claims fraud, a billing error, or
-a guaranteed outcome.
+**Phase 6 is complete, Phase 7A has shipped, and the Phase 4
+stretch (spend anomaly detection) is live.** Tax Vault now carries
+three Phase 7 surfaces side by side: the tax-category **suggestion
+review queue**, a jurisdiction-aware **education starter** (U.S. /
+Canada / Trinidad and Tobago, every lesson source-backed and calm),
+and the existing **receipts + documents archive**. The Dashboard's
+`InsightEngine` continues to emit deterministic anomaly cards.
 
 Highest-leverage remaining work:
 
-- **Phase 7 education path** (gamified lessons, regional
-  checklists, CRA / IRS / T&T source-backed explainers). The
-  suggestion bridge is the on-ramp; the lessons are the next
-  surface. Highest-leverage compounding pick because it turns the
-  already-shipped tax suggestion queue into a teachable moment.
+- **Full gamified Phase 7 path** — progression, region-aware
+  quizzes, badges, and deeper investment-account lessons (IRA for
+  the U.S., TFSA / RRSP for Canada beyond the high-level starter).
+  Starter content for all three regions is already in place, so
+  the gamified surface layers onto it without new source coverage.
 - **Phase 8 investing education + index-fund tracking**.
 - **Phase 5 FinanceKit adapter** — gated on entitlement access and
   institution coverage; still behind the two continuations above.
