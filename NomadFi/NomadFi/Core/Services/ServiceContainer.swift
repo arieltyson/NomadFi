@@ -21,9 +21,15 @@ import Foundation
 struct ServiceContainer: Sendable {
 
     let exchangeRateService: any ExchangeRateService
-    let financeDataService: any FinanceDataService
     let locationService: any LocationService
     let receiptScannerService: any ReceiptScannerService
+
+    /// Fan-out / fan-in point for every ``FinancialDataProvider`` the
+    /// app knows about (manual / CSV / FinanceKit / external-aggregator
+    /// seam). Replaces the earlier single-provider
+    /// `FinanceDataService` abstraction so NomadFi is not hard-wired
+    /// to any one upstream.
+    let financialDataCoordinator: FinancialDataSyncCoordinator
 
     /// Creates a container with the given service implementations.
     ///
@@ -31,21 +37,21 @@ struct ServiceContainer: Sendable {
     /// Pass mock services for Previews and unit tests.
     init(
         exchangeRateService: any ExchangeRateService = LiveExchangeRateService(),
-        financeDataService: any FinanceDataService = LiveFinanceDataService(),
         locationService: any LocationService = LiveLocationService(),
-        receiptScannerService: any ReceiptScannerService = LiveReceiptScannerService()
+        receiptScannerService: any ReceiptScannerService = LiveReceiptScannerService(),
+        financialDataCoordinator: FinancialDataSyncCoordinator = .live()
     ) {
         self.exchangeRateService = exchangeRateService
-        self.financeDataService = financeDataService
         self.locationService = locationService
         self.receiptScannerService = receiptScannerService
+        self.financialDataCoordinator = financialDataCoordinator
     }
 
     /// A container pre-configured with mock services for Previews and testing.
     static let preview = ServiceContainer(
         exchangeRateService: MockExchangeRateService(),
-        financeDataService: MockFinanceDataService(),
         locationService: MockLocationService(),
-        receiptScannerService: MockReceiptScannerService()
+        receiptScannerService: MockReceiptScannerService(),
+        financialDataCoordinator: .preview()
     )
 }
