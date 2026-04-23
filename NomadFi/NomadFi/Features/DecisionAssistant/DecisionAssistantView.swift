@@ -31,6 +31,18 @@ struct DecisionAssistantView: View {
 
     @Query private var accounts: [Account]
 
+    /// Transactions the Credit Timing brief uses to compute a
+    /// deterministic spending-trend context. Sorted newest-first so
+    /// the trend computer's window slicing reads naturally.
+    @Query(sort: \Transaction.date, order: .reverse)
+    private var transactions: [Transaction]
+
+    /// Jurisdictions for home-currency resolution. Mirrors the
+    /// Dashboard query so the trend picks the same preferred
+    /// currency the rest of the app renders net worth in.
+    @Query(sort: \JurisdictionProfile.displayOrder)
+    private var jurisdictions: [JurisdictionProfile]
+
     /// Active decision drafts, newest first. Archived drafts are
     /// excluded — they render in their own section below.
     @Query(
@@ -100,7 +112,10 @@ struct DecisionAssistantView: View {
             }
         }
         .sheet(isPresented: $viewModel.isCreditTimingBriefPresented) {
-            CreditTimingBriefView(accounts: accounts)
+            CreditTimingBriefView(
+                accounts: accounts,
+                spendingTrend: spendingTrendSummary
+            )
         }
         .sheet(isPresented: $viewModel.isPurchaseDecisionBriefPresented) {
             if let purchaseBriefViewModel = viewModel.purchaseDecisionBriefViewModel {
@@ -166,6 +181,27 @@ private extension DecisionAssistantView {
                 }
                 return lhs.institutionName < rhs.institutionName
             }
+    }
+
+    /// Home currency the Credit Timing brief prefers when picking
+    /// the dominant currency for the spending trend. Mirrors the
+    /// Dashboard's own home-currency resolution rule so both
+    /// surfaces stay consistent.
+    var homeCurrency: CurrencyCode {
+        jurisdictions
+            .first { $0.isHome }?
+            .currencyCode ?? .usd
+    }
+
+    /// Deterministic spending-trend summary, or `nil` when the user
+    /// doesn't have enough transactions for a meaningful trend.
+    /// Computed lazily each time the sheet presents — the
+    /// computer is pure and cheap on this scale.
+    var spendingTrendSummary: SpendingTrendSummary? {
+        SpendingTrendComputer.summary(
+            transactions: transactions,
+            homeCurrency: homeCurrency
+        )
     }
 }
 

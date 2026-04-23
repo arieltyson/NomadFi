@@ -371,6 +371,7 @@
 
     },
     "Applied when no category override matches the purchase category." : {
+
     },
     "Arbitrage" : {
 
@@ -520,13 +521,11 @@
 
     },
     "Clear Rewards" : {
-
     },
     "Clear Rewards Terms" : {
 
     },
     "Clear rewards terms?" : {
-
     },
     "Clear snapshot" : {
 
@@ -795,7 +794,6 @@
 
     },
     "Duplicates skipped" : {
-
     },
     "Dynamic Type" : {
 
@@ -907,6 +905,7 @@
 
     },
     "For example, the exact issuer product page title." : {
+
     },
     "Frequency" : {
 
@@ -934,7 +933,6 @@
 
     },
     "GBP — British Pound" : {
-
     },
     "General purchase" : {
 
@@ -958,13 +956,11 @@
 
     },
     "Health" : {
-
     },
     "Hear NomadFi's current source-backed ruling for your Amazon arrival-order decision." : {
 
     },
     "Hear NomadFi's deterministic credit-timing check across your saved credit cards — near-limit warnings, paydown-before-close prompts, or a calm \"all cards ready\" read." : {
-
     },
     "Hides the draft from the main list. You can restore it later." : {
 
@@ -1061,6 +1057,7 @@
 
     },
     "Leave empty to use the base rate." : {
+
     },
     "Ledger" : {
 
@@ -1078,7 +1075,6 @@
 
     },
     "Link to the issuer's official product page or cardmember agreement." : {
-
     },
     "Linked card" : {
 
@@ -1193,7 +1189,6 @@
 
     },
     "NGN — Nigerian Naira" : {
-
     },
     "No Accounts" : {
 
@@ -1283,6 +1278,7 @@
 
     },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
+
     },
     "NomadFi unifies your international finances into a single dashboard — eliminating hidden FX fees, automating tax compliance, and optimizing every cross-border payment." : {
 
@@ -1348,6 +1344,7 @@
 
     },
     "Online shopping" : {
+
     },
     "Open a decision from the Now section to start a record NomadFi can reopen later." : {
 
@@ -1392,7 +1389,6 @@
 
     },
     "Opens the file picker. Parsing happens on this device only." : {
-
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
@@ -1461,7 +1457,6 @@
 
     },
     "Optional. Enter only the categories where the issuer publishes a different rate. Empty fields use the base rate." : {
-
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
@@ -1479,7 +1474,6 @@
 
     },
     "Override" : {
-
     },
     "Owed %@" : {
 
@@ -1488,7 +1482,6 @@
 
     },
     "Parsing rows…" : {
-
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
@@ -1497,6 +1490,7 @@
 
     },
     "Payment plan" : {
+
     },
     "Per-card assessment" : {
 
@@ -1538,6 +1532,7 @@
 
     },
     "Program name" : {
+
     },
     "Program name, base earn rate, category overrides, and source verification." : {
 
@@ -1648,12 +1643,12 @@
 
     },
     "Review Credit Timing" : {
-
     },
     "Review the fields below and adjust as needed." : {
 
     },
     "Review the new rows in the Ledger. You can edit category or merchant on any row after import." : {
+
     },
     "Rewards notes" : {
 
@@ -1765,7 +1760,6 @@
       }
     },
     "School" : {
-
     },
     "Search receipts" : {
 
@@ -1780,7 +1774,6 @@
 
     },
     "Select an account" : {
-
     },
     "Select at least %lld more" : {
 
@@ -1840,7 +1833,6 @@
 
     },
     "Source name" : {
-
     },
     "Source URL" : {
 
@@ -1873,7 +1865,6 @@
 
     },
     "Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration." : {
-
     },
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 
@@ -1981,7 +1972,6 @@
 
     },
     "Transit" : {
-
     },
     "Travel" : {
 
@@ -2032,7 +2022,6 @@
 
     },
     "Verification" : {
-
     },
     "Verification Status" : {
 

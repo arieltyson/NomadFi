@@ -20,10 +20,28 @@ struct CreditTimingBriefView: View {
 
     let accounts: [Account]
 
+    /// Optional deterministic spending trend the parent already
+    /// computed. When present, the engine attaches a
+    /// `CreditTimingSpendingContext` to the decision and this view
+    /// renders a read-only "Recent spending context" section. Never
+    /// modifies paydown targets.
+    let spendingTrend: SpendingTrendSummary?
+
+    init(
+        accounts: [Account],
+        spendingTrend: SpendingTrendSummary? = nil
+    ) {
+        self.accounts = accounts
+        self.spendingTrend = spendingTrend
+    }
+
     @Environment(\.dismiss) private var dismiss
 
     private var decision: CreditTimingDecision {
-        CreditTimingDecisionEngine.decide(accounts: accounts)
+        CreditTimingDecisionEngine.decide(
+            accounts: accounts,
+            spendingTrend: spendingTrend
+        )
     }
 
     var body: some View {
@@ -42,6 +60,12 @@ struct CreditTimingBriefView: View {
                     if !decision.missingDataChecklist.isEmpty {
                         CreditTimingChecklistSection(
                             items: decision.missingDataChecklist
+                        )
+                    }
+
+                    if let context = decision.spendingContext {
+                        CreditTimingRecentSpendingContextSection(
+                            context: context
                         )
                     }
 
@@ -815,6 +839,164 @@ private struct CreditTimingLimitReadinessSection: View {
         case .missing: ColorTokens.neutral
         case .issuerOnly: ColorTokens.neutral
         }
+    }
+}
+
+// MARK: - Recent spending context section
+
+/// Read-only "Recent spending context" section. Rendered only when
+/// the decision carries a `CreditTimingSpendingContext` — the
+/// builder returns nil for summaries that are too thin, so the
+/// section naturally hides itself when there's nothing honest to
+/// say. Never affects paydown targets.
+private struct CreditTimingRecentSpendingContextSection: View {
+
+    let context: CreditTimingSpendingContext
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            Text("Recent spending context")
+                .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
+
+            GlassCard {
+                VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                    header
+                    comparisonSentence
+                    if !context.topCategories.isEmpty {
+                        categoriesList
+                    }
+                    if context.skippedOtherCurrencyCount > 0 {
+                        otherCurrencyCaveat
+                    }
+                    Text("Context only — NomadFi never says the user will spend this amount again and does not predict a credit-score outcome.")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isStaticText)
+                }
+            }
+        }
+    }
+}
+
+private extension CreditTimingRecentSpendingContextSection {
+
+    var header: some View {
+        HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                Text("Tracked spend in \(context.currencyCode.rawValue)")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+                Text("\(currencyString(context.latestMonthTotal)) in \(context.latestMonth.displayLabel())")
+                    .font(TypographyTokens.body)
+                    .bold()
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: SpacingTokens.xSmall)
+            StatusBadge(
+                label: directionBadgeLabel,
+                color: directionBadgeColor,
+                systemImage: context.direction.systemImage
+            )
+            .accessibilityLabel(context.direction.accessibilityLabel)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Tracked spend in \(context.currencyCode.rawValue): \(currencyString(context.latestMonthTotal)) in \(context.latestMonth.displayLabel()).")
+    }
+
+    var comparisonSentence: some View {
+        Label {
+            Text(comparisonText)
+                .font(TypographyTokens.body)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: context.direction.systemImage)
+                .foregroundStyle(ColorTokens.brandPrimary)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    var categoriesList: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            Text("Where it went")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(context.topCategories) { row in
+                HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                    Label {
+                        Text(row.category.displayName)
+                            .font(TypographyTokens.body)
+                            .lineLimit(1)
+                    } icon: {
+                        Image(systemName: row.category.systemImage)
+                            .foregroundStyle(ColorTokens.brandPrimary)
+                            .accessibilityHidden(true)
+                    }
+                    Spacer(minLength: SpacingTokens.small)
+                    Text(currencyString(row.totalForWindow))
+                        .font(TypographyTokens.body)
+                        .monospacedDigit()
+                        .multilineTextAlignment(.trailing)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(row.category.displayName): \(currencyString(row.totalForWindow)).")
+            }
+        }
+    }
+
+    var otherCurrencyCaveat: some View {
+        Label {
+            Text("\(context.skippedOtherCurrencyCount) other-currency \(context.skippedOtherCurrencyCount == 1 ? "row was" : "rows were") not included — NomadFi does not convert between currencies without a verified rate.")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle")
+                .foregroundStyle(ColorTokens.warning)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    var comparisonText: String {
+        switch context.direction {
+        case .insufficient:
+            return context.direction.displaySummary
+        case .rising, .falling, .steady:
+            let baselineAmount = currencyString(context.priorComparisonTotal)
+            if let change = context.percentChange {
+                let absPercent = abs(change * 100)
+                let percentString = absPercent
+                    .formatted(.number.precision(.fractionLength(0...1)))
+                return "\(context.direction.displaySummary) Baseline \(context.priorComparisonLabel): \(baselineAmount). Change: \(percentString)%."
+            }
+            return "\(context.direction.displaySummary) Baseline \(context.priorComparisonLabel): \(baselineAmount)."
+        }
+    }
+
+    var directionBadgeLabel: String {
+        switch context.direction {
+        case .rising: "Climbing"
+        case .falling: "Cooling"
+        case .steady: "Steady"
+        case .insufficient: "More data needed"
+        }
+    }
+
+    var directionBadgeColor: Color {
+        switch context.direction {
+        case .rising: ColorTokens.warning
+        case .falling: ColorTokens.positive
+        case .steady: ColorTokens.neutral
+        case .insufficient: ColorTokens.neutral
+        }
+    }
+
+    func currencyString(_ amount: Double) -> String {
+        amount.formatted(.currency(code: context.currencyCode.rawValue).precision(.fractionLength(0)))
     }
 }
 

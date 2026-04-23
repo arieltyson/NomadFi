@@ -69,8 +69,12 @@ enum CreditTimingDecisionEngine {
     static func decide(
         accounts: [Account],
         now: Date = .now,
-        paymentBudget: CreditPaymentAllocationBudget? = nil
+        paymentBudget: CreditPaymentAllocationBudget? = nil,
+        spendingTrend: SpendingTrendSummary? = nil
     ) -> CreditTimingDecision {
+        let spendingContext = CreditTimingSpendingContextBuilder.build(
+            from: spendingTrend
+        )
         let creditCards = accounts.filter(\.isCreditCard)
 
         guard !creditCards.isEmpty else {
@@ -91,6 +95,7 @@ enum CreditTimingDecisionEngine {
                     assessments: [],
                     now: now
                 ),
+                spendingContext: spendingContext,
                 evaluatedAt: now
             )
         }
@@ -119,6 +124,7 @@ enum CreditTimingDecisionEngine {
             citations: CreditTimingCitationCatalog.creditTiming,
             paymentAllocation: allocation,
             limitReadiness: readiness,
+            spendingContext: spendingContext,
             evaluatedAt: now
         )
     }

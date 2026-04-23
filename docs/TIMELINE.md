@@ -167,6 +167,16 @@ points at the test file that pins the behaviour.
   account age, hard-inquiry policy, issuer eligibility) always
   surface as `.issuerOnly` caveats and are never flipped to met.
   _Evidence: `CreditLimitReadinessEvaluatorTests.swift`._
+- [x] **Recent spending context inside Credit Timing** —
+  `CreditTimingSpendingContextBuilder` projects the Phase 4
+  `SpendingTrendSummary` into a calm read-only section with
+  currency-aware latest-month totals, a prior-month or
+  trailing-average baseline, a ±5 % `rising`/`falling`/`steady`
+  direction, top-3 categories, and an other-currency caveat
+  count. Wired through `CreditTimingDecisionEngine.decide(...,
+  spendingTrend:)`; context never modifies paydown targets.
+  _Evidence: `CreditTimingSpendingContextBuilderTests.swift`,
+  `CreditTimingSpendingContextDecisionTests.swift`._
 
 ### Decision drafts (user-captured raw context)
 
@@ -669,12 +679,11 @@ early creates entitlement, coverage, and review risk.
 
 ## Phase 6 — Credit Leverage and Payment Timing
 
-**Status:** `[~]` Partially shipped. Statement-close reminders, payment-due
-reminders, utilization banding, near-limit guidance, per-card paydown targets,
-**cross-card payment-allocation planning**, and a **credit-limit-increase
-readiness checklist** are all live (Credit Timing v1 + Phase 6A). Spend-trend
-context inside Credit Timing (depends on Phase 4 trend data) is still
-outstanding.
+**Status:** `[x]` Shipped. Statement-close reminders, payment-due reminders,
+utilization banding, near-limit guidance, per-card paydown targets,
+**cross-card payment-allocation planning**, **credit-limit-increase readiness
+checklist**, and **recent spending context inside Credit Timing** are all
+live (Credit Timing v1 + Phase 6A + Phase 6B).
 
 **Goal:** Help users build credit without debt.
 
@@ -723,11 +732,33 @@ outstanding.
   added to `CreditTimingCitationCatalog` so the brief's Sources
   section can back the "NomadFi can't see your issuer's specific
   APR buckets" caveat.
+- `[x]` **Recent spending context inside Credit Timing** (Phase 6B) —
+  pure value-layer builder under
+  `Features/DecisionAssistant/CreditTiming/SpendingContext/`.
+  Takes the Phase 4 `SpendingTrendSummary`, projects it onto a
+  calm `CreditTimingSpendingContext` (currency, latest month +
+  total, prior-month or trailing-average baseline, direction
+  ∈ { rising / falling / steady / insufficient } at a ±5 %
+  threshold, signed percent change, top-3 categories,
+  other-currency caveat count). Wired through
+  `CreditTimingDecisionEngine.decide(..., spendingTrend:)` as an
+  optional parameter — every existing caller keeps compiling with
+  `nil`. Surfaced on the brief as a read-only **Recent spending
+  context** section that hides itself when the trend is too thin.
+  **Context only — never modifies paydown targets.** _Evidence:
+  `CreditTimingSpendingContextBuilderTests.swift` (14 tests:
+  nil/empty handling, one-month insufficient, two-month prior
+  baseline, three-month trailing average, ±5 % thresholds incl.
+  exact boundary, zero baseline handling, category cap, caveat
+  pass-through, copy guard); `CreditTimingSpendingContextDecisionTests.swift`
+  (3 tests: no-trend preserves legacy output byte-for-byte, trend
+  attaches context without changing allocation totals or
+  assessment paydown targets, no-credit-card path still exposes
+  context)._
 
 ### Still to build
 
-- `[ ]` Spend-trend context inside Credit Timing (depends on
-  Phase 4 trend data already being piped into the engine).
+None for this milestone — Phase 6 is complete.
 
 ### Tradeoff
 
@@ -933,15 +964,16 @@ re-debating whether the foundation exists.
     (`SpendingTrendComputer` + `SpendingTrendCard`). Follow-ups
     (tax-category suggestions, spend anomaly detection, merchant
     categorisation ML) remain scoped to later phases.
-13. `[x]` Phase 6A — Cross-card payment-allocation planning
+13. `[x]` Phase 6 — Credit Leverage and Payment Timing, complete.
+    6A: Cross-card payment-allocation planner
     (`CreditPaymentAllocationPlanner`) and credit-limit-increase
-    readiness checklist (`CreditLimitReadinessEvaluator`). Both are
-    pure value-layer services under
-    `Features/DecisionAssistant/CreditTiming/`, integrated into
-    `CreditTimingDecision` and rendered as new **Payment plan** and
-    **Limit readiness** sections on the brief view. The only
-    Phase 6 item still outstanding is spend-trend context *inside*
-    the Credit Timing engine.
+    readiness checklist (`CreditLimitReadinessEvaluator`). 6B:
+    `CreditTimingSpendingContextBuilder` projects the Phase 4
+    trend summary into a read-only **Recent spending context**
+    section on the Credit Timing brief. All three are pure
+    value-layer services under
+    `Features/DecisionAssistant/CreditTiming/`; none modifies
+    paydown targets or promises an issuer-side outcome.
 14. `[ ]` Region-specific tax education path (Phase 7).
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
@@ -954,20 +986,19 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6A is complete for this milestone.** The Credit Timing
-brief now ships two new sections — **Payment plan** (cross-card
-allocation with optional, non-persisted budget) and **Limit
-readiness** (review checklist that never crosses into "you'll be
-approved" territory) — both powered by pure value-layer services
-under `Features/DecisionAssistant/CreditTiming/`.
+**Phase 6 is complete.** The Credit Timing brief now ships three
+shipped Phase 6 surfaces: **Payment plan** (Phase 6A cross-card
+allocation with optional non-persisted budget), **Limit readiness**
+(Phase 6A review checklist that never crosses into "you'll be
+approved" territory), and **Recent spending context** (Phase 6B
+read-only trend panel that hides when the data is too thin). All
+three are pure value-layer services under
+`Features/DecisionAssistant/CreditTiming/`; none persists state,
+none modifies paydown targets, none claims an issuer or score
+outcome.
 
-Highest-leverage remaining work:
+Highest-leverage remaining work (all outside Phase 6):
 
-- **Spend-trend context inside Credit Timing** (Phase 6 remainder).
-  Pipe the Phase 4 `SpendingTrendSummary` into the engine so a
-  card's paydown suggestion can be caveated ("based on $X of
-  recent spend" / "trend is climbing") without making a
-  score-outcome claim. Deterministic, no new sources required.
 - **Tax-category suggestions with confidence labels** (Phase 7
   entry). Builds on `MerchantCategoryInferrer` plus `TaxVault` to
   pre-fill tax-deductible flags on imported rows — every
@@ -976,12 +1007,9 @@ Highest-leverage remaining work:
   expected-but-missing recurring charges as anomalies and
   unexpected amount spikes as caveats, using the existing
   `RecurringChargeDetector` as the baseline.
-
-The next pick depends on which surface is most YC-legible. If the
-pitch emphasises "credit without debt", Phase 6 spend-trend
-context compounds directly on today's shipped allocation +
-readiness work. If the pitch leans on "cross-border tax friction",
-the tax-category suggestions path opens that narrative.
+- **Region-specific tax education path** (Phase 7 full scope) and
+  **Investing education + index-fund tracking** (Phase 8) remain
+  on the roadmap behind these two smaller continuations.
 
 ---
 

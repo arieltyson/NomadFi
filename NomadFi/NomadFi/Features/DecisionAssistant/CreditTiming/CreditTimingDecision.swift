@@ -45,6 +45,13 @@ struct CreditTimingDecision: Sendable, Equatable {
     /// approach their issuer with evidence, not promises.
     let limitReadiness: CreditLimitReadinessChecklist
 
+    /// Recent spending context derived from the deterministic
+    /// `SpendingTrendSummary`. **Context only** — never modifies the
+    /// paydown targets carried in ``paymentAllocation``. `nil` when
+    /// the caller didn't supply a trend summary or the summary was
+    /// too thin to describe.
+    let spendingContext: CreditTimingSpendingContext?
+
     /// `now` the engine used when evaluating snapshot freshness.
     /// Surfaced so the UI can show an honest "evaluated as of" label
     /// and tests can pin the value.
