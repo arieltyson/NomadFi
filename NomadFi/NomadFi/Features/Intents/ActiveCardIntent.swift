@@ -1,28 +1,29 @@
 // ActiveCardIntent.swift
 // NomadFi
 //
-// Siri shortcut: "Hey Siri, which card should I use?"
+// Legacy Siri intent previously registered for the generic "Which
+// card should I use?" phrase. The original implementation ranked
+// accounts by `foreignTransactionFeePercent` alone; that FX-fee-only
+// heuristic is retired.
 //
-// The original implementation sorted accounts by
-// `foreignTransactionFeePercent` and announced the lowest-fee card as
-// the recommendation. That shortcut is retained for phrase
-// compatibility, but the behaviour is now routed through the Scenario
-// 1 decision engine so voice answers stay consistent with the app's
-// Decision Assistant — no fee-only heuristic, no invented rankings.
+// Generic "Which card…" voice routing now points at
+// ``RecommendCardIntent`` (backed by ``PurchaseDecisionEngine``).
+// This type remains as a deprecated alias so user-created shortcuts
+// in the Shortcuts app that were recorded against `ActiveCardIntent`
+// keep resolving — it is NOT exposed through
+// ``NomadFiShortcuts.appShortcuts`` anymore.
+//
+// When invoked, it defers to the Scenario 1 brief so the answer
+// stays deterministic and source-cited, matching what the user would
+// see if they tapped the in-app "Review my Amazon order" shortcut.
 
 import AppIntents
 import SwiftData
 
-/// Responds to "Which card should I use?" via the Scenario 1 engine.
-///
-/// NomadFi does not yet ship a generic merchant-agnostic card
-/// recommendation engine, so this intent is intentionally honest:
-/// today it can only answer the saved Amazon arrival-order decision,
-/// and it defers to `ScenarioDecisionEngine` for the ruling. If the
-/// user has not entered any scenario inputs yet, the dialog says so
-/// instead of fabricating an answer.
-///
-/// Usage: "Hey Siri, which card should I use in NomadFi?"
+/// Deprecated legacy voice entry point. Defers to the Scenario 1
+/// engine so callers that still trigger this intent get a calm,
+/// honest Amazon-arrival summary instead of an invented ranking.
+/// Prefer ``RecommendCardIntent`` for new voice flows.
 struct ActiveCardIntent: AppIntent {
 
     static let title: LocalizedStringResource = "Which Card Should I Use?"

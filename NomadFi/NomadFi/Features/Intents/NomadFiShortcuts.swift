@@ -4,21 +4,25 @@
 // Registers App Shortcuts for Siri and the Shortcuts app.
 // Enables Lock Screen suggested shortcuts and voice activation.
 //
-// The Decision Assistant shortcuts are intentionally honest about
-// NomadFi's current coverage: today the deterministic engine only
-// answers the Amazon arrival-order decision (Scenario 1). The legacy
-// "Which card should I use?" phrase still routes to ``ActiveCardIntent``,
-// but that intent now defers to the Scenario 1 engine rather than
-// ranking accounts by foreign-transaction fee alone.
+// Voice parity with the in-app Decision Assistant:
+//   - Amazon arrival-order review & continue — Scenario 1 engine.
+//   - Capture decision draft — local-only voice intake.
+//   - Recommend a card — generic `PurchaseDecisionEngine` answer.
+//   - Review credit timing — portfolio-level `CreditTimingDecisionEngine`.
+//
+// Generic "Which card should I use…" phrases now route to
+// ``RecommendCardIntent``, not the legacy ``ActiveCardIntent``.
+// `ActiveCardIntent` remains as a deprecated type so existing
+// user-built Shortcuts referencing it keep resolving, but it is no
+// longer discoverable through this provider's default catalog.
 
 import AppIntents
 
 /// Provides NomadFi's App Shortcuts to the system.
 ///
 /// Shortcuts appear in the Shortcuts app, Spotlight suggestions, and
-/// Siri voice. Order of appearance favours the decision-assistant
-/// surfaces first; supporting shortcuts (net worth, budget, log
-/// expense) follow.
+/// Siri voice. Order favours the decision-assistant surfaces first;
+/// supporting shortcuts (net worth, budget, log expense) follow.
 struct NomadFiShortcuts: AppShortcutsProvider {
 
     static var appShortcuts: [AppShortcut] {
@@ -31,6 +35,28 @@ struct NomadFiShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Open Decisions",
             systemImageName: "scale.3d"
+        )
+
+        AppShortcut(
+            intent: RecommendCardIntent(),
+            phrases: [
+                "Which card should I use in \(.applicationName)",
+                "What card to use in \(.applicationName)",
+                "Recommend a card in \(.applicationName)",
+            ],
+            shortTitle: "Recommend a Card",
+            systemImageName: "creditcard.and.123"
+        )
+
+        AppShortcut(
+            intent: ReviewCreditTimingIntent(),
+            phrases: [
+                "Review my credit timing in \(.applicationName)",
+                "Check my statement close readiness in \(.applicationName)",
+                "How are my credit cards doing in \(.applicationName)",
+            ],
+            shortTitle: "Review Credit Timing",
+            systemImageName: "calendar.badge.clock"
         )
 
         AppShortcut(
@@ -64,17 +90,6 @@ struct NomadFiShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Capture Decision",
             systemImageName: "square.and.pencil"
-        )
-
-        AppShortcut(
-            intent: ActiveCardIntent(),
-            phrases: [
-                "Which card should I use in \(.applicationName)",
-                "What card to use in \(.applicationName)",
-                "Best card for paying in \(.applicationName)",
-            ],
-            shortTitle: "Which Card?",
-            systemImageName: "creditcard"
         )
 
         AppShortcut(

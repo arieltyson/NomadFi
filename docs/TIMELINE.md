@@ -165,9 +165,15 @@ points at the test file that pins the behaviour.
 - [x] Honest dialog formatters — no "analyzed", "recommended", "best card",
   or "verified" language for unverified paths. _Evidence:
   `DecisionAssistantIntentDialogTests.swift`._
-- [ ] `ReviewCreditTimingIntent` (background voice review of Credit Timing).
-- [ ] `RecommendCardIntent` for generic merchant / category questions
-  (blocked on the generic scenario engine).
+- [x] `ReviewCreditTimingIntent` — background voice review of the Credit
+  Timing engine, no score predictions. _Evidence:
+  `RecommendCardIntentTests.swift`._
+- [x] `RecommendCardIntent` — background voice ranking on top of the
+  generic `PurchaseDecisionEngine`, with AppEnum adapters
+  (`MerchantCategoryAppEnum`, `CurrencyCodeAppEnum`) so the core
+  domain enums stay free of `AppIntents`. No rewards ranking, no
+  "best card" / "lowest fee" framing, voice queries never
+  persisted. _Evidence: `RecommendCardIntentTests.swift`._
 
 ### Transaction capture / aggregation
 
@@ -774,11 +780,15 @@ re-debating whether the foundation exists.
 9. `[x]` Generic Purchase Decision Engine v1 (`PurchaseDecisionEngine`) with
    per-account stances, FX-verification caveats, no rewards ranking, and an
    in-app brief sheet.
-10. `[ ]` **Next:** `RecommendCardIntent` (voice surface on top of the
-    generic engine) + the still-outstanding `ReviewCreditTimingIntent` voice
-    parity.
-11. `[ ]` Verified rewards / category-bonus model on `Account` — lifts the
-    "rewards are not ranked" caveat in the generic engine.
+10. `[x]` `RecommendCardIntent` (voice surface on top of the generic
+    engine) and `ReviewCreditTimingIntent` (voice surface on top of
+    the credit-timing engine). Both run `.background`, cite the
+    engines' existing deterministic output, never invent rewards
+    or predict credit-score outcomes.
+11. `[ ]` **Next:** Verified rewards / category-bonus model on
+    `Account` — lifts the "rewards are not ranked" caveat in the
+    generic engine so `RecommendCardIntent` can include rewards in
+    the ranking (currently it only emits a verification caveat).
 12. `[ ]` Transaction capture fan-out: CSV import, merchant normalisation,
     recurring-charge detection beyond Subscriptions.
 13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase

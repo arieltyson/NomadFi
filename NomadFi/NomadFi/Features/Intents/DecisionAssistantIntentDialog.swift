@@ -132,6 +132,89 @@ enum DecisionAssistantIntentDialog {
             + "until a deterministic source-backed engine covers this kind of decision."
     }
 
+    // MARK: - "Recommend a card" (generic purchase)
+
+    /// Dialog returned when the user invokes ``RecommendCardIntent``
+    /// without enough context — typically no amount. Ask, don't guess.
+    static let recommendCardMissingAmount: String =
+        "I need the amount you expect to pay before I can rank your saved accounts. Say the amount and run the shortcut again."
+
+    /// Voice dialog for ``RecommendCardIntent``. Consumes the full
+    /// ``PurchaseDecision`` and emits a concise, mission-safe spoken
+    /// answer.
+    ///
+    /// Honesty constraints baked into this function:
+    ///   - Never says "best card" on its own — the phrase "recommended
+    ///     option" always appears in a sentence that clearly means
+    ///     *NomadFi's current deterministic recommendation from your
+    ///     saved inputs*.
+    ///   - Never says "lowest fee" — the generic engine doesn't rank
+    ///     on FX fee alone, so the spoken surface must not either.
+    ///   - Never says "guaranteed", "score will increase", or "carry a
+    ///     balance".
+    ///   - Never invents rewards claims. A rewards-sensitive category
+    ///     surfaces a single verification caveat when a credit card is
+    ///     the recommendation.
+    static func recommendCardAnswer(
+        decision: PurchaseDecision
+    ) -> String {
+        switch decision.ruling {
+        case .needsPurchaseContext:
+            return recommendCardMissingAmount
+
+        case .noPaymentAccountsOnFile:
+            return "You don't have any non-investment accounts saved in NomadFi yet. Add a checking, credit-card, or wallet account in Settings to get a recommendation."
+
+        case .missingCardData:
+            let checks = formattedCheckCount(decision.outstandingCheckCount)
+            return "NomadFi needs more account data before it can pick an option for this purchase. \(checks) remain — open the Decisions tab for details."
+
+        case .allAccountsBlocked:
+            return "None of your saved accounts clear the guardrails for this purchase. Open NomadFi's Decisions tab to see the caveats."
+
+        case .ready:
+            return recommendCardReadySentence(decision: decision)
+        }
+    }
+
+    /// Dialog for ``ReviewCreditTimingIntent``. Consumes the Credit
+    /// Timing engine's output and emits a concise voice summary.
+    ///
+    /// Never promises a credit-score outcome or a credit-limit
+    /// increase. Never recommends carrying a balance. Highlights at
+    /// most one card's most-urgent signal per sentence so the voice
+    /// surface stays short.
+    static func creditTimingReview(
+        decision: CreditTimingDecision
+    ) -> String {
+        switch decision.ruling {
+        case .noCreditCardsOnFile:
+            return "You don't have any credit cards saved in NomadFi yet. Add one in Settings to run the Credit Timing engine."
+
+        case .someNearLimit:
+            let name = firstCardName(
+                in: decision,
+                matching: .nearLimitAvoidMoreSpend
+            )
+            return "Your \(name) is near its credit limit. Avoid additional spend on that card until the balance comes down. NomadFi does not predict credit-score outcomes."
+
+        case .somePayDownBeforeClose:
+            let name = firstCardName(
+                in: decision,
+                matching: .payDownBeforeClose
+            )
+            let checksTail = creditTimingChecksTail(decision: decision)
+            return "Your \(name) would report a balance above a conservative planning target. Consider paying it down before statement close. Always pay the statement balance in full by the due date.\(checksTail)"
+
+        case .missingData:
+            let checks = formattedCheckCount(decision.outstandingCheckCount)
+            return "NomadFi needs more data before it can give a full credit-timing ruling. \(checks) remain — open the Decisions tab to review what's missing."
+
+        case .allCardsReady:
+            return "All your saved credit cards look ready. Continue paying the statement balance in full by the due date. NomadFi does not predict credit-score outcomes."
+        }
+    }
+
     // MARK: - Helpers
 
     /// Core sentence shared by every dialog that describes the Amazon
@@ -173,5 +256,83 @@ enum DecisionAssistantIntentDialog {
     /// straight into an `IntentDialog`.
     private static func formattedCheckCount(_ count: Int) -> String {
         count == 1 ? "1 check" : "\(count) checks"
+    }
+
+    /// Builds the `.ready` sentence for ``recommendCardAnswer`` —
+    /// extracted so the switch above stays readable.
+    private static func recommendCardReadySentence(
+        decision: PurchaseDecision
+    ) -> String {
+        guard let rec = decision.recommendation else {
+            // Defence in depth: `.ready` implies a recommendation, but
+            // if the engine ever ships without one we must not invent
+            // an account name on the user's behalf.
+            return "NomadFi couldn't finalise a recommended option for this purchase. Open the Decisions tab to review your saved accounts."
+        }
+
+        var parts: [String] = []
+        parts.append(
+            "NomadFi's recommended option for this purchase is your \(rec.accountName) — \(rec.accountTypeDisplay)."
+        )
+
+        if let fallback = decision.fallback {
+            parts.append(
+                "If that isn't available, fall back to your \(fallback.accountName)."
+            )
+        }
+
+        if !rec.matchesPurchaseCurrency {
+            if rec.foreignTransactionFeeIsVerified {
+                parts.append(
+                    "Heads up: this is a cross-currency purchase — verify the final converted amount against your issuer before committing."
+                )
+            } else {
+                parts.append(
+                    "Heads up: the foreign-transaction fee on this account hasn't been verified. Check your issuer's current terms before relying on it."
+                )
+            }
+        }
+
+        if decision.outstandingCheckCount > 0 {
+            let checks = formattedCheckCount(decision.outstandingCheckCount)
+            parts.append("\(checks) still need your input — open the Decisions tab for the list.")
+        }
+
+        if rec.isCreditCard {
+            parts.append(
+                "Pay the statement balance in full by the due date — NomadFi never recommends carrying a balance."
+            )
+        }
+
+        if decision.context.category.isRewardsSensitive {
+            parts.append(
+                "NomadFi does not model verified rewards yet — verify any category bonus on the issuer's current product page."
+            )
+        }
+
+        return parts.joined(separator: " ")
+    }
+
+    /// Name of the first assessment whose ruling matches `ruling`, or
+    /// a calm fallback phrase when the catalog has grown past what
+    /// this copy covers.
+    private static func firstCardName(
+        in decision: CreditTimingDecision,
+        matching ruling: CreditTimingCardRuling
+    ) -> String {
+        decision.cardAssessments
+            .first(where: { $0.ruling == ruling })?
+            .accountName ?? "one of your cards"
+    }
+
+    /// Optional trailing sentence that lists remaining outstanding
+    /// checks for the credit-timing review dialog. Empty string when
+    /// nothing is outstanding so the sentence flows naturally.
+    private static func creditTimingChecksTail(
+        decision: CreditTimingDecision
+    ) -> String {
+        guard decision.outstandingCheckCount > 0 else { return "" }
+        let checks = formattedCheckCount(decision.outstandingCheckCount)
+        return " \(checks) still need your input — open the Decisions tab for details."
     }
 }

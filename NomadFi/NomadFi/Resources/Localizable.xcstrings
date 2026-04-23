@@ -1,6 +1,8 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@" : {
+    },
     "%@ — %@" : {
       "localizations" : {
         "en" : {
@@ -77,6 +79,16 @@
         }
       }
     },
+    "%@, %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@. %3$@"
+          }
+        }
+      }
+    },
     "%@: %@" : {
       "localizations" : {
         "en" : {
@@ -93,6 +105,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@: %2$@. %3$@. %4$@"
+          }
+        }
+      }
+    },
+    "%@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@. %2$@"
           }
         }
       }
@@ -145,6 +167,12 @@
     "A credit limit is capacity, not a balance. NomadFi never counts it toward your net worth." : {
 
     },
+    "A short hint like a city name. Don't enter a full street address." : {
+    },
+    "A short location hint, not a full address." : {
+    },
+    "A short title helps you recognise this draft in the Gathered intelligence list." : {
+    },
     "About NomadFi" : {
 
     },
@@ -182,6 +210,7 @@
 
     },
     "Active decision" : {
+
     },
     "Add" : {
 
@@ -267,6 +296,10 @@
     "Amount" : {
 
     },
+    "Amount (optional)" : {
+    },
+    "Amount, optional" : {
+    },
     "App Lock" : {
 
     },
@@ -279,7 +312,11 @@
     "Arbitrage" : {
 
     },
+    "Archive draft" : {
+
+    },
     "As of %@" : {
+
     },
     "At 80%, 90%, and 100%" : {
 
@@ -326,6 +363,16 @@
     "Cancel" : {
 
     },
+    "Capture a scenario now, in your own words. NomadFi keeps it on-device until a deterministic engine can analyze it." : {
+    },
+    "Capture decision" : {
+    },
+    "Capture Decision" : {
+    },
+    "Capture Decision Draft" : {
+    },
+    "Captured draft" : {
+    },
     "Card Amounts (Optional)" : {
 
     },
@@ -361,6 +408,12 @@
     },
     "Choose how long NomadFi waits before locking after you leave the app" : {
 
+    },
+    "City or context" : {
+    },
+    "City or short location hint" : {
+    },
+    "City or short location hint (optional)" : {
     },
     "Clear" : {
 
@@ -404,8 +457,14 @@
     "Connect to Location, Securely." : {
 
     },
+    "Context" : {
+    },
     "Continue" : {
 
+    },
+    "Continue Amazon Arrival Decision" : {
+    },
+    "Continue Decision" : {
     },
     "Continue Without Location" : {
 
@@ -462,6 +521,10 @@
     "Credit limits are not balances. This moves the value you previously entered into the credit limit field." : {
 
     },
+    "Credit timing" : {
+    },
+    "Credit timing check" : {
+    },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
     },
@@ -483,6 +546,8 @@
     "Current balance (optional)" : {
 
     },
+    "Current ruling" : {
+    },
     "Dashboard" : {
 
     },
@@ -493,16 +558,21 @@
 
     },
     "Decision Assistant" : {
+
     },
     "Decision Assistant, Not a Ledger" : {
 
+    },
+    "Decision kind" : {
     },
     "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference — and never labels AI-assisted drafts as verified." : {
 
     },
     "Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference, and never labels AI-assisted drafts as verified." : {
+
     },
     "Decisions" : {
+
     },
     "Delete" : {
 
@@ -513,10 +583,20 @@
     "Delete All My Data" : {
 
     },
+    "Delete draft" : {
+    },
+    "Delete draft…" : {
+
+    },
     "Delete Everything" : {
 
     },
-    "Describe a purchase in your own words — routed into NomadFi's deterministic engine." : {
+    "Delete this draft from this device?" : {
+    },
+    "Describe the decision in your own words — what you're weighing, and any context that matters." : {
+    },
+    "Describe the scenario" : {
+
     },
     "Details" : {
 
@@ -557,6 +637,8 @@
     "Document Details" : {
 
     },
+    "Don't enter card numbers, account numbers, or full addresses. The engine doesn't need them." : {
+    },
     "Done" : {
 
     },
@@ -578,6 +660,11 @@
     "Each link opens the official source page in Safari. NomadFi does not fetch or cache these pages — you verify them yourself." : {
 
     },
+    "Edit" : {
+
+    },
+    "Edit draft" : {
+    },
     "Enable Notifications" : {
 
     },
@@ -598,6 +685,10 @@
     },
     "Enter the real numbers from Chase and Wise. Values are stored only on this device and can be wiped from Settings → Privacy." : {
 
+    },
+    "Evaluated %@" : {
+    },
+    "Evaluated as of %@" : {
     },
     "Every Saturday morning" : {
 
@@ -683,11 +774,9 @@
 
     },
     "Gather intelligence" : {
-    },
-    "Gather intelligence for a new decision. Coming soon: typed scenarios, Siri shortcuts, and optional Apple Intelligence context. Today's recommendations come from NomadFi's deterministic source-backed engine." : {
-    },
-    "Get a recommendation for the best card to use at your current location." : {
 
+    },
+    "Get NomadFi's current saved Amazon arrival-order recommendation from the Decision Assistant." : {
     },
     "Get Started" : {
 
@@ -700,6 +789,10 @@
     },
     "Hard rules" : {
 
+    },
+    "Hear NomadFi's current source-backed ruling for your Amazon arrival-order decision." : {
+    },
+    "Hides the draft from the main list. You can restore it later." : {
     },
     "Home" : {
 
@@ -716,6 +809,9 @@
     "Institution" : {
 
     },
+    "Investing & learning" : {
+
+    },
     "Jurisdiction" : {
 
     },
@@ -724,6 +820,10 @@
     },
     "Jurisdictions, accounts, and credit-card calendar." : {
 
+    },
+    "Keep location to a city or short hint. Don't enter addresses, card numbers, or account details." : {
+    },
+    "Kind" : {
     },
     "Last confirmed" : {
 
@@ -757,6 +857,8 @@
     },
     "Live Exchange Rates" : {
 
+    },
+    "Location" : {
     },
     "Location Access Enabled" : {
 
@@ -810,19 +912,34 @@
     "Merchant" : {
 
     },
+    "Merchant (optional)" : {
+    },
     "Merchant name" : {
 
     },
     "Merchant Name" : {
 
     },
+    "Merchant or counterparty" : {
+    },
+    "Merchant or counterparty you expect to pay. Optional." : {
+    },
+    "Missing data" : {
+    },
     "Monthly Subscription Cost" : {
 
     },
+    "More actions" : {
+    },
     "More decisions will appear here as NomadFi ships deterministic engines for them." : {
+
+    },
+    "More draft actions" : {
     },
     "Move %@ into credit limit" : {
 
+    },
+    "Moves the draft back to the Gathered intelligence list." : {
     },
     "Needs review" : {
 
@@ -844,6 +961,8 @@
     },
     "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
 
+    },
+    "No drafts captured yet" : {
     },
     "No previous decisions yet" : {
 
@@ -902,6 +1021,12 @@
     "NomadFi reads your receipts, auto-categorizes them as US Source or Canada Source, and organizes everything for NRA tax filing." : {
 
     },
+    "NomadFi stored this draft on-device only. A deterministic engine for this kind of decision hasn't shipped yet — until one does, NomadFi will not generate a recommendation from this capture." : {
+
+    },
+    "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
+
+    },
     "NomadFi unifies your international finances into a single dashboard — eliminating hidden FX fees, automating tax compliance, and optimizing every cross-border payment." : {
 
     },
@@ -935,6 +1060,8 @@
     "Notes (optional)" : {
 
     },
+    "Notes, optional" : {
+    },
     "Notifications" : {
 
     },
@@ -960,6 +1087,15 @@
 
     },
     "Open a decision from the Now section to start a record NomadFi can reopen later." : {
+
+    },
+    "Open Decision Assistant" : {
+    },
+    "Open Decisions" : {
+    },
+    "Open NomadFi directly on the Decisions tab." : {
+    },
+    "Open NomadFi on the Decisions tab so you can finish your Amazon arrival-order decision." : {
     },
     "Opens a form to add a bank account or card." : {
 
@@ -967,11 +1103,19 @@
     "Opens a form to add a new bank account or card." : {
 
     },
+    "Opens a local form to capture a new decision draft on this device." : {
+    },
     "Opens a screen to add, remove, or change your home jurisdiction." : {
 
     },
     "Opens the account editor to correct balances, limits, and other details." : {
 
+    },
+    "Opens the archived draft. Restore or delete from the detail sheet." : {
+    },
+    "Opens the captured draft details. Read-only." : {
+    },
+    "Opens the draft in the edit form." : {
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
@@ -982,6 +1126,8 @@
     "Opens the official source in Safari" : {
 
     },
+    "Opens the official source in your browser." : {
+    },
     "Opens the receipts and tax document archive." : {
 
     },
@@ -989,17 +1135,37 @@
 
     },
     "Opens the subscription tracker and savings comparison." : {
+
     },
     "Opens your photo library to select a receipt image for scanning." : {
 
     },
+    "Optional — when the decision needs to be made, in your own words." : {
+    },
+    "Optional — who the money is going to or coming from." : {
+    },
+    "Optional category for this decision." : {
+    },
     "Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking." : {
+
+    },
+    "Optional extra notes." : {
+    },
+    "Optional short city or context hint. Do not enter a full address." : {
+    },
+    "Optional short title that will help you recognise this draft later." : {
     },
     "Optional. If you enter a balance, NomadFi timestamps it as a snapshot and marks it stale over time. You can update it later in Settings." : {
 
     },
+    "Optional. Leave blank if the decision isn't primarily financial." : {
+    },
     "Optional. Your account name is only changed when you tap this row." : {
 
+    },
+    "Other" : {
+    },
+    "Other accounts" : {
     },
     "Owed %@" : {
 
@@ -1009,6 +1175,8 @@
     },
     "Payment options" : {
 
+    },
+    "Per-card assessment" : {
     },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
@@ -1030,6 +1198,14 @@
     },
     "Profile" : {
 
+    },
+    "Purchase" : {
+    },
+    "Purchase card check" : {
+    },
+    "Purchase currency" : {
+    },
+    "Purchase details" : {
     },
     "Quickly log a transaction with an amount and category." : {
 
@@ -1062,6 +1238,7 @@
 
     },
     "Recurring-charge detection and cross-border pricing review." : {
+
     },
     "Region" : {
 
@@ -1099,11 +1276,17 @@
     "Requires your device passcode to open NomadFi" : {
 
     },
+    "Restore draft" : {
+    },
     "Retry" : {
 
     },
     "Returns to the previous onboarding step." : {
 
+    },
+    "Review Amazon Arrival Decision" : {
+    },
+    "Review Amazon Order" : {
     },
     "Review the fields below and adjust as needed." : {
 
@@ -1123,8 +1306,18 @@
     "Save %@/year with subscription arbitrage" : {
 
     },
+    "Save a decision you're weighing as a private, on-device draft. NomadFi will not analyze or recommend anything from it until a deterministic engine covers this kind of decision." : {
+    },
+    "Saved drafts stay on this device and are marked **Needs engine** until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
+    },
+    "Saved drafts stay on this device and are marked needs engine until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
+    },
+    "Saved drafts stay on-device and are marked needs engine until a deterministic NomadFi engine covers them. NomadFi does not auto-analyze drafts with generic AI." : {
+    },
     "Saves the credit-card calendar." : {
 
+    },
+    "Saves the draft on this device. NomadFi does not analyze it yet." : {
     },
     "Saves this account to your profile." : {
 
@@ -1167,6 +1360,10 @@
     },
     "Scanning receipt, please wait" : {
 
+    },
+    "Scenario" : {
+    },
+    "Scenario description" : {
     },
     "Schedules reminders on your device %lld days before each confirmed statement close date and %lld days before each confirmed payment due date." : {
       "localizations" : {
@@ -1226,6 +1423,10 @@
     "Shares the most recently exported tax report." : {
 
     },
+    "Short title (optional)" : {
+    },
+    "Short title, optional" : {
+    },
     "Snapshots are point-in-time readings. NomadFi timestamps them and flags them as stale over time — it never treats an outdated snapshot as live." : {
 
     },
@@ -1262,11 +1463,15 @@
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 
     },
+    "Tap Capture decision above to save a scenario. Drafts stay on this device and are marked Needs engine until a deterministic NomadFi engine covers them." : {
+    },
     "Tap the button below to add your first account." : {
 
     },
     "Tax" : {
 
+    },
+    "Tax & education" : {
     },
     "Tax Category" : {
 
@@ -1319,16 +1524,26 @@
     "Tidy Account Name" : {
 
     },
+    "Timing" : {
+    },
+    "Timing (optional)" : {
+    },
+    "Timing in your own words" : {
+    },
+    "Timing note" : {
+    },
+    "Title" : {
+    },
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
-    },
-    "Today, NomadFi's actionable recommendations come from its own deterministic, source-backed engine — not from a generic language model. New intake channels will route into that engine as they ship." : {
     },
     "Total net worth" : {
 
     },
     "Track" : {
 
+    },
+    "Travel" : {
     },
     "Try Again" : {
 
@@ -1354,25 +1569,7 @@
     "Use saved snapshot" : {
 
     },
-    "Use your %@. It has no foreign transaction fees on record.%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use your %1$@. It has no foreign transaction fees on record.%2$@"
-          }
-        }
-      }
-    },
-    "Use your %@. It has the lowest foreign transaction fee on record at %@%%.%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use your %1$@. It has the lowest foreign transaction fee on record at %2$@%%.%3$@"
-          }
-        }
-      }
+    "Use your own words — merchant, context, and what you're weighing. This is the only required field." : {
     },
     "Validation issue: %@" : {
 
@@ -1413,17 +1610,23 @@
     "What is your home currency?" : {
 
     },
+    "What kind of decision is it?" : {
+    },
     "When enabled, %@ is required to access your financial data." : {
 
     },
     "When enabled, your device passcode is required to access your financial data." : {
 
     },
+    "When not to use these" : {
+    },
     "When rates move more than 2%" : {
 
     },
     "When tax season arrives, export a structured report organized by jurisdiction. Compatible with Sprintax and TurboTax for NRA filing." : {
 
+    },
+    "When, in your own words" : {
     },
     "Where does your money live?" : {
 
@@ -1456,9 +1659,6 @@
 
     },
     "You can skip this and add it later from Settings. Saved balances are timestamped as snapshots." : {
-
-    },
-    "You don't have any accounts set up yet. Open NomadFi to add your cards." : {
 
     },
     "You don't have any accounts set up yet. Open NomadFi to get started." : {

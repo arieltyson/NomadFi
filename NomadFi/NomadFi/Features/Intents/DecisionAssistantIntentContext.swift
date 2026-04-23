@@ -62,4 +62,67 @@ enum DecisionAssistantIntentContext {
             || state.wiseCardAcceptedByAmazon
             || state.hasLinkedChaseAccount
     }
+
+    // MARK: - Generic purchase bridge
+
+    /// Opens a `ModelContainer` registering every `@Model` type the
+    /// generic purchase engine or credit-timing engine touches through
+    /// the `Account` graph, fetches all accounts, and runs
+    /// `PurchaseDecisionEngine.decide` against `context`. Returns the
+    /// engine output.
+    ///
+    /// Centralising the container registration here means voice
+    /// callers never have to know which related types SwiftData needs
+    /// to materialise the account relationships.
+    @MainActor
+    static func runPurchaseDecision(
+        context: PurchaseContext,
+        now: Date = .now
+    ) throws -> PurchaseDecision {
+        let accounts = try loadAccounts()
+        return PurchaseDecisionEngine.decide(
+            context: context,
+            accounts: accounts,
+            now: now
+        )
+    }
+
+    // MARK: - Credit timing bridge
+
+    /// Loads the user's saved accounts and runs
+    /// `CreditTimingDecisionEngine.decide`. Returns the engine output.
+    @MainActor
+    static func runCreditTimingDecision(
+        now: Date = .now
+    ) throws -> CreditTimingDecision {
+        let accounts = try loadAccounts()
+        return CreditTimingDecisionEngine.decide(
+            accounts: accounts,
+            now: now
+        )
+    }
+
+    // MARK: - Private
+
+    /// Opens a shared-store `ModelContainer` registering the full
+    /// account relationship graph (`Account`, `Transaction`,
+    /// `Subscription`, `JurisdictionProfile`) and returns every
+    /// `Account` row, sorted by institution + name for a stable read.
+    @MainActor
+    private static func loadAccounts() throws -> [Account] {
+        let container = try ModelContainer(
+            for: Account.self,
+            Transaction.self,
+            Subscription.self,
+            JurisdictionProfile.self
+        )
+        let context = container.mainContext
+
+        var descriptor = FetchDescriptor<Account>()
+        descriptor.sortBy = [
+            SortDescriptor(\.institutionName),
+            SortDescriptor(\.name),
+        ]
+        return (try? context.fetch(descriptor)) ?? []
+    }
 }
