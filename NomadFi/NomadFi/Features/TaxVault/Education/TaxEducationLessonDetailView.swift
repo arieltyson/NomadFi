@@ -9,17 +9,33 @@
 //   4. "What to review next" (procedural prompts)
 //   5. Official sources (external links)
 //   6. "Ask a professional" escalation note, when present
-//   7. Standing education-only disclaimer
+//   7. Explicit "Mark reviewed" / "Mark not reviewed yet" action
+//   8. Standing education-only disclaimer
 //
-// Read-only. No quizzes, no streaks, no progress persistence.
+// Progress writes are explicit — opening this sheet does not flip
+// anything. Only the action button moves the lesson between
+// `.completed` and `.notStarted`.
 
+import SwiftData
 import SwiftUI
 
 struct TaxEducationLessonDetailView: View {
 
     let lesson: TaxEducationLesson
 
+    /// Whether the user has already marked this lesson reviewed.
+    /// Resolved against live `TaxEducationProgressRecord`s by the
+    /// parent view.
+    let isReviewed: Bool
+
+    /// Called when the user taps "Mark reviewed".
+    let onMarkReviewed: () -> Void
+
+    /// Called when the user taps "Mark not reviewed yet".
+    let onUnmarkReviewed: () -> Void
+
     @Environment(\.dismiss) private var dismiss
+    @State private var markedSignature: Int = 0
 
     var body: some View {
         NavigationStack {
@@ -32,6 +48,7 @@ struct TaxEducationLessonDetailView: View {
                 if let escalation = lesson.escalationNote {
                     escalationSection(note: escalation)
                 }
+                actionSection
                 disclaimerSection
             }
             .navigationTitle("Lesson")
@@ -41,6 +58,7 @@ struct TaxEducationLessonDetailView: View {
                     Button("Close") { dismiss() }
                 }
             }
+            .sensoryFeedback(.success, trigger: markedSignature)
         }
     }
 }
@@ -147,6 +165,35 @@ private extension TaxEducationLessonDetailView {
             .accessibilityElement(children: .combine)
         } header: {
             Text("Ask a professional")
+        }
+    }
+
+    var actionSection: some View {
+        Section {
+            if isReviewed {
+                Button(role: .destructive) {
+                    onUnmarkReviewed()
+                    markedSignature &+= 1
+                    dismiss()
+                } label: {
+                    Label("Mark not reviewed yet", systemImage: "arrow.uturn.backward.circle")
+                }
+                .accessibilityHint("Resets this lesson so it shows up again in the next-to-review queue.")
+            } else {
+                Button {
+                    onMarkReviewed()
+                    markedSignature &+= 1
+                    dismiss()
+                } label: {
+                    Label("Mark reviewed", systemImage: "checkmark.seal")
+                }
+                .accessibilityHint("Saves this lesson as reviewed. NomadFi does not file on your behalf — this is a review flag only.")
+            }
+        } header: {
+            Text("Your review")
+        } footer: {
+            Text("Reviewed means you read the education content. It does not mean a tax return is done and it does not make the underlying expense deductible.")
+                .font(TypographyTokens.caption)
         }
     }
 

@@ -20,6 +20,8 @@ struct TaxVaultView: View {
     @Query(sort: \TaxDocument.documentDate, order: .reverse) private var documents: [TaxDocument]
     @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+    @Query(sort: \TaxEducationProgressRecord.lastInteractedAt, order: .reverse)
+    private var progressRecords: [TaxEducationProgressRecord]
     @State private var viewModel = TaxVaultViewModel()
     @State private var suggestionReview = TaxSuggestionReviewViewModel()
     @State private var education = TaxEducationViewModel()
@@ -67,7 +69,24 @@ struct TaxVaultView: View {
             )
         }
         .sheet(item: $education.selection) { lesson in
-            TaxEducationLessonDetailView(lesson: lesson)
+            TaxEducationLessonDetailView(
+                lesson: lesson,
+                isReviewed: education.isLessonReviewed(lesson, in: progressRecords),
+                onMarkReviewed: {
+                    education.markLessonReviewed(
+                        lesson,
+                        in: modelContext,
+                        records: progressRecords
+                    )
+                },
+                onUnmarkReviewed: {
+                    education.unmarkLessonReviewed(
+                        lesson,
+                        in: modelContext,
+                        records: progressRecords
+                    )
+                }
+            )
         }
         .overlay {
             if viewModel.isScanning {
@@ -112,7 +131,32 @@ struct TaxVaultView: View {
             if education.hasContent {
                 TaxEducationSection(
                     bundles: education.regionBundles,
-                    onSelect: { education.select($0) }
+                    progressRecords: progressRecords,
+                    summary: { bundle in
+                        education.summary(for: bundle, in: progressRecords)
+                    },
+                    nextStep: { bundle in
+                        education.nextStep(for: bundle, in: progressRecords)
+                    },
+                    isLessonReviewed: { lesson in
+                        education.isLessonReviewed(lesson, in: progressRecords)
+                    },
+                    isChecklistItemCompleted: { item, region in
+                        education.isChecklistItemCompleted(
+                            item,
+                            region: region,
+                            in: progressRecords
+                        )
+                    },
+                    onSelectLesson: { education.select($0) },
+                    onToggleChecklistItem: { item, region in
+                        education.toggleChecklistItem(
+                            item,
+                            region: region,
+                            in: modelContext,
+                            records: progressRecords
+                        )
+                    }
                 )
             }
 
@@ -331,5 +375,13 @@ struct ScanReceiptTip: Tip {
     NavigationStack {
         TaxVaultView()
     }
-    .modelContainer(for: [TaxDocument.self, JurisdictionProfile.self], inMemory: true)
+    .modelContainer(
+        for: [
+            TaxDocument.self,
+            JurisdictionProfile.self,
+            Transaction.self,
+            TaxEducationProgressRecord.self,
+        ],
+        inMemory: true
+    )
 }

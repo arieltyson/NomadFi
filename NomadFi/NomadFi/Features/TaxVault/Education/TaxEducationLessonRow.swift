@@ -2,8 +2,9 @@
 // NomadFi
 //
 // Compact row renderer for a single lesson inside the Tax Vault
-// education section. Read-only and calm — tapping opens the full
-// detail sheet via the parent view-model.
+// education section. Shows completion state at a glance: a review
+// chevron when the user hasn't marked it reviewed yet, a filled
+// seal when they have. Tapping opens the full detail sheet.
 
 import SwiftUI
 
@@ -11,18 +12,32 @@ struct TaxEducationLessonRow: View {
 
     let lesson: TaxEducationLesson
 
+    /// `true` when the user has explicitly marked the lesson
+    /// reviewed. Derived from persisted progress records upstream.
+    let isReviewed: Bool
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
-            Image(systemName: "book.closed")
-                .foregroundStyle(ColorTokens.brandPrimary)
+            Image(systemName: isReviewed ? "checkmark.seal.fill" : "book.closed")
+                .foregroundStyle(isReviewed ? ColorTokens.positive : ColorTokens.brandPrimary)
                 .frame(width: 22, alignment: .center)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text(lesson.title)
-                    .font(TypographyTokens.body)
-                    .bold()
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
+                    Text(lesson.title)
+                        .font(TypographyTokens.body)
+                        .bold()
+                        .fixedSize(horizontal: false, vertical: true)
+                    if isReviewed {
+                        StatusBadge(
+                            label: "Reviewed",
+                            color: ColorTokens.positive,
+                            systemImage: "checkmark"
+                        )
+                        .accessibilityLabel("Marked reviewed.")
+                    }
+                }
                 Text(lesson.whatItIs)
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
@@ -39,6 +54,11 @@ struct TaxEducationLessonRow: View {
         }
         .padding(.vertical, SpacingTokens.xxSmall)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(lesson.region.displayName) lesson. \(lesson.title). Education only.")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let reviewPrefix = isReviewed ? "Reviewed." : "Next to review."
+        return "\(reviewPrefix) \(lesson.region.displayName) lesson. \(lesson.title). Education only."
     }
 }

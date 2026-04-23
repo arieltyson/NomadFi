@@ -50,6 +50,7 @@ enum SwiftDataTestContainerFactory {
         ScenarioDecisionRecord.self,
         DecisionDraftRecord.self,
         PurchaseDecisionRecord.self,
+        TaxEducationProgressRecord.self,
     ]
 
     /// Builds an in-memory `ModelContainer` with the full app schema.

@@ -272,21 +272,27 @@ points at the test file that pins the behaviour.
 ### Tax and investing education
 
 - [~] Tax Vault — document storage, receipt capture, tax-category
-  suggestion review queue (Phase 7 entry), and a jurisdiction-aware
-  **education starter** (Phase 7A). Full gamified path still `[ ]`.
-- [~] Region-specific tax education (Phase 7A) — locally-authored,
-  source-backed starter covering United States (3 lessons + 1
-  checklist), Canada (3 lessons + 1 checklist), and Trinidad and
-  Tobago (2 lessons + 1 checklist). Every lesson cites at least one
-  official source from `docs/README.md` (IRS / CRA / BIR / Ministry
-  of Finance / FIUTT). Surfaced inside `TaxVaultView` as the
-  **Learn for your jurisdictions** section, driven by
-  `JurisdictionProfile` with home-first ordering. _Evidence:
+  suggestion review queue (Phase 7 entry), a jurisdiction-aware
+  **education starter** (Phase 7A), and persisted user progress on
+  lessons and checklist items (Phase 7B). Full gamified path
+  (quizzes, badges, streaks, deeper investment-account lessons)
+  still `[ ]`.
+- [~] Region-specific tax education (Phase 7A + 7B) —
+  locally-authored, source-backed starter covering United States
+  (3 lessons + 1 checklist), Canada (3 lessons + 1 checklist), and
+  Trinidad and Tobago (2 lessons + 1 checklist). Every lesson
+  cites at least one official source from `docs/README.md` (IRS /
+  CRA / BIR / Ministry of Finance / FIUTT). Surfaced inside
+  `TaxVaultView` as the **Learn for your jurisdictions** section,
+  driven by `JurisdictionProfile` with home-first ordering. Phase
+  7B adds explicit **Mark reviewed** and checklist-toggle actions
+  plus a **Next to review** pointer, all backed by a CloudKit-safe
+  `TaxEducationProgressRecord` `@Model`. _Evidence:
   `TaxEducationCatalogTests.swift`,
-  `TaxEducationSelectorTests.swift`._
-- [ ] Full gamified tax education path (progression, region-specific
-  checklists beyond the starter, CRA / IRS / T&T source-backed
-  deep dives, region-aware quizzes).
+  `TaxEducationSelectorTests.swift`,
+  `TaxEducationProgressServiceTests.swift`._
+- [ ] Full gamified tax education path (region-aware quizzes,
+  badges, streaks, deeper investment-account deep dives).
 - [ ] Investing education + index-fund tracking.
 
 ### Apple capability tracks
@@ -824,9 +830,11 @@ Credit scoring and issuer risk models are proprietary.
 ## Phase 7 — Tax Efficiency Education
 
 **Status:** `[~]` Partially shipped. Phase 7 entry (tax-category suggestion
-bridge) and Phase 7A (education starter with source-backed lessons and
-region-aware checklists) are both live. The full gamified path — progression,
-badges, region-aware quizzes, and deeper investment-account lessons — is still
+bridge), Phase 7A (education starter with source-backed lessons and
+region-aware checklists), and Phase 7B (persisted user progress with
+explicit "Mark reviewed" / checklist-toggle actions and a "Next to review"
+pointer) are all live. The full gamified path — region-aware quizzes,
+badges, streaks, and deeper investment-account lessons — is still
 outstanding.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
@@ -865,15 +873,32 @@ tax advice.
   `TaxEducationSelector` honours home jurisdiction first, de-duplicates
   repeated codes, and silently skips regions the catalogue does not yet
   cover. Surfaced inside `TaxVaultView` as the **Learn for your
-  jurisdictions** section; lesson detail opens in a read-only sheet with
+  jurisdictions** section; lesson detail opens in a sheet with
   external-source links. _Evidence: `TaxEducationCatalogTests.swift`,
   `TaxEducationSelectorTests.swift`._
+- `[x]` **Education progression** (Phase 7B) — persisted, CloudKit-safe
+  `TaxEducationProgressRecord` `@Model` (all fields optional /
+  defaulted, no `@Attribute(.unique)`, no relationships) tracks
+  lesson-reviewed state and checklist-item completion explicitly.
+  Pure `TaxEducationProgressService` exposes status lookup, per-region
+  summaries, deterministic next-step selection (first uncompleted
+  checklist item → first uncompleted lesson → nil), and explicit
+  `markLessonReviewed` / `unmarkLessonReviewed` / `toggleChecklistItem`
+  writes. Registered in `NomadFiApp.modelContainer`,
+  `SwiftDataTestContainerFactory.fullAppSchema`, and
+  `DataGovernancePolicy.deleteAllUserData`. UI surfaces: per-region
+  "X of Y steps reviewed" chip, a calm "Next to review" card inside
+  each region block, interactive checklist checkboxes, lesson-row
+  "Reviewed" badges, and an explicit Mark / Unmark action in the
+  lesson detail sheet. No quizzes, no badges, no streaks, no
+  auto-complete on lesson open. _Evidence:
+  `TaxEducationProgressServiceTests.swift`._
 
 ### Still to build
 
-- Full gamified learning path (progression, region-aware quizzes, badges).
-  Starter content for all three regions ships in Phase 7A; the gamified
-  surface layers onto it without new source coverage.
+- Region-aware quizzes that re-use the same source-backed catalogue.
+- Progression badges / streaks layered onto the existing
+  `TaxEducationProgressRecord`.
 - Deeper investment-account lessons (IRA for the U.S., TFSA/RRSP for Canada
   beyond the high-level starter).
 - Receipt and document organization prompts tied to the education
@@ -1071,8 +1096,12 @@ re-debating whether the foundation exists.
     source-backed education starter (`Core/Services/TaxEducation/`,
     `Features/TaxVault/Education/`) with checklists + lessons for
     United States / Canada / Trinidad and Tobago, driven by the
-    user's active jurisdictions (home first). Full gamified path,
-    quizzes, and badges are the remaining work.
+    user's active jurisdictions (home first). 7B: persisted user
+    progress — `TaxEducationProgressRecord` `@Model` plus a pure
+    `TaxEducationProgressService` powering explicit Mark-reviewed
+    / checklist-toggle actions, per-region "X of Y steps reviewed"
+    chips, and a deterministic Next-to-review pointer. Quizzes,
+    badges, and streaks are the remaining gamified-path work.
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
@@ -1084,24 +1113,32 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete, Phase 7A has shipped, and the Phase 4
+**Phase 6 is complete, Phase 7A + 7B have shipped, and the Phase 4
 stretch (spend anomaly detection) is live.** Tax Vault now carries
-three Phase 7 surfaces side by side: the tax-category **suggestion
-review queue**, a jurisdiction-aware **education starter** (U.S. /
-Canada / Trinidad and Tobago, every lesson source-backed and calm),
-and the existing **receipts + documents archive**. The Dashboard's
-`InsightEngine` continues to emit deterministic anomaly cards.
+four Phase 7 surfaces side by side: the **suggestion review
+queue**, the **education starter** (U.S. / Canada / Trinidad and
+Tobago, every lesson source-backed and calm), persisted
+**education progression** (Mark reviewed / checklist toggles /
+per-region summaries / Next to review), and the existing
+**receipts + documents archive**. Progress survives relaunches via
+the CloudKit-safe `TaxEducationProgressRecord` model. The
+Dashboard's `InsightEngine` continues to emit deterministic anomaly
+cards.
 
 Highest-leverage remaining work:
 
-- **Full gamified Phase 7 path** — progression, region-aware
-  quizzes, badges, and deeper investment-account lessons (IRA for
-  the U.S., TFSA / RRSP for Canada beyond the high-level starter).
-  Starter content for all three regions is already in place, so
-  the gamified surface layers onto it without new source coverage.
+- **Region-aware quizzes** — smallest next compounding pick. The
+  source-backed lesson catalogue is the reference; the quiz surface
+  layers onto the already-persisted progress model without new
+  source coverage.
+- **Progression badges / streaks** — optional add-on to the same
+  `TaxEducationProgressRecord` model; treat it as a quiz-path
+  follow-up rather than an independent slice.
+- **Deeper investment-account lessons** — IRA for the U.S.,
+  TFSA / RRSP deep dives beyond the current high-level starter.
 - **Phase 8 investing education + index-fund tracking**.
-- **Phase 5 FinanceKit adapter** — gated on entitlement access and
-  institution coverage; still behind the two continuations above.
+- **Phase 5 FinanceKit adapter** — still gated on entitlement
+  access and institution coverage.
 
 ---
 
