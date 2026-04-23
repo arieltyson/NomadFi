@@ -53,6 +53,24 @@ struct AdvancedToolsSettingsView: View {
                 .accessibilityHint("Opens the manual transaction ledger.")
 
                 NavigationLink {
+                    TransactionImportView()
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                            Text("Transaction Import")
+                                .font(TypographyTokens.body)
+                            Text("Parse and preview a CSV statement locally before writing anything.")
+                                .font(TypographyTokens.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "tablecells.badge.ellipsis")
+                            .foregroundStyle(ColorTokens.brandPrimary)
+                    }
+                }
+                .accessibilityHint("Opens the CSV import preview flow. No data leaves this device.")
+
+                NavigationLink {
                     TaxVaultView()
                 } label: {
                     Label {

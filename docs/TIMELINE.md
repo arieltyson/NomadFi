@@ -193,13 +193,36 @@ points at the test file that pins the behaviour.
   needs it.
 - [~] Receipt scanning — `ReceiptScannerService`, `ReceiptCategorizer`,
   `TaxVault` flows exist; still kept in Advanced Tools.
-- [ ] CSV import for bank/card exports.
-- [ ] Merchant normalisation.
-- [ ] Merchant categorisation ML.
+- [x] CSV import for bank/card exports — deterministic two-phase
+  (parse → commit) pipeline in `Core/Services/Import/`
+  (`CSVRowParser`, `CSVImportProfile`, `TransactionImportProfile`,
+  `TransactionImportService`) with header-driven profile detection for
+  Chase-like, CIBC-like, Amex-Canada-like, Wise-like, and generic
+  shapes. Preview UI at Settings → Advanced Tools →
+  **Transaction Import**. Fully on-device; no file leaves the
+  sandbox. _Evidence: `CSVRowParserTests.swift`,
+  `CSVImportProfileDetectionTests.swift`,
+  `TransactionImportServiceTests.swift`._
+- [x] Merchant normalisation — `MerchantNormalizer` strips processor
+  prefixes (`SQ *`, `TST*`, `PAYPAL *`, `AMZN*`, etc.), trailing store
+  numbers, short-date suffixes, and CITY-ST-ZIP blocks. Persisted on
+  `Transaction.normalizedMerchantName` for clustering. _Evidence:
+  `MerchantNormalizerTests.swift`._
+- [x] Transaction deduplication across sources — `TransactionImportDeduper`
+  matches on external transaction ID (strongest) or a four-part
+  `merchant|amount|date|currency` fingerprint within a configurable
+  day window. Legacy rows without the new schema fields still match
+  via fingerprint synthesis. _Evidence:
+  `TransactionImportDeduperTests.swift`._
+- [ ] Merchant categorisation ML (tiny deterministic keyword map
+  ships in `MerchantCategoryInferrer`; ML pass still `[ ]`).
 - [ ] Recurring charge detection across the portfolio (Subscriptions
   detection exists as a separate flow — `SubscriptionDetector` — for
-  that specific domain).
+  that specific domain). Generalisation to a broader
+  `RecurringChargeDetector` is the next Phase 4 slice.
 - [ ] Spend anomaly detection.
+- [ ] Spending-trend Dashboard card driven from imported
+  transactions.
 
 ### Tax and investing education
 
@@ -498,9 +521,10 @@ auditable, testable, and safer for financial decisions.
 
 ## Phase 4 — Transaction Capture Without Wallet Dependency
 
-**Status:** `[~]` Partially shipped. Manual transaction entry and receipt
-scanning exist as optional tools in Advanced Tools; CSV import, merchant
-normalisation, and categorisation ML are not implemented.
+**Status:** `[~]` Partially shipped. Manual entry, receipt scanning, CSV
+import, merchant normalisation, and deterministic dedupe are all live.
+Recurring-charge generalisation, spending-trend surface, and
+categorisation ML are still out.
 
 **Goal:** Improve spending intelligence before FinanceKit is available.
 
@@ -511,15 +535,34 @@ normalisation, and categorisation ML are not implemented.
   `ReceiptCategorizer`, Tax Vault flows).
 - `[x]` Subscription detection (`SubscriptionDetector`, separate flow
   scoped to subscriptions).
+- `[x]` CSV import pipeline (`Core/Services/Import/`): pure
+  `CSVRowParser` (RFC 4180 style, CRLF/LF/BOM safe), header-driven
+  profile detection (`TransactionImportProfile` catalog for
+  Chase-like, CIBC-like, Amex-Canada-like, Wise-like, generic), a
+  two-phase `TransactionImportService.parse(...) → commit(...)` so
+  the user reviews counts before anything is written, and a
+  dedicated `TransactionImportView` reached from Settings →
+  Advanced Tools → **Transaction Import**.
+- `[x]` Merchant normalisation (`MerchantNormalizer`) — deterministic
+  processor-prefix / store-number / short-date / city-state-zip
+  stripping. Normalised form persisted on
+  `Transaction.normalizedMerchantName`, separate from the original
+  `merchantName` the UI shows.
+- `[x]` Deterministic dedupe (`TransactionImportDeduper`) —
+  external-transaction-ID match (strongest) or a `merchant|amount|
+  date|currency` fingerprint match within a configurable day window.
+  New Transaction fields (`externalTransactionID`, `importSource`,
+  `importedAt`, `importFingerprint`, `normalizedMerchantName`) are
+  all optional / defaulted so the schema stays CloudKit-safe.
 
 ### Still to build
 
-- `[ ]` CSV import for bank/card exports.
-- `[ ]` Merchant normalisation.
-- `[ ]` Transaction deduplication across sources.
-- `[ ]` Recurring-charge detection beyond the Subscriptions flow.
-- `[ ]` Spending trend summaries.
+- `[ ]` Recurring-charge detection beyond the Subscriptions flow
+  (generalise `SubscriptionDetector` → `RecurringChargeDetector`).
+- `[ ]` Spending trend summaries on the Dashboard.
 - `[ ]` Tax-category suggestions with confidence labels.
+- `[ ]` On-device merchant-category ML (a tiny deterministic keyword
+  map ships today in `MerchantCategoryInferrer`).
 
 ### Optional later
 
@@ -800,10 +843,11 @@ re-debating whether the foundation exists.
     (`RewardProfile`, `RewardRateEvaluation`, `RewardUnit`,
     `CreditCardRewardsEditView`) — rewards now enter the ranking
     only when verified + fresh + unit-comparable.
-12. `[ ]` **Next:** Transaction capture fan-out (Phase 4): CSV import,
-    merchant normalisation, recurring-charge detection beyond
-    Subscriptions. Highest-leverage remaining gap — spend data is
-    the next deterministic signal after account + rewards profile.
+12. `[~]` Transaction capture fan-out (Phase 4): CSV import, merchant
+    normalisation, and deterministic dedupe shipped
+    (`Core/Services/Import/` + `TransactionImportView`). The Phase 4
+    remainder — generalised recurring-charge detection and a
+    Dashboard spending-trend card — is still `[ ]`.
 13. `[ ]` Cross-card payment-allocation planning and credit-limit-increase
     readiness checklist (completes Phase 6).
 14. `[ ]` Region-specific tax education path (Phase 7).
@@ -818,57 +862,55 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Target:** Phase 4 — **Transaction capture fan-out**. With rewards
-now enterable as a verified source on `Account`, the next
-deterministic signal the engine lacks is actual spending history.
-Shipping real CSV import + merchant normalisation + recurring-charge
-detection (beyond the existing Subscriptions flow) would unblock:
+**Target:** Finish Phase 4 — **generalised recurring-charge
+detection + spending-trend surface**. The CSV import + merchant
+normalisation + deterministic dedupe slice is live
+(`Core/Services/Import/`, `TransactionImportView`). The remaining
+gaps are:
 
-- Statement-balance projection from saved transactions rather than
-  user-entered snapshots alone.
-- Category-specific spend trends to surface **where rewards have
-  actually been earning the most** — instead of asking the user to
-  verify category bonuses in the abstract.
-- Honest anomaly / duplicate detection, which today is not wired.
+- Generalise `SubscriptionDetector` into a
+  `RecurringChargeDetector` that runs against *any* account's
+  `Transaction` stream, not only the Subscriptions flow. The
+  Subscriptions surface stays the primary UI for subscription-style
+  recurring charges; the broader detector becomes the input for
+  upcoming engine improvements (e.g. statement-balance projection,
+  budget-trend hints).
+- A read-only **Dashboard spending-trend card** (category × month
+  grid) driven from imported `Transaction` data, so users can see
+  where spend is actually concentrating now that CSV import can
+  populate real history.
 
-**Why this over the alternatives:**
+**Why this order:**
 
-- Credit Timing and Purchase Decision engines both benefit from a
-  richer balance / spend picture. Neither needs new rules; they
-  only need better inputs.
-- Cross-card payment allocation (Phase 6 remainder) depends on
-  per-card spend by category, which transaction capture provides.
-- It keeps the "no generic AI" invariant intact — transaction
-  capture is deterministic parsing, not recommendation synthesis.
-- The `Transaction` SwiftData model, `ReceiptScannerService`,
-  `ReceiptCategorizer`, and `SubscriptionDetector` already exist as
-  seeds. Phase 4 is mostly integration work — CSV import adapter,
-  merchant-name normalisation, recurring-detection widened from
-  subscriptions to general recurring charges, and a spending-trend
-  surface on the Dashboard.
+- The hard deterministic plumbing (parse / normalise / dedupe)
+  already landed, so the remaining work is analysis + a single UI
+  surface, not new parsers.
+- Credit Timing and Purchase Decision engines both benefit from
+  richer spend signal; neither needs new rules, only better inputs.
+- It keeps the "no generic AI" invariant intact — recurring-charge
+  detection is a deterministic period/amount/merchant clustering
+  pass, not model inference.
 
-**Scoping suggestion for a first slice:**
+**Scoping suggestion for the remaining Phase 4 slice:**
 
-1. Define a pure `CSVImportProfile` value type keyed to the common
-   bank/issuer exports (Chase, CIBC, American Express Canada,
-   Wise). Pure parsing only; no UI coupling.
-2. Add a `TransactionImportService` (pure, testable) that ingests a
-   CSV, normalises merchant names via a small dictionary, dedupes
-   against existing rows, and returns a preview the user confirms.
-3. Generalise `SubscriptionDetector` into a
-   `RecurringChargeDetector` that works on any account's
-   transaction stream — the existing subscriptions flow stays the
-   primary surface for those, but the engine now sees all recurring
-   charges.
-4. Add a spending-trend Card on the Dashboard (category × month
-   grid) driven from `Transaction` data. Keep it read-only.
+1. Lift the period-detection logic out of `SubscriptionDetector`
+   into a shared `RecurringChargeDetector` that takes any
+   `[Transaction]`, returns structured `RecurringChargeCandidate`
+   values (period, confidence, representative merchant), and leaves
+   the Subscriptions flow as a thin adapter on top.
+2. Add a `SpendingTrendSummary` value type + a `Dashboard`
+   section that bins transactions by category and month. Read-only;
+   no edit affordances.
+3. Pin both with test suites mirroring the import slice — pure
+   domain tests for the detector, and a small `@Suite(.serialized)`
+   SwiftData test if any container work is needed.
 
 Tests mirror the shape of `PurchaseDecisionEngineTests` and
 `CreditTimingDecisionEngineTests`: pin every claim, pin every
-refusal, pin absolute-date phrasing, and pin the prohibited
-vocabulary. No spoken-copy generation in Phase 4 — voice parity is
-already shipped for engines; new data goes through the in-app
-surfaces first, voice follows later only if needed.
+refusal, pin absolute-date phrasing, pin the prohibited vocabulary.
+No spoken-copy generation in Phase 4 — voice parity is already
+shipped for engines; new data goes through the in-app surfaces
+first, voice follows later only if needed.
 
 ---
 

@@ -40,6 +40,24 @@ final class Transaction {
     var midMarketRateSourceAccessedAt: Date? = nil
     var midMarketRateSourceNotes: String? = nil
 
+    // Import provenance. All optional + defaulted so existing rows
+    // migrate forward without touching the CloudKit schema contract.
+    // The engine and UI treat an absent import source as "manually
+    // entered" — identical to historical behaviour.
+    //
+    // `normalizedMerchantName` is a deterministic projection of
+    // `merchantName` used only for dedupe + subscription matching;
+    // the UI always renders the original `merchantName`.
+    //
+    // `importFingerprint` is the deterministic hash the deduper
+    // compares against when detecting same-merchant / same-amount /
+    // same-date rows without an external ID.
+    var normalizedMerchantName: String? = nil
+    var importSourceRawValue: String? = nil
+    var externalTransactionID: String? = nil
+    var importedAt: Date? = nil
+    var importFingerprint: String? = nil
+
     var account: Account?
 
     @Relationship(deleteRule: .cascade, inverse: \TaxDocument.transaction)
@@ -55,6 +73,18 @@ final class Transaction {
 
     var category: TransactionCategory? {
         TransactionCategory(rawValue: categoryRawValue)
+    }
+
+    /// Typed projection of ``importSourceRawValue``. Missing /
+    /// unknown raw values fall back to ``TransactionImportSource/manualEntry``
+    /// so the app never has to branch on `nil` in the display path.
+    var importSource: TransactionImportSource {
+        guard let raw = importSourceRawValue,
+              let parsed = TransactionImportSource(rawValue: raw)
+        else {
+            return .manualEntry
+        }
+        return parsed
     }
 
     var fxMarkup: Double {
@@ -108,6 +138,11 @@ final class Transaction {
         createdAt: Date = .now,
         appliedRateProvenance: SourceProvenance? = nil,
         midMarketRateProvenance: SourceProvenance? = nil,
+        normalizedMerchantName: String? = nil,
+        importSource: TransactionImportSource? = nil,
+        externalTransactionID: String? = nil,
+        importedAt: Date? = nil,
+        importFingerprint: String? = nil,
         account: Account? = nil,
         taxDocument: TaxDocument? = nil
     ) {
@@ -125,6 +160,11 @@ final class Transaction {
         self.isTaxDeductible = isTaxDeductible
         self.isFinanceKitImported = isFinanceKitImported
         self.createdAt = createdAt
+        self.normalizedMerchantName = normalizedMerchantName
+        self.importSourceRawValue = importSource?.rawValue
+        self.externalTransactionID = externalTransactionID
+        self.importedAt = importedAt
+        self.importFingerprint = importFingerprint
         self.account = account
         self.taxDocument = taxDocument
 
