@@ -223,6 +223,7 @@
       }
     },
     "%lld%% or more passes. Revisit the lesson above and retake any time." : {
+
     },
     "•" : {
 
@@ -310,6 +311,7 @@
 
     },
     "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed lessons for supported regions." : {
+
     },
     "Add a source name or URL before marking as verified." : {
 
@@ -333,6 +335,7 @@
 
     },
     "Add to Tax Vault" : {
+
     },
     "Add Transaction" : {
 
@@ -549,6 +552,7 @@
 
     },
     "Choose photo" : {
+
     },
     "City or context" : {
 
@@ -584,6 +588,7 @@
 
     },
     "Clears your answers so you can review and try again." : {
+
     },
     "Close" : {
 
@@ -876,6 +881,7 @@
 
     },
     "Education only — this review does not mean a tax return is done." : {
+
     },
     "Education only. Not a substitute for a qualified professional. NomadFi does not file on your behalf." : {
 
@@ -1071,6 +1077,8 @@
     "Import complete" : {
 
     },
+    "Import file" : {
+    },
     "Imported" : {
 
     },
@@ -1105,6 +1113,7 @@
 
     },
     "Knowledge check" : {
+
     },
     "Last %lld %@ • %@" : {
       "localizations" : {
@@ -1286,6 +1295,7 @@
 
     },
     "Needs more review" : {
+
     },
     "Needs review" : {
 
@@ -1324,11 +1334,13 @@
 
     },
     "No documents yet" : {
+
     },
     "No drafts captured yet" : {
 
     },
     "No jurisdictions on file" : {
+
     },
     "No new rows to import — choose a different file." : {
 
@@ -1346,6 +1358,7 @@
 
     },
     "No suggestions to review" : {
+
     },
     "No text was extracted from this receipt." : {
 
@@ -1396,8 +1409,10 @@
 
     },
     "NomadFi reads the image on device. Nothing uploads." : {
+
     },
     "NomadFi reads your receipts on device, suggests a category, and waits for you to confirm." : {
+
     },
     "NomadFi stored this draft on-device only. A deterministic engine for this kind of decision hasn't shipped yet — until one does, NomadFi will not generate a recommendation from this capture." : {
 
@@ -1424,6 +1439,7 @@
 
     },
     "NomadFi will surface tax-relevant transactions here when it sees them. Imports and manual entries both feed this queue." : {
+
     },
     "NomadFi works without manually tracking every transaction. These tools stay here for users who want them." : {
 
@@ -1555,6 +1571,7 @@
 
     },
     "Opens your photo library so NomadFi can scan a receipt on device." : {
+
     },
     "Optional — urgency note in your own words (\"before the trip\")." : {
 
@@ -1644,11 +1661,12 @@
 
     },
     "Pick a photo of your receipt. NomadFi reads it on device, suggests a category, and waits for you to confirm." : {
-    },
-    "Pick an account first." : {
 
     },
+    "Pick an account above to enable file selection." : {
+    },
     "Pick an option for every question to enable Submit." : {
+
     },
     "Plan lines cover more than one currency. NomadFi does not convert between currencies without a verified rate, so totals are reported per currency." : {
 
@@ -1715,6 +1733,7 @@
       }
     },
     "Questions" : {
+
     },
     "Quickly log a transaction with an amount and category." : {
 
@@ -1747,8 +1766,10 @@
 
     },
     "Recognition" : {
+
     },
     "Recognition. %lld current badges." : {
+
     },
     "Recommend a Card" : {
 
@@ -1808,6 +1829,7 @@
 
     },
     "Retake" : {
+
     },
     "Retry" : {
 
@@ -1834,6 +1856,7 @@
 
     },
     "Reviewed" : {
+
     },
     "Reviewed means you read the education content. It does not mean a tax return is done and it does not make the underlying expense deductible." : {
 
@@ -1914,8 +1937,10 @@
 
     },
     "Scan a receipt" : {
+
     },
     "Scan a receipt from Review to add your first document. Documents appear here grouped by tax year and jurisdiction." : {
+
     },
     "Scan Error" : {
 
@@ -1924,6 +1949,7 @@
 
     },
     "Scan receipts for tax season" : {
+
     },
     "Scanned" : {
 
@@ -1951,6 +1977,7 @@
 
     },
     "Scores your answers and saves the attempt. NomadFi does not file anything on your behalf." : {
+
     },
     "Search receipts" : {
 
@@ -2046,6 +2073,7 @@
 
     },
     "Submit answers" : {
+
     },
     "Subscription Arbitrage" : {
 
@@ -2099,6 +2127,7 @@
 
     },
     "Tax Vault mode" : {
+
     },
     "Tax Year" : {
 
@@ -2435,6 +2464,7 @@
       }
     },
     "Your result" : {
+
     },
     "Your review" : {
 

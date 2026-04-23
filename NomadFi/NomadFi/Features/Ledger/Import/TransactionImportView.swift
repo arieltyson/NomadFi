@@ -19,10 +19,14 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// Top-level view for the CSV transaction import flow.
+///
+/// Pushed into Settings' ambient `NavigationStack` from
+/// `AdvancedToolsSettingsView`, so the system back chevron handles
+/// dismissal — no nested stack, no redundant "Close" toolbar
+/// button.
 struct TransactionImportView: View {
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
 
     @Query(sort: \Account.name) private var accounts: [Account]
     @Query private var allTransactions: [Transaction]
@@ -31,32 +35,25 @@ struct TransactionImportView: View {
     @State private var isShowingFilePicker = false
 
     var body: some View {
-        NavigationStack {
-            Form {
-                introSection
-                accountSection
+        Form {
+            introSection
+            accountSection
 
-                switch viewModel.phase {
-                case .selectingFile:
-                    chooseFileSection
-                case .parsing:
-                    parsingSection
-                case .preview(let snapshot):
-                    previewSections(for: snapshot)
-                case .committed(let result):
-                    commitResultSection(result)
-                case .error(let message):
-                    errorSection(message: message)
-                }
-            }
-            .navigationTitle("Transaction Import")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                }
+            switch viewModel.phase {
+            case .selectingFile:
+                chooseFileSection
+            case .parsing:
+                parsingSection
+            case .preview(let snapshot):
+                previewSections(for: snapshot)
+            case .committed(let result):
+                commitResultSection(result)
+            case .error(let message):
+                errorSection(message: message)
             }
         }
+        .navigationTitle("Transaction Import")
+        .navigationBarTitleDisplayMode(.inline)
         .fileImporter(
             isPresented: $isShowingFilePicker,
             allowedContentTypes: [
@@ -131,19 +128,56 @@ private extension TransactionImportView {
     }
 
     var chooseFileSection: some View {
-        Section {
-            Button("Choose CSV File…", systemImage: "doc.badge.plus") {
-                isShowingFilePicker = true
+        let isAccountMissing = viewModel.selectedAccount == nil
+
+        return Section {
+            if isAccountMissing {
+                prerequisiteHint
             }
-            .disabled(viewModel.selectedAccount == nil)
+
+            Button {
+                isShowingFilePicker = true
+            } label: {
+                // Pin the label style so the glyph always renders
+                // across container / control-state combinations —
+                // same fix pattern used on the Tax Vault scan CTA.
+                Label {
+                    Text("Choose CSV File…")
+                } icon: {
+                    Image(systemName: "doc.badge.plus")
+                }
+                .labelStyle(.titleAndIcon)
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(isAccountMissing)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
             .accessibilityHint(
-                viewModel.selectedAccount == nil
-                    ? "Pick an account first."
+                isAccountMissing
+                    ? "Pick an account above to enable file selection."
                     : "Opens the file picker. Parsing happens on this device only."
             )
+        } header: {
+            Text("Import file")
         } footer: {
             Text("Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration.")
         }
+    }
+
+    private var prerequisiteHint: some View {
+        Label {
+            Text("Pick an account above to enable file selection.")
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "arrow.up.circle")
+                .foregroundStyle(ColorTokens.warning)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     var parsingSection: some View {
