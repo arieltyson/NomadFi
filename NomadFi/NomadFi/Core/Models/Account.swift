@@ -35,6 +35,24 @@ final class Account {
     var paymentDueDate: Date? = nil
     var statementScheduleLastConfirmedAt: Date? = nil
 
+    // Durable provider link fields. Phase 5B: replace the narrow
+    // `isFinanceKitLinked` bool as the main identity signal with a
+    // provider-neutral stamp. All optional + defaulted so existing
+    // rows migrate forward without touching the CloudKit schema
+    // contract. A row is considered "linked" when both
+    // `providerLinkKindRawValue` and `providerExternalAccountID` are
+    // set — the reconciler uses that pair as the durable match key.
+    //
+    // The raw value stores a ``FinancialDataProviderKind``'s
+    // `logKey` (e.g. `"finance_kit"`, `"external_aggregator.acme"`)
+    // rather than the associated-value enum directly, so the schema
+    // stays schema-stable across candidate aggregator identifiers.
+    var providerLinkKindRawValue: String? = nil
+    var providerExternalAccountID: String? = nil
+    var providerConnectionID: String? = nil
+    var providerInstitutionIdentifier: String? = nil
+    var providerLastSyncedAt: Date? = nil
+
     // Live financial snapshot fields. Every value is optional because a
     // snapshot is a point-in-time read of the issuer's app — absent
     // means "the user has not told NomadFi yet", never zero. Stored as
@@ -148,6 +166,11 @@ final class Account {
         statementBalance: Double? = nil,
         financialSnapshotUpdatedAt: Date? = nil,
         financialSnapshotSource: FinancialSnapshotSource? = nil,
+        providerLinkKindRawValue: String? = nil,
+        providerExternalAccountID: String? = nil,
+        providerConnectionID: String? = nil,
+        providerInstitutionIdentifier: String? = nil,
+        providerLastSyncedAt: Date? = nil,
         rewardProgramName: String? = nil,
         rewardUnit: RewardUnit? = nil,
         baseRewardRate: Double? = nil,
@@ -186,6 +209,11 @@ final class Account {
         self.statementBalance = statementBalance
         self.financialSnapshotUpdatedAt = financialSnapshotUpdatedAt
         self.financialSnapshotSourceRawValue = financialSnapshotSource?.rawValue
+        self.providerLinkKindRawValue = providerLinkKindRawValue
+        self.providerExternalAccountID = providerExternalAccountID
+        self.providerConnectionID = providerConnectionID
+        self.providerInstitutionIdentifier = providerInstitutionIdentifier
+        self.providerLastSyncedAt = providerLastSyncedAt
         self.rewardProgramName = rewardProgramName
         self.rewardUnitRawValue = rewardUnit?.rawValue
         self.baseRewardRate = baseRewardRate
@@ -209,6 +237,19 @@ extension Account {
     /// Convenience: true iff this account models a credit card.
     var isCreditCard: Bool {
         accountType?.isCreditCard ?? false
+    }
+
+    /// True when this account carries a durable upstream link — both
+    /// a provider kind and an external ID are on file. Used by the
+    /// reconciler to pick a conservative match rather than falling
+    /// back to a heuristic match. `isFinanceKitLinked` is retained
+    /// as a legacy field; this value is the authoritative signal.
+    var hasProviderLink: Bool {
+        let kind = providerLinkKindRawValue?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let externalID = providerExternalAccountID?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !kind.isEmpty && !externalID.isEmpty
     }
 
     /// Source of the latest financial snapshot, defaulting to

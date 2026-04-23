@@ -27,6 +27,8 @@ struct FinancialSetupSettingsView: View {
 
             accountsSection
 
+            connectionsSection
+
             CreditCardCalendarSection(accounts: accounts)
         }
         .navigationTitle("Financial Setup")
@@ -62,6 +64,21 @@ private extension FinancialSetupSettingsView {
             Text("Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed.")
         }
         .accessibilityLabel("Jurisdictions section")
+    }
+
+    var connectionsSection: some View {
+        Section {
+            NavigationLink {
+                FinancialConnectionsSettingsView()
+            } label: {
+                Label("Financial Connections", systemImage: "link.badge.plus")
+            }
+            .accessibilityHint("Opens the Financial Connections page where you can see which data sources are available and run an explicit sync.")
+        } header: {
+            Text("Connections")
+        } footer: {
+            Text("NomadFi supports manual entry, CSV import, and Apple FinanceKit. Third-party aggregators are not enabled in this build.")
+        }
     }
 
     var accountsSection: some View {

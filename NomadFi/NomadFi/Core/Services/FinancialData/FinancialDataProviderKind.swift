@@ -105,4 +105,30 @@ enum FinancialDataProviderKind: Hashable, Sendable {
         case .externalAggregator: .imported
         }
     }
+
+    /// Reconstruct a kind from a persisted `logKey`. Returns `nil`
+    /// when the raw string is empty, unrecognised, or an external
+    /// aggregator key without a trailing identifier we can parse.
+    /// Callers should treat `nil` as "unlinked" rather than retry.
+    static func fromLogKey(_ rawValue: String?) -> FinancialDataProviderKind? {
+        guard let raw = rawValue?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty
+        else {
+            return nil
+        }
+        switch raw {
+        case "manual": return .manual
+        case "csv_import": return .csvImport
+        case "finance_kit": return .financeKit
+        case "external_aggregator": return .externalAggregator(identifier: "")
+        default:
+            let prefix = "external_aggregator."
+            if raw.hasPrefix(prefix) {
+                let identifier = String(raw.dropFirst(prefix.count))
+                return .externalAggregator(identifier: identifier)
+            }
+            return nil
+        }
+    }
 }

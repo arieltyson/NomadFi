@@ -58,6 +58,26 @@ final class Transaction {
     var importedAt: Date? = nil
     var importFingerprint: String? = nil
 
+    // Provider-neutral stamp for rows produced by the Phase 5 provider
+    // architecture. Stores a ``FinancialDataProviderKind``'s `logKey`
+    // (e.g. `"finance_kit"`, `"external_aggregator.acme"`) so the
+    // schema stays stable across aggregator identifiers.
+    //
+    // Kept separate from the existing `importSource` field because
+    // they describe different things: `importSource` labels the CSV
+    // shape (Chase-like / Wise-like / generic / …), while
+    // `providerKindRawValue` labels the upstream provider that
+    // produced the row (manual / csv_import / finance_kit /
+    // external_aggregator.<id>). Manual and CSV paths already have
+    // an honest provenance story via `importSource`; reconciled rows
+    // from FinanceKit / a future aggregator get a kind stamp here.
+    //
+    // `isFinanceKitImported` is retained as a legacy boolean for
+    // compatibility with the earlier single-provider stub. The
+    // reconciler keeps it aligned with `providerKindRawValue` but the
+    // raw kind is authoritative.
+    var providerKindRawValue: String? = nil
+
     // Tax-suggestion review state. All optional + defaulted so the
     // existing CloudKit schema stays intact and rows without a review
     // state read as "never surfaced".
@@ -165,6 +185,7 @@ final class Transaction {
         taxSuggestionStatusRawValue: String? = nil,
         taxSuggestionLastReviewedAt: Date? = nil,
         taxSuggestionCategoryRawValue: String? = nil,
+        providerKindRawValue: String? = nil,
         account: Account? = nil,
         taxDocument: TaxDocument? = nil
     ) {
@@ -190,6 +211,7 @@ final class Transaction {
         self.taxSuggestionStatusRawValue = taxSuggestionStatusRawValue
         self.taxSuggestionLastReviewedAt = taxSuggestionLastReviewedAt
         self.taxSuggestionCategoryRawValue = taxSuggestionCategoryRawValue
+        self.providerKindRawValue = providerKindRawValue
         self.account = account
         self.taxDocument = taxDocument
 

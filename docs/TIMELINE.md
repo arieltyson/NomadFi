@@ -313,7 +313,38 @@ points at the test file that pins the behaviour.
 
 ### Apple capability tracks
 
-- [ ] FinanceKit evaluation + adapter.
+- [~] **FinanceKit evaluation + provider architecture (Phase 5A + 5B).**
+  Phase 5A shipped the provider-neutral architecture under
+  `Core/Services/FinancialData/`: `FinancialDataProvider`,
+  `FinancialDataProviderKind` (manual / csvImport / financeKit /
+  externalAggregator), typed availability / authorization / connection
+  surfaces, provider-neutral `FinancialAccountSnapshot` +
+  `FinancialTransactionSnapshot`, and a `FinancialDataSyncCoordinator`
+  that fans out across every registered provider with graceful
+  degradation. FinanceKit lives in `FinanceKitFinancialDataProvider`
+  with real availability / authorization calls and a typed mapping
+  seam; the external-aggregator placeholder pins the boundary for a
+  later Plaid-vs-Akoya bakeoff without shipping any vendor SDK.
+  Phase 5B wired the architecture into product plumbing:
+  `FinancialDataReconciler` under
+  `Core/Services/FinancialData/Reconciliation/` merges a
+  `FinancialDataSyncReport` into the SwiftData store with pinned
+  rules (durable provider identity wins → narrow fallback → never
+  cross-merge → reuse `TransactionImportDeduper`); `Account` grew
+  CloudKit-safe provider-link fields (`providerLinkKindRawValue`,
+  `providerExternalAccountID`, `providerConnectionID`,
+  `providerInstitutionIdentifier`, `providerLastSyncedAt`);
+  `Transaction` grew a provider-neutral `providerKindRawValue`; and
+  Settings → Financial Setup → **Financial Connections** renders
+  per-provider availability / authorization / connection state with
+  an explicit **Sync Now** action. `NSFinancialDataUsageDescription`
+  added to the app target so the FinanceKit consent prompt has the
+  required purpose string. _Evidence:
+  `FinancialDataProviderArchitectureTests.swift`,
+  `FinancialDataReconcilerTests.swift`,
+  `FinancialConnectionsViewModelTests.swift`._
+  Remaining for later: real device / managed-entitlement rollout and
+  a concrete third-party aggregator bakeoff.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
@@ -707,37 +738,123 @@ aggregators, broad credential access, and unavailable Wallet data.
 
 ---
 
-## Phase 5 — FinanceKit Evaluation and Adapter
+## Phase 5 — Provider-Neutral Financial Data Architecture
 
-**Status:** `[ ]` Planned. Not started in code; the abstraction will land once
-Phase 4 has a working manual/CSV provider to serve as the fallback.
+**Status:** `[~]` Architecture + reconciliation shipped. Phase 5A
+landed the provider-neutral abstraction under
+`Core/Services/FinancialData/`; Phase 5B connected it to product
+plumbing via the reconciler and the Settings page. FinanceKit's
+managed entitlement and any concrete third-party aggregator bakeoff
+remain as follow-ups.
 
-**Goal:** Add Apple-native financial data only if it materially improves the
-app and Apple grants access.
+**Goal:** Give NomadFi a provider-neutral financial-data layer so
+manual / CSV / FinanceKit / (later) external aggregators all feed the
+same `Account` + `Transaction` store without hard-wiring the product
+to any one upstream.
 
-### Build
+### Shipped (5A)
 
-- A `FinancialDataProvider` abstraction.
-- Provider implementations:
-  - manual provider
-  - CSV import provider
-  - future FinanceKit provider
-- A FinanceKit feasibility document:
-  - entitlement requirements
-  - supported countries
-  - supported account types
-  - user-consent flow
-  - data fields available
-  - gaps for non-supported institutions
+- `FinancialDataProvider` protocol with a typed
+  `FinancialDataProviderKind` identity (`manual`, `csvImport`,
+  `financeKit`, `externalAggregator(identifier:)`).
+- Typed surfaces: `FinancialDataProviderAvailability`,
+  `FinancialDataAuthorizationStatus`,
+  `FinancialDataConnection` (+ `Status`), `FinancialDataProviderError`.
+- Provider-neutral snapshot contract:
+  `FinancialAccountSnapshot`, `FinancialTransactionSnapshot`. Both
+  reuse existing domain enums (`AccountType`, `CurrencyCode`,
+  `TransactionCategory`) and project onto the existing
+  `FinancialSnapshotSource` so engines keep consuming the same
+  provenance signal they do today.
+- Adapters:
+  - `ManualFinancialDataProvider` (always available / authorized —
+    represents the user-typed SwiftData truth).
+  - `CSVImportFinancialDataProvider` (CSV import seam).
+  - `FinanceKitFinancialDataProvider` (real availability /
+    authorization / typed mapping; snapshot fetches stay no-op until
+    Apple provisions the managed entitlement; background-update hook
+    declared as a seam).
+  - `ExternalAggregatorFinancialDataProvider` (placeholder that
+    reports `integrationNotImplemented` so the coordinator's
+    fallback logic is testable end-to-end, and a real adapter can
+    land later without restructuring the product).
+- `FinancialDataSyncCoordinator` fans out every provider, reports
+  `ProviderStatus` / `FinancialDataSyncReport` with deterministic
+  per-provider outcomes, and degrades gracefully.
+- `ServiceContainer` injects `financialDataCoordinator`
+  (`.live()` / `.preview()`); the old
+  `FinanceDataService` / `Live` / `Mock` files were removed.
 
-### Use FinanceKit For
+### Shipped (5B)
+
+- `FinancialDataReconciler` under
+  `Core/Services/FinancialData/Reconciliation/` merges a
+  `FinancialDataSyncReport` into SwiftData with four pinned
+  invariants:
+  1. Durable provider identity (provider-kind + external account ID)
+     always wins the match.
+  2. Fallback matching is narrow — institution + currency + account
+     type, and only when exactly one existing account lines up.
+  3. Ambiguous snapshots are counted as `unresolvedAmbiguousSnapshots`
+     and never silently cross-merged.
+  4. Transactions reuse `TransactionImportDeduper` (external ID →
+     fingerprint within a day window). Dedupe is scoped to the
+     linked account so rows never cross-attach.
+- `FinancialDataReconciliationResult` summarises every pass
+  (matched / created / updated accounts, inserted / duplicate /
+  unresolved transactions) so the Settings page can render an
+  honest after-sync chip.
+- CloudKit-safe schema growth:
+  - `Account` gained `providerLinkKindRawValue`,
+    `providerExternalAccountID`, `providerConnectionID`,
+    `providerInstitutionIdentifier`, `providerLastSyncedAt`, plus
+    a derived `hasProviderLink` helper. `isFinanceKitLinked` is
+    kept as a legacy compatibility bool; the new kind + external
+    ID pair is authoritative.
+  - `Transaction` gained a provider-neutral `providerKindRawValue`
+    (persisted as a `FinancialDataProviderKind.logKey`). CSV rows
+    continue to use `importSource`; manual rows stay blank. Every
+    new field is optional / defaulted.
+- Settings surface: **Settings → Financial Setup → Financial
+  Connections** (`Features/Settings/Connections/`). Apple-Settings-style
+  list with per-provider rows (availability, authorization state,
+  connected / not enabled / authorization-required), an explicit
+  **Sync Now** action, and the last reconciliation summary. Copy is
+  calm and factual — pinned against a forbidden-phrase list.
+- `NSFinancialDataUsageDescription` added to the app target
+  (Debug + Release) so the FinanceKit consent prompt carries the
+  required purpose string.
+
+### FinanceKit feasibility notes (factual, not marketing)
+
+- Data stays on-device; Apple never sees it.
+- US coverage: Apple Card, Apple Cash, Apple Savings.
+- UK coverage: selected open-banking institutions.
+- Entitlement: `com.apple.developer.finance-kit`, managed by Apple.
+- Availability varies by region, OS, and device — the app must stay
+  useful when `.unavailable` is returned.
+
+### Still to build
+
+- Apple-provisioned `com.apple.developer.finance-kit` entitlement
+  and real-device verification of the FinanceKit adapter's account
+  and transaction fetch paths.
+- Background update registration once Apple exposes the delivery
+  entitlement. The seam is already declared on
+  `FinanceKitFinancialDataProvider.scheduleBackgroundUpdates()`.
+- Concrete third-party aggregator bakeoff (Plaid / MX / Akoya /
+  Finicity or a direct FDX/FAPI integration). Must land behind the
+  existing `ExternalAggregatorFinancialDataProvider` seam so the
+  core domain model never imports a vendor SDK.
+
+### Use provider data for
 
 - Supported account discovery.
 - Supported balances.
 - Supported transactions.
 - Background delivery where available and approved.
 
-### Do Not Use FinanceKit For
+### Do not use provider data for
 
 - Unsupported institutions.
 - Tax advice by itself.
@@ -747,8 +864,12 @@ app and Apple grants access.
 
 ### Tradeoff
 
-FinanceKit can make NomadFi feel much more automatic, but depending on it too
-early creates entitlement, coverage, and review risk.
+FinanceKit and a future permissioned aggregator make NomadFi feel
+more automatic, but depending on any single upstream creates
+entitlement, coverage, and review risk. The provider-neutral
+architecture is the mitigation: manual and CSV stay as first-class
+fallbacks so the core decision-assistant experience works even when
+every upstream is unavailable.
 
 ---
 
@@ -1167,9 +1288,20 @@ re-debating whether the foundation exists.
     `Core/Services/TaxEducation/Recognition/` — purely derived,
     no new persistence. Deeper investment-account lessons and
     receipt / document organisation prompts remain as follow-ups.
-15. `[ ]` Investing education and index-fund tracking (Phase 8).
-16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
-    access and institution coverage.
+15. `[~]` Phase 5 — provider-neutral financial-data architecture.
+    5A: abstraction + coordinator + adapters under
+    `Core/Services/FinancialData/` (manual / CSV / FinanceKit /
+    external-aggregator placeholder). 5B: reconciliation layer
+    (`FinancialDataReconciler`, `FinancialDataReconciliationResult`),
+    CloudKit-safe provider-link fields on `Account` + a provider-
+    neutral `providerKindRawValue` on `Transaction`, and Settings →
+    Financial Setup → **Financial Connections** with an explicit
+    **Sync Now** action and a calm after-sync summary.
+    `NSFinancialDataUsageDescription` added. Remaining: Apple-
+    provisioned entitlement for real-device FinanceKit, background
+    delivery hook, and a concrete third-party aggregator bakeoff
+    behind the existing placeholder adapter.
+16. `[ ]` Investing education and index-fund tracking (Phase 8).
 17. `[!]` Apple Pay — only if NomadFi starts accepting payments.
 18. `[!]` Wallet passes — only if NomadFi ships a pass with concrete user
     value.
@@ -1178,29 +1310,38 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete, Phase 7A through 7D have shipped, and the
-Phase 4 stretch (spend anomaly detection) is live.** Tax Vault is
-now split into three peer surfaces — **Review / Learn / Archive** —
-under one segmented switcher. Review owns the first-viewport scan
-CTA and the tax-category suggestion queue. Learn owns the
-jurisdiction-aware source-backed education (starter, progression,
-quizzes) with calm current-state recognition badges derived from
-the existing `TaxEducationProgressRecord`. Archive owns the
-searchable year / jurisdiction document list with per-year exports.
-The Dashboard's `InsightEngine` continues to emit deterministic
-anomaly cards.
+**Phase 5 provider architecture (5A) and reconciliation + Financial
+Connections UI (5B) are live.** NomadFi now exposes a provider-neutral
+layer (`Core/Services/FinancialData/`) that keeps manual and CSV as
+first-class fallbacks, wraps FinanceKit with typed availability /
+authorization / mapping seams, and pins a placeholder boundary for a
+later third-party aggregator. Syncs run only in response to an
+explicit **Sync Now** action in Settings → Financial Setup →
+**Financial Connections**, and the reconciliation result is rendered
+honestly instead of as a universal-coverage claim.
 
-Highest-leverage remaining work:
+Highest-leverage remaining work, in order:
 
-- **Deeper investment-account lessons** — IRA for the U.S.,
-  TFSA / RRSP deep dives beyond the current high-level starter.
-  Extends the Learn surface without new source coverage.
-- **Receipt / document organisation prompts** tied to the
-  education checklists, so completing a checklist item naturally
-  nudges the user toward a matching archive action.
-- **Phase 8 investing education + index-fund tracking**.
-- **Phase 5 FinanceKit adapter** — still gated on entitlement
-  access and institution coverage.
+- **FinanceKit managed entitlement + real-device bakeout** —
+  provision `com.apple.developer.finance-kit` with Apple, finish the
+  `FinanceStore.accounts(query:)` / `transactions(query:)` paths in
+  `FinanceKitFinancialDataProvider`, and verify on a supported
+  account (Apple Card / Apple Cash / Apple Savings in the US; UK
+  open-banking institutions where available). Background-update
+  registration lands behind the same entitlement.
+- **Third-party aggregator provider bakeoff** — land a concrete
+  adapter (Plaid / MX / Akoya / Finicity or a direct FDX/FAPI
+  integration) behind the existing
+  `ExternalAggregatorFinancialDataProvider` seam. Keep vendor SDK
+  imports confined to the adapter file; feed the reconciler through
+  the same `FinancialDataSyncReport` contract.
+- **Phase 8 investing education + index-fund tracking** — still the
+  next net-new Learn surface once the financial-data layer has a
+  live upstream.
+- **Deeper investment-account lessons** (IRA / TFSA / RRSP) and
+  **receipt / document organisation prompts** remain open as Tax
+  Vault follow-ups but are explicitly lower priority than the
+  provider work above.
 
 ---
 
