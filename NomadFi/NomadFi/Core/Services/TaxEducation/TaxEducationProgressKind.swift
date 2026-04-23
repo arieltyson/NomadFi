@@ -5,7 +5,9 @@
 // Phase 7B covered lesson + checklist item; Phase 7C adds `.quiz`
 // so the same persistence model can record a region-level
 // knowledge-check attempt alongside lesson / checklist state.
-// Badges and streaks still have no kind here.
+// Calm recognition badges are derived from these kinds inside
+// `TaxEducationRecognitionComputer` — they intentionally do not
+// need their own persisted kind.
 
 import Foundation
 

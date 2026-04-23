@@ -7,7 +7,7 @@
 //   1. Taking — a Form with question rows + Picker-style options.
 //   2. Result — correct count, percent, pass/fail, Retake button.
 //
-// No timers, no difficulty picker, no streak meter. The surface
+// No timers, no difficulty picker. The surface
 // stays instructional and explicit — nothing submits or writes
 // without the user tapping Submit.
 

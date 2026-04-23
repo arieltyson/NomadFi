@@ -271,35 +271,44 @@ points at the test file that pins the behaviour.
 
 ### Tax and investing education
 
-- [~] Tax Vault — document storage, receipt capture, tax-category
-  suggestion review queue (Phase 7 entry), a jurisdiction-aware
-  **education starter** (Phase 7A), persisted lesson / checklist
-  progress (Phase 7B), and region-aware **knowledge-check
-  quizzes** (Phase 7C). Remaining gamification (badges, streaks,
-  deeper investment-account lessons) still `[ ]`.
-- [~] Region-specific tax education (Phase 7A + 7B + 7C) —
+- [~] Tax Vault — now split into three peer surfaces
+  (**Review / Learn / Archive**) under one segmented switcher.
+  Review owns the in-content scan CTA and the tax-category
+  suggestion queue; Learn owns the jurisdiction-aware education
+  starter (Phase 7A), persisted progression (Phase 7B),
+  knowledge-check quizzes (Phase 7C), and calm recognition
+  badges (Phase 7D); Archive owns the searchable year /
+  jurisdiction document list with per-year exports. Remaining
+  work: deeper investment-account lessons and receipt /
+  document organisation prompts.
+- [~] Region-specific tax education (Phase 7A + 7B + 7C + 7D) —
   locally-authored, source-backed starter covering United States
   (3 lessons + 1 checklist + 1 quiz), Canada
   (3 lessons + 1 checklist + 1 quiz), and Trinidad and Tobago
   (2 lessons + 1 checklist + 1 quiz). Every lesson — and every
   quiz question — cites only official sources already enumerated
   in `docs/README.md` (IRS / CRA / BIR / Ministry of Finance /
-  FIUTT). Surfaced inside `TaxVaultView` as the **Learn for your
-  jurisdictions** section, driven by `JurisdictionProfile` with
-  home-first ordering. Phase 7B added explicit **Mark reviewed**
-  and checklist-toggle actions plus a **Next to review** pointer;
-  Phase 7C added a **Knowledge check** row inside each region
-  block that unlocks once the checklist and lessons are reviewed
-  and persists attempt scores via the same CloudKit-safe
-  `TaxEducationProgressRecord` `@Model`. _Evidence:
+  FIUTT). Surfaced inside the Tax Vault **Learn** peer surface,
+  driven by `JurisdictionProfile` with home-first ordering. Phase
+  7B added explicit **Mark reviewed** and checklist-toggle
+  actions plus a **Next to review** pointer; Phase 7C added a
+  **Knowledge check** row that unlocks after the checklist and
+  lessons are reviewed and persists attempt scores via the same
+  CloudKit-safe `TaxEducationProgressRecord` `@Model`; Phase 7D
+  adds calm current-state **recognition badges** derived purely
+  from that same record — no new persistence. _Evidence:
   `TaxEducationCatalogTests.swift`,
   `TaxEducationSelectorTests.swift`,
   `TaxEducationProgressServiceTests.swift`,
   `TaxEducationQuizCatalogTests.swift`,
   `TaxEducationQuizScoringTests.swift`,
-  `TaxEducationQuizServiceTests.swift`._
-- [ ] Remaining gamified tax education path (badges, streaks,
-  deeper investment-account deep dives).
+  `TaxEducationQuizServiceTests.swift`,
+  `TaxEducationRecognitionComputerTests.swift`,
+  `TaxVaultSurfaceTests.swift`._
+- [ ] Deeper investment-account lessons (IRA for the U.S.,
+  TFSA / RRSP deep dives beyond the current high-level starter).
+- [ ] Receipt / document organisation prompts tied to the
+  education checklists.
 - [ ] Investing education + index-fund tracking.
 
 ### Apple capability tracks
@@ -840,10 +849,12 @@ Credit scoring and issuer risk models are proprietary.
 bridge), Phase 7A (education starter with source-backed lessons and
 region-aware checklists), Phase 7B (persisted user progress with
 explicit "Mark reviewed" / checklist-toggle actions and a "Next to review"
-pointer), and Phase 7C (region-aware knowledge-check quizzes with explicit
+pointer), Phase 7C (region-aware knowledge-check quizzes with explicit
 submit + retake, deterministic scoring, and quiz-aware next-step /
-progress-summary logic) are all live. Badges, streaks, and deeper
-investment-account lessons are still outstanding.
+progress-summary logic), and Phase 7D (calm current-state recognition
+badges + Tax Vault IA split into Review / Learn / Archive peer surfaces)
+are all live. Deeper investment-account lessons and receipt / document
+organisation prompts are the outstanding continuations.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -898,8 +909,8 @@ tax advice.
   "X of Y steps reviewed" chip, a calm "Next to review" card inside
   each region block, interactive checklist checkboxes, lesson-row
   "Reviewed" badges, and an explicit Mark / Unmark action in the
-  lesson detail sheet. No quizzes, no badges, no streaks, no
-  auto-complete on lesson open. _Evidence:
+  lesson detail sheet. No auto-complete on lesson open — every
+  transition is an explicit user action. _Evidence:
   `TaxEducationProgressServiceTests.swift`._
 - `[x]` **Region-aware knowledge-check quizzes** (Phase 7C) —
   locally-authored quizzes under `Core/Services/TaxEducation/Quiz/`
@@ -923,11 +934,25 @@ tax advice.
   `TaxEducationQuizCatalogTests.swift`,
   `TaxEducationQuizScoringTests.swift`,
   `TaxEducationQuizServiceTests.swift`._
+- `[x]` **Tax Vault IA refresh + calm recognition badges** (Phase 7D) —
+  the monolithic Tax Vault list split into three peer surfaces under
+  one segmented switcher: **Review** (in-content scan CTA plus the
+  tax-category suggestion queue), **Learn** (education starter,
+  progression, quizzes, recognition strip), **Archive** (searchable
+  year / jurisdiction list with per-year exports). Recognition
+  lives under `Core/Services/TaxEducation/Recognition/`
+  (`TaxEducationRecognitionKind`, `Badge`, `Summary`,
+  `Computer`) and is purely derived — no new persistence, no
+  points, no levels, no gamified spectacle. Five starter badges:
+  `.firstStepReviewed`, `.starterReviewed(region)`,
+  `.knowledgeCheckPassed(region)`, `.regionReviewed(region)`,
+  `.multiRegionReviewed`. Badges disappear automatically when
+  the user regresses progress. _Evidence:
+  `TaxEducationRecognitionComputerTests.swift`,
+  `TaxVaultSurfaceTests.swift`._
 
 ### Still to build
 
-- Progression badges / streaks layered onto the existing
-  `TaxEducationProgressRecord`.
 - Deeper investment-account lessons (IRA for the U.S., TFSA/RRSP for Canada
   beyond the high-level starter).
 - Receipt and document organization prompts tied to the education
@@ -1135,9 +1160,13 @@ re-debating whether the foundation exists.
     retake, deterministic 80 %-pass scoring, unlock after the
     checklist and lessons are completed, and quiz-aware
     next-step / summary logic — same `TaxEducationProgressRecord`,
-    four new optional fields, no new `@Model`. Badges, streaks,
-    and deeper investment-account lessons remain the gamified-path
-    follow-ups.
+    four new optional fields, no new `@Model`. 7D: Tax Vault IA
+    refresh into **Review / Learn / Archive** peer surfaces via a
+    segmented switcher, in-content scan CTA on Review, and calm
+    current-state recognition badges under
+    `Core/Services/TaxEducation/Recognition/` — purely derived,
+    no new persistence. Deeper investment-account lessons and
+    receipt / document organisation prompts remain as follow-ups.
 15. `[ ]` Investing education and index-fund tracking (Phase 8).
 16. `[ ]` FinanceKit evaluation + adapter (Phase 5) — gated on entitlement
     access and institution coverage.
@@ -1149,26 +1178,26 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 6 is complete, Phase 7A + 7B + 7C have shipped, and the
-Phase 4 stretch (spend anomaly detection) is live.** Tax Vault now
-carries five Phase 7 surfaces side by side: the **suggestion
-review queue**, the **education starter** (U.S. / Canada / Trinidad
-and Tobago, every lesson source-backed and calm), persisted
-**education progression** (Mark reviewed / checklist toggles /
-per-region summaries / Next to review), region-aware
-**knowledge-check quizzes** (explicit submit / retake, 80 % pass
-threshold, unlock after checklist + lessons, score persisted
-inside the existing `TaxEducationProgressRecord`), and the
-existing **receipts + documents archive**. The Dashboard's
-`InsightEngine` continues to emit deterministic anomaly cards.
+**Phase 6 is complete, Phase 7A through 7D have shipped, and the
+Phase 4 stretch (spend anomaly detection) is live.** Tax Vault is
+now split into three peer surfaces — **Review / Learn / Archive** —
+under one segmented switcher. Review owns the first-viewport scan
+CTA and the tax-category suggestion queue. Learn owns the
+jurisdiction-aware source-backed education (starter, progression,
+quizzes) with calm current-state recognition badges derived from
+the existing `TaxEducationProgressRecord`. Archive owns the
+searchable year / jurisdiction document list with per-year exports.
+The Dashboard's `InsightEngine` continues to emit deterministic
+anomaly cards.
 
 Highest-leverage remaining work:
 
-- **Progression badges / streaks** — optional gamification layer
-  on top of `TaxEducationProgressRecord`. Smallest next
-  compounding pick after 7C.
 - **Deeper investment-account lessons** — IRA for the U.S.,
   TFSA / RRSP deep dives beyond the current high-level starter.
+  Extends the Learn surface without new source coverage.
+- **Receipt / document organisation prompts** tied to the
+  education checklists, so completing a checklist item naturally
+  nudges the user toward a matching archive action.
 - **Phase 8 investing education + index-fund tracking**.
 - **Phase 5 FinanceKit adapter** — still gated on entitlement
   access and institution coverage.

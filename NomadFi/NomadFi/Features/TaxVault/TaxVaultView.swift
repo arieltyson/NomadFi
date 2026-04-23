@@ -1,52 +1,64 @@
 // TaxVaultView.swift
 // NomadFi
 //
-// The main Tax Vault landing screen showing documents grouped by
-// tax year and jurisdiction with running category totals.
+// Shell for the Tax Vault destination. Three peer surfaces sit
+// under one `NavigationStack` (Settings' stack), switched via a
+// `Picker(.segmented)` so the surface itself feels like one
+// coherent workspace rather than three unrelated screens.
+//
+// Product intent (HIG hierarchy + harmony + ADA social-impact):
+//   • `.review`  — in-content scan / upload CTA + the tax-category
+//     suggestion queue. First-viewport clarity on "what do I need
+//     to act on?".
+//   • `.learn`   — source-backed education starter, progression,
+//     knowledge-check quizzes, and calm recognition badges. No
+//     scan clutter, no archive noise.
+//   • `.archive` — searchable document list grouped by year and
+//     jurisdiction, with per-year exports. Search only lives here
+//     because that is the only surface it meaningfully searches.
+//
+// Queries, sheet presentations, and the photo-import pipeline stay
+// on this shell so each peer view can stay pure about its own job.
 
 import PhotosUI
 import SwiftData
 import SwiftUI
 import TipKit
 
-/// The Tax Vault landing screen — the organizational hub for tax documents.
-///
-/// Displays scanned receipts and tax documents grouped by year and jurisdiction,
-/// with running totals per category. Provides access to receipt scanning,
-/// document detail, and export functionality.
 struct TaxVaultView: View {
 
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TaxDocument.documentDate, order: .reverse) private var documents: [TaxDocument]
-    @Query(sort: \JurisdictionProfile.displayOrder) private var jurisdictions: [JurisdictionProfile]
-    @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+
+    @Query(sort: \TaxDocument.documentDate, order: .reverse)
+    private var documents: [TaxDocument]
+
+    @Query(sort: \JurisdictionProfile.displayOrder)
+    private var jurisdictions: [JurisdictionProfile]
+
+    @Query(sort: \Transaction.date, order: .reverse)
+    private var transactions: [Transaction]
+
     @Query(sort: \TaxEducationProgressRecord.lastInteractedAt, order: .reverse)
     private var progressRecords: [TaxEducationProgressRecord]
+
     @State private var viewModel = TaxVaultViewModel()
     @State private var suggestionReview = TaxSuggestionReviewViewModel()
     @State private var education = TaxEducationViewModel()
-    @State private var selectedTaxYear: Int?
+    @State private var surface: TaxVaultSurface = .review
     @State private var showScanError = false
-
-    private let scanReceiptTip = ScanReceiptTip()
 
     // Tax Vault is now a Settings destination rather than a primary
     // tab, so it relies on the ambient `NavigationStack` provided by
     // Settings. Nesting a second stack here would double up the bar
     // and break `.navigationDestination` routing.
     var body: some View {
-        Group {
-            if documents.isEmpty
-                && suggestionReview.suggestions.isEmpty
-                && !education.hasContent {
-                emptyState
-            } else {
-                documentList
-            }
+        VStack(spacing: 0) {
+            TaxVaultSurfaceSwitcher(selection: $surface)
+            Divider()
+            surfaceContent
         }
         .navigationTitle("Tax Vault")
         .glassToolbar()
-        .searchable(text: $viewModel.searchText, prompt: "Search receipts")
         .toolbar { toolbarContent }
         .task(id: transactions.count) {
             suggestionReview.refresh(from: transactions)
@@ -121,157 +133,31 @@ struct TaxVaultView: View {
         .sensoryFeedback(.success, trigger: viewModel.showingConfirmation)
     }
 
-    // MARK: - Document List
+    // MARK: - Surface routing
 
-    private var documentList: some View {
-        let filtered = viewModel.filteredDocuments(documents)
-        let yearGroups = viewModel.documentsByTaxYear(filtered)
-
-        return List {
-            TipView(scanReceiptTip)
-                .tipBackground(ColorTokens.surfaceSecondary)
-
-            TipView(TaxExportTip())
-                .tipBackground(ColorTokens.surfaceSecondary)
-
-            if education.hasContent {
-                TaxEducationSection(
-                    bundles: education.regionBundles,
-                    progressRecords: progressRecords,
-                    summary: { bundle in
-                        education.summary(for: bundle, in: progressRecords)
-                    },
-                    nextStep: { bundle in
-                        education.nextStep(for: bundle, in: progressRecords)
-                    },
-                    isLessonReviewed: { lesson in
-                        education.isLessonReviewed(lesson, in: progressRecords)
-                    },
-                    isChecklistItemCompleted: { item, region in
-                        education.isChecklistItemCompleted(
-                            item,
-                            region: region,
-                            in: progressRecords
-                        )
-                    },
-                    isQuizUnlocked: { bundle in
-                        education.isQuizUnlocked(for: bundle, in: progressRecords)
-                    },
-                    onSelectLesson: { education.select($0) },
-                    onToggleChecklistItem: { item, region in
-                        education.toggleChecklistItem(
-                            item,
-                            region: region,
-                            in: modelContext,
-                            records: progressRecords
-                        )
-                    },
-                    onOpenQuiz: { education.selectQuiz($0) }
-                )
-            }
-
-            if !suggestionReview.suggestions.isEmpty {
-                TaxSuggestionsSection(
-                    suggestions: suggestionReview.suggestions,
-                    onSelect: { suggestionReview.select($0) }
-                )
-            }
-
-            ForEach(yearGroups, id: \.year) { group in
-                taxYearSection(year: group.year, documents: group.documents)
-            }
-        }
-        .listStyle(.insetGrouped)
-    }
-
-    // MARK: - Tax Year Section
-
-    private func taxYearSection(year: Int, documents: [TaxDocument]) -> some View {
-        Section {
-            // Category summary row
-            CategorySummaryRow(
-                categories: viewModel.activeCategories(in: documents),
+    @ViewBuilder
+    private var surfaceContent: some View {
+        switch surface {
+        case .review:
+            TaxVaultReviewView(
+                suggestions: suggestionReview.suggestions,
+                transactions: transactions,
+                viewModel: viewModel,
+                suggestionReview: suggestionReview
+            )
+        case .learn:
+            TaxVaultLearnView(
+                progressRecords: progressRecords,
+                modelContext: modelContext,
+                education: education
+            )
+        case .archive:
+            TaxVaultArchiveView(
                 documents: documents,
-                viewModel: viewModel
+                jurisdictions: jurisdictions,
+                viewModel: viewModel,
+                modelContext: modelContext
             )
-
-            // Documents grouped by jurisdiction
-            let jurisdictionGroups = viewModel.documentsByJurisdiction(
-                documents,
-                jurisdictions: jurisdictions
-            )
-            ForEach(jurisdictionGroups, id: \.jurisdiction.id) { group in
-                jurisdictionSection(
-                    jurisdiction: group.jurisdiction,
-                    documents: group.documents
-                )
-            }
-
-            // Export button for this year
-            Button("Export \(String(year)) Tax Report", systemImage: "square.and.arrow.up") {
-                Task {
-                    await viewModel.exportDocuments(
-                        documents,
-                        taxYear: year,
-                        jurisdictions: jurisdictions
-                    )
-                }
-            }
-            .disabled(viewModel.isExporting)
-            .accessibilityHint("Creates and exports a report for tax year \(String(year)).")
-        } header: {
-            HStack {
-                Text("Tax Year \(String(year))")
-                Spacer()
-                Text("\(documents.count) documents")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    // MARK: - Jurisdiction Section
-
-    private func jurisdictionSection(
-        jurisdiction: JurisdictionProfile,
-        documents: [TaxDocument]
-    ) -> some View {
-        Section {
-            ForEach(documents) { document in
-                TaxDocumentRow(document: document)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Delete", systemImage: "trash", role: .destructive) {
-                            viewModel.deleteDocument(document, modelContext: modelContext)
-                        }
-                    }
-            }
-        } header: {
-            Label(jurisdiction.countryName, systemImage: "flag")
-                .font(TypographyTokens.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    // MARK: - Empty State
-
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label("No Tax Documents", systemImage: "doc.text.viewfinder")
-        } description: {
-            Text("Scan receipts to start building your tax records. NomadFi auto-categorizes and organizes them by jurisdiction for easy NRA tax filing.")
-        } actions: {
-            PhotosPicker(
-                selection: $viewModel.selectedPhotoItem,
-                matching: .images
-            ) {
-                Label("Scan a Receipt", systemImage: "camera")
-            }
-            .buttonStyle(.borderedProminent)
-            .accessibilityHint("Opens your photo library to select a receipt image for scanning.")
-
-            TipView(scanReceiptTip)
-                .tipBackground(ColorTokens.surfaceSecondary)
-                .padding(.top, SpacingTokens.small)
         }
     }
 
@@ -279,6 +165,8 @@ struct TaxVaultView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        // Toolbar scan affordance stays for discoverability, but
+        // the in-content CTA in Review is the primary path.
         ToolbarItem(placement: .primaryAction) {
             PhotosPicker(
                 selection: $viewModel.selectedPhotoItem,
@@ -289,7 +177,7 @@ struct TaxVaultView: View {
             .accessibilityHint("Selects a receipt image to scan and add to Tax Vault.")
         }
 
-        if let exportURL = viewModel.exportURL {
+        if surface == .archive, let exportURL = viewModel.exportURL {
             ToolbarItem(placement: .secondaryAction) {
                 ShareLink(item: exportURL) {
                     Label("Share Report", systemImage: "square.and.arrow.up")
@@ -299,7 +187,7 @@ struct TaxVaultView: View {
         }
     }
 
-    // MARK: - Scanning Overlay
+    // MARK: - Scanning overlay
 
     private var scanningOverlay: some View {
         ZStack {
@@ -367,13 +255,15 @@ struct CategorySummaryRow: View {
 // MARK: - Tips
 
 /// A TipKit tip encouraging users to scan their first receipt.
+/// Now surfaced inline inside the Review surface (near the primary
+/// scan CTA) rather than stacked on top of a monolithic list.
 struct ScanReceiptTip: Tip {
     var title: Text {
-        Text("Scan Receipts for Tax Season")
+        Text("Scan receipts for tax season")
     }
 
     var message: Text? {
-        Text("NomadFi reads your receipts, auto-categorizes them as US Source or Canada Source, and organizes everything for NRA tax filing.")
+        Text("NomadFi reads your receipts on device, suggests a category, and waits for you to confirm.")
     }
 
     var image: Image? {

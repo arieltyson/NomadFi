@@ -5,8 +5,8 @@
 // flips the item between completed and not-started via
 // `TaxEducationProgressService`. Read-state is derived from the
 // persisted `TaxEducationProgressRecord`s the parent view passes
-// in via `isCompleted`. No progress bar, no streaks — just a
-// calm, scannable review surface.
+// in via `isCompleted`. No progress bar — just a calm,
+// scannable review surface.
 
 import SwiftUI
 

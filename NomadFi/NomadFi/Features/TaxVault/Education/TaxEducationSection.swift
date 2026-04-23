@@ -25,6 +25,11 @@ struct TaxEducationSection: View {
     let isLessonReviewed: (TaxEducationLesson) -> Bool
     let isChecklistItemCompleted: (TaxEducationChecklistItem, TaxEducationRegion) -> Bool
     let isQuizUnlocked: (TaxEducationRegionBundle) -> Bool
+    /// Current-state recognition badges for this region. Computed
+    /// by the parent via `TaxEducationRecognitionComputer`. Empty
+    /// array hides the chip row — badges are calm recognition,
+    /// not a trophy wall.
+    var regionBadges: (TaxEducationRegion) -> [TaxEducationRecognitionBadge] = { _ in [] }
     let onSelectLesson: (TaxEducationLesson) -> Void
     let onToggleChecklistItem: (TaxEducationChecklistItem, TaxEducationRegion) -> Void
     let onOpenQuiz: (TaxEducationQuiz) -> Void
@@ -57,8 +62,12 @@ struct TaxEducationSection: View {
     private func regionBlock(_ bundle: TaxEducationRegionBundle) -> some View {
         let regionSummary = summary(bundle)
         let step = nextStep(bundle)
+        let badges = regionBadges(bundle.region)
         return VStack(alignment: .leading, spacing: SpacingTokens.small) {
             regionHeader(for: bundle, summary: regionSummary)
+            if !badges.isEmpty {
+                TaxEducationRecognitionChips(badges: badges)
+            }
             if let step {
                 nextStepCard(for: step)
             }
