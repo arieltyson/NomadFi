@@ -34,6 +34,9 @@ struct FinancialConnectionsSettingsView: View {
             providersSection(viewModel: viewModel)
             plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
             syncSection(viewModel: viewModel)
+#if DEBUG
+            developerHarnessSection
+#endif
             privacySection
         }
         .navigationTitle("Financial Connections")
@@ -47,6 +50,25 @@ struct FinancialConnectionsSettingsView: View {
             }
         }
     }
+
+#if DEBUG
+    /// DEBUG-only entry point into the Plaid sandbox harness page.
+    /// Never compiled into Release builds.
+    private var developerHarnessSection: some View {
+        Section {
+            NavigationLink {
+                PlaidSandboxDeveloperConfigView()
+            } label: {
+                Label("Plaid sandbox developer harness", systemImage: "hammer")
+            }
+            .accessibilityHint("Opens a DEBUG-only page for configuring and diagnosing the Plaid sandbox broker used in Phase 5D real-device validation.")
+        } header: {
+            Text("Developer tools")
+        } footer: {
+            Text("Only present in DEBUG builds. This is a bounded validation harness for Phase 5D — it does not enable production bank connections.")
+        }
+    }
+#endif
 }
 
 // MARK: - Sections
@@ -66,7 +88,7 @@ private extension FinancialConnectionsSettingsView {
         } header: {
             Text("Data Sources")
         } footer: {
-            Text("Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated; external aggregators are not enabled in this build.")
+            Text("Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated. NomadFi has a Plaid sandbox path under Phase 5D validation — it is not a production rollout and only runs when a developer has configured the local Plaid sandbox broker.")
         }
     }
 
@@ -130,7 +152,7 @@ private extension FinancialConnectionsSettingsView {
         Section {
             EmptyView()
         } footer: {
-            Text("FinanceKit data stays on-device and is never seen by Apple. NomadFi does not ship a third-party aggregator SDK in this build.")
+            Text("FinanceKit data stays on-device and is never seen by Apple. Plaid's LinkKit ships in this build only as a developer validation path — Plaid client_id and secret never leave the local broker on your developer machine.")
         }
     }
 }

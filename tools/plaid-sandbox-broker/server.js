@@ -69,6 +69,18 @@ const products = (process.env.PLAID_PRODUCTS || 'transactions')
 const sandboxInstitutionID = process.env.PLAID_SANDBOX_INSTITUTION_ID || 'ins_109508';
 const redirectURI = (process.env.PLAID_REDIRECT_URI || '').trim() || null;
 
+const bindHost = (process.env.PLAID_BROKER_BIND_HOST || '127.0.0.1').trim();
+const sharedSecret = (process.env.PLAID_BROKER_SHARED_SECRET || '').trim();
+const isLoopbackMode = bindHost === '127.0.0.1' || bindHost === '::1' || bindHost === 'localhost';
+
+if (!isLoopbackMode && sharedSecret.length < 16) {
+  console.error(
+    '[plaid-sandbox-broker] refusing to start — LAN mode requires PLAID_BROKER_SHARED_SECRET (>= 16 chars). ' +
+    'Either set PLAID_BROKER_BIND_HOST back to 127.0.0.1 or generate a secret with `openssl rand -hex 32`.'
+  );
+  process.exit(1);
+}
+
 const plaid = new PlaidApi(
   new Configuration({
     basePath: PlaidEnvironments.sandbox,
@@ -94,12 +106,34 @@ const itemStore = new Map(); // itemHandle -> { accessToken, institutionName }
 
 const app = express();
 app.use(express.json({ limit: '64kb' }));
-// Bind to localhost only. Never expose this broker on a public
-// interface: it carries Plaid sandbox credentials.
+// Never trust X-Forwarded-* headers — the broker is only ever
+// reachable directly (loopback or developer LAN). `trust proxy`
+// would widen the attack surface.
 app.set('trust proxy', false);
 
+// In LAN mode, every request must carry the shared secret header.
+// Loopback mode skips the check so CLI tools like `curl` + the
+// broker's own `/health` probe stay frictionless on the dev
+// machine. `/health` stays available in both modes because the iOS
+// harness uses it to tell the developer "broker reachable" before
+// anything Plaid-sensitive is attempted.
+app.use((req, res, next) => {
+  if (isLoopbackMode) return next();
+  const supplied = req.get('x-nomadfi-broker-secret') || '';
+  if (supplied !== sharedSecret) {
+    res.status(401).json({ error_code: 'MISSING_OR_INVALID_SECRET' });
+    return;
+  }
+  next();
+});
+
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, env: envName });
+  res.json({
+    ok: true,
+    env: envName,
+    requires_secret: !isLoopbackMode,
+    redirect_uri_configured: redirectURI !== null,
+  });
 });
 
 app.post('/link/token/create', async (_req, res) => {
@@ -286,8 +320,15 @@ function sendPlaidError(res, err) {
   });
 }
 
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, bindHost, () => {
   console.log(
-    `[plaid-sandbox-broker] listening on http://127.0.0.1:${port} (env=${envName})`
+    `[plaid-sandbox-broker] listening on http://${bindHost}:${port} (env=${envName}, ` +
+    `${isLoopbackMode ? 'loopback' : 'LAN + shared-secret required'})`
   );
+  if (!isLoopbackMode) {
+    console.log(
+      '[plaid-sandbox-broker] REMINDER: only run LAN mode during active ' +
+      'real-device validation, on a trusted network, behind a firewall.'
+    );
+  }
 });

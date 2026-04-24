@@ -59,8 +59,12 @@ final class PlaidLinkCoordinator {
         presenter: any PlaidLinkPresenting = PlaidLinkKitPresenter()
     ) {
         self.configuration = configuration
+        let capturedConfiguration = configuration
         self.clientBuilder = clientBuilder ?? { url in
-            LivePlaidSandboxClient(baseURL: url)
+            LivePlaidSandboxClient(
+                baseURL: url,
+                brokerSecret: capturedConfiguration.brokerSecret
+            )
         }
         self.presenter = presenter
     }

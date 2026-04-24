@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSFinancialDataUsageDescription</key>
+	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>NomadFi uses your local network only when a developer enables the Phase 5D Plaid sandbox validation harness on this device. Production users never see a local-network prompt.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Per Apple's Preventing Insecure Network Connections docs, -->
+		<!-- NSAllowsLocalNetworking permits plain-HTTP loads ONLY to -->
+		<!-- loopback, .local hostnames, and link-local / private IPv4 -->
+		<!-- / IPv6 ranges. It does not relax ATS for arbitrary Internet -->
+		<!-- hosts. This is the narrowest Apple-sanctioned permission -->
+		<!-- that lets NomadFi's DEBUG harness reach a developer's -->
+		<!-- locally-hosted Plaid sandbox broker on the same Wi-Fi. -->
+		<!-- Sources: -->
+		<!-- https://developer.apple.com/documentation/security/preventing-insecure-network-connections -->
+		<!-- https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity/nsallowslocalnetworking -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>

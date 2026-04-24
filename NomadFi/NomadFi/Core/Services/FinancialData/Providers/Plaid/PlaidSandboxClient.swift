@@ -20,6 +20,10 @@ import OSLog
 /// dev-only, and history / identity are out of scope for this proof.
 protocol PlaidSandboxClient: Sendable {
 
+    /// Calls the broker's `GET /health` endpoint and returns the
+    /// response. Used by the developer-only diagnostics view.
+    func health() async throws -> PlaidBrokerHealthResponse
+
     /// Asks the broker for a Plaid `link_token` the app can hand to
     /// Plaid's Link SDK. Not exercised end-to-end in this slice.
     func createLinkToken() async throws -> PlaidLinkTokenResponse
@@ -58,14 +62,24 @@ struct LivePlaidSandboxClient: PlaidSandboxClient {
 
     let baseURL: URL
     let session: URLSession
+    let brokerSecret: String?
     private static let logger = Logger(
         subsystem: "com.nomadfi.app",
         category: "FinancialData.PlaidSandbox"
     )
 
-    init(baseURL: URL, session: URLSession = .shared) {
+    init(
+        baseURL: URL,
+        session: URLSession = .shared,
+        brokerSecret: String? = nil
+    ) {
         self.baseURL = baseURL
         self.session = session
+        self.brokerSecret = brokerSecret
+    }
+
+    func health() async throws -> PlaidBrokerHealthResponse {
+        try await get(path: "/health")
     }
 
     func createLinkToken() async throws -> PlaidLinkTokenResponse {
@@ -99,6 +113,15 @@ struct LivePlaidSandboxClient: PlaidSandboxClient {
 
     // MARK: - Plumbing
 
+    private func get<Response: Decodable>(path: String) async throws -> Response {
+        let url = baseURL.appendingPathComponent(path)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        applySharedSecret(to: &request)
+        return try await dispatch(request: request, path: path)
+    }
+
     private func post<Request: Encodable, Response: Decodable>(
         path: String,
         body: Request
@@ -109,6 +132,24 @@ struct LivePlaidSandboxClient: PlaidSandboxClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpBody = try JSONEncoder().encode(body)
+        applySharedSecret(to: &request)
+        return try await dispatch(request: request, path: path)
+    }
+
+    /// Sends the shared secret as an `X-NomadFi-Broker-Secret`
+    /// header. Only set when the developer has configured a secret
+    /// (i.e. broker is in LAN mode). Loopback-only brokers ignore
+    /// the header if they see it.
+    private func applySharedSecret(to request: inout URLRequest) {
+        if let brokerSecret, !brokerSecret.isEmpty {
+            request.setValue(brokerSecret, forHTTPHeaderField: "X-NomadFi-Broker-Secret")
+        }
+    }
+
+    private func dispatch<Response: Decodable>(
+        request: URLRequest,
+        path: String
+    ) async throws -> Response {
 
         let (data, response): (Data, URLResponse)
         do {

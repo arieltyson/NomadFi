@@ -55,6 +55,14 @@ struct PlaidSandboxConfiguration: Sendable {
         storage.loadString(.plaidSandboxTransactionsCursor)
     }
 
+    /// Shared secret the client sends as
+    /// `X-NomadFi-Broker-Secret` when the developer has started the
+    /// broker in LAN mode. Optional: loopback-mode brokers don't
+    /// require one.
+    var brokerSecret: String? {
+        storage.loadString(.plaidSandboxBrokerSecret)
+    }
+
     // MARK: - Writes
 
     func setBrokerURL(_ url: URL?) {
@@ -79,6 +87,57 @@ struct PlaidSandboxConfiguration: Sendable {
         } else {
             storage.delete(.plaidSandboxTransactionsCursor)
         }
+    }
+
+    func setBrokerSecret(_ value: String?) {
+        if let value, !value.isEmpty {
+            storage.save(value, .plaidSandboxBrokerSecret)
+        } else {
+            storage.delete(.plaidSandboxBrokerSecret)
+        }
+    }
+
+    /// Clears the Plaid-item-linked state (item handle + `/sync` cursor)
+    /// without touching the broker URL or shared secret. Used by the
+    /// developer config "Clear linked item" action.
+    func clearLinkedItem() {
+        setItemID(nil)
+        setTransactionsCursor(nil)
+    }
+
+    /// Clears every Plaid sandbox Keychain value owned by this
+    /// configuration — broker URL, shared secret, item handle,
+    /// cursor. Used by the developer config "Reset all" action.
+    func clearAll() {
+        setBrokerURL(nil)
+        setBrokerSecret(nil)
+        clearLinkedItem()
+    }
+
+    // MARK: - Validation
+
+    /// Narrow validator the developer config UI and the broker-set
+    /// path use to enforce the broker URL shape: must parse, must
+    /// be `http(s)`, must carry a host, must not use user-info or
+    /// non-empty fragments. Pure and cheap.
+    nonisolated static func normalize(brokerURLCandidate raw: String) -> URL? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        guard let components = URLComponents(string: trimmed),
+              let scheme = components.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = components.host,
+              !host.isEmpty
+        else { return nil }
+        // Reject user-info in URL (`user:pass@host`) — the secret
+        // lives in the dedicated Keychain slot, not the URL.
+        guard components.user == nil, components.password == nil else {
+            return nil
+        }
+        // Drop fragments; preserve path + port if present.
+        var cleaned = components
+        cleaned.fragment = nil
+        return cleaned.url
     }
 }
 

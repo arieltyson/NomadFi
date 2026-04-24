@@ -70,9 +70,33 @@ On a development device or simulator with the NomadFi debug build:
 | `POST /accounts/get` | `{ item_id }` → Plaid `/accounts/get` + institution name |
 | `POST /transactions/sync` | `{ item_id, cursor? }` → Plaid `/transactions/sync` diff |
 
+## Reachability modes
+
+The broker has two operating modes:
+
+1. **Loopback (default).** `PLAID_BROKER_BIND_HOST=127.0.0.1`. Only
+   processes on the same Mac can reach it. Simulator builds hit it
+   through `http://127.0.0.1:8787`. No shared secret required.
+
+2. **Developer LAN mode (Phase 5D real-device validation).** Set
+   `PLAID_BROKER_BIND_HOST` to the Mac's LAN IP (e.g. `192.168.1.42`)
+   or `0.0.0.0`. The broker then refuses to start unless
+   `PLAID_BROKER_SHARED_SECRET` is set to a strong random value
+   (>= 16 characters). Every request must carry an
+   `X-NomadFi-Broker-Secret` header — the iOS app's developer
+   harness (Settings → Financial Connections → Plaid sandbox
+   developer harness) stores the matching secret in the Keychain.
+
+LAN mode is intended *only* for the bounded Phase 5D real-device
+validation runbook at
+[`docs/research/PlaidRealDeviceValidation.md`](../../docs/research/PlaidRealDeviceValidation.md).
+Exit LAN mode (stop the broker) when validation is done. Never run
+LAN mode on an untrusted network.
+
 ## Security posture
 
-- Binds to `127.0.0.1` only; never exposed on `0.0.0.0`.
+- Default binds to `127.0.0.1` only.
+- LAN mode is gated on a strong shared-secret enforced per request.
 - Rejects startup unless `PLAID_ENV=sandbox`.
 - Item handles are random 12-byte prefixes (`itm_…`) — they are not
   Plaid access_tokens.

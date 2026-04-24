@@ -51,8 +51,15 @@ struct PlaidSandboxFinancialDataProvider: FinancialDataProvider {
         clock: @escaping @Sendable () -> Date = Date.init
     ) {
         self.configuration = configuration
+        // Capture the configuration so the default builder can attach
+        // the broker secret (when configured) to every request without
+        // call sites needing to thread it through.
+        let capturedConfiguration = configuration
         self.clientBuilder = clientBuilder ?? { url in
-            LivePlaidSandboxClient(baseURL: url)
+            LivePlaidSandboxClient(
+                baseURL: url,
+                brokerSecret: capturedConfiguration.brokerSecret
+            )
         }
         self.cache = PlaidSandboxSyncCache()
         self.clock = clock

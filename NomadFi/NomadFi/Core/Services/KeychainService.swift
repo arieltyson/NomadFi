@@ -63,6 +63,14 @@ enum KeychainService {
         /// Persisted cursor for `/transactions/sync` so repeat runs
         /// pull incremental diffs, not full history.
         case plaidSandboxTransactionsCursor = "com.nomadfi.plaidSandboxTransactionsCursor"
+
+        /// Shared secret the broker requires when running in
+        /// developer-only LAN mode. Loopback mode does not need it.
+        /// Sent as an `X-NomadFi-Broker-Secret` header on every
+        /// request so a broker accidentally exposed on the LAN still
+        /// rejects traffic that does not carry the developer's
+        /// locally-configured value.
+        case plaidSandboxBrokerSecret = "com.nomadfi.plaidSandboxBrokerSecret"
     }
 
     // MARK: - String Storage
@@ -201,6 +209,7 @@ enum KeychainService {
             .plaidSandboxBrokerURL,
             .plaidSandboxItemID,
             .plaidSandboxTransactionsCursor,
+            .plaidSandboxBrokerSecret,
         ]
         for key in keys {
             delete(key: key)

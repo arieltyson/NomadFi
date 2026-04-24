@@ -19,6 +19,42 @@
 
 import Foundation
 
+// MARK: - Health (broker → app)
+
+/// Minimal health response the broker returns from `GET /health`.
+/// Covers only what NomadFi's developer diagnostics view reads. The
+/// broker may add fields later; extra fields are ignored.
+struct PlaidBrokerHealthResponse: Codable, Sendable, Equatable {
+
+    /// `true` when the broker booted in `sandbox` env. Anything else
+    /// is a configuration bug — loopback or LAN mode does not matter
+    /// to the app here.
+    let ok: Bool
+
+    /// Which Plaid environment the broker is pointing at. Always
+    /// `"sandbox"` by contract; surfaced so the diagnostics view can
+    /// display it honestly.
+    let env: String
+
+    /// True when the broker requires an `X-NomadFi-Broker-Secret`
+    /// header on every call (LAN mode). Optional for backwards
+    /// compatibility with older loopback-only broker versions that
+    /// never returned this field.
+    let requiresSecret: Bool?
+
+    /// True when the broker has been started with a configured
+    /// `PLAID_REDIRECT_URI`. Used by the diagnostics view to
+    /// surface OAuth readiness calmly.
+    let redirectURIConfigured: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case env
+        case requiresSecret = "requires_secret"
+        case redirectURIConfigured = "redirect_uri_configured"
+    }
+}
+
 // MARK: - Link token (broker → app)
 
 /// Envelope the local broker returns after calling Plaid's

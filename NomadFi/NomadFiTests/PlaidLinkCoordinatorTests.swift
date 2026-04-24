@@ -258,6 +258,14 @@ private final class StubLinkClient: PlaidSandboxClient, @unchecked Sendable {
     var exchangeError: FinancialDataProviderError?
     private(set) var exchangeCallCount = 0
 
+    func health() async throws -> PlaidBrokerHealthResponse {
+        PlaidBrokerHealthResponse(
+            ok: true,
+            env: "sandbox",
+            requiresSecret: false,
+            redirectURIConfigured: true
+        )
+    }
     func createLinkToken() async throws -> PlaidLinkTokenResponse {
         if let createLinkTokenError { throw createLinkTokenError }
         return linkTokenToReturn

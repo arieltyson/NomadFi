@@ -1036,7 +1036,17 @@ The memo's follow-through — a bounded Plaid *sandbox* proof — is
 also shipped as [`docs/research/PlaidSandboxProof.md`](./research/PlaidSandboxProof.md)
 plus the scaffolding under
 `Core/Services/FinancialData/Providers/Plaid/` and the local-only
-broker under `tools/plaid-sandbox-broker/`.
+broker under `tools/plaid-sandbox-broker/`. The operational
+real-device unblock ships alongside as
+[`docs/research/PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md),
+backed by: (a) a LAN-mode + shared-secret option on the broker
+(`PLAID_BROKER_BIND_HOST` + `PLAID_BROKER_SHARED_SECRET`), (b) a
+DEBUG-only `PlaidSandboxDeveloperConfigView` under Settings →
+Financial Setup → Financial Connections, (c) a health-check
+endpoint mapped onto four calm states, and (d) `NSAllowsLocalNetworking`
++ `NSLocalNetworkUsageDescription` in a new real `Info.plist` for
+the NomadFi target so a physical device can actually reach the
+developer's local broker on a trusted Wi-Fi.
 Primary-source-only evaluation of Plaid, Akoya, MX,
 Mastercard / Finicity, and direct FDX/FAPI against NomadFi's
 actual cross-border target-user profile (US / Canada / TT).
@@ -1641,7 +1651,8 @@ re-debating whether the foundation exists.
 ## Current Next Step
 
 **Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
-real Plaid Link / OAuth readiness) are shipped.** The FinanceKit capability request for
+real Plaid Link / OAuth readiness + operational real-device
+unblock) are shipped.** The FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
@@ -1655,31 +1666,40 @@ paper model); one remains unresolved (real Canadian coverage).
 
 Highest-leverage remaining work, in order:
 
-- **Phase 5C final step — Apple entitlement landing.** Wait for
-  Apple's response to the submitted FinanceKit capability request.
-  On approval, add `com.apple.developer.financekit` to
+- **Phase 5D criterion 5 — real-device Canadian-FI validation.**
+  The architecture is in-code; the operational harness is in-code;
+  what remains is a human with a physical iPhone running the
+  runbook at
+  [`docs/research/PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md).
+  Pass resolves criterion 5. Fail fires the bakeoff memo's "no
+  provider clears the bar yet" branch. Both outcomes unblock the
+  roadmap.
+- **Phase 5C final step — Apple entitlement landing (parallel).**
+  Wait for Apple's response to the submitted FinanceKit capability
+  request. On approval, add `com.apple.developer.financekit` to
   `NomadFi/NomadFi.entitlements`, regenerate provisioning profiles,
   and run the real-device test matrix in
   [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md).
   No in-repo code changes are needed to start ingesting live
   FinanceKit data once the entitlement is provisioned.
-- **Phase 5E gating decision.** After FinanceKit's real-device
-  bakeout:
+- **Phase 5E gating decision.** Only after the two steps above:
   - If FinanceKit alone clears the bar for NomadFi's cross-border
-    archetype, Phase 5E stays deferred and the Plaid sandbox
-    scaffolding remains inactive in production.
-  - If FinanceKit does not clear the bar, move into a real Plaid
-    Link flow (add `LinkKit` via SPM behind the existing adapter;
-    exchange the sandbox bypass for a production-access
-    conversation with Plaid) against at least one target Canadian
-    FI to resolve criterion 5.
-- **Phase 5D / Akoya parallel.** Hold the Akoya sandbox comparison
-  until the real Plaid Link flow has been observed — otherwise the
-  comparison is academic. When it starts, it lands as a second
-  provider behind the existing `ExternalAggregatorFinancialDataProvider`
-  seam (mirroring the Plaid sandbox shape).
+    archetype AND Plaid Canadian coverage is confirmed, Phase 5E
+    becomes a prioritisation call rather than a blocker — defer
+    or go based on cost modelling.
+  - If FinanceKit does not clear the bar AND Plaid passed, start
+    a production-access conversation with Plaid and convert the
+    sandbox scaffolding into Phase 5E.
+  - If neither clears the bar, sit on FinanceKit + manual + CSV
+    and revisit when regulator implementation (CFPB 1033, Canada
+    Consumer-Driven Banking) changes the landscape.
+- **Phase 5D / Akoya parallel.** Paused until the real Plaid Link
+  flow has been observed. If Plaid fails *and* an explicit
+  primary-source reason exists to believe Akoya's Canadian
+  coverage differs meaningfully, a sandbox comparison starts —
+  otherwise it stays paused.
 - **Phase 5F — production hardening for provider scale.** Parked
-  until at least one real upstream is live.
+  until at least one real upstream is live in production.
 - **Phase 8 investing education + index-fund tracking** — the next
   net-new Learn surface once the financial-data layer has a live
   upstream.

@@ -77,7 +77,7 @@ private extension FinancialSetupSettingsView {
         } header: {
             Text("Connections")
         } footer: {
-            Text("NomadFi supports manual entry, CSV import, and Apple FinanceKit. Third-party aggregators are not enabled in this build.")
+            Text("NomadFi supports manual entry, CSV import, and Apple FinanceKit. A Plaid sandbox path is available only in developer builds for Phase 5D validation; no third-party aggregator is active for end users yet.")
         }
     }
 

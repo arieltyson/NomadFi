@@ -342,6 +342,14 @@ private final class StubPlaidSandboxClient: PlaidSandboxClient, @unchecked Senda
     ]
     private var cursor = 0
 
+    func health() async throws -> PlaidBrokerHealthResponse {
+        PlaidBrokerHealthResponse(
+            ok: true,
+            env: "sandbox",
+            requiresSecret: false,
+            redirectURIConfigured: false
+        )
+    }
     func createLinkToken() async throws -> PlaidLinkTokenResponse {
         linkTokenToReturn
     }
