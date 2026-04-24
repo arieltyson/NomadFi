@@ -43,6 +43,15 @@ Secrets/
 .env
 .env.*
 
+# ===========================
+# Private docs (sensitive, not public-safe)
+# ===========================
+## Owner-only testbed document. Remains on disk for local reference
+## but is no longer tracked. Existing commits still contain it on the
+## public remote — this entry only prevents future changes from
+## being pushed.
+docs/ARIEL.md
+
 # Local agent/editor settings
 .claude/
 
