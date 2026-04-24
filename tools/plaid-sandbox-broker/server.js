@@ -52,19 +52,15 @@ if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
   process.exit(1);
 }
 
-const countryCodes = (process.env.PLAID_COUNTRY_CODES || 'US')
-  .split(',')
-  .map((s) => s.trim().toUpperCase())
-  .filter(Boolean)
-  .map((code) => CountryCode[code])
-  .filter(Boolean);
+const countryCodes = parsePlaidEnumList(
+  process.env.PLAID_COUNTRY_CODES || 'US',
+  CountryCode
+);
 
-const products = (process.env.PLAID_PRODUCTS || 'transactions')
-  .split(',')
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean)
-  .map((name) => Products[name])
-  .filter(Boolean);
+const products = parsePlaidEnumList(
+  process.env.PLAID_PRODUCTS || 'transactions',
+  Products
+);
 
 const sandboxInstitutionID = process.env.PLAID_SANDBOX_INSTITUTION_ID || 'ins_109508';
 const redirectURI = (process.env.PLAID_REDIRECT_URI || '').trim() || null;
@@ -300,6 +296,35 @@ function resolveAccessToken(req, res) {
     return null;
   }
   return entry.accessToken;
+}
+
+function parsePlaidEnumList(rawValue, enumObject) {
+  return String(rawValue)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((token) => resolvePlaidEnumValue(token, enumObject))
+    .filter(Boolean);
+}
+
+function resolvePlaidEnumValue(token, enumObject) {
+  const exact = enumObject[token];
+  if (exact) return exact;
+
+  const lower = token.toLowerCase();
+  const upper = token.toUpperCase();
+  const pascal = lower.charAt(0).toUpperCase() + lower.slice(1);
+
+  return (
+    enumObject[lower] ||
+    enumObject[upper] ||
+    enumObject[pascal] ||
+    Object.values(enumObject).find((value) => {
+      if (typeof value !== 'string') return false;
+      return value.toLowerCase() === lower;
+    }) ||
+    null
+  );
 }
 
 function sendPlaidError(res, err) {

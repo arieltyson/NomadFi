@@ -46,6 +46,16 @@ struct FinanceKitFinancialDataProvider: FinancialDataProvider {
     // MARK: - Availability / authorization
 
     func availability() async -> FinancialDataProviderAvailability {
+        // The entitlement probe MUST come before any `FinanceStore`
+        // reference. On a real device without the managed
+        // `com.apple.developer.financekit` entitlement, even the
+        // documented `isDataAvailable(.financialData)` symbol aborts
+        // the process with "Process is not entitled" — Swift cannot
+        // catch that, so we simply never reach it until provisioned.
+        guard FinanceKitEntitlement.isProvisioned else {
+            Self.logger.info("FinanceKit entitlement not provisioned")
+            return .unavailable(reason: .entitlementNotProvisioned)
+        }
         guard FinanceStore.isDataAvailable(.financialData) else {
             Self.logger.info("FinanceKit data class not available on this device")
             return .unavailable(reason: .notSupportedOnDevice)
@@ -54,6 +64,9 @@ struct FinanceKitFinancialDataProvider: FinancialDataProvider {
     }
 
     func authorizationStatus() async -> FinancialDataAuthorizationStatus {
+        guard FinanceKitEntitlement.isProvisioned else {
+            return .unavailable
+        }
         guard FinanceStore.isDataAvailable(.financialData) else {
             return .unavailable
         }
@@ -74,6 +87,9 @@ struct FinanceKitFinancialDataProvider: FinancialDataProvider {
     }
 
     func requestAuthorization() async throws -> FinancialDataAuthorizationStatus {
+        guard FinanceKitEntitlement.isProvisioned else {
+            throw FinancialDataProviderError.providerUnavailable(.entitlementNotProvisioned)
+        }
         guard FinanceStore.isDataAvailable(.financialData) else {
             throw FinancialDataProviderError.providerUnavailable(.notSupportedOnDevice)
         }
