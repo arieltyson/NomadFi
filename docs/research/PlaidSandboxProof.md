@@ -38,6 +38,10 @@ sandbox pass; the remaining gates are evidentiary, not architectural:
 Operational next step (when ready): apply for Plaid's Limited
 Production / Trial environment for `com.arieljtyson.NomadFi` so the
 broker can be pointed at a real Canadian FI with real credentials.
+The broker already supports the live-data mode natively
+(`PLAID_ENV=production` + `PLAID_LIVE_DATA_EVALUATION=1`); the
+preflight checklist is documented in
+[`PlaidLimitedProductionReadiness.md`](./PlaidLimitedProductionReadiness.md).
 Document the outcome in a successor artifact, **not** by re-running
 sandbox.
 

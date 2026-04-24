@@ -1658,9 +1658,14 @@ re-debating whether the foundation exists.
 **Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
 real Plaid Link / OAuth readiness + operational real-device unblock +
 DEBUG-only validation recorder / redacted evidence export +
-**first real-device sandbox plumbing run on April 24, 2026**) are
+**first real-device sandbox plumbing run on April 24, 2026** +
+**Plaid Limited Production preflight / broker live-data mode**) are
 shipped. Phase 5D execution / plumbing is *pass*; criterion 5 (real
-target Canadian FI) remains *unresolved*.** The FinanceKit capability request for
+target Canadian FI) remains *unresolved*; Phase 5E remains
+*blocked* on (a) Plaid Limited Production access being granted for
+`com.arieljtyson.NomadFi` and the live-data Canadian-FI run from
+[`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
+clearing, and (b) Apple's FinanceKit response landing.** The FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
@@ -1686,12 +1691,16 @@ Highest-leverage remaining work, in order:
   [plaid.com/docs/sandbox/test-credentials/](https://plaid.com/docs/sandbox/test-credentials/)
   — both vendor-reported), so the April 24 run cannot prove real
   CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login
-  behaviour. The next step that resolves criterion 5 is the
-  **live-data Canadian-FI run** in
+  behaviour. The repo is now Limited Production-ready: the broker
+  supports `PLAID_ENV=production` + `PLAID_LIVE_DATA_EVALUATION=1`
+  with `/sandbox/*` endpoints disabled in that mode, and
+  [`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
+  is the preflight checklist. **The next concrete step is** Plaid
+  Dashboard production / Limited Production access for
+  `com.arieljtyson.NomadFi`, followed by the live-data Canadian-FI
+  run in
   [`PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md)
-  §8.3 — which depends on Plaid's Limited Production / Trial
-  approval for `com.arieljtyson.NomadFi`, not on additional sandbox
-  reruns.
+  §8.3. No more sandbox reruns advance the roadmap.
 - **Phase 5C final step — Apple entitlement landing (parallel).**
   Wait for Apple's response to the submitted FinanceKit capability
   request. On approval, add `com.apple.developer.financekit` to

@@ -1,115 +1,153 @@
-# Plaid Sandbox Broker
+# Plaid Broker (developer-only)
 
-Local-only HTTP broker that holds Plaid **sandbox** credentials on
-behalf of the NomadFi iOS app during the bounded Phase 5D sandbox
-proof (see
-[`docs/research/OpenFinanceProviderBakeoff.md`](../../docs/research/OpenFinanceProviderBakeoff.md)
-and
-[`docs/research/PlaidSandboxProof.md`](../../docs/research/PlaidSandboxProof.md)).
+Local-only HTTP broker that holds Plaid credentials on behalf of the
+NomadFi iOS app during developer evaluation runs. Two modes:
 
-This process is **not** shipped. It is not deployed. It is run by a
-developer on their own machine, reachable only on `127.0.0.1`.
+- **Sandbox** (default) — pairs with
+  [`docs/research/PlaidSandboxProof.md`](../../docs/research/PlaidSandboxProof.md)
+  and the Phase 5D real-device sandbox plumbing run.
+- **Live-data evaluation** — pairs with
+  [`docs/research/PlaidLimitedProductionReadiness.md`](../../docs/research/PlaidLimitedProductionReadiness.md)
+  and the Phase 5D §8.3 live Canadian-FI run that resolves criterion 5.
+
+This process is **not** shipped. It is not deployed. It runs on a
+developer machine, reachable on `127.0.0.1` by default and only on
+the LAN with a shared secret during active real-device evaluation.
+
+The folder name (`plaid-sandbox-broker`) is historical — kept stable
+to avoid pbxproj-adjacent churn now that the broker safely supports
+both sandbox and live-data modes.
 
 ## Why this exists
 
-Plaid's `client_id` and `secret` are server-side credentials. Putting
-them in an iOS app — even in the Keychain — would be a Plaid policy
-violation and, more importantly, would leak every sandbox user's
-consent scope to anyone with access to the binary. The broker keeps
-the credentials out of the app entirely. The iOS side only ever sees:
+Plaid's `client_id` and `secret` are server-side credentials per
+[plaid.com/docs/api/](https://plaid.com/docs/api/) (vendor-reported).
+Putting them in an iOS app — even in the Keychain — would be a Plaid
+policy violation and would expose every user's consent scope to
+anyone with access to the binary. The broker keeps the credentials
+out of the app entirely. The iOS side only ever sees:
 
-- a broker base URL the developer sets in the Keychain (
-  `com.nomadfi.plaidSandboxBrokerURL`);
-- an opaque item handle (`itm_…`) the broker issues after it has
-  exchanged Plaid's `public_token` for an `access_token`;
+- a broker base URL the developer sets in the Keychain
+  (`com.nomadfi.plaidSandboxBrokerURL`);
+- an opaque item handle (`itm_…`) the broker issues after exchanging
+  Plaid's `public_token` for an `access_token`;
 - a `/transactions/sync` cursor.
 
 The real `access_token` never leaves the broker process.
 
 ## Setup
 
-1. Install Node.js 20+ (the `engines` field pins the minimum).
+1. Install Node.js 20+ (the `engines` field in `package.json` pins
+   the minimum).
 2. From this directory:
 
    ```sh
    cp .env.example .env
-   # Paste only SANDBOX credentials into .env.
-   # PLAID_ENV=sandbox is enforced — the broker refuses to start
-   # against development or production environments.
+   # Paste your Plaid credentials.
+   # Sandbox mode (default): only sandbox keys are needed.
+   # Live-data mode: see PlaidLimitedProductionReadiness.md first.
    npm install
    npm run start
    ```
 
-3. Verify `curl http://127.0.0.1:8787/health` returns `{"ok":true,"env":"sandbox"}`.
+3. Verify with `curl http://127.0.0.1:8787/health`. Expected:
 
-## Configuring the iOS app
+   ```json
+   { "ok": true, "env": "sandbox", "requires_secret": false, "redirect_uri_configured": true }
+   ```
 
-On a development device or simulator with the NomadFi debug build:
+## Operating modes
 
-1. Open Settings → Financial Setup → Financial Connections. The
-   Plaid sandbox row reads **Not enabled in this build** by default.
-2. Store the broker URL in the Keychain (`com.nomadfi.plaidSandboxBrokerURL`).
-   For local development this can be done through a debug helper in
-   Xcode (breakpoint + `po` call to `PlaidSandboxConfiguration().setBrokerURL(…)`).
-   Production builds do not and should not call this path.
-3. Tap **Authorize** on the Plaid sandbox row. The provider will
-   call `/sandbox/item/create` and persist the returned item handle.
-4. Tap **Sync Now**. The provider calls `/accounts/get` and
-   `/transactions/sync`, maps the responses through
-   `PlaidSandboxSnapshotMapper`, and hands the provider-neutral
-   snapshots to `FinancialDataReconciler`.
+| Knob | Sandbox (default) | Live-data evaluation |
+|---|---|---|
+| `PLAID_ENV` | `sandbox` | `production` |
+| `PLAID_LIVE_DATA_EVALUATION` | unset | `1` (must be set explicitly) |
+| Plaid keys | sandbox keys | production / Limited Production keys |
+| Plaid base URL | `https://sandbox.plaid.com` (vendor-reported) | `https://production.plaid.com` (vendor-reported) |
+| `/sandbox/item/create` | available | **disabled (HTTP 410)** |
+| `PLAID_REDIRECT_URI` | optional (sandbox institutions don't run OAuth) | **required** (most Canadian FIs are OAuth-capable) |
+| Startup banner | quiet | loud LIVE-DATA reminder |
+
+The broker refuses to start when:
+
+- `PLAID_ENV` is anything other than `sandbox` or `production`;
+- `PLAID_ENV=production` without `PLAID_LIVE_DATA_EVALUATION=1`
+  (deliberate opt-in — a forgotten env edit cannot silently move the
+  developer onto live data);
+- `PLAID_ENV=production` without `PLAID_REDIRECT_URI`;
+- `PLAID_BROKER_BIND_HOST` is anything other than loopback and
+  `PLAID_BROKER_SHARED_SECRET` is shorter than 16 characters.
+
+## Reachability
+
+The broker has two reachability modes (orthogonal to sandbox /
+live-data):
+
+- **Loopback (default).** `PLAID_BROKER_BIND_HOST=127.0.0.1`. Only
+  processes on the same Mac can reach it. Simulator builds hit it
+  through `http://127.0.0.1:8787`. No shared secret required.
+- **Developer LAN mode.** Set `PLAID_BROKER_BIND_HOST` to the Mac's
+  LAN IP (e.g. `192.168.1.42`) or `0.0.0.0`. The broker then refuses
+  to start without `PLAID_BROKER_SHARED_SECRET` (>= 16 chars). Every
+  request must carry an `X-NomadFi-Broker-Secret` header — the iOS
+  developer harness stores the matching secret in the Keychain.
+
+LAN mode is intended only for active real-device evaluation. Stop
+the broker when the run is done. Never run LAN mode on an untrusted
+network.
 
 ## Endpoints
 
 | Method + path | Purpose |
 |---|---|
-| `GET  /health` | Liveness + active env |
-| `POST /link/token/create` | Creates a Plaid `link_token`. When `PLAID_REDIRECT_URI` is set, the token requests the OAuth universal-link return path so OAuth-capable institutions can reopen NomadFi after the bank's consent. |
+| `GET  /health` | Liveness + active env + secret + redirect-URI flags. |
+| `POST /link/token/create` | Creates a Plaid `link_token`. Includes `redirect_uri` when configured. |
 | `POST /item/public_token/exchange` | `{ public_token }` from a real Link success → Plaid `/item/public_token/exchange`; returns an opaque item handle and the resolved institution name where possible. |
-| `POST /sandbox/item/create` | Plaid `/sandbox/public_token/create` → `/item/public_token/exchange`; returns an opaque item handle. Still available for sandbox-bypass tests. |
+| `POST /sandbox/item/create` | Sandbox-only shortcut: Plaid `/sandbox/public_token/create` → `/item/public_token/exchange`. **Disabled in production mode** (returns HTTP 410). |
 | `POST /accounts/get` | `{ item_id }` → Plaid `/accounts/get` + institution name |
 | `POST /transactions/sync` | `{ item_id, cursor? }` → Plaid `/transactions/sync` diff |
 
-## Reachability modes
+## Configuring the iOS app
 
-The broker has two operating modes:
+The DEBUG-only Plaid sandbox developer harness in NomadFi
+(Settings → Financial Setup → Financial Connections → Plaid sandbox
+developer harness) is mode-agnostic — it shows whatever `env` the
+broker reports through `/health`. Sandbox runs and live-data runs
+use the **same harness UI**, distinguished by:
 
-1. **Loopback (default).** `PLAID_BROKER_BIND_HOST=127.0.0.1`. Only
-   processes on the same Mac can reach it. Simulator builds hit it
-   through `http://127.0.0.1:8787`. No shared secret required.
+- the broker's reported `env` ("sandbox" vs "production");
+- whether the developer toggles "Include institution name in
+  export" before linking (recommended for live-data runs so the
+  evidence artifact records the FI).
 
-2. **Developer LAN mode (Phase 5D real-device validation).** Set
-   `PLAID_BROKER_BIND_HOST` to the Mac's LAN IP (e.g. `192.168.1.42`)
-   or `0.0.0.0`. The broker then refuses to start unless
-   `PLAID_BROKER_SHARED_SECRET` is set to a strong random value
-   (>= 16 characters). Every request must carry an
-   `X-NomadFi-Broker-Secret` header — the iOS app's developer
-   harness (Settings → Financial Connections → Plaid sandbox
-   developer harness) stores the matching secret in the Keychain.
+## Tests
 
-LAN mode is intended *only* for the bounded Phase 5D real-device
-validation runbook at
-[`docs/research/PlaidRealDeviceValidation.md`](../../docs/research/PlaidRealDeviceValidation.md).
-Exit LAN mode (stop the broker) when validation is done. Never run
-LAN mode on an untrusted network.
+```sh
+npm test
+```
+
+Runs Node's built-in test runner against `config.test.js`, which
+covers the env-vars → typed-config rules.
 
 ## Security posture
 
 - Default binds to `127.0.0.1` only.
 - LAN mode is gated on a strong shared-secret enforced per request.
-- Rejects startup unless `PLAID_ENV=sandbox`.
-- Item handles are random 12-byte prefixes (`itm_…`) — they are not
-  Plaid access_tokens.
-- In-memory item store. A broker restart drops state; the iOS side
-  re-runs the sandbox item flow to re-link.
-- `.env` and `.state.json` are gitignored by this directory's
-  `.gitignore`.
+- Live-data mode is gated on an explicit second flag
+  (`PLAID_LIVE_DATA_EVALUATION=1`) so a forgotten env edit cannot
+  push the developer onto production keys.
+- Item handles are random 12-byte prefixes (`itm_…`) — never Plaid
+  access_tokens.
+- In-memory item store. A broker restart drops state.
+- `.env` and `.state.json` are gitignored at the repo root and in
+  this directory.
 
 ## Not in scope
 
-- Production Plaid keys.
-- Multi-user onboarding.
-- Any persistent data plane beyond the sandbox lifetime.
+- Production multi-user onboarding.
+- Any persistent data plane beyond the developer evaluation lifetime.
 - Any endpoint that returns the real Plaid `access_token` to the
   client.
-- Any endpoint outside the minimum Phase 5D proof surface.
+- Webhooks, billing surfaces, or scale work — those belong to a
+  later production rollout if/when the bakeoff memo's "go on Plaid"
+  branch fires.

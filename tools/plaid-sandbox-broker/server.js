@@ -1,26 +1,41 @@
 // server.js
-// Local-only Plaid *sandbox* broker for NomadFi's Phase 5D bounded
-// sandbox proof. Not deployed. Not shipped. Holds Plaid client_id /
-// secret in an untracked `.env` file so nothing Plaid-shaped ever
-// touches the iOS app or the repo.
+// Local-only Plaid broker for NomadFi's Phase 5D + 5E preflight.
+// Not deployed. Not shipped. Holds Plaid `client_id` / `secret` in
+// an untracked `.env` file so nothing Plaid-shaped ever touches the
+// iOS app or the repo.
+//
+// Two modes (full rules in `config.js`):
+//
+//   1. Sandbox (default).  PLAID_ENV=sandbox.
+//      Backed by https://plaid.com/docs/sandbox/ — pre-defined test
+//      institutions + test credentials. The `/sandbox/*` shortcut
+//      endpoints are available.
+//
+//   2. Live-data evaluation.  PLAID_ENV=production AND
+//      PLAID_LIVE_DATA_EVALUATION=1.
+//      Backed by Plaid's production endpoint per
+//      https://plaid.com/docs/api/. Requires Plaid Dashboard
+//      production / Limited Production access for the developer's
+//      account; requires PLAID_REDIRECT_URI; rejects every
+//      `/sandbox/*` shortcut so behavior is unambiguous.
 //
 // Endpoints exposed to the NomadFi iOS app:
 //   POST /link/token/create
 //   POST /item/public_token/exchange
-//   POST /sandbox/item/create
-//   POST /accounts/get         { item_id }
-//   POST /transactions/sync    { item_id, cursor? }
+//   POST /sandbox/item/create        (sandbox only — 410 in production)
+//   POST /accounts/get               { item_id }
+//   POST /transactions/sync          { item_id, cursor? }
 //
-// Endpoints intentionally NOT exposed to the app:
-//   - anything that reveals the access_token to the client.
-//   - anything that talks to production or development Plaid
-//     environments.
+// The folder name `tools/plaid-sandbox-broker/` is historical; the
+// broker now safely supports both modes. Folder rename intentionally
+// avoided to keep diffs narrow.
 //
 // Source references (Plaid's own primary docs):
 //   https://plaid.com/docs/api/link/
 //   https://plaid.com/docs/api/items/
 //   https://plaid.com/docs/api/products/transactions/
 //   https://plaid.com/docs/sandbox/
+//   https://plaid.com/docs/link/oauth/
 
 'use strict';
 
@@ -35,55 +50,53 @@ const {
 const crypto = require('crypto');
 require('dotenv').config();
 
+const {
+  parseConfig,
+  parsePlaidEnumList,
+} = require('./config');
+
 // ---- Config ---------------------------------------------------------
 
-const port = Number(process.env.PORT) || 8787;
-const envName = (process.env.PLAID_ENV || 'sandbox').toLowerCase();
-if (envName !== 'sandbox') {
+let config;
+try {
+  config = parseConfig(process.env);
+} catch (err) {
   console.error(
-    '[plaid-sandbox-broker] refusing to start — PLAID_ENV must be "sandbox"'
-  );
-  process.exit(1);
-}
-if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
-  console.error(
-    '[plaid-sandbox-broker] PLAID_CLIENT_ID and PLAID_SECRET are required'
+    `[plaid-broker] refusing to start — ${err.code || 'CONFIG_ERROR'}: ${err.message}`
   );
   process.exit(1);
 }
 
-const countryCodes = parsePlaidEnumList(
-  process.env.PLAID_COUNTRY_CODES || 'US',
-  CountryCode
-);
+const {
+  port,
+  plaidEnv,
+  isLiveDataEvaluation,
+  clientID,
+  secret,
+  countryCodesRaw,
+  productsRaw,
+  sandboxInstitutionID,
+  redirectURI,
+  bindHost,
+  sharedSecret,
+  isLoopbackMode,
+} = config;
 
-const products = parsePlaidEnumList(
-  process.env.PLAID_PRODUCTS || 'transactions',
-  Products
-);
+const countryCodes = parsePlaidEnumList(countryCodesRaw, CountryCode);
+const products = parsePlaidEnumList(productsRaw, Products);
 
-const sandboxInstitutionID = process.env.PLAID_SANDBOX_INSTITUTION_ID || 'ins_109508';
-const redirectURI = (process.env.PLAID_REDIRECT_URI || '').trim() || null;
-
-const bindHost = (process.env.PLAID_BROKER_BIND_HOST || '127.0.0.1').trim();
-const sharedSecret = (process.env.PLAID_BROKER_SHARED_SECRET || '').trim();
-const isLoopbackMode = bindHost === '127.0.0.1' || bindHost === '::1' || bindHost === 'localhost';
-
-if (!isLoopbackMode && sharedSecret.length < 16) {
-  console.error(
-    '[plaid-sandbox-broker] refusing to start — LAN mode requires PLAID_BROKER_SHARED_SECRET (>= 16 chars). ' +
-    'Either set PLAID_BROKER_BIND_HOST back to 127.0.0.1 or generate a secret with `openssl rand -hex 32`.'
-  );
-  process.exit(1);
-}
+const plaidBasePath =
+  isLiveDataEvaluation
+    ? PlaidEnvironments.production
+    : PlaidEnvironments.sandbox;
 
 const plaid = new PlaidApi(
   new Configuration({
-    basePath: PlaidEnvironments.sandbox,
+    basePath: plaidBasePath,
     baseOptions: {
       headers: {
-        'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-        'PLAID-SECRET': process.env.PLAID_SECRET,
+        'PLAID-CLIENT-ID': clientID,
+        'PLAID-SECRET': secret,
       },
     },
   })
@@ -93,10 +106,11 @@ const plaid = new PlaidApi(
 //
 // Each entry maps the opaque item handle the broker returns to the
 // iOS app onto the real Plaid access_token. Restart the broker and
-// you lose this state — acceptable for a sandbox proof. Production
-// would persist this, but production is deliberately out of scope.
+// you lose this state — acceptable for a developer evaluation
+// harness. Production-grade persistence is deliberately out of
+// scope.
 
-const itemStore = new Map(); // itemHandle -> { accessToken, institutionName }
+const itemStore = new Map(); // itemHandle -> { accessToken, plaidItemID }
 
 // ---- App ------------------------------------------------------------
 
@@ -126,7 +140,7 @@ app.use((req, res, next) => {
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
-    env: envName,
+    env: plaidEnv,
     requires_secret: !isLoopbackMode,
     redirect_uri_configured: redirectURI !== null,
   });
@@ -135,16 +149,18 @@ app.get('/health', (_req, res) => {
 app.post('/link/token/create', async (_req, res) => {
   try {
     const payload = {
-      user: { client_user_id: 'nomadfi-sandbox-user' },
-      client_name: 'NomadFi Sandbox',
+      user: { client_user_id: 'nomadfi-evaluation-user' },
+      client_name: 'NomadFi',
       products,
       country_codes: countryCodes,
       language: 'en',
     };
     // Plaid requires an HTTPS redirect_uri for OAuth-capable
     // institutions on iOS. The URL must match the app's associated
-    // domains entitlement exactly (NomadFi uses `applinks:arieltyson.github.io`).
-    // Omitted for non-OAuth sandbox flows.
+    // domains entitlement exactly (NomadFi uses
+    // `applinks:arieltyson.github.io`). Required in production;
+    // optional in sandbox (sandbox institutions do not exercise
+    // OAuth).
     if (redirectURI) {
       payload.redirect_uri = redirectURI;
     }
@@ -199,6 +215,15 @@ app.post('/item/public_token/exchange', async (req, res) => {
 });
 
 app.post('/sandbox/item/create', async (_req, res) => {
+  if (isLiveDataEvaluation) {
+    res.status(410).json({
+      error_code: 'SANDBOX_ENDPOINT_DISABLED_IN_PRODUCTION',
+      error_message:
+        'The /sandbox/item/create shortcut is disabled when PLAID_ENV=production. ' +
+        'Use the real Plaid Link flow against your target institution instead.',
+    });
+    return;
+  }
   try {
     const created = await plaid.sandboxPublicTokenCreate({
       institution_id: sandboxInstitutionID,
@@ -298,39 +323,10 @@ function resolveAccessToken(req, res) {
   return entry.accessToken;
 }
 
-function parsePlaidEnumList(rawValue, enumObject) {
-  return String(rawValue)
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((token) => resolvePlaidEnumValue(token, enumObject))
-    .filter(Boolean);
-}
-
-function resolvePlaidEnumValue(token, enumObject) {
-  const exact = enumObject[token];
-  if (exact) return exact;
-
-  const lower = token.toLowerCase();
-  const upper = token.toUpperCase();
-  const pascal = lower.charAt(0).toUpperCase() + lower.slice(1);
-
-  return (
-    enumObject[lower] ||
-    enumObject[upper] ||
-    enumObject[pascal] ||
-    Object.values(enumObject).find((value) => {
-      if (typeof value !== 'string') return false;
-      return value.toLowerCase() === lower;
-    }) ||
-    null
-  );
-}
-
 function sendPlaidError(res, err) {
   const plaidError = err && err.response && err.response.data;
   if (plaidError) {
-    console.error('[plaid-sandbox-broker] plaid error', plaidError);
+    console.error('[plaid-broker] plaid error', plaidError);
     res.status(502).json({
       error_code: plaidError.error_code || 'PLAID_ERROR',
       error_type: plaidError.error_type || null,
@@ -338,7 +334,7 @@ function sendPlaidError(res, err) {
     });
     return;
   }
-  console.error('[plaid-sandbox-broker] unexpected error', err);
+  console.error('[plaid-broker] unexpected error', err);
   res.status(500).json({
     error_code: 'BROKER_ERROR',
     error_message: err && err.message ? err.message : null,
@@ -347,13 +343,20 @@ function sendPlaidError(res, err) {
 
 app.listen(port, bindHost, () => {
   console.log(
-    `[plaid-sandbox-broker] listening on http://${bindHost}:${port} (env=${envName}, ` +
-    `${isLoopbackMode ? 'loopback' : 'LAN + shared-secret required'})`
+    `[plaid-broker] listening on http://${bindHost}:${port} ` +
+      `(env=${plaidEnv}, ${isLoopbackMode ? 'loopback' : 'LAN + shared-secret required'})`
   );
-  if (!isLoopbackMode) {
+  if (isLiveDataEvaluation) {
+    console.warn(
+      '[plaid-broker] LIVE-DATA EVALUATION MODE. Real Plaid production ' +
+        'credentials are in use. /sandbox/* endpoints are disabled. ' +
+        'Stop the broker (Ctrl-C) the moment evaluation is complete; ' +
+        'never run this mode on an untrusted network.'
+    );
+  } else if (!isLoopbackMode) {
     console.log(
-      '[plaid-sandbox-broker] REMINDER: only run LAN mode during active ' +
-      'real-device validation, on a trusted network, behind a firewall.'
+      '[plaid-broker] REMINDER: only run LAN mode during active ' +
+        'real-device validation, on a trusted network, behind a firewall.'
     );
   }
 });

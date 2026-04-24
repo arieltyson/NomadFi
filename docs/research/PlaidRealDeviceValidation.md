@@ -248,21 +248,28 @@ sandbox plumbing run produces a clean artifact, only then move to
 ### 8.3 Live-data Canadian-FI run
 
 This is the run that resolves criterion 5. Sandbox plumbing pass
-(§8.1) is a prerequisite, not a substitute.
+(§8.1) is a prerequisite, not a substitute. The detailed preflight
+checklist — manual Plaid Dashboard work, env-var matrix, pass /
+fail / inconclusive criteria for live-data specifically — lives in
+[`PlaidLimitedProductionReadiness.md`](./PlaidLimitedProductionReadiness.md).
+The summary below is enough to recognise when this run is even
+ready to start.
 
 **Prerequisites (additional to §1):**
 
-- Apply for Plaid's Limited Production / Trial environment for
-  `com.arieljtyson.NomadFi` through the Plaid Dashboard; wait for
-  approval. (Vendor-reported flow per
-  [plaid.com/docs/sandbox/](https://plaid.com/docs/sandbox/) and
-  Plaid's onboarding portal.)
-- Replace the broker's sandbox `client_id` / `secret` in
-  `tools/plaid-sandbox-broker/.env` with the **Limited Production**
-  pair Plaid issues. Set `PLAID_ENV=production` (the broker's
-  `PLAID_ENV !== 'sandbox'` startup guard will need to be relaxed
-  in lockstep — that is a deliberate, scoped change for this run
-  only, and reverted when the run is complete).
+- Plaid Dashboard production / Limited Production access granted
+  for `com.arieljtyson.NomadFi`'s Plaid account, including allowed
+  redirect URIs configured to include
+  `https://arieltyson.github.io/nomadfi-privacy/plaid-oauth`.
+  (Vendor-reported flow at [plaid.com/docs/api/](https://plaid.com/docs/api/)
+  and [plaid.com/docs/link/oauth/](https://plaid.com/docs/link/oauth/);
+  full checklist in
+  [`PlaidLimitedProductionReadiness.md`](./PlaidLimitedProductionReadiness.md)
+  §1.)
+- Broker `.env` updated to live-data mode: `PLAID_ENV=production`
+  + `PLAID_LIVE_DATA_EVALUATION=1` + production keys + redirect
+  URI. The broker now supports both modes natively — no source
+  edits required.
 - Pick one target Canadian FI that the developer is willing to log
   into with their own real credentials: RBC / TD / Scotia / BMO /
   CIBC / Tangerine / Simplii (vendor-reported coverage at
@@ -292,8 +299,7 @@ This is the run that resolves criterion 5. Sandbox plumbing pass
    now read:
    - `Universal-link return observed: yes`
    - `Institution observed: <FI name> (vendor-reported by Plaid Link)`
-10. Stop the broker. Revert `.env` to sandbox. Revert the broker's
-    `PLAID_ENV` guard.
+10. Stop the broker. Revert `.env` to sandbox.
 
 **Pass criteria for §8.3 specifically:**
 

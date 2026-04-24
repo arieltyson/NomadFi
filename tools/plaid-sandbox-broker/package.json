@@ -2,13 +2,14 @@
   "name": "plaid-sandbox-broker",
   "version": "0.1.0",
   "private": true,
-  "description": "Local-only broker that holds Plaid sandbox credentials for NomadFi's Phase 5D bounded sandbox proof. Not shipped; not deployed.",
+  "description": "Local-only broker that holds Plaid sandbox or Limited Production credentials for NomadFi's Phase 5D + 5E preflight evaluation. Not shipped; not deployed.",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test config.test.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
