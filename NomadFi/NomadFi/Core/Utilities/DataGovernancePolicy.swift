@@ -185,6 +185,6 @@ enum DataGovernancePolicy {
     because there are no servers.
 
     Contact:
-    Questions about your privacy? Reach us at privacy@nomadfi.app.
+    Questions about your privacy? Reach us at arieltyson30190@gmail.com.
     """
 }

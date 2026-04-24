@@ -166,6 +166,16 @@
         }
       }
     },
+    "%@. %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@. %2$@. %3$@"
+          }
+        }
+      }
+    },
     "%lld" : {
 
     },
@@ -419,6 +429,8 @@
     "App version %@" : {
 
     },
+    "Apple FinanceKit" : {
+    },
     "Applied when no category override matches the purchase category." : {
 
     },
@@ -449,11 +461,20 @@
     "Authenticating..." : {
 
     },
+    "Authorization required" : {
+    },
+    "Authorize" : {
+    },
+    "Authorized — no eligible accounts found" : {
+
+    },
     "Available" : {
 
     },
     "Available credit (optional)" : {
 
+    },
+    "Available on supported devices" : {
     },
     "Back" : {
 
@@ -626,6 +647,10 @@
     "Connect to Location, Securely." : {
 
     },
+    "Connected" : {
+    },
+    "Connections" : {
+    },
     "Context" : {
 
     },
@@ -708,6 +733,8 @@
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
     },
+    "CSV import" : {
+    },
     "Currency" : {
 
     },
@@ -747,6 +774,8 @@
     },
     "Data confidence: %@" : {
 
+    },
+    "Data Sources" : {
     },
     "Date" : {
 
@@ -949,11 +978,17 @@
     "Export for Tax Season" : {
 
     },
+    "External aggregator" : {
+    },
     "Extracted Text" : {
 
     },
     "Fair Cost" : {
 
+    },
+    "FinanceKit data stays on-device and is never seen by Apple. NomadFi does not ship a third-party aggregator SDK in this build." : {
+    },
+    "Financial Connections" : {
     },
     "Financial insights: %lld recommendation%@ this week" : {
       "localizations" : {
@@ -1078,6 +1113,7 @@
 
     },
     "Import file" : {
+
     },
     "Imported" : {
 
@@ -1130,6 +1166,8 @@
     },
     "Last confirmed %@" : {
 
+    },
+    "Last synced %@" : {
     },
     "Last updated" : {
 
@@ -1224,6 +1262,11 @@
     },
     "Manage the accounts used for global net worth, FX analysis, and card recommendations." : {
 
+    },
+    "Manual entry" : {
+
+    },
+    "Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated; external aggregators are not enabled in this build." : {
     },
     "Manual transaction review and entry." : {
 
@@ -1327,6 +1370,8 @@
     "No card currently needs a paydown plan. Keep paying the statement balance in full by the due date." : {
 
     },
+    "No changes from the last sync." : {
+    },
     "No Credit Cards Yet" : {
 
     },
@@ -1402,6 +1447,8 @@
     "NomadFi is locked. Authenticate to access your financial data." : {
 
     },
+    "NomadFi only syncs in response to this action. Nothing runs in the background yet." : {
+    },
     "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
 
     },
@@ -1419,6 +1466,8 @@
     },
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
+    },
+    "NomadFi supports manual entry, CSV import, and Apple FinanceKit. Third-party aggregators are not enabled in this build." : {
     },
     "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
@@ -1450,6 +1499,11 @@
     "None" : {
 
     },
+    "Not available on this device" : {
+
+    },
+    "Not enabled in this build" : {
+    },
     "Not Now" : {
 
     },
@@ -1457,6 +1511,9 @@
 
     },
     "Not set" : {
+
+    },
+    "Not supported on this platform" : {
 
     },
     "Notes" : {
@@ -1543,6 +1600,8 @@
     "Opens the file picker. Parsing happens on this device only." : {
 
     },
+    "Opens the Financial Connections page where you can see which data sources are available and run an explicit sync." : {
+    },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
     },
@@ -1557,6 +1616,8 @@
     },
     "Opens the official source in your browser." : {
 
+    },
+    "Opens the provider's authorization prompt." : {
     },
     "Opens the receipts and tax document archive." : {
 
@@ -1664,6 +1725,7 @@
 
     },
     "Pick an account above to enable file selection." : {
+
     },
     "Pick an option for every question to enable Submit." : {
 
@@ -1878,6 +1940,8 @@
     },
     "Ruling" : {
 
+    },
+    "Runs a sync across every available provider and reconciles the result into your accounts." : {
     },
     "Save" : {
 
@@ -2098,6 +2162,20 @@
     },
     "Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration." : {
 
+    },
+    "Sync" : {
+    },
+    "Sync Now" : {
+    },
+    "Synced. %lld new, %lld updated, %lld transactions imported." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Synced. %1$lld new, %2$lld updated, %3$lld transactions imported."
+          }
+        }
+      }
     },
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 

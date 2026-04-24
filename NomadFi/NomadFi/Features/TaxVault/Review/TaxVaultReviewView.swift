@@ -66,10 +66,12 @@ struct TaxVaultReviewView: View {
                     Text("Scan a receipt")
                         .font(TypographyTokens.sectionHeader)
                         .accessibilityAddTraits(.isHeader)
-                    Text("Pick a photo of your receipt. NomadFi reads it on device, suggests a category, and waits for you to confirm.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Text(
+                        "Pick a photo of your receipt. NomadFi reads it on device, suggests a category, and waits for you to confirm."
+                    )
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                     PhotosPicker(
                         selection: $viewModel.selectedPhotoItem,
@@ -87,22 +89,26 @@ struct TaxVaultReviewView: View {
                         } icon: {
                             Image(systemName: "photo.on.rectangle")
                         }
-                        .labelStyle(.titleAndIcon)
+                        .labelStyle(TitleAndIconLabelStyle())
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .padding(.top, SpacingTokens.xxSmall)
-                    .accessibilityHint("Opens your photo library so NomadFi can scan a receipt on device.")
+                    .accessibilityHint(
+                        "Opens your photo library so NomadFi can scan a receipt on device."
+                    )
                 }
             }
         }
-        .listRowInsets(EdgeInsets(
-            top: SpacingTokens.xSmall,
-            leading: SpacingTokens.medium,
-            bottom: SpacingTokens.xSmall,
-            trailing: SpacingTokens.medium
-        ))
+        .listRowInsets(
+            EdgeInsets(
+                top: SpacingTokens.xSmall,
+                leading: SpacingTokens.medium,
+                bottom: SpacingTokens.xSmall,
+                trailing: SpacingTokens.medium
+            )
+        )
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
     }
@@ -113,10 +119,12 @@ struct TaxVaultReviewView: View {
                 VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                     Text("No suggestions to review")
                         .font(TypographyTokens.body)
-                    Text("NomadFi will surface tax-relevant transactions here when it sees them. Imports and manual entries both feed this queue.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Text(
+                        "NomadFi will surface tax-relevant transactions here when it sees them. Imports and manual entries both feed this queue."
+                    )
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             } icon: {
                 Image(systemName: "checkmark.seal")
