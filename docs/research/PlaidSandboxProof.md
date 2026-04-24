@@ -14,32 +14,95 @@ against the five pinned criteria from the bakeoff memo.
 
 ## 0. TL;DR
 
-| Criterion | Outcome (after Phase 5D gate-clearance slice) |
+| Criterion | Outcome (after Phase 5D execution decisioning, April 24, 2026) |
 |---|---|
-| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Pass (in-code)** — the full Link session runs through `PlaidLinkCoordinator` → `PlaidLinkPresenting` → Plaid's official `LinkKit` SDK; the `public_token` roundtrips through the broker's `/item/public_token/exchange`; the iOS side has the associated-domains entitlement, universal-link handling, and AASA hosted. Real-device validation against a live OAuth institution remains the only outside-repo step. |
-| 2. Accounts / balances / transactions project onto provider-neutral snapshots | **Pass** — unchanged from the prior slice. |
-| 3. `/transactions/sync` dedupe invariants hold through the existing reconciler | **Pass** — unchanged from the prior slice. |
-| 4. Unit-cost modelling stays inside a pre-revenue budget using public pricing | **Partial (paper)** — unchanged from the prior slice. |
-| 5. Canadian coverage against NomadFi's target-user institutions | **Unresolved** — still blocked on running the real Link flow against at least one target Canadian FI. The plumbing is now ready; only the production-access conversation + a real-device pass remain. |
+| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Pass (real-device sandbox)** — the full Link session ran end-to-end on a physical iPhone (April 24, 2026 sandbox run): broker `link_token/create` → LinkKit consent UI → `public_token` → broker `/item/public_token/exchange` → NomadFi persisted item handle. Universal-link return was not exercised because Plaid's sandbox institutions don't trigger an OAuth redirect (vendor-reported behaviour at https://plaid.com/docs/sandbox/institutions/); that path remains a real-OAuth-FI concern. |
+| 2. Accounts / balances / transactions project onto provider-neutral snapshots | **Pass (real-device sandbox)** — `/accounts/get` returned 10 accounts, all mapped through `PlaidSandboxSnapshotMapper`, and the reconciler created 10 accounts under provider-neutral durable identity. |
+| 3. `/transactions/sync` dedupe invariants hold through the existing reconciler | **Pass (real-device sandbox)** — first-pull diff produced 48 transactions; reconciler reported 0 unresolved + 0 duplicates with `degraded_gracefully=true`. |
+| 4. Unit-cost modelling stays inside a pre-revenue budget using public pricing | **Partial (paper)** — unchanged. Sandbox traffic is free; production pricing has not been negotiated. |
+| 5. Canadian coverage against NomadFi's target-user institutions | **Unresolved** — sandbox runs use Plaid's pre-defined test institutions (`ins_109508`-style) and test credentials (vendor-reported at https://plaid.com/docs/sandbox/institutions/ + https://plaid.com/docs/sandbox/test-credentials/). They cannot prove real CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login behaviour. Resolving criterion 5 requires a live-data path — Plaid's Limited Production / Trial environment against a real target Canadian FI — not another sandbox rerun. |
 
-Recommendation (unchanged in principle, tightened in detail): **do
-not start a full Phase 5E Plaid implementation yet, and do not start
-an Akoya comparison yet.** Criterion 1 is now in-code pass, so the
-remaining gate is operational:
+Recommendation (after the April 24, 2026 sandbox-on-device run):
+**do not start a full Phase 5E Plaid implementation yet, and do not
+start an Akoya comparison yet.** Criteria 1–3 are now real-device
+sandbox pass; the remaining gates are evidentiary, not architectural:
 
-1. The Apple FinanceKit entitlement request lands and real-device
-   validation confirms the free-tier coverage.
-2. A real Plaid Link flow against at least one target Canadian FI
-   is exercised with live sandbox credentials + a deployed
-   redirect URI — resolving criterion 5.
+1. **Apple FinanceKit entitlement** — request submitted, awaiting
+   Apple's response. Real-device FinanceKit validation depends on
+   it.
+2. **Real-target-FI live-data validation** — the only step that
+   resolves criterion 5. Sandbox cannot prove it; Plaid's docs are
+   explicit that sandbox simulates institution behaviour with
+   pre-defined test institutions and test credentials.
+
+Operational next step (when ready): apply for Plaid's Limited
+Production / Trial environment for `com.arieljtyson.NomadFi` so the
+broker can be pointed at a real Canadian FI with real credentials.
+Document the outcome in a successor artifact, **not** by re-running
+sandbox.
 
 If FinanceKit alone clears the bar for NomadFi's archetype, Phase
 5E stays deferred and the Plaid Link scaffolding remains inactive
-(the Settings row hides the Link button in production builds that
-have no broker URL). If it does not, the proof code and tests are
-strong enough to convert into Phase 5E quickly — the remaining
-work is a production-access conversation with Plaid and the
-removal of `/sandbox/*` bypasses.
+in production builds. If it does not, the proof code and tests are
+strong enough to convert into Phase 5E quickly — the remaining work
+is a production-access conversation with Plaid and the removal of
+`/sandbox/*` bypasses.
+
+---
+
+## 0.1 First real-device sandbox run (April 24, 2026)
+
+The validation recorder produced its first real-device sandbox
+artifact on a physical iPhone running NomadFi DEBUG, with the broker
+in LAN mode (Mac on iPhone hotspot to keep both endpoints on the
+same trusted network). Summary lifted from the artifact:
+
+- Session duration: 6m 34s.
+- 13 events recorded.
+- `link_token` created → LinkKit consent UI completed → exchange
+  succeeded → item handle persisted (`itm_****5681`).
+- Sync produced 10 account snapshots + 48 transaction snapshots; the
+  reconciler created 10 accounts with 0 unresolved / 0 duplicates.
+- Result marked **pass** by the developer.
+
+What this run **proved**:
+
+- Real-device NomadFi + LAN-mode broker reachability.
+- LinkKit + Plaid sandbox flow on a real device.
+- Public-token exchange via the broker.
+- `/accounts/get` + `/transactions/sync` projection through the pure
+  mapper into NomadFi's provider-neutral snapshots.
+- Reconciliation invariants on a real device (durable identity wins,
+  no cross-account merge, dedupe scoped per account).
+
+What this run **did not** prove:
+
+- Real CIBC (or any real Canadian FI) login behaviour. The institution
+  was a Plaid sandbox test institution with synthetic credentials.
+- OAuth universal-link return. Sandbox institutions don't trigger
+  Plaid's OAuth bank-handoff path; the universal-link plumbing
+  shipped in Phase 5D gate-clearance is exercised only when a real
+  OAuth-capable FI is linked under live data.
+- Any per-FI coverage claim under Plaid's marketed Canadian list.
+
+Recorder caveat: the artifact's auto-generated criterion-5 line read
+"Broker reachable: no" because the developer didn't tap the explicit
+`/health` probe before launching Link. The downstream events
+(successful `public_token_exchange` + `sync_finished` with 10 accounts
++ 48 transactions) are stronger evidence of reachability — every one
+of those calls routed through the broker. The Markdown writer was
+upgraded after this run to label that branch as
+`yes (inferred from successful exchange/sync)` so future artifacts
+read accurately. Health-check verification still wins the label
+when an explicit probe has run.
+
+Institution-name caveat: the Markdown reads "Institution observed:
+not recorded in this export" because the developer did not toggle
+**Include institution name in export** in the harness before linking.
+For runs that need institution evidence, flip the toggle on before
+the link launch. The recorder always logs `display_name_included`
+either way so a future reader can tell whether the absence is
+"redacted on purpose" vs. "never observed".
 
 ---
 

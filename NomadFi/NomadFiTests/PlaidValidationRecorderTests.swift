@@ -226,6 +226,69 @@ struct PlaidValidationRecorderTests {
         #expect(markdown?.contains("29f63c0ccff1") == false)
     }
 
+    @Test("Broker reachability is inferred from successful exchange + sync when no health check ran")
+    func brokerReachabilityInferredFromExchangeAndSync() {
+        let clock: @Sendable () -> Date = { Date(timeIntervalSince1970: 1_714_300_000) }
+        let recorder = PlaidValidationRecorder(clock: clock, appVersion: "1.0 (1)")
+        recorder.startSession()
+        // Skip the health check entirely — emulate the April 2026
+        // first-real-device run that went straight from Link to sync.
+        recorder.recordLinkLaunchRequested()
+        recorder.recordPublicTokenExchanged(success: true)
+        recorder.recordItemHandlePersisted(rawHandle: "itm_aaaa1111bbbb2222")
+        recorder.recordReconciliationFinished(
+            result: FinancialDataReconciliationResult(
+                matchedAccountsByDurableLink: 0,
+                matchedAccountsByFallback: 0,
+                createdAccounts: 10,
+                updatedAccounts: 0,
+                insertedTransactions: 48,
+                skippedDuplicateTransactions: 0,
+                unresolvedAmbiguousSnapshots: 0
+            )
+        )
+        // syncFinished requires a `FinancialDataSyncReport`; the
+        // simplest deterministic shape:
+        recorder.recordSyncFinished(
+            report: FinancialDataSyncReport(
+                accountSnapshots: [],
+                transactionSnapshots: [],
+                outcomes: [],
+                completedAt: Date(timeIntervalSince1970: 1_714_300_000)
+            )
+        )
+        recorder.endSession(result: PlaidValidationSession.Result.pass)
+
+        let markdown = try? #require(recorder.exportMarkdown())
+        #expect(
+            markdown?.contains(
+                "Broker reachable: yes (inferred from successful exchange/sync)"
+            ) == true
+        )
+    }
+
+    @Test("Health-check verification still wins the broker-reachability label")
+    func brokerReachabilityHealthCheckLabel() {
+        #expect(
+            PlaidValidationMarkdownWriter.brokerReachableLabel(
+                healthVerified: true,
+                exchangeSucceeded: false,
+                syncSucceeded: false
+            ) == "yes (verified by health check)"
+        )
+    }
+
+    @Test("Broker reachability reports 'no' only when there is genuinely no signal")
+    func brokerReachabilityFallsBackToNo() {
+        #expect(
+            PlaidValidationMarkdownWriter.brokerReachableLabel(
+                healthVerified: false,
+                exchangeSucceeded: false,
+                syncSucceeded: false
+            ) == "no"
+        )
+    }
+
     @Test("Markdown export renders empty-event sessions without crashing")
     func markdownExportHandlesEmptyEvents() {
         let clock: @Sendable () -> Date = { Date(timeIntervalSince1970: 1_714_300_000) }

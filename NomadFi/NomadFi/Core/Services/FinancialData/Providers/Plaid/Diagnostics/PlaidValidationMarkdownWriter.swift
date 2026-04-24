@@ -97,9 +97,16 @@ enum PlaidValidationMarkdownWriter {
         return "\(minutes)m \(remainder)s"
     }
 
-    /// Projects an event log into a six-bullet criterion-5 summary.
+    /// Projects an event log into a seven-bullet criterion-5 summary.
     /// Claude can scan this section alone to decide pass/fail when
     /// the full event log is too verbose.
+    ///
+    /// Broker reachability is reported as **inferred** when the
+    /// session has no explicit `broker_health_checked` event but
+    /// downstream calls (public-token exchange, `/transactions/sync`)
+    /// succeeded — those calls *are* the broker proving it is
+    /// reachable. The earlier writer reported "no" in that case,
+    /// which created a false-negative on the April 2026 sandbox run.
     static func criterion5Summary(for session: PlaidValidationSession) -> [String] {
         func contains(_ kinds: PlaidValidationEvent.Kind...) -> Bool {
             session.events.contains(where: { kinds.contains($0.kind) })
@@ -108,17 +115,18 @@ enum PlaidValidationMarkdownWriter {
             session.events.last { $0.kind == kind }?.details[key]
         }
 
-        let brokerReachable = lastDetail(.brokerHealthChecked, "reachable") == "true"
+        let healthVerified = lastDetail(.brokerHealthChecked, "reachable") == "true"
+        let exchangeSucceeded = lastDetail(.publicTokenExchanged, "success") == "true"
+        let syncSucceeded = contains(.syncFinished)
         let linkLaunched = contains(.linkLaunchRequested)
         let universalLinkObserved = contains(.universalLinkObserved)
-        let exchangeSucceeded = lastDetail(.publicTokenExchanged, "success") == "true"
         let itemPersisted = contains(.itemHandlePersisted)
         let reconCreated = lastDetail(.reconciliationFinished, "created_accounts") ?? "0"
         let reconInserted = lastDetail(.reconciliationFinished, "inserted_transactions") ?? "0"
         let institution = lastDetail(.institutionObserved, "display_name")
 
         var lines: [String] = []
-        lines.append("Broker reachable: \(brokerReachable ? "yes" : "no")")
+        lines.append("Broker reachable: \(brokerReachableLabel(healthVerified: healthVerified, exchangeSucceeded: exchangeSucceeded, syncSucceeded: syncSucceeded))")
         lines.append("Plaid Link launched: \(linkLaunched ? "yes" : "no")")
         lines.append("Universal-link return observed: \(universalLinkObserved ? "yes" : "no")")
         lines.append("Public-token exchanged: \(exchangeSucceeded ? "yes" : "no")")
@@ -133,6 +141,26 @@ enum PlaidValidationMarkdownWriter {
         }
         lines.append("Result: \(session.result.rawValue)")
         return lines
+    }
+
+    /// Resolves the broker-reachability cell of the criterion-5
+    /// summary. Distinguishes a session that explicitly probed
+    /// `/health` from one that didn't but proved reachability via
+    /// downstream calls. Either way, future readers see one
+    /// unambiguous answer with a parenthetical describing the
+    /// evidence path.
+    static func brokerReachableLabel(
+        healthVerified: Bool,
+        exchangeSucceeded: Bool,
+        syncSucceeded: Bool
+    ) -> String {
+        if healthVerified {
+            return "yes (verified by health check)"
+        }
+        if exchangeSucceeded || syncSucceeded {
+            return "yes (inferred from successful exchange/sync)"
+        }
+        return "no"
     }
 }
 

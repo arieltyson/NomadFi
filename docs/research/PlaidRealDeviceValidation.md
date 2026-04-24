@@ -1,15 +1,22 @@
 # Plaid Real-Device Validation — Phase 5D Operational Runbook
 
-Hands-on checklist for resolving criterion 5 of the bakeoff memo
-([`OpenFinanceProviderBakeoff.md`](./OpenFinanceProviderBakeoff.md))
-and the Phase 5D sandbox proof
-([`PlaidSandboxProof.md`](./PlaidSandboxProof.md)) — running one real
-Plaid Link flow against at least one of NomadFi's target Canadian
-FIs on a physical iPhone.
+Hands-on checklist for two related but **distinct** Phase 5D runs.
+Each run produces a recorder artifact via the DEBUG-only validation
+recorder; the artifact's evidence determines what was actually
+proven.
+
+| Run kind | What it proves | What it does **not** prove |
+|---|---|---|
+| **Sandbox plumbing run** (this runbook, §1–§5) | Real-device NomadFi + broker + LinkKit + exchange + `/accounts/get` + `/transactions/sync` + reconciliation all work end-to-end. Resolves Phase 5D execution / plumbing. Compatible with Plaid sandbox test institutions per [plaid.com/docs/sandbox/institutions/](https://plaid.com/docs/sandbox/institutions/) (vendor-reported). | Real CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login. Real OAuth bank handoff. Per-FI Canadian coverage. **Does not resolve criterion 5.** |
+| **Live-data Canadian-FI run** (§8) | One target Canadian FI under Plaid's Limited Production / Trial environment with real user credentials. Resolves criterion 5. | Long-term unit economics, sandbox-vs-production fidelity in aggregate, broader-coverage claims for other FIs. |
 
 This is a **developer-only** validation path. Nothing in here ships
-to production; every piece of the harness is gated on DEBUG builds or
-an explicit broker-side flag.
+to production; every piece of the harness is gated on DEBUG builds
+or an explicit broker-side flag. The first sandbox plumbing run was
+completed on April 24, 2026 with 10 accounts + 48 transactions
+reconciled; see
+[`PlaidSandboxProof.md`](./PlaidSandboxProof.md) §0.1 for the
+artifact summary. The live-data run remains pending — see §8.
 
 ---
 
@@ -217,44 +224,109 @@ FI:
 
 ---
 
-## 8. Decision branches after validation
+## 8. Decision branches after a sandbox plumbing run
 
-### 8.1 Pass
+These branches apply to the run kind described in §1–§7 above (the
+sandbox plumbing run). A sandbox **pass** resolves Phase 5D
+execution / plumbing only — it does **not** resolve criterion 5.
+For criterion 5, see §8.3 (live-data run).
 
-Criterion 5 of the bakeoff memo resolves. The roadmap can move
-forward as follows:
+### 8.1 Sandbox pass
 
-1. If Apple has also approved the FinanceKit capability AND the
-   FinanceKit real-device bakeout passes, NomadFi's cross-border
-   archetype now has two validated upstreams and Phase 5E (one
-   concrete external adapter) becomes a decision rather than a
-   gate — go or no-go based on cost modelling and product priority.
-2. If FinanceKit has not cleared its own bar yet, NomadFi can still
-   begin Phase 5E production-access conversations with Plaid —
-   because the bakeoff memo's "no provider clears the bar yet"
-   branch is closed by this pass.
+Plumbing is proven. Stop the broker (return
+`PLAID_BROKER_BIND_HOST=127.0.0.1`) and proceed to §8.3 once you
+want criterion-5 evidence.
 
-Regardless of branch 1 or 2, **stop running LAN mode**. Switch the
-broker back to `PLAID_BROKER_BIND_HOST=127.0.0.1`. The validation
-harness is not a production backend.
+### 8.2 Sandbox fail
 
-### 8.2 Fail
+Do not escalate to a live-data run on this provider — fix whatever
+the sandbox artifact reveals first (recorder events, mapping bug,
+reconciliation invariant break, or broker error). When the
+sandbox plumbing run produces a clean artifact, only then move to
+§8.3.
 
-Do not escalate to Phase 5E on this provider. Fall back to the
-bakeoff memo's "no provider clears the bar yet" branch:
+### 8.3 Live-data Canadian-FI run
+
+This is the run that resolves criterion 5. Sandbox plumbing pass
+(§8.1) is a prerequisite, not a substitute.
+
+**Prerequisites (additional to §1):**
+
+- Apply for Plaid's Limited Production / Trial environment for
+  `com.arieljtyson.NomadFi` through the Plaid Dashboard; wait for
+  approval. (Vendor-reported flow per
+  [plaid.com/docs/sandbox/](https://plaid.com/docs/sandbox/) and
+  Plaid's onboarding portal.)
+- Replace the broker's sandbox `client_id` / `secret` in
+  `tools/plaid-sandbox-broker/.env` with the **Limited Production**
+  pair Plaid issues. Set `PLAID_ENV=production` (the broker's
+  `PLAID_ENV !== 'sandbox'` startup guard will need to be relaxed
+  in lockstep — that is a deliberate, scoped change for this run
+  only, and reverted when the run is complete).
+- Pick one target Canadian FI that the developer is willing to log
+  into with their own real credentials: RBC / TD / Scotia / BMO /
+  CIBC / Tangerine / Simplii (vendor-reported coverage at
+  [plaid.com/en-ca/](https://plaid.com/en-ca/)).
+- Confirm the GitHub Pages AASA + `/plaid-oauth` page are live and
+  Apple's `swcd` cache has refreshed (a fresh device, or
+  `xcrun simctl spawn booted swcutil reset`).
+
+**Run:**
+
+1. Boot the broker in LAN mode + Production environment.
+2. Launch NomadFi DEBUG on a physical device on the same trusted
+   Wi-Fi.
+3. **Toggle "Include institution name in export"** in the harness
+   (you will want the FI name in the artifact for criterion 5).
+4. **Start validation session.**
+5. Save broker config + run health check.
+6. Tap **Link a sandbox bank with Plaid Link** (the label is
+   inherited from the harness; the underlying flow is the real Link
+   flow). Pick the target Canadian FI. Complete OAuth — the iPhone
+   should reopen NomadFi via the universal link and Link's handler
+   should resume.
+7. Run **Sync Now**. Verify accounts + transactions.
+8. **End session** with result `pass` and a one-line note naming
+   the FI.
+9. Export Markdown. The criterion-5 self-assessment block should
+   now read:
+   - `Universal-link return observed: yes`
+   - `Institution observed: <FI name> (vendor-reported by Plaid Link)`
+10. Stop the broker. Revert `.env` to sandbox. Revert the broker's
+    `PLAID_ENV` guard.
+
+**Pass criteria for §8.3 specifically:**
+
+- Everything in §7's pass list, **plus**
+- `universal_link_observed` event present.
+- `institution_observed` event present with `display_name_included=true`
+  and a non-empty `display_name` matching the target FI.
+- Reconciliation produced at least one account that maps cleanly
+  through the existing snapshot contract (no `unresolved_ambiguous`).
+
+**Fail criteria for §8.3:**
+
+- Plaid Link does not list the target FI under Canadian coverage
+  (vendor-reported coverage diverges from real availability).
+- OAuth completes in the bank's UI but the universal-link return
+  fails to reopen NomadFi.
+- Real institution returns a different account-type taxonomy that
+  breaks the mapper.
+- Per-connected-user cost modelled from the production run is
+  outside the pre-revenue budget.
+
+A §8.3 fail fires the bakeoff memo's "no provider clears the bar
+yet" branch:
 
 - Keep NomadFi on FinanceKit + manual + CSV.
-- Leave the Plaid sandbox scaffolding inactive in production
-  builds (the Settings row reads "Not enabled in this build" when
-  the Keychain has no broker URL).
+- Leave the Plaid sandbox scaffolding inactive in production builds.
 - Re-evaluate when (a) CFPB 1033 operationalization meaningfully
   moves the US coverage landscape, (b) Canada's Consumer-Driven
   Banking regime publishes developer-accessible endpoints, or
   (c) Apple's FinanceKit Canadian coverage materially expands.
-- Optionally kick off an Akoya sandbox comparison at this point,
-  but only if there's an explicit reason to believe Akoya's
-  Canadian coverage or production onboarding differs meaningfully —
-  that evidence must be primary-source before starting.
+- Optionally kick off an Akoya sandbox comparison only if there's
+  an explicit primary-source reason to believe Akoya's Canadian
+  coverage or production onboarding differs meaningfully.
 
 ---
 

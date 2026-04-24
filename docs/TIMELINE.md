@@ -1657,8 +1657,10 @@ re-debating whether the foundation exists.
 
 **Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
 real Plaid Link / OAuth readiness + operational real-device unblock +
-DEBUG-only validation recorder / redacted evidence export) are
-shipped.** The FinanceKit capability request for
+DEBUG-only validation recorder / redacted evidence export +
+**first real-device sandbox plumbing run on April 24, 2026**) are
+shipped. Phase 5D execution / plumbing is *pass*; criterion 5 (real
+target Canadian FI) remains *unresolved*.** The FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
@@ -1672,17 +1674,24 @@ paper model); one remains unresolved (real Canadian coverage).
 
 Highest-leverage remaining work, in order:
 
-- **Phase 5D criterion 5 — real-device Canadian-FI validation.**
-  The architecture is in-code; the operational harness is in-code;
-  the DEBUG-only validation recorder + redacted evidence export are
-  in-code ([`PlaidValidationEvidenceTemplate.md`](./research/PlaidValidationEvidenceTemplate.md)
-  describes the artifact shape). What remains is a human with a
-  physical iPhone running the runbook at
-  [`PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md),
-  ending the validation session, and pasting the exported Markdown
-  back for review. Pass resolves criterion 5. Fail fires the
-  bakeoff memo's "no provider clears the bar yet" branch. Both
-  outcomes unblock the roadmap.
+- **Phase 5D execution / plumbing — done (April 24, 2026 sandbox run).**
+  First real-device sandbox plumbing run ran end-to-end on a
+  physical iPhone: broker → LinkKit → exchange → `/accounts/get` →
+  `/transactions/sync` → reconciler created 10 accounts + 48
+  transactions, 0 unresolved, 0 duplicates. See
+  [`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md) §0.1.
+- **Phase 5D criterion 5 — UNRESOLVED.** Sandbox runs use Plaid's
+  pre-defined test institutions and test credentials
+  ([plaid.com/docs/sandbox/institutions/](https://plaid.com/docs/sandbox/institutions/),
+  [plaid.com/docs/sandbox/test-credentials/](https://plaid.com/docs/sandbox/test-credentials/)
+  — both vendor-reported), so the April 24 run cannot prove real
+  CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login
+  behaviour. The next step that resolves criterion 5 is the
+  **live-data Canadian-FI run** in
+  [`PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md)
+  §8.3 — which depends on Plaid's Limited Production / Trial
+  approval for `com.arieljtyson.NomadFi`, not on additional sandbox
+  reruns.
 - **Phase 5C final step — Apple entitlement landing (parallel).**
   Wait for Apple's response to the submitted FinanceKit capability
   request. On approval, add `com.apple.developer.financekit` to
