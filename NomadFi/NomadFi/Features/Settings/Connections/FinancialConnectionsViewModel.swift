@@ -140,6 +140,14 @@ final class FinancialConnectionsViewModel {
         lastReconciliation = result
         lastSyncSummary = Self.summary(for: result)
 
+        // Only finalize per-provider state (e.g. Plaid sandbox
+        // `/transactions/sync` cursor) after the reconciler has
+        // committed its writes. A partial-success reconciler pass
+        // still counts — providers that care decide themselves
+        // whether to advance; no-op providers (manual / CSV /
+        // FinanceKit) default-implement this to do nothing.
+        await coordinator.finalizeAfterCommit()
+
         for outcome in report.outcomes {
             lastOutcomesByKey[outcome.providerKind.logKey] = SyncOutcome(
                 accountCount: outcome.accountCount,

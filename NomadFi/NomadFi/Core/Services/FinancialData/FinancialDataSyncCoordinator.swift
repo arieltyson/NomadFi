@@ -221,20 +221,35 @@ final class FinancialDataSyncCoordinator: Sendable {
         }
     }
 
+    /// Called by the caller after a successful reconciliation. Forwards
+    /// to every provider's ``FinancialDataProvider/finalizeSync()``
+    /// hook. Providers that don't track state (manual / CSV /
+    /// FinanceKit today) no-op via the protocol extension; stateful
+    /// providers (the Plaid sandbox adapter) persist their advancing
+    /// cursor here so a reconciler failure never strands rows.
+    func finalizeAfterCommit() async {
+        for provider in providers {
+            await provider.finalizeSync()
+        }
+    }
+
     // MARK: - Preset factory
 
-    /// Production provider stack: manual + CSV + FinanceKit + a
-    /// placeholder external-aggregator seam. The external aggregator
-    /// intentionally reports itself as unavailable today — it exists
-    /// so a later Plaid-vs-Akoya bakeoff can land without restructuring
-    /// the coordinator.
+    /// Production provider stack: manual + CSV + FinanceKit + the
+    /// Plaid *sandbox* adapter. The Plaid adapter stays in the
+    /// `integrationNotImplemented` state until a developer configures
+    /// a local broker URL in the Keychain — which is how a shipping
+    /// build behaves today. Configuration is explicitly scoped to
+    /// Phase 5D's bounded sandbox proof (see
+    /// `tools/plaid-sandbox-broker/` and
+    /// `docs/research/PlaidSandboxProof.md`).
     @MainActor
     static func live() -> FinancialDataSyncCoordinator {
         FinancialDataSyncCoordinator(providers: [
             ManualFinancialDataProvider(),
             CSVImportFinancialDataProvider(),
             FinanceKitFinancialDataProvider(),
-            ExternalAggregatorFinancialDataProvider()
+            PlaidSandboxFinancialDataProvider()
         ])
     }
 

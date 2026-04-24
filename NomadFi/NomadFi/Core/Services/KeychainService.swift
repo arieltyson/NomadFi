@@ -33,6 +33,36 @@ enum KeychainService {
 
         /// Reserved for future API tokens (exchange rate premium, etc.).
         case apiToken = "com.nomadfi.apiToken"
+
+        // MARK: - Plaid sandbox (Phase 5D follow-through)
+        //
+        // These three keys power the bounded Plaid *sandbox* proof. They
+        // never hold Plaid `client_id` / `secret` — those stay on the
+        // local-only broker under `tools/plaid-sandbox-broker/`. The
+        // app only ever sees:
+        //
+        // - the broker's base URL (dev machine on the local network),
+        // - an opaque item handle the broker returns after it has
+        //   exchanged the Plaid public_token for an access_token,
+        // - the `/transactions/sync` cursor so incremental pulls are
+        //   idempotent across launches.
+        //
+        // Not present on production builds unless a developer configures
+        // them explicitly. Cleared by `deleteAll()` as part of the
+        // existing data-wipe path.
+
+        /// Base URL for the local Plaid sandbox broker (e.g.
+        /// `http://127.0.0.1:8787`). Never points at plaid.com directly.
+        case plaidSandboxBrokerURL = "com.nomadfi.plaidSandboxBrokerURL"
+
+        /// Opaque handle the broker returns in exchange for a Plaid
+        /// `public_token`. The real `access_token` stays on the broker
+        /// keyed by this handle.
+        case plaidSandboxItemID = "com.nomadfi.plaidSandboxItemID"
+
+        /// Persisted cursor for `/transactions/sync` so repeat runs
+        /// pull incremental diffs, not full history.
+        case plaidSandboxTransactionsCursor = "com.nomadfi.plaidSandboxTransactionsCursor"
     }
 
     // MARK: - String Storage
@@ -164,7 +194,15 @@ enum KeychainService {
     ///
     /// Called during "Delete All My Data" to ensure a complete wipe.
     static func deleteAll() {
-        for key in [Key.appLockEnabled, .appLockTimeout, .apiToken] {
+        let keys: [Key] = [
+            .appLockEnabled,
+            .appLockTimeout,
+            .apiToken,
+            .plaidSandboxBrokerURL,
+            .plaidSandboxItemID,
+            .plaidSandboxTransactionsCursor,
+        ]
+        for key in keys {
             delete(key: key)
         }
         logger.info("All Keychain items deleted")

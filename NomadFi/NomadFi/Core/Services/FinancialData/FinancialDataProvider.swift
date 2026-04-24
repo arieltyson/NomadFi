@@ -71,4 +71,16 @@ protocol FinancialDataProvider: Sendable {
         from startDate: Date,
         to endDate: Date
     ) async throws -> [FinancialTransactionSnapshot]
+
+    /// Post-commit finalization. Called by the coordinator *after*
+    /// the caller has successfully reconciled the sync report into
+    /// persistent storage. Providers that track incremental cursors
+    /// (e.g. Plaid's `/transactions/sync` cursor) advance them here
+    /// so a reconciler failure never strands committed rows behind a
+    /// moved cursor. Default no-op for providers that do not need it.
+    func finalizeSync() async
+}
+
+extension FinancialDataProvider {
+    func finalizeSync() async { /* default no-op */ }
 }

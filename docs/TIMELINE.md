@@ -314,9 +314,11 @@ points at the test file that pins the behaviour.
 ### Apple capability tracks
 
 - [~] **Financial-data access strategy (Phase 5A + 5B + 5C-in-code +
-  5D-research shipped; Apple entitlement + real-device validation
-  outstanding for 5C; Phase 5E blocked on Phase 5D's post-sandbox
-  recommendation).**
+  5D research + Phase 5D bounded Plaid sandbox proof shipped;
+  FinanceKit capability request for `com.arieljtyson.NomadFi` is
+  submitted and awaiting Apple; real-device validation still ahead
+  for 5C; Phase 5E blocked on Apple's response + a real Plaid Link
+  flow against one target Canadian FI).**
   5A shipped the provider-neutral architecture under
   `Core/Services/FinancialData/`: `FinancialDataProvider`,
   `FinancialDataProviderKind` (manual / csvImport / financeKit /
@@ -375,18 +377,30 @@ points at the test file that pins the behaviour.
   `com.arieljtyson.NomadFi`; real-device validation on a
   FinanceKit-eligible account; the background-delivery extension
   (iOS 26+) lives as a declared seam but is not wired.
-  Phase 5D shipped the bakeoff research memo at
-  `docs/research/OpenFinanceProviderBakeoff.md` — primary-source-only
-  evaluation of Plaid / Akoya / MX / Mastercard-Finicity / direct
-  FDX against NomadFi's cross-border target-user profile. Ranked
-  recommendation: Plaid first technical, Akoya first privacy
-  comparison, MX + Finicity reserve, direct FDX strategic
-  reference, explicit "no provider clears the bar yet" branch.
-  Next concrete action: a time-boxed (≤ 1 week) Plaid sandbox
-  proof against five pinned criteria in the memo (authorization,
-  snapshot projection, `/sync` dedupe, unit-cost modelling, real
-  Canadian coverage). Phase 5E adapter work is blocked on that
-  proof's outcome.
+  Phase 5D shipped in two parts. The primary-source bakeoff memo
+  at `docs/research/OpenFinanceProviderBakeoff.md` ranked Plaid as
+  first technical evaluation, Akoya as first privacy / API
+  comparison, MX + Finicity as reserves, direct FDX as strategic
+  reference, and called out an explicit "no provider clears the
+  bar yet" branch. The bounded Plaid sandbox proof shipped
+  alongside as `docs/research/PlaidSandboxProof.md` plus the
+  scaffolding under `Core/Services/FinancialData/Providers/Plaid/`
+  (DTOs, pure mapper, HTTP client, Keychain-backed configuration,
+  provider adapter) and the local-only broker at
+  `tools/plaid-sandbox-broker/`. Plaid `client_id` / `secret`
+  never touch the iOS app — they live only in the broker's
+  git-ignored `.env`. Three of five pinned criteria pass
+  (snapshot projection, `/transactions/sync` dedupe through the
+  existing reconciler, cursor finalization only after commit);
+  one is partial (unit-cost paper model from Plaid's public
+  pricing page); one remains unresolved (real Canadian coverage
+  against NomadFi's target-user institutions). _Evidence for the
+  shipped parts: `PlaidSandboxSnapshotMapperTests.swift`,
+  `PlaidSandboxConfigurationTests.swift`,
+  `PlaidSandboxIntegrationTests.swift`._ Phase 5E is blocked on
+  (a) Apple's FinanceKit response and (b) a real Plaid Link flow
+  against at least one target Canadian FI. Akoya comparison
+  paused until that Link flow runs.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
@@ -989,9 +1003,12 @@ Shipped in-code:
 
 Remaining (outside the repo):
 
-- Request `com.apple.developer.financekit` on
-  `com.arieljtyson.NomadFi` via the Apple Developer capabilities flow
-  (use the `NSFinancialDataUsageDescription` copy as the rationale).
+- The `com.apple.developer.financekit` capability request for
+  `com.arieljtyson.NomadFi` has **been submitted** (April 2026);
+  NomadFi is awaiting Apple's response. The public product site
+  (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy
+  policy (`https://arieltyson.github.io/nomadfi-privacy/privacy/`)
+  are live and were referenced in the capability request.
 - Once Apple provisions the capability, add the entitlement key to
   `NomadFi/NomadFi.entitlements` and regenerate provisioning
   profiles.
@@ -1011,10 +1028,15 @@ Success / failure gate (unchanged):
   and the product continues to work through the shipped provider-
   neutral layer.
 
-### Phase 5D — External-provider bakeoff research `[x]`
+### Phase 5D — External-provider bakeoff research + bounded Plaid sandbox proof `[x]`
 
 In-repo research shipped as
 [`docs/research/OpenFinanceProviderBakeoff.md`](./research/OpenFinanceProviderBakeoff.md).
+The memo's follow-through — a bounded Plaid *sandbox* proof — is
+also shipped as [`docs/research/PlaidSandboxProof.md`](./research/PlaidSandboxProof.md)
+plus the scaffolding under
+`Core/Services/FinancialData/Providers/Plaid/` and the local-only
+broker under `tools/plaid-sandbox-broker/`.
 Primary-source-only evaluation of Plaid, Akoya, MX,
 Mastercard / Finicity, and direct FDX/FAPI against NomadFi's
 actual cross-border target-user profile (US / Canada / TT).
@@ -1036,15 +1058,41 @@ Ranked recommendation (from the memo):
 5. **Honest branch — "no provider clears the bar yet."** A real,
    valid outcome with explicit exit criteria in the memo.
 
-The memo also specifies the next concrete action: a **time-boxed
-(≤ 1 week) Plaid sandbox proof** that must clear five pinned
-criteria (authorization mapping, snapshot projection, `/sync`
-dedupe, unit-cost modelling, real Canadian coverage) before any
-paid contract and before pairing Plaid against Akoya.
+Sandbox proof outcome (per
+[`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md)):
 
-Non-scope (reaffirmed): no Plaid / Akoya / MX / Finicity SDK is
-added in Phase 5D. No direct FDX client. No new FinanceKit
-extension target. No institution-manager UI speculation.
+- **Criterion 1 — Plaid Link → NomadFi consent:** *partial*.
+  Architectural mapping is shipped and tested; the Plaid iOS Link
+  SDK UI is deferred (sandbox-bypass item creation stands in, and
+  `LinkKit` is a one-line SPM addition whenever Phase 5E starts).
+- **Criterion 2 — snapshot projection:** *pass*. Pure mapper and
+  adapter composition are covered by
+  `PlaidSandboxSnapshotMapperTests` +
+  `PlaidSandboxIntegrationTests`.
+- **Criterion 3 — `/transactions/sync` dedupe through the
+  reconciler:** *pass*. Repeat-pull dedupe, durable-identity
+  match, and cursor-only-after-commit are all pinned in tests.
+- **Criterion 4 — unit-cost modelling:** *partial / paper*. Modelled
+  from Plaid's public pricing page; no commercial contract
+  validation.
+- **Criterion 5 — Canadian coverage for NomadFi's target
+  institutions:** *unresolved*. Cannot be validated from public
+  docs + Plaid's sandbox alone; blocked on a real Link flow under
+  a real production-access conversation.
+
+Recommendation carried into Phase 5E gating: **do not start a full
+Phase 5E Plaid build yet, and do not open an Akoya comparison yet.**
+Wait for (a) the FinanceKit entitlement response so NomadFi knows
+whether the free on-device path clears its own bar, and (b) a real
+Plaid Link flow against at least one target Canadian FI.
+
+Non-scope (reaffirmed): no full vendor SDK integration, no Akoya /
+MX / Finicity code, no direct FDX client, no FinanceKit background
+extension target, no institution-manager UI. The only vendor code
+added in this slice is contained to
+`Core/Services/FinancialData/Providers/Plaid/` and
+`tools/plaid-sandbox-broker/`, both bounded to Plaid's *sandbox*
+environment.
 
 ### Phase 5E — First concrete external adapter `[ ]`
 
@@ -1546,18 +1594,23 @@ re-debating whether the foundation exists.
     5C ~: in-repo parts shipped (real FinanceKit query path,
     `FinanceKitSnapshotMapper`, `FinanceError` mapping,
     authorized-no-accounts state, static date formatting,
-    [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md));
-    Apple-managed entitlement + real-device bakeout remain
-    outside the repo.
+    [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md)).
+    The `com.apple.developer.financekit` capability request was
+    **submitted to Apple in April 2026** and is awaiting Apple's
+    response; real-device bakeout is the remaining outside-repo
+    step.
     5D ✅: bakeoff research memo shipped as
     [`OpenFinanceProviderBakeoff.md`](./research/OpenFinanceProviderBakeoff.md)
-    with a ranked recommendation (Plaid first technical, Akoya
-    first privacy comparison, MX + Finicity reserve, direct FDX
-    strategic reference, explicit "no provider clears the bar"
-    branch). Next action: time-boxed Plaid sandbox proof.
-    5E blocked on the bakeoff's post-sandbox recommendation —
-    one measured external adapter behind the existing
-    `ExternalAggregatorFinancialDataProvider` seam.
+    **plus** the bounded Plaid sandbox proof in
+    [`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md),
+    backed by `Core/Services/FinancialData/Providers/Plaid/` and
+    the local-only broker at
+    `tools/plaid-sandbox-broker/`. Three criteria pass, one
+    partial (unit-cost paper model), one unresolved (real
+    Canadian coverage).
+    5E blocked on Apple's FinanceKit decision + a real Plaid Link
+    flow against at least one target Canadian FI. Akoya
+    comparison paused until that real flow runs.
     5F stays parked on real production use + live upstream.
 16. `[ ]` Investing education and index-fund tracking (Phase 8).
 17. `[!]` Apple Pay — only if NomadFi starts accepting payments.
@@ -1568,42 +1621,44 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 5A + 5B are shipped. Phase 5C's in-repo work is shipped —
-Phase 5C's remaining work is outside the repo (Apple-managed
-entitlement provisioning + real-device bakeout). Phase 5D's research
-is shipped as a primary-source-only decision memo at
-[`docs/research/OpenFinanceProviderBakeoff.md`](./research/OpenFinanceProviderBakeoff.md),
-with a ranked recommendation.**
-
-The roadmap treats Phase 5C and Phase 5D consistently: 5C is
-`[~]` because Apple entitlement + real-device validation are the
-only remaining blockers; 5D is `[x]` because the research memo
-shipped.
+**Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof) are
+shipped.** The FinanceKit capability request for
+`com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
+is awaiting Apple's response. The public product site
+(`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
+(`https://arieltyson.github.io/nomadfi-privacy/privacy/`) are live
+and were referenced in the capability request. The Plaid sandbox
+proof under `Core/Services/FinancialData/Providers/Plaid/` +
+`tools/plaid-sandbox-broker/` validates three of five pinned
+criteria (mapping, `/transactions/sync` dedupe, cursor finalization
+under the existing reconciler); one criterion is partial (unit-cost
+paper model); one remains unresolved (real Canadian coverage).
 
 Highest-leverage remaining work, in order:
 
-- **Phase 5C blockers (outside the repo).** Request
-  `com.apple.developer.financekit` on `com.arieljtyson.NomadFi`
-  through the Apple Developer capabilities flow (use the
-  `NSFinancialDataUsageDescription` copy as the rationale). Once
-  Apple approves, add the entitlement key to
+- **Phase 5C final step — Apple entitlement landing.** Wait for
+  Apple's response to the submitted FinanceKit capability request.
+  On approval, add `com.apple.developer.financekit` to
   `NomadFi/NomadFi.entitlements`, regenerate provisioning profiles,
-  and run the real-device test matrix from the feasibility dossier.
+  and run the real-device test matrix in
+  [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md).
   No in-repo code changes are needed to start ingesting live
-  FinanceKit data.
-- **Phase 5D follow-through — Plaid sandbox proof (≤ 1 week,
-  time-boxed).** Validate against the five pinned criteria in the
-  bakeoff memo (authorization mapping, snapshot projection,
-  `/sync` dedupe, unit-cost modelling, real Canadian coverage).
-  If those clear, pair with an Akoya sandbox comparison before any
-  paid contract. If they do not clear, the memo's "no provider
-  clears the bar yet" branch fires and NomadFi stays on FinanceKit
-  + manual + CSV.
-- **Phase 5E — one concrete external adapter.** Only after the
-  bakeoff's post-sandbox recommendation. Land behind
-  `ExternalAggregatorFinancialDataProvider`; keep vendor SDK imports
-  confined to that boundary and keep the reconciler / core engines
-  unchanged.
+  FinanceKit data once the entitlement is provisioned.
+- **Phase 5E gating decision.** After FinanceKit's real-device
+  bakeout:
+  - If FinanceKit alone clears the bar for NomadFi's cross-border
+    archetype, Phase 5E stays deferred and the Plaid sandbox
+    scaffolding remains inactive in production.
+  - If FinanceKit does not clear the bar, move into a real Plaid
+    Link flow (add `LinkKit` via SPM behind the existing adapter;
+    exchange the sandbox bypass for a production-access
+    conversation with Plaid) against at least one target Canadian
+    FI to resolve criterion 5.
+- **Phase 5D / Akoya parallel.** Hold the Akoya sandbox comparison
+  until the real Plaid Link flow has been observed — otherwise the
+  comparison is academic. When it starts, it lands as a second
+  provider behind the existing `ExternalAggregatorFinancialDataProvider`
+  seam (mirroring the Plaid sandbox shape).
 - **Phase 5F — production hardening for provider scale.** Parked
   until at least one real upstream is live.
 - **Phase 8 investing education + index-fund tracking** — the next
