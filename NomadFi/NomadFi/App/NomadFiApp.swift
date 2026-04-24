@@ -10,6 +10,12 @@ struct NomadFiApp: App {
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
     @State private var plaidLinkCoordinator = PlaidLinkCoordinator()
+#if DEBUG
+    /// Developer-only Plaid validation recorder. Lives at app root
+    /// so the dev harness and the Financial Connections page write
+    /// into the same session instance across navigation.
+    @State private var plaidValidationRecorder = PlaidValidationRecorder()
+#endif
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -100,10 +106,22 @@ struct NomadFiApp: App {
                 // anything the coordinator does not consume is
                 // ignored so NomadFi never tries to reinterpret
                 // an unrelated universal link.
-                _ = plaidLinkCoordinator.handle(universalLink: url)
+                let handled = plaidLinkCoordinator.handle(universalLink: url)
+#if DEBUG
+                if handled {
+                    plaidValidationRecorder.recordUniversalLinkObserved(
+                        host: url.host()
+                    )
+                }
+#else
+                _ = handled
+#endif
             }
             .environment(appLockManager)
             .environment(\.plaidLinkCoordinator, plaidLinkCoordinator)
+#if DEBUG
+            .environment(\.plaidValidationRecorder, plaidValidationRecorder)
+#endif
             .tint(ColorTokens.actionTint)
         }
         .modelContainer(for: [

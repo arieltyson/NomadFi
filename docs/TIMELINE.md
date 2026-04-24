@@ -1046,7 +1046,12 @@ Financial Setup → Financial Connections, (c) a health-check
 endpoint mapped onto four calm states, and (d) `NSAllowsLocalNetworking`
 + `NSLocalNetworkUsageDescription` in a new real `Info.plist` for
 the NomadFi target so a physical device can actually reach the
-developer's local broker on a trusted Wi-Fi.
+developer's local broker on a trusted Wi-Fi. A DEBUG-only
+`PlaidValidationRecorder` + JSON/Markdown redacted exporter ship
+alongside
+[`PlaidValidationEvidenceTemplate.md`](./research/PlaidValidationEvidenceTemplate.md)
+so the real-device run produces a decision-grade artifact without
+leaking Plaid tokens, broker URLs, LAN IPs, or shared secrets.
 Primary-source-only evaluation of Plaid, Akoya, MX,
 Mastercard / Finicity, and direct FDX/FAPI against NomadFi's
 actual cross-border target-user profile (US / Canada / TT).
@@ -1651,8 +1656,9 @@ re-debating whether the foundation exists.
 ## Current Next Step
 
 **Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
-real Plaid Link / OAuth readiness + operational real-device
-unblock) are shipped.** The FinanceKit capability request for
+real Plaid Link / OAuth readiness + operational real-device unblock +
+DEBUG-only validation recorder / redacted evidence export) are
+shipped.** The FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
@@ -1668,12 +1674,15 @@ Highest-leverage remaining work, in order:
 
 - **Phase 5D criterion 5 — real-device Canadian-FI validation.**
   The architecture is in-code; the operational harness is in-code;
-  what remains is a human with a physical iPhone running the
-  runbook at
-  [`docs/research/PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md).
-  Pass resolves criterion 5. Fail fires the bakeoff memo's "no
-  provider clears the bar yet" branch. Both outcomes unblock the
-  roadmap.
+  the DEBUG-only validation recorder + redacted evidence export are
+  in-code ([`PlaidValidationEvidenceTemplate.md`](./research/PlaidValidationEvidenceTemplate.md)
+  describes the artifact shape). What remains is a human with a
+  physical iPhone running the runbook at
+  [`PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md),
+  ending the validation session, and pasting the exported Markdown
+  back for review. Pass resolves criterion 5. Fail fires the
+  bakeoff memo's "no provider clears the bar yet" branch. Both
+  outcomes unblock the roadmap.
 - **Phase 5C final step — Apple entitlement landing (parallel).**
   Wait for Apple's response to the submitted FinanceKit capability
   request. On approval, add `com.apple.developer.financekit` to

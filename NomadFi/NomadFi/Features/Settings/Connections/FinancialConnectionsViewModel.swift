@@ -47,6 +47,12 @@ final class FinancialConnectionsViewModel {
     /// until the user has run at least one sync.
     private(set) var lastReconciliation: FinancialDataReconciliationResult?
 
+    /// Last sync report the coordinator handed back. Surfaced so the
+    /// DEBUG-only validation recorder can snapshot per-provider
+    /// outcomes; production UI still reads `lastReconciliation` /
+    /// `lastSyncSummary`.
+    private(set) var lastSyncReport: FinancialDataSyncReport?
+
     /// Human-readable, localised summary of the last sync. Nil when
     /// no sync has run yet; calm factual copy otherwise.
     private(set) var lastSyncSummary: LocalizedStringResource?
@@ -144,6 +150,7 @@ final class FinancialConnectionsViewModel {
             homeCurrency: homeCurrency,
             now: now
         )
+        lastSyncReport = report
         lastReconciliation = result
         lastSyncSummary = Self.summary(for: result)
 

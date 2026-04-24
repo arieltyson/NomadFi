@@ -98,8 +98,9 @@ final class PlaidSandboxDeveloperConfigViewModel {
     /// Normalises and persists the broker URL + secret. Clears the
     /// broker URL when the field is empty. Resets `healthStatus`
     /// because the next probe runs against a potentially different
-    /// broker.
-    func save() {
+    /// broker. When a validation recorder is attached, every save
+    /// path records a redaction-safe event.
+    func save(recorder: PlaidValidationRecorder? = nil) {
         lastSaveOutcome = nil
         let trimmedURL = brokerURLText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedURL.isEmpty {
@@ -108,6 +109,7 @@ final class PlaidSandboxDeveloperConfigViewModel {
             brokerSecretText = ""
             healthStatus = .unknown
             lastSaveOutcome = .cleared
+            recorder?.recordBrokerConfigCleared()
             return
         }
         guard let normalized = PlaidSandboxConfiguration.normalize(
@@ -122,13 +124,17 @@ final class PlaidSandboxDeveloperConfigViewModel {
         configuration.setBrokerSecret(trimmedSecret.isEmpty ? nil : trimmedSecret)
         healthStatus = .unknown
         lastSaveOutcome = .saved
+        recorder?.recordBrokerConfigSaved(
+            brokerURL: normalized,
+            hasSecret: !trimmedSecret.isEmpty
+        )
     }
 
     /// Runs `GET /health` against the currently-saved broker URL +
     /// secret. Uses whatever is *persisted*, not the text field, so
     /// the developer must hit Save first. This keeps the probe
     /// deterministic.
-    func runHealthCheck() async {
+    func runHealthCheck(recorder: PlaidValidationRecorder? = nil) async {
         guard !isHealthChecking else { return }
         isHealthChecking = true
         defer { isHealthChecking = false }
@@ -145,24 +151,39 @@ final class PlaidSandboxDeveloperConfigViewModel {
                 requiresSecret: response.requiresSecret ?? false,
                 redirectURIConfigured: response.redirectURIConfigured ?? false
             )
+            recorder?.recordBrokerHealthChecked(
+                reachable: true,
+                env: response.env,
+                requiresSecret: response.requiresSecret,
+                redirectConfigured: response.redirectURIConfigured
+            )
         } catch let error as FinancialDataProviderError {
             Self.logger.info(
                 "Plaid broker health probe failed (\(String(describing: error), privacy: .public))"
             )
             healthStatus = .unreachable
+            recorder?.recordBrokerHealthChecked(
+                reachable: false,
+                failureReason: String(describing: error)
+            )
         } catch {
             Self.logger.info(
                 "Plaid broker health probe failed: \(error.localizedDescription, privacy: .public)"
             )
             healthStatus = .unreachable
+            recorder?.recordBrokerHealthChecked(
+                reachable: false,
+                failureReason: error.localizedDescription
+            )
         }
     }
 
     /// Clears the Plaid item handle + `/transactions/sync` cursor
     /// so a developer can retry a failed Link attempt without
     /// losing broker config or rebuilding the sandbox.
-    func clearLinkedItem() {
+    func clearLinkedItem(recorder: PlaidValidationRecorder? = nil) {
         configuration.clearLinkedItem()
+        recorder?.recordItemHandleCleared()
     }
 
     /// Clears every Plaid sandbox Keychain value owned by the

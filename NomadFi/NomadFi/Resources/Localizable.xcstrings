@@ -430,6 +430,7 @@
 
     },
     "Apple FinanceKit" : {
+
     },
     "Applied when no category override matches the purchase category." : {
 
@@ -462,8 +463,10 @@
 
     },
     "Authorization required" : {
+
     },
     "Authorize" : {
+
     },
     "Authorized — no eligible accounts found" : {
 
@@ -475,6 +478,7 @@
 
     },
     "Available on supported devices" : {
+
     },
     "Back" : {
 
@@ -495,6 +499,30 @@
 
     },
     "Billing" : {
+
+    },
+    "Broker health not yet checked." : {
+
+    },
+    "Broker not reachable from this device." : {
+
+    },
+    "Broker reachable (env=%@, %@, %@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Broker reachable (env=%1$@, %2$@, %3$@)."
+          }
+        }
+      }
+    },
+    "Broker URL configured. No Plaid item linked yet." : {
+
+    },
+    "Broker URL not set. Save one first, then run health check." : {
+    },
+    "Broker URL saved." : {
 
     },
     "Budget Alerts" : {
@@ -608,6 +636,9 @@
     "Clear snapshot" : {
 
     },
+    "Cleared." : {
+
+    },
     "Clears your answers so you can review and try again." : {
 
     },
@@ -648,8 +679,12 @@
 
     },
     "Connected" : {
+
     },
     "Connections" : {
+
+    },
+    "Contacting Plaid sandbox broker…" : {
     },
     "Context" : {
 
@@ -734,6 +769,7 @@
 
     },
     "CSV import" : {
+
     },
     "Currency" : {
 
@@ -776,6 +812,7 @@
 
     },
     "Data Sources" : {
+
     },
     "Date" : {
 
@@ -979,6 +1016,7 @@
 
     },
     "External aggregator" : {
+
     },
     "Extracted Text" : {
 
@@ -986,9 +1024,11 @@
     "Fair Cost" : {
 
     },
-    "FinanceKit data stays on-device and is never seen by Apple. NomadFi does not ship a third-party aggregator SDK in this build." : {
+    "FinanceKit data stays on-device and is never seen by Apple. Plaid's LinkKit ships in this build only as a developer validation path — Plaid client_id and secret never leave the local broker on your developer machine." : {
+
     },
     "Financial Connections" : {
+
     },
     "Financial insights: %lld recommendation%@ this week" : {
       "localizations" : {
@@ -1008,6 +1048,8 @@
     },
     "Finishes setup and lets you enable location later." : {
 
+    },
+    "Finishing the link" : {
     },
     "Fix Mis-Entered Data" : {
 
@@ -1168,6 +1210,7 @@
 
     },
     "Last synced %@" : {
+
     },
     "Last updated" : {
 
@@ -1212,6 +1255,15 @@
 
     },
     "Line %lld" : {
+
+    },
+    "Link a sandbox bank with Plaid Link" : {
+
+    },
+    "Link cancelled" : {
+
+    },
+    "Link failed: %@" : {
 
     },
     "Link to the issuer's official product page or cardmember agreement." : {
@@ -1266,7 +1318,8 @@
     "Manual entry" : {
 
     },
-    "Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated; external aggregators are not enabled in this build." : {
+    "Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated. NomadFi has a Plaid sandbox path under Phase 5D validation — it is not a production rollout and only runs when a developer has configured the local Plaid sandbox broker." : {
+
     },
     "Manual transaction review and entry." : {
 
@@ -1367,10 +1420,14 @@
     "No Accounts Yet" : {
 
     },
+    "No broker URL configured. Plaid sandbox is inactive." : {
+
+    },
     "No card currently needs a paydown plan. Keep paying the statement balance in full by the due date." : {
 
     },
     "No changes from the last sync." : {
+
     },
     "No Credit Cards Yet" : {
 
@@ -1448,6 +1505,7 @@
 
     },
     "NomadFi only syncs in response to this action. Nothing runs in the background yet." : {
+
     },
     "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
 
@@ -1467,7 +1525,8 @@
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
     },
-    "NomadFi supports manual entry, CSV import, and Apple FinanceKit. Third-party aggregators are not enabled in this build." : {
+    "NomadFi supports manual entry, CSV import, and Apple FinanceKit. A Plaid sandbox path is available only in developer builds for Phase 5D validation; no third-party aggregator is active for end users yet." : {
+
     },
     "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
@@ -1499,10 +1558,14 @@
     "None" : {
 
     },
+    "Not a valid broker URL. Use http or https with a host." : {
+
+    },
     "Not available on this device" : {
 
     },
     "Not enabled in this build" : {
+
     },
     "Not Now" : {
 
@@ -1582,6 +1645,9 @@
     "Opens a screen to add, remove, or change your home jurisdiction." : {
 
     },
+    "Opens Plaid Link against the locally-configured sandbox broker." : {
+
+    },
     "Opens the account editor to correct balances, limits, and other details." : {
 
     },
@@ -1601,6 +1667,7 @@
 
     },
     "Opens the Financial Connections page where you can see which data sources are available and run an explicit sync." : {
+
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
 
@@ -1618,6 +1685,7 @@
 
     },
     "Opens the provider's authorization prompt." : {
+
     },
     "Opens the receipts and tax document archive." : {
 
@@ -1730,6 +1798,12 @@
     "Pick an option for every question to enable Submit." : {
 
     },
+    "Plaid item linked (handle %@)." : {
+
+    },
+    "Plaid sandbox Link" : {
+
+    },
     "Plan lines cover more than one currency. NomadFi does not convert between currencies without a verified rate, so totals are reported per currency." : {
 
     },
@@ -1813,6 +1887,9 @@
 
     },
     "Reading receipt..." : {
+
+    },
+    "Ready to link a sandbox bank" : {
 
     },
     "Real Cost Analysis" : {
@@ -1942,6 +2019,9 @@
 
     },
     "Runs a sync across every available provider and reconciles the result into your accounts." : {
+
+    },
+    "Sandbox bank linked" : {
     },
     "Save" : {
 
@@ -2100,6 +2180,9 @@
     "Short title, optional" : {
 
     },
+    "Showing Plaid Link" : {
+
+    },
     "Skipped" : {
 
     },
@@ -2164,8 +2247,10 @@
 
     },
     "Sync" : {
+
     },
     "Sync Now" : {
+
     },
     "Synced. %lld new, %lld updated, %lld transactions imported." : {
       "localizations" : {
@@ -2239,6 +2324,8 @@
     },
     "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
 
+    },
+    "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
     },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 

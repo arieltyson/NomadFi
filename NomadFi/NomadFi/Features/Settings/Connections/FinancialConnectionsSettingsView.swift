@@ -17,6 +17,9 @@ struct FinancialConnectionsSettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.plaidLinkCoordinator) private var plaidLinkCoordinator
+#if DEBUG
+    @Environment(\.plaidValidationRecorder) private var plaidValidationRecorder
+#endif
 
     @Query private var accounts: [Account]
     @Query private var transactions: [Transaction]
@@ -44,12 +47,47 @@ struct FinancialConnectionsSettingsView: View {
         .task {
             await viewModel.refresh()
         }
-        .onChange(of: plaidLinkCoordinator.phase) { _, newPhase in
-            if case .completed = newPhase {
+        .onChange(of: plaidLinkCoordinator.phase) { oldPhase, newPhase in
+            if case .completed(let itemID) = newPhase {
                 Task { await viewModel.refreshAfterPlaidLink() }
+#if DEBUG
+                plaidValidationRecorder.recordPublicTokenExchanged(success: true)
+                plaidValidationRecorder.recordItemHandlePersisted(rawHandle: itemID)
+#endif
             }
+#if DEBUG
+            // Phase transitions are recorded for every change so the
+            // exported artifact captures the full state machine —
+            // `fetchingLinkToken → presentingLink → exchangingPublicToken → completed`.
+            plaidValidationRecorder.recordLinkPhaseChanged(
+                from: Self.label(for: oldPhase),
+                to: Self.label(for: newPhase)
+            )
+            if case .failed(let message) = newPhase {
+                plaidValidationRecorder.recordPublicTokenExchanged(
+                    success: false,
+                    failureReason: message
+                )
+            }
+#endif
         }
     }
+
+#if DEBUG
+    /// Stable, redaction-safe label per Plaid Link phase. Used only
+    /// by the validation recorder; never surfaced in UI.
+    private static func label(for phase: PlaidLinkCoordinator.Phase) -> String {
+        switch phase {
+        case .idle: return "idle"
+        case .fetchingLinkToken: return "fetching_link_token"
+        case .presentingLink: return "presenting_link"
+        case .exchangingPublicToken: return "exchanging_public_token"
+        case .completed: return "completed"
+        case .cancelled: return "cancelled"
+        case .failed: return "failed"
+        }
+    }
+#endif
 
 #if DEBUG
     /// DEBUG-only entry point into the Plaid sandbox harness page.
@@ -108,6 +146,9 @@ private extension FinancialConnectionsSettingsView {
            plaidRow.availability.isAvailable {
             Section {
                 Button {
+#if DEBUG
+                    plaidValidationRecorder.recordLinkLaunchRequested()
+#endif
                     Task { await plaidLink.startRealLinkFlow() }
                 } label: {
                     Label("Link a sandbox bank with Plaid Link", systemImage: "link")
@@ -163,6 +204,9 @@ private extension FinancialConnectionsSettingsView {
 
     func runSync(viewModel: FinancialConnectionsViewModel) async {
         let (start, end) = defaultSyncWindow()
+#if DEBUG
+        plaidValidationRecorder.recordSyncStarted(windowStart: start, windowEnd: end)
+#endif
         await viewModel.syncNow(
             from: start,
             to: end,
@@ -170,6 +214,14 @@ private extension FinancialConnectionsSettingsView {
             existingAccounts: accounts,
             existingTransactions: transactions
         )
+#if DEBUG
+        if let report = viewModel.lastSyncReport {
+            plaidValidationRecorder.recordSyncFinished(report: report)
+        }
+        if let result = viewModel.lastReconciliation {
+            plaidValidationRecorder.recordReconciliationFinished(result: result)
+        }
+#endif
     }
 
     /// Default 90-day window. The Financial Connections page is for
