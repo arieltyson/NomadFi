@@ -66,6 +66,13 @@ final class FinancialConnectionsViewModel {
         self.homeCurrency = homeCurrency
     }
 
+    /// Called by the Settings view after a successful real Plaid Link
+    /// session so the row moves from "Authorize" to "Connected"
+    /// without needing the user to pull-to-refresh.
+    func refreshAfterPlaidLink() async {
+        await refresh()
+    }
+
     // MARK: - Lifecycle
 
     /// Loads the current provider status. Safe to call repeatedly —

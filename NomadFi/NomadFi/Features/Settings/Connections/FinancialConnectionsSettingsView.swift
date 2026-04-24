@@ -16,6 +16,7 @@ import SwiftUI
 struct FinancialConnectionsSettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.plaidLinkCoordinator) private var plaidLinkCoordinator
 
     @Query private var accounts: [Account]
     @Query private var transactions: [Transaction]
@@ -30,14 +31,20 @@ struct FinancialConnectionsSettingsView: View {
 
     var body: some View {
         List {
-            providersSection
-            syncSection
+            providersSection(viewModel: viewModel)
+            plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
+            syncSection(viewModel: viewModel)
             privacySection
         }
         .navigationTitle("Financial Connections")
         .glassToolbar()
         .task {
             await viewModel.refresh()
+        }
+        .onChange(of: plaidLinkCoordinator.phase) { _, newPhase in
+            if case .completed = newPhase {
+                Task { await viewModel.refreshAfterPlaidLink() }
+            }
         }
     }
 }
@@ -46,7 +53,7 @@ struct FinancialConnectionsSettingsView: View {
 
 private extension FinancialConnectionsSettingsView {
 
-    var providersSection: some View {
+    func providersSection(viewModel: FinancialConnectionsViewModel) -> some View {
         Section {
             ForEach(viewModel.rows) { row in
                 FinancialConnectionRow(
@@ -63,10 +70,44 @@ private extension FinancialConnectionsSettingsView {
         }
     }
 
-    var syncSection: some View {
+    /// Renders the bounded Plaid *sandbox* Link launch only when the
+    /// provider row is visible and the broker URL is configured in
+    /// the Keychain. Hidden in production / un-configured builds so
+    /// the page stays honest about coverage.
+    @ViewBuilder
+    func plaidLinkSection(
+        viewModel: FinancialConnectionsViewModel,
+        plaidLink: PlaidLinkCoordinator
+    ) -> some View {
+        let kind = FinancialDataProviderKind.externalAggregator(
+            identifier: PlaidSandboxSnapshotMapper.providerIdentifier
+        )
+        if let plaidRow = viewModel.rows.first(where: { $0.kind == kind }),
+           plaidRow.availability.isAvailable {
+            Section {
+                Button {
+                    Task { await plaidLink.startRealLinkFlow() }
+                } label: {
+                    Label("Link a sandbox bank with Plaid Link", systemImage: "link")
+                }
+                .disabled(plaidLink.phase.isBusy)
+                .accessibilityHint("Opens Plaid Link against the locally-configured sandbox broker.")
+
+                Text(plaidLink.phase.statusLabel)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Plaid sandbox Link")
+            } footer: {
+                Text("This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow.")
+            }
+        }
+    }
+
+    func syncSection(viewModel: FinancialConnectionsViewModel) -> some View {
         Section {
             Button {
-                Task { await runSync() }
+                Task { await runSync(viewModel: viewModel) }
             } label: {
                 Label("Sync Now", systemImage: "arrow.triangle.2.circlepath")
             }
@@ -98,7 +139,7 @@ private extension FinancialConnectionsSettingsView {
 
 private extension FinancialConnectionsSettingsView {
 
-    func runSync() async {
+    func runSync(viewModel: FinancialConnectionsViewModel) async {
         let (start, end) = defaultSyncWindow()
         await viewModel.syncNow(
             from: start,

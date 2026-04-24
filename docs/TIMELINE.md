@@ -1059,12 +1059,20 @@ Ranked recommendation (from the memo):
    valid outcome with explicit exit criteria in the memo.
 
 Sandbox proof outcome (per
-[`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md)):
+[`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md),
+updated after the gate-clearance slice):
 
-- **Criterion 1 — Plaid Link → NomadFi consent:** *partial*.
-  Architectural mapping is shipped and tested; the Plaid iOS Link
-  SDK UI is deferred (sandbox-bypass item creation stands in, and
-  `LinkKit` is a one-line SPM addition whenever Phase 5E starts).
+- **Criterion 1 — Plaid Link → NomadFi consent:** *in-code pass*.
+  Plaid's official `LinkKit` 5.6.1 is now an SPM dependency of the
+  NomadFi target (confined to
+  `PlaidLinkKitPresenter.swift` behind `#if canImport(LinkKit)`);
+  `PlaidLinkCoordinator` is a `@MainActor @Observable` state
+  machine the Settings row binds to; the broker gained
+  `/item/public_token/exchange`; universal-link / OAuth readiness
+  is shipped end-to-end (associated-domains entitlement,
+  `.onOpenURL` handler, redirect page + AASA hosted on the public
+  site). Real-device bakeout against a live OAuth institution
+  remains the only outside-repo step.
 - **Criterion 2 — snapshot projection:** *pass*. Pure mapper and
   adapter composition are covered by
   `PlaidSandboxSnapshotMapperTests` +
@@ -1082,9 +1090,11 @@ Sandbox proof outcome (per
 
 Recommendation carried into Phase 5E gating: **do not start a full
 Phase 5E Plaid build yet, and do not open an Akoya comparison yet.**
-Wait for (a) the FinanceKit entitlement response so NomadFi knows
-whether the free on-device path clears its own bar, and (b) a real
-Plaid Link flow against at least one target Canadian FI.
+Criterion 1 is now in-code pass; the remaining gates are
+operational rather than architectural — (a) Apple's FinanceKit
+entitlement response + real-device bakeout, and (b) a real Plaid
+Link flow against at least one target Canadian FI with live
+sandbox credentials + the hosted redirect URI.
 
 Non-scope (reaffirmed): no full vendor SDK integration, no Akoya /
 MX / Finicity code, no direct FDX client, no FinanceKit background
@@ -1605,12 +1615,21 @@ re-debating whether the foundation exists.
     [`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md),
     backed by `Core/Services/FinancialData/Providers/Plaid/` and
     the local-only broker at
-    `tools/plaid-sandbox-broker/`. Three criteria pass, one
-    partial (unit-cost paper model), one unresolved (real
-    Canadian coverage).
+    `tools/plaid-sandbox-broker/`. The Phase 5D gate-clearance
+    slice lifted criterion 1 to in-code *pass*: Plaid's official
+    `LinkKit` 5.6.1 is an SPM dependency confined to
+    `PlaidLinkKitPresenter.swift`; `PlaidLinkCoordinator` drives
+    the Link session; the broker gained `/item/public_token/exchange`;
+    and iOS universal-link support is shipped (associated-domains
+    entitlement, `.onOpenURL` handler, AASA +
+    `/plaid-oauth` page hosted on `nomadfi-privacy`). Three
+    criteria pass, one partial (unit-cost paper model), one
+    unresolved (real Canadian coverage — now architecture-complete,
+    only operational validation remains).
     5E blocked on Apple's FinanceKit decision + a real Plaid Link
-    flow against at least one target Canadian FI. Akoya
-    comparison paused until that real flow runs.
+    flow against at least one target Canadian FI with a deployed
+    redirect URI. Akoya comparison paused until that real flow
+    runs.
     5F stays parked on real production use + live upstream.
 16. `[ ]` Investing education and index-fund tracking (Phase 8).
 17. `[!]` Apple Pay — only if NomadFi starts accepting payments.
@@ -1621,8 +1640,8 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof) are
-shipped.** The FinanceKit capability request for
+**Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
+real Plaid Link / OAuth readiness) are shipped.** The FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy

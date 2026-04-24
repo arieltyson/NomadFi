@@ -9,6 +9,7 @@ struct NomadFiApp: App {
     @State private var isShowingSplash: Bool
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
+    @State private var plaidLinkCoordinator = PlaidLinkCoordinator()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -92,7 +93,17 @@ struct NomadFiApp: App {
                     break
                 }
             }
+            .onOpenURL { url in
+                // Plaid OAuth universal links return through the
+                // `applinks:arieltyson.github.io` associated domain.
+                // Forward them straight to the pending Link session;
+                // anything the coordinator does not consume is
+                // ignored so NomadFi never tries to reinterpret
+                // an unrelated universal link.
+                _ = plaidLinkCoordinator.handle(universalLink: url)
+            }
             .environment(appLockManager)
+            .environment(\.plaidLinkCoordinator, plaidLinkCoordinator)
             .tint(ColorTokens.actionTint)
         }
         .modelContainer(for: [

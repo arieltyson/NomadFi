@@ -6,9 +6,10 @@
 //
 // Endpoints exposed to the NomadFi iOS app:
 //   POST /link/token/create
+//   POST /item/public_token/exchange
 //   POST /sandbox/item/create
-//   POST /accounts/get        { item_id }
-//   POST /transactions/sync   { item_id, cursor? }
+//   POST /accounts/get         { item_id }
+//   POST /transactions/sync    { item_id, cursor? }
 //
 // Endpoints intentionally NOT exposed to the app:
 //   - anything that reveals the access_token to the client.
@@ -66,6 +67,7 @@ const products = (process.env.PLAID_PRODUCTS || 'transactions')
   .filter(Boolean);
 
 const sandboxInstitutionID = process.env.PLAID_SANDBOX_INSTITUTION_ID || 'ins_109508';
+const redirectURI = (process.env.PLAID_REDIRECT_URI || '').trim() || null;
 
 const plaid = new PlaidApi(
   new Configuration({
@@ -102,14 +104,65 @@ app.get('/health', (_req, res) => {
 
 app.post('/link/token/create', async (_req, res) => {
   try {
-    const response = await plaid.linkTokenCreate({
+    const payload = {
       user: { client_user_id: 'nomadfi-sandbox-user' },
       client_name: 'NomadFi Sandbox',
       products,
       country_codes: countryCodes,
       language: 'en',
-    });
+    };
+    // Plaid requires an HTTPS redirect_uri for OAuth-capable
+    // institutions on iOS. The URL must match the app's associated
+    // domains entitlement exactly (NomadFi uses `applinks:arieltyson.github.io`).
+    // Omitted for non-OAuth sandbox flows.
+    if (redirectURI) {
+      payload.redirect_uri = redirectURI;
+    }
+    const response = await plaid.linkTokenCreate(payload);
     res.json({ link_token: response.data.link_token });
+  } catch (err) {
+    sendPlaidError(res, err);
+  }
+});
+
+app.post('/item/public_token/exchange', async (req, res) => {
+  const publicToken = req.body && req.body.public_token;
+  if (typeof publicToken !== 'string' || publicToken.length === 0) {
+    res.status(400).json({ error_code: 'MISSING_PUBLIC_TOKEN' });
+    return;
+  }
+  try {
+    const exchanged = await plaid.itemPublicTokenExchange({
+      public_token: publicToken,
+    });
+    const accessToken = exchanged.data.access_token;
+    const plaidItemID = exchanged.data.item_id;
+    const itemHandle = 'itm_' + crypto.randomBytes(12).toString('hex');
+    itemStore.set(itemHandle, { accessToken, plaidItemID });
+    // Resolving the institution name is best-effort: we don't want a
+    // network blip here to fail the whole link flow, and the app has
+    // a calm fallback label.
+    let institutionID = null;
+    let institutionName = null;
+    try {
+      const item = await plaid.itemGet({ access_token: accessToken });
+      institutionID = item.data.item.institution_id || null;
+      if (institutionID) {
+        const institution = await plaid.institutionsGetById({
+          institution_id: institutionID,
+          country_codes: countryCodes,
+        });
+        institutionName = institution.data.institution.name;
+      }
+    } catch (_) {
+      institutionName = null;
+    }
+    res.json({
+      item_id: itemHandle,
+      institution_id: institutionID,
+      institution_name: institutionName,
+      plaid_item_id: plaidItemID,
+    });
   } catch (err) {
     sendPlaidError(res, err);
   }

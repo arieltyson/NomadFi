@@ -14,27 +14,32 @@ against the five pinned criteria from the bakeoff memo.
 
 ## 0. TL;DR
 
-| Criterion | Outcome |
+| Criterion | Outcome (after Phase 5D gate-clearance slice) |
 |---|---|
-| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Partial** — architectural mapping is shipped in code and tested; the Link SDK UI itself is deferred (sandbox-bypass item creation stands in). |
-| 2. Accounts / balances / transactions project onto provider-neutral snapshots | **Pass** — pure mapper + adapter composition both covered. |
-| 3. `/transactions/sync` dedupe invariants hold through the existing reconciler | **Pass** — end-to-end test covers first-pull insert, repeat-pull dedupe, cursor commit only after reconciler write. |
-| 4. Unit-cost modelling stays inside a pre-revenue budget using public pricing | **Partial (paper)** — modelled from Plaid's public pricing page; no commercial contract validation. |
-| 5. Canadian coverage against NomadFi's target-user institutions | **Unresolved** — not provable from public docs alone; requires a real Link flow against live Canadian FIs. |
+| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Pass (in-code)** — the full Link session runs through `PlaidLinkCoordinator` → `PlaidLinkPresenting` → Plaid's official `LinkKit` SDK; the `public_token` roundtrips through the broker's `/item/public_token/exchange`; the iOS side has the associated-domains entitlement, universal-link handling, and AASA hosted. Real-device validation against a live OAuth institution remains the only outside-repo step. |
+| 2. Accounts / balances / transactions project onto provider-neutral snapshots | **Pass** — unchanged from the prior slice. |
+| 3. `/transactions/sync` dedupe invariants hold through the existing reconciler | **Pass** — unchanged from the prior slice. |
+| 4. Unit-cost modelling stays inside a pre-revenue budget using public pricing | **Partial (paper)** — unchanged from the prior slice. |
+| 5. Canadian coverage against NomadFi's target-user institutions | **Unresolved** — still blocked on running the real Link flow against at least one target Canadian FI. The plumbing is now ready; only the production-access conversation + a real-device pass remain. |
 
-Recommendation: **do not start a full Phase 5E Plaid implementation
-yet, and do not start an Akoya comparison yet.** The proof code and
-tests are strong enough to let NomadFi land that work quickly once
-two gating things happen:
+Recommendation (unchanged in principle, tightened in detail): **do
+not start a full Phase 5E Plaid implementation yet, and do not start
+an Akoya comparison yet.** Criterion 1 is now in-code pass, so the
+remaining gate is operational:
 
 1. The Apple FinanceKit entitlement request lands and real-device
    validation confirms the free-tier coverage.
 2. A real Plaid Link flow against at least one target Canadian FI
-   resolves criterion 5.
+   is exercised with live sandbox credentials + a deployed
+   redirect URI — resolving criterion 5.
 
-If FinanceKit does not clear its own bar after Apple's response,
-Plaid sandbox proof stays on file and the decision is revisited with
-Akoya as the first-privacy comparison.
+If FinanceKit alone clears the bar for NomadFi's archetype, Phase
+5E stays deferred and the Plaid Link scaffolding remains inactive
+(the Settings row hides the Link button in production builds that
+have no broker URL). If it does not, the proof code and tests are
+strong enough to convert into Phase 5E quickly — the remaining
+work is a production-access conversation with Plaid and the
+removal of `/sandbox/*` bypasses.
 
 ---
 
@@ -104,50 +109,70 @@ the project's string catalog.
 
 ### 3.1 Criterion 1 — Plaid Link flow maps onto NomadFi's consent model
 
-**Outcome: Partial (pass on architecture, deferred on UI).**
+**Outcome: Pass (in-code).**
 
-What is proven in code:
+What is proven in code *after the Phase 5D gate-clearance slice*:
 
-- The adapter satisfies the existing `FinancialDataProvider`
-  contract. Its `requestAuthorization()` runs through the broker's
-  `/sandbox/item/create` endpoint, which wraps Plaid's documented
-  `/sandbox/public_token/create` → `/item/public_token/exchange`
-  pair. Once the broker returns an opaque item handle, the adapter
-  persists it and moves the Settings row to `.authorized`.
-- The provider's availability state machine surfaces four distinct
-  user-visible outcomes: `.unavailable(.integrationNotImplemented)`,
-  `.availableNoConnections`, `.authorized`, `.denied`. Tested in
-  `PlaidSandboxIntegrationTests`.
-- The provider uses `FinancialDataProviderKind.externalAggregator(
-  identifier: "plaid_sandbox")`. Because this mirrors Phase 5A's
-  persistent log key, the link round-trips through
-  `FinancialDataProviderKind.fromLogKey(_:)` without a schema
-  migration.
+- Plaid's official `LinkKit` SDK is added as an SPM dependency of
+  the `NomadFi` target (source:
+  [Plaid Link iOS SDK](https://plaid.com/docs/link/ios/)). The
+  `import LinkKit` lives only inside
+  `PlaidLinkKitPresenter.swift`; everything else in the Plaid
+  boundary uses the abstract `PlaidLinkPresenting` protocol.
+- `PlaidLinkCoordinator` is a `@MainActor` `@Observable` state
+  machine with a deterministic phase progression:
+  `idle → fetchingLinkToken → presentingLink → exchangingPublicToken → completed|cancelled|failed`.
+  The Settings UI binds to `coordinator.phase.statusLabel`
+  directly; every test in `PlaidLinkCoordinatorTests` covers a
+  transition.
+- The broker creates a real `link_token` via
+  `/link/token/create`, applying the OAuth-compatible
+  `redirect_uri` when `PLAID_REDIRECT_URI` is set in the broker's
+  `.env`. The app exchanges the Link success callback's
+  `public_token` through the new broker endpoint
+  `/item/public_token/exchange`; the app never sees Plaid's real
+  `access_token`.
+- iOS universal-link / associated-domains plumbing is in place:
+  - `NomadFi.entitlements` declares
+    `applinks:arieltyson.github.io`.
+  - The root `NomadFiApp` forwards `.onOpenURL(...)` to
+    `PlaidLinkCoordinator.handle(universalLink:)`, which in turn
+    calls LinkKit's `handler.continue(from:)`.
+  - The redirect page is hosted at
+    `https://arieltyson.github.io/nomadfi-privacy/plaid-oauth/`
+    with a small "returning you to NomadFi…" fallback.
+  - AASA is hosted at
+    `https://arieltyson.github.io/nomadfi-privacy/.well-known/apple-app-site-association`,
+    declaring the universal-link `components` for
+    `/plaid-oauth` and `/plaid-oauth/*`.
+- The sandbox-bypass authorization path
+  (`PlaidSandboxFinancialDataProvider.requestAuthorization()`)
+  remains available for tests / dev, but the real Link flow is now
+  the production authorization path when `PLAID_REDIRECT_URI` is
+  configured on the broker.
 
-What is not yet proven:
+What remains outside the repo:
 
-- A real Plaid Link SDK consent sheet against a bank's OAuth flow
-  has not been exercised. This slice intentionally did not pull the
-  Plaid iOS Link SDK package because the proof can test snapshot
-  projection and dedupe without it, and adding a vendor SDK without
-  exercising it would violate the "no speculative dependencies"
-  rule. When Phase 5E lands, adding LinkKit is a one-line SPM
-  dependency and a small coordinator that hands the `link_token`
-  from `/link/token/create` to `PLKPlaidLinkViewController`. The
-  broker endpoint already exists.
+- A production-access conversation with Plaid (moves the flow from
+  *sandbox* to *production* keys).
+- A real-device bakeout against at least one target OAuth
+  institution — criterion 5 resolves only when this runs.
 
-Evidence:
+Evidence (in-code):
 
-- `PlaidSandboxIntegrationTests.noBrokerURLMeansNotImplemented`
-- `PlaidSandboxIntegrationTests.brokerConfiguredNoItem`
-- `PlaidSandboxIntegrationTests.requestAuthorizationPersistsItemHandle`
-- `PlaidSandboxConfigurationTests.logKeyRoundTrip`
+- `PlaidLinkCoordinatorTests.happyPathLinkFlow`
+- `PlaidLinkCoordinatorTests.userExitsLink`
+- `PlaidLinkCoordinatorTests.publicTokenExchangeFails`
+- `PlaidLinkCoordinatorTests.universalLinkForwardedWhilePresenting`
+- `PlaidLinkCoordinatorTests.universalLinkIgnoredWhenIdle`
+- `PlaidLinkCoordinatorTests.brokerCreateLinkTokenFails`
+- `PlaidLinkCoordinatorTests.missingBrokerURL`
+- `PlaidLinkCoordinatorTests.statusLabelsAreHonest` (copy guard)
 
 Vendor-reported (not independently validated):
 
-- That Plaid Link's OAuth conversion at large US banks exceeds non-
-  OAuth flows. Plaid publishes this claim on their own site; no
-  peer-reviewed study backs it.
+- Plaid's OAuth conversion claims at large US banks.
+- Plaid's Canadian FI list and OAuth status per institution.
 
 ### 3.2 Criterion 2 — Provider-neutral snapshot projection
 

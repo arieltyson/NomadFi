@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11DAAAA0000000000000001 /* LinkKit in Frameworks */ = {isa = PBXBuildFile; productRef = A11DAAAA0000000000000003 /* LinkKit */; };
 		B513B6ABF491926DC710DF9F /* NomadFiWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8D44E7D69C427DC3D687B387 /* NomadFiWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -83,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11DAAAA0000000000000001 /* LinkKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,6 +178,7 @@
 			);
 			name = NomadFi;
 			packageProductDependencies = (
+				A11DAAAA0000000000000003 /* LinkKit */,
 			);
 			productName = NomadFi;
 			productReference = AF3AAACE2F4C4E8500393A16 /* NomadFi.app */;
@@ -262,6 +265,9 @@
 			);
 			mainGroup = AF3AAAC52F4C4E8500393A16;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A11DAAAA0000000000000002 /* XCRemoteSwiftPackageReference "plaid-link-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AF3AAACF2F4C4E8500393A16 /* Products */;
 			projectDirPath = "";
@@ -748,6 +754,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A11DAAAA0000000000000002 /* XCRemoteSwiftPackageReference "plaid-link-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/plaid/plaid-link-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A11DAAAA0000000000000003 /* LinkKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A11DAAAA0000000000000002 /* XCRemoteSwiftPackageReference "plaid-link-ios" */;
+			productName = LinkKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AF3AAAC62F4C4E8500393A16 /* Project object */;
 }

@@ -64,8 +64,9 @@ On a development device or simulator with the NomadFi debug build:
 | Method + path | Purpose |
 |---|---|
 | `GET  /health` | Liveness + active env |
-| `POST /link/token/create` | Creates a Plaid `link_token` (for real Link flows; not exercised in this slice) |
-| `POST /sandbox/item/create` | Plaid `/sandbox/public_token/create` → `/item/public_token/exchange`; returns an opaque item handle |
+| `POST /link/token/create` | Creates a Plaid `link_token`. When `PLAID_REDIRECT_URI` is set, the token requests the OAuth universal-link return path so OAuth-capable institutions can reopen NomadFi after the bank's consent. |
+| `POST /item/public_token/exchange` | `{ public_token }` from a real Link success → Plaid `/item/public_token/exchange`; returns an opaque item handle and the resolved institution name where possible. |
+| `POST /sandbox/item/create` | Plaid `/sandbox/public_token/create` → `/item/public_token/exchange`; returns an opaque item handle. Still available for sandbox-bypass tests. |
 | `POST /accounts/get` | `{ item_id }` → Plaid `/accounts/get` + institution name |
 | `POST /transactions/sync` | `{ item_id, cursor? }` → Plaid `/transactions/sync` diff |
 

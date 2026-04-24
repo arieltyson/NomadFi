@@ -348,6 +348,9 @@ private final class StubPlaidSandboxClient: PlaidSandboxClient, @unchecked Senda
     func createSandboxItem() async throws -> PlaidItemHandleResponse {
         itemHandleToReturn
     }
+    func exchangePublicToken(_ publicToken: String) async throws -> PlaidItemHandleResponse {
+        itemHandleToReturn
+    }
     func fetchAccounts(itemID: String) async throws -> PlaidAccountsResponse {
         accountsResponse
     }

@@ -30,6 +30,12 @@ protocol PlaidSandboxClient: Sendable {
     /// Only used when no real Link flow is available.
     func createSandboxItem() async throws -> PlaidItemHandleResponse
 
+    /// Exchanges a Plaid `public_token` captured from the real Link
+    /// success callback for an opaque item handle. The broker
+    /// performs the actual `/item/public_token/exchange` call; the
+    /// app never sees the resulting `access_token`.
+    func exchangePublicToken(_ publicToken: String) async throws -> PlaidItemHandleResponse
+
     /// Fetches the current account list + balances for an item. The
     /// broker also returns the institution name so the adapter can
     /// stamp it on the snapshot without a second hop.
@@ -68,6 +74,13 @@ struct LivePlaidSandboxClient: PlaidSandboxClient {
 
     func createSandboxItem() async throws -> PlaidItemHandleResponse {
         try await post(path: "/sandbox/item/create", body: EmptyBody())
+    }
+
+    func exchangePublicToken(_ publicToken: String) async throws -> PlaidItemHandleResponse {
+        try await post(
+            path: "/item/public_token/exchange",
+            body: PublicTokenBody(publicToken: publicToken)
+        )
     }
 
     func fetchAccounts(itemID: String) async throws -> PlaidAccountsResponse {
@@ -146,6 +159,13 @@ struct LivePlaidSandboxClient: PlaidSandboxClient {
         enum CodingKeys: String, CodingKey {
             case itemID = "item_id"
             case cursor
+        }
+    }
+
+    private struct PublicTokenBody: Encodable {
+        let publicToken: String
+        enum CodingKeys: String, CodingKey {
+            case publicToken = "public_token"
         }
     }
 }
