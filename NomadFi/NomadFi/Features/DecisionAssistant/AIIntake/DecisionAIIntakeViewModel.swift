@@ -3,8 +3,8 @@
 //
 // Drives the Phase 9A Apple Intelligence intake sheet. Holds the
 // scenario-input field, the interpreter availability state, the
-// pending interpretation, and the editable review fields the user
-// confirms before persistence.
+// pending interpretation, the bounded clarification loop, and the
+// editable review fields the user confirms before persistence.
 //
 // Honesty contract pinned in `DecisionAIIntakeTests`:
 //
@@ -12,10 +12,24 @@
 //     interpreter never inserts records, the view model never
 //     auto-confirms, and the sheet never silently moves an
 //     interpretation onto disk.
-//   • Editable review fields seed from the interpretation but are
-//     fully user-controlled — typed edits win on save.
+//   • Editable review fields seed from the interpretation (and
+//     from any clarifying answers) but are fully user-controlled —
+//     typed edits win on save.
 //   • Interpretation requests are async + cancellable. Tapping
 //     "Interpret" while one is in flight is a no-op.
+//
+// Phase 9A follow-through (this slice):
+//
+//   • Missing-field computation is *kind-aware* and lives in
+//     `DecisionDraftInterpretationCompleteness`. The interpreter
+//     just extracts; this view model decides which gaps are worth
+//     a clarifying question.
+//   • The clarification flow is *bounded* via
+//     `DecisionAIClarificationPlanner` (max
+//     `DecisionAIClarificationPlan.maxQuestions`). The user can
+//     skip the current question, skip the whole loop, or drop into
+//     the typed form at any point — those affordances live on the
+//     sheet, the view model just exposes the actions.
 
 import Foundation
 import Observation
@@ -30,8 +44,14 @@ enum DecisionAIIntakeStage: Sendable, Equatable {
     case capture
     /// Interpreter is running.
     case interpreting
-    /// Interpretation succeeded. Review fields are editable; user
-    /// must explicitly confirm before save.
+    /// Bounded clarifying-question loop. The associated value is
+    /// the index of the question currently being answered (`0 ..<
+    /// plan.count`). Plan itself lives on the view model so the
+    /// sheet only renders the current question.
+    case clarifying(index: Int)
+    /// Interpretation (and any clarifying answers) succeeded.
+    /// Review fields are editable; user must explicitly confirm
+    /// before save.
     case review
     /// Interpretation failed. Sheet shows the error and lets the
     /// user retry or fall back to the typed form.
@@ -69,13 +89,42 @@ final class DecisionAIIntakeViewModel {
     private(set) var availability: DecisionAIIntakeAvailability = .foundationModelsUnavailable
 
     /// The interpretation the user is reviewing. `nil` until the
-    /// interpreter succeeds.
+    /// interpreter succeeds. Mutated by the clarification loop as
+    /// the user answers each follow-up so the eventual review
+    /// stage sees the latest combined value.
     private(set) var pendingInterpretation: DecisionDraftInterpretation?
 
-    /// Missing fields surfaced to the review sheet so the user
-    /// knows which gaps they're filling in.
+    /// The bounded clarification plan derived from the current
+    /// `pendingInterpretation`'s kind + completeness gap. `.none`
+    /// (empty) when no clarification is needed; the sheet
+    /// short-circuits to the review stage in that case.
+    private(set) var clarificationPlan: DecisionAIClarificationPlan = .none
+
+    /// Free-form text the user is typing into the *current*
+    /// clarifying question. Bound by the sheet to a `TextField`,
+    /// `Picker`, or numeric pad. Reset when the question advances.
+    var clarificationDraftText: String = ""
+
+    /// Currency picked for the *current* clarifying question when
+    /// the question's `inputKind` is `.currency`. Defaults to USD
+    /// so the picker has a stable initial selection.
+    var clarificationDraftCurrency: CurrencyCode = .usd
+
+    /// Kind picked for the *current* clarifying question when the
+    /// question's `inputKind` is `.kind`. Defaults to the
+    /// pending interpretation's current kind so the picker starts
+    /// on a sensible value.
+    var clarificationDraftKind: DecisionDraftKind = .other
+
+    /// Kind-aware missing-field list derived from the latest
+    /// interpretation via `DecisionDraftInterpretationCompleteness`.
+    /// Surfaced to the review sheet so the user sees the same gaps
+    /// the planner used. Empty when nothing is missing for the
+    /// interpreted kind.
     var missingFields: [DecisionDraftInterpretationMissingField] {
-        pendingInterpretation?.missingFields ?? []
+        guard let interpretation = pendingInterpretation else { return [] }
+        return DecisionDraftInterpretationCompleteness
+            .missingFields(in: interpretation)
     }
 
     /// Optional one-line caveat from the interpreter. Rendered on
@@ -135,7 +184,11 @@ final class DecisionAIIntakeViewModel {
     // MARK: - Actions
 
     /// Kicks off an interpretation. No-op when `canInterpret` is
-    /// false.
+    /// false. After a successful interpretation the view model
+    /// derives a kind-aware clarification plan; if any clarifying
+    /// questions are needed the sheet enters the bounded
+    /// `.clarifying` loop, otherwise it short-circuits to
+    /// `.review`.
     func interpret() async {
         guard canInterpret else { return }
         stage = .interpreting
@@ -148,10 +201,37 @@ final class DecisionAIIntakeViewModel {
         case .interpreted(let interpretation):
             pendingInterpretation = interpretation
             seedReviewFields(from: interpretation)
-            stage = .review
+            applyDerivedClarificationPlan()
         case .failed(let reason):
             pendingInterpretation = nil
+            clarificationPlan = .none
             stage = .failed(reason: reason)
+        }
+    }
+
+    /// Recomputes `clarificationPlan` from the current
+    /// `pendingInterpretation` and routes the sheet into the
+    /// appropriate next stage. Centralised so every "we just
+    /// updated the interpretation" path (initial interpret, after
+    /// a clarifying answer) goes through the same rule.
+    private func applyDerivedClarificationPlan() {
+        guard let interpretation = pendingInterpretation else {
+            clarificationPlan = .none
+            stage = .review
+            return
+        }
+        let missing = DecisionDraftInterpretationCompleteness
+            .missingFields(in: interpretation)
+        let plan = DecisionAIClarificationPlanner.plan(
+            kind: interpretation.kind,
+            missingFields: missing
+        )
+        clarificationPlan = plan
+        if plan.isEmpty {
+            stage = .review
+        } else {
+            seedClarificationDrafts(for: plan.questions[0])
+            stage = .clarifying(index: 0)
         }
     }
 
@@ -204,6 +284,7 @@ final class DecisionAIIntakeViewModel {
     func backToCapture() {
         stage = .capture
         pendingInterpretation = nil
+        clarificationPlan = .none
     }
 
     /// Resets the model entirely. Called when the sheet is
@@ -211,6 +292,10 @@ final class DecisionAIIntakeViewModel {
     func reset() {
         scenarioText = ""
         pendingInterpretation = nil
+        clarificationPlan = .none
+        clarificationDraftText = ""
+        clarificationDraftCurrency = .usd
+        clarificationDraftKind = .other
         stage = .capture
         reviewKind = .other
         reviewTitle = ""
@@ -220,6 +305,165 @@ final class DecisionAIIntakeViewModel {
         reviewCurrencyCode = .usd
         reviewTimingText = ""
         reviewNotes = ""
+    }
+
+    // MARK: - Clarification loop
+
+    /// The clarifying question the sheet should currently render,
+    /// or `nil` when the sheet is not in the `.clarifying` stage
+    /// (or the index has run off the end of the plan).
+    var currentClarifyingQuestion: DecisionAIClarifyingQuestion? {
+        guard case let .clarifying(index) = stage else { return nil }
+        guard clarificationPlan.questions.indices.contains(index) else { return nil }
+        return clarificationPlan.questions[index]
+    }
+
+    /// Whether the current draft input is non-empty / valid enough
+    /// to commit. Drives the Continue button's disabled state.
+    var canSubmitClarificationAnswer: Bool {
+        guard let question = currentClarifyingQuestion else { return false }
+        switch question.inputKind {
+        case .shortText, .amount:
+            return !clarificationDraftText
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+        case .currency, .kind:
+            // Picker controls always have a selected value.
+            return true
+        }
+    }
+
+    /// Folds the user's answer to the current question into the
+    /// pending interpretation, advances to the next question, or —
+    /// when this was the last question — recomputes the
+    /// clarification plan in case kind changed mid-loop and
+    /// transitions to `.review` if nothing else needs asking.
+    func submitClarificationAnswer() {
+        guard let question = currentClarifyingQuestion,
+              case let .clarifying(index) = stage,
+              let interpretation = pendingInterpretation
+        else { return }
+
+        let trimmed = clarificationDraftText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let updated = Self.applyAnswer(
+            for: question,
+            text: trimmed,
+            currency: clarificationDraftCurrency,
+            kind: clarificationDraftKind,
+            to: interpretation
+        )
+        pendingInterpretation = updated
+        seedReviewFields(from: updated)
+        advanceClarification(after: index)
+    }
+
+    /// Skips the current question without recording an answer. The
+    /// gap stays unresolved; the user can fill it on the review
+    /// screen. Same advance rules as `submitClarificationAnswer`.
+    func skipCurrentClarification() {
+        guard case let .clarifying(index) = stage else { return }
+        advanceClarification(after: index)
+    }
+
+    /// Skips every remaining clarifying question and jumps to the
+    /// review stage. The interpretation is unchanged; remaining
+    /// gaps surface verbatim on the review form.
+    func skipAllClarification() {
+        clarificationDraftText = ""
+        stage = .review
+    }
+
+    // MARK: - Private — clarification mechanics
+
+    /// Decides whether `index + 1` is still inside the plan. If
+    /// yes, reseeds the draft inputs for the next question. If no,
+    /// re-derives the plan from the now-updated interpretation
+    /// (kind may have changed mid-loop) — empty plan transitions
+    /// to `.review`, otherwise enters a fresh `.clarifying(0)`.
+    private func advanceClarification(after index: Int) {
+        let next = index + 1
+        if next < clarificationPlan.count {
+            seedClarificationDrafts(for: clarificationPlan.questions[next])
+            stage = .clarifying(index: next)
+        } else {
+            // Plan exhausted. If the kind or other fields changed
+            // along the way the new completeness check may either
+            // close the loop entirely or surface a new (still
+            // bounded) plan rooted in the updated interpretation.
+            applyDerivedClarificationPlan()
+        }
+    }
+
+    /// Pre-populates the clarification draft inputs for `question`
+    /// from the pending interpretation so the user always sees a
+    /// sensible starting value rather than an empty control.
+    private func seedClarificationDrafts(
+        for question: DecisionAIClarifyingQuestion
+    ) {
+        clarificationDraftText = ""
+        clarificationDraftCurrency = pendingInterpretation?.currencyCode ?? reviewCurrencyCode
+        clarificationDraftKind = pendingInterpretation?.kind ?? reviewKind
+
+        switch question.field {
+        case .amount:
+            if let amount = pendingInterpretation?.amount {
+                clarificationDraftText = Self.amountEditingText(for: amount)
+            }
+        case .merchantName:
+            clarificationDraftText = pendingInterpretation?.merchantName ?? ""
+        case .locationText:
+            clarificationDraftText = pendingInterpretation?.locationText ?? ""
+        case .timingText:
+            clarificationDraftText = pendingInterpretation?.timingText ?? ""
+        case .title:
+            clarificationDraftText = pendingInterpretation?.title ?? ""
+        case .currencyCode, .kind:
+            break
+        }
+    }
+
+    /// Pure helper — folds a single clarifying answer into the
+    /// supplied interpretation, returning a new value-typed
+    /// interpretation. Centralised so the apply rules stay easy to
+    /// audit and so the view model stays a thin wrapper.
+    private static func applyAnswer(
+        for question: DecisionAIClarifyingQuestion,
+        text: String,
+        currency: CurrencyCode,
+        kind: DecisionDraftKind,
+        to interpretation: DecisionDraftInterpretation
+    ) -> DecisionDraftInterpretation {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedText: String? = trimmed.isEmpty ? nil : trimmed
+
+        switch question.field {
+        case .amount:
+            return interpretation.with(amount: parseAmount(text))
+        case .currencyCode:
+            return interpretation.with(currencyCode: currency)
+        case .merchantName:
+            return interpretation.with(merchantName: resolvedText)
+        case .locationText:
+            return interpretation.with(locationText: resolvedText)
+        case .timingText:
+            return interpretation.with(timingText: resolvedText)
+        case .title:
+            return interpretation.with(title: resolvedText)
+        case .kind:
+            return interpretation.with(kind: kind)
+        }
+    }
+
+    private static func parseAmount(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        if let direct = Double(trimmed) { return direct }
+        if let localeDecimal = Decimal(string: trimmed, locale: .current) {
+            return NSDecimalNumber(decimal: localeDecimal).doubleValue
+        }
+        return nil
     }
 
     // MARK: - Private

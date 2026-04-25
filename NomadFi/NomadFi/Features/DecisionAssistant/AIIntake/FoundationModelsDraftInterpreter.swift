@@ -147,30 +147,18 @@ private struct ScenarioExtraction {
     /// the rest of the intake layer consumes. Pulls in the
     /// scenario text the user pasted so downstream code never has
     /// to re-thread it.
+    ///
+    /// Phase 9A follow-through: the interpreter no longer computes
+    /// `missingFields` on its own. That responsibility moved out to
+    /// `DecisionDraftInterpretationCompleteness`, which applies
+    /// kind-aware rules so the intake sheet only asks about gaps a
+    /// downstream deterministic engine actually needs. The
+    /// interpreter just *extracts*; the app decides what
+    /// clarification is worth asking about.
     func toInterpretation(scenarioText: String) -> DecisionDraftInterpretation {
         let resolvedKind = DecisionDraftKind(rawValue: kind) ?? .other
         let resolvedCurrency = currencyCode.flatMap {
             CurrencyCode(rawValue: $0.uppercased())
-        }
-
-        var missing: [DecisionDraftInterpretationMissingField] = []
-        if title?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
-            missing.append(.title)
-        }
-        if merchantName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
-            missing.append(.merchantName)
-        }
-        if locationText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
-            missing.append(.locationText)
-        }
-        if amount == nil || (amount ?? 0) <= 0 {
-            missing.append(.amount)
-        }
-        if resolvedCurrency == nil {
-            missing.append(.currencyCode)
-        }
-        if timingText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
-            missing.append(.timingText)
         }
 
         return DecisionDraftInterpretation(
@@ -183,7 +171,7 @@ private struct ScenarioExtraction {
             currencyCode: resolvedCurrency,
             timingText: timingText?.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty,
             notes: nil,
-            missingFields: missing,
+            missingFields: [],
             confidenceNote: confidenceNote?.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty
         )
     }

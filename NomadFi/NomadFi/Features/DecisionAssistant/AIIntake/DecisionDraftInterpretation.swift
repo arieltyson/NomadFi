@@ -73,3 +73,67 @@ struct DecisionDraftInterpretation: Sendable, Equatable, Hashable {
     /// copy.
     let confidenceNote: String?
 }
+
+// MARK: - Field-wise builders
+
+extension DecisionDraftInterpretation {
+
+    /// Returns a copy with `kind` replaced. Used by the
+    /// clarification loop in `DecisionAIIntakeViewModel` to fold a
+    /// single answer into the pending interpretation without
+    /// rebuilding every field by hand.
+    func with(kind: DecisionDraftKind) -> DecisionDraftInterpretation {
+        replacing(kind: kind)
+    }
+
+    func with(title: String?) -> DecisionDraftInterpretation {
+        replacing(title: title)
+    }
+
+    func with(merchantName: String?) -> DecisionDraftInterpretation {
+        replacing(merchantName: merchantName)
+    }
+
+    func with(locationText: String?) -> DecisionDraftInterpretation {
+        replacing(locationText: locationText)
+    }
+
+    func with(amount: Double?) -> DecisionDraftInterpretation {
+        replacing(amount: amount)
+    }
+
+    func with(currencyCode: CurrencyCode?) -> DecisionDraftInterpretation {
+        replacing(currencyCode: currencyCode)
+    }
+
+    func with(timingText: String?) -> DecisionDraftInterpretation {
+        replacing(timingText: timingText)
+    }
+
+    /// Single private constructor that all `with(...)` helpers
+    /// route through. Keeps the field list authored exactly once
+    /// so adding a new field cannot silently drop on copy.
+    private func replacing(
+        kind: DecisionDraftKind? = nil,
+        title: String?? = nil,
+        merchantName: String?? = nil,
+        locationText: String?? = nil,
+        amount: Double?? = nil,
+        currencyCode: CurrencyCode?? = nil,
+        timingText: String?? = nil
+    ) -> DecisionDraftInterpretation {
+        DecisionDraftInterpretation(
+            kind: kind ?? self.kind,
+            title: title ?? self.title,
+            scenarioText: self.scenarioText,
+            merchantName: merchantName ?? self.merchantName,
+            locationText: locationText ?? self.locationText,
+            amount: amount ?? self.amount,
+            currencyCode: currencyCode ?? self.currencyCode,
+            timingText: timingText ?? self.timingText,
+            notes: self.notes,
+            missingFields: self.missingFields,
+            confidenceNote: self.confidenceNote
+        )
+    }
+}

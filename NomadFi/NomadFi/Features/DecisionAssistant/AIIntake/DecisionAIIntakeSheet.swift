@@ -71,6 +71,8 @@ struct DecisionAIIntakeSheet: View {
             captureContent
         case .interpreting:
             interpretingContent
+        case .clarifying:
+            clarifyingContent
         case .review:
             reviewContent
         case .failed(let reason):
@@ -82,6 +84,7 @@ struct DecisionAIIntakeSheet: View {
         switch viewModel.stage {
         case .capture: "Apple Intelligence intake"
         case .interpreting: "Interpreting…"
+        case .clarifying: "A couple of follow-ups"
         case .review: "Review extracted fields"
         case .failed: "Couldn't interpret"
         }
@@ -155,6 +158,47 @@ struct DecisionAIIntakeSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Clarifying
+
+    /// Bounded follow-up loop. Renders one question at a time so
+    /// the user is never asked to scan a wall of unresolved
+    /// fields. Apple HIG generative-AI guidance: progressive
+    /// disclosure, AI usage clearly disclosed, fallback always
+    /// reachable.
+    @ViewBuilder
+    private var clarifyingContent: some View {
+        if let question = viewModel.currentClarifyingQuestion {
+            ClarifyingQuestionForm(
+                question: question,
+                progressLabel: clarifyingProgressLabel,
+                draftText: $viewModel.clarificationDraftText,
+                draftCurrency: $viewModel.clarificationDraftCurrency,
+                draftKind: $viewModel.clarificationDraftKind,
+                canSubmit: viewModel.canSubmitClarificationAnswer,
+                onContinue: { viewModel.submitClarificationAnswer() },
+                onSkip: { viewModel.skipCurrentClarification() },
+                onSkipAll: { viewModel.skipAllClarification() },
+                onSwitchToTypedForm: onSwitchToTypedForm
+            )
+        } else {
+            // Defensive — should never render. The view model
+            // transitions to .review when the plan empties.
+            ProgressView()
+                .controlSize(.regular)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityHidden(true)
+        }
+    }
+
+    /// Short "Question N of M" string for the progress affordance
+    /// at the top of the clarifying form. Voiceover-friendly.
+    private var clarifyingProgressLabel: String {
+        guard case let .clarifying(index) = viewModel.stage else { return "" }
+        let total = viewModel.clarificationPlan.count
+        guard total > 0 else { return "" }
+        return "Question \(index + 1) of \(total)"
     }
 
     // MARK: - Review
@@ -331,6 +375,159 @@ struct DecisionAIIntakeSheet: View {
                 .disabled(!viewModel.canSave)
                 .accessibilityHint("Saves the AI-assisted draft on this device. NomadFi will not analyze it automatically.")
             }
+        }
+    }
+}
+
+// MARK: - Clarifying-question form
+
+/// Renders one clarifying question at a time with the calmest
+/// possible affordance ladder per Apple HIG generative-AI
+/// guidance:
+///
+///   • The question is the headline. The optional helper line
+///     explains *why* NomadFi is asking, never what the user
+///     "should" do.
+///   • One input control per question (`TextField`, decimal pad,
+///     `Picker`). Picker styles match the rest of the intake
+///     form so the user sees consistent controls across stages.
+///   • Three escape hatches: Continue (primary), Skip this
+///     question (secondary), Skip all clarifying questions
+///     (tertiary), and Use the typed form instead (also tertiary).
+///   • A visible "Question N of M" progress affordance keeps the
+///     user oriented; VoiceOver reads the same string as the
+///     accessibility value of the form section.
+private struct ClarifyingQuestionForm: View {
+
+    let question: DecisionAIClarifyingQuestion
+    let progressLabel: String
+
+    @Binding var draftText: String
+    @Binding var draftCurrency: CurrencyCode
+    @Binding var draftKind: DecisionDraftKind
+
+    let canSubmit: Bool
+    let onContinue: () -> Void
+    let onSkip: () -> Void
+    let onSkipAll: () -> Void
+    let onSwitchToTypedForm: () -> Void
+
+    @FocusState private var isInputFocused: Bool
+
+    var body: some View {
+        Form {
+            Section {
+                progressRow
+                Text(question.prompt)
+                    .font(TypographyTokens.sectionHeader)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+                if let helper = question.helper {
+                    Text(helper)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityElement(children: .combine)
+
+            Section {
+                inputControl
+            } footer: {
+                Text("AI structures input. Deterministic engines decide. NomadFi will not save anything until you confirm on the next screen.")
+                    .font(TypographyTokens.caption)
+            }
+
+            Section {
+                NomadFiActionButton(
+                    title: "Continue",
+                    systemImage: "arrow.right.circle",
+                    style: .primary,
+                    controlSize: .large,
+                    accessibilityHint: "Folds your answer into the pending draft and advances to the next question or the review screen.",
+                    action: onContinue
+                )
+                .disabled(!canSubmit)
+
+                NomadFiActionButton(
+                    title: "Skip this question",
+                    systemImage: "chevron.right",
+                    style: .secondary,
+                    accessibilityHint: "Leaves this field blank for now. You can fill it on the review screen.",
+                    action: onSkip
+                )
+
+                NomadFiActionButton(
+                    title: "Skip clarifying questions",
+                    systemImage: "checkmark",
+                    style: .tertiary,
+                    fillsWidth: false,
+                    accessibilityHint: "Goes straight to the review screen — any remaining gaps stay blank until you fill them there.",
+                    action: onSkipAll
+                )
+
+                NomadFiActionButton(
+                    title: "Use the typed form instead",
+                    systemImage: "square.and.pencil",
+                    style: .tertiary,
+                    fillsWidth: false,
+                    accessibilityHint: "Closes this sheet and opens the typed draft form.",
+                    action: onSwitchToTypedForm
+                )
+            }
+        }
+        .onAppear { isInputFocused = true }
+    }
+
+    /// Tiny visual + accessibility row showing the user where they
+    /// are in the bounded clarification loop.
+    private var progressRow: some View {
+        HStack(spacing: SpacingTokens.xSmall) {
+            Image(systemName: "questionmark.circle")
+                .foregroundStyle(ColorTokens.brandPrimary)
+                .accessibilityHidden(true)
+            Text(progressLabel)
+                .font(TypographyTokens.caption)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(progressLabel)
+    }
+
+    /// Single input control matched to the question's `inputKind`.
+    /// Centralised here so the parent sheet stays a thin router and
+    /// the control choice cannot drift across questions.
+    @ViewBuilder
+    private var inputControl: some View {
+        switch question.inputKind {
+        case .shortText(let placeholder):
+            TextField(placeholder, text: $draftText)
+                .textInputAutocapitalization(.sentences)
+                .focused($isInputFocused)
+                .accessibilityLabel(question.prompt)
+        case .amount(let placeholder):
+            TextField(placeholder, text: $draftText)
+                .keyboardType(.decimalPad)
+                .focused($isInputFocused)
+                .accessibilityLabel(question.prompt)
+        case .currency:
+            Picker(question.prompt, selection: $draftCurrency) {
+                ForEach(CurrencyCode.allCases) { code in
+                    Text(code.rawValue).tag(code)
+                }
+            }
+            .pickerStyle(.menu)
+            .accessibilityLabel(question.prompt)
+        case .kind:
+            Picker(question.prompt, selection: $draftKind) {
+                ForEach(DecisionDraftKind.allCases, id: \.self) { kind in
+                    Label(kind.displayLabel, systemImage: kind.systemImage)
+                        .tag(kind)
+                        .accessibilityLabel(kind.accessibilityLabel)
+                }
+            }
+            .pickerStyle(.menu)
+            .accessibilityLabel(question.prompt)
         }
     }
 }

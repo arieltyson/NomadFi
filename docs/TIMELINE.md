@@ -1649,8 +1649,9 @@ recommendation; the model only structures input.
 
 ### Phase 9A — On-device structured intake (shipped)
 
-The Apple Intelligence row on `NewDecisionScaffoldCard` is now a
-real entry into `DecisionAIIntakeSheet`:
+The Apple Intelligence supporting row on
+`DecisionAssistantCaptureHero` is a real entry into
+`DecisionAIIntakeSheet`:
 
 - **Capture** — user pastes / types a natural-language scenario.
 - **Interpret on device** — `FoundationModelsDraftInterpreter`
@@ -2094,9 +2095,53 @@ Highest-leverage remaining work, in order:
   one primary vertical scroll only, accessibility headers per
   section, no colour-only differentiation. _Evidence:
   `DecisionAssistantIATests.swift`._
+- **Phase 9A follow-through — kind-aware clarifying-question
+  loop — shipped** (2026-04-25). Upgrades the on-device intake
+  from "single extraction + manual review" to "single extraction
+  + bounded follow-up clarification + manual review", without
+  touching the deterministic-engines-decide boundary. New pure
+  value layer under `Features/DecisionAssistant/AIIntake/`:
+  `DecisionDraftKindCompleteness` (per-kind required-field set),
+  `DecisionDraftInterpretationCompleteness` (kind-aware "what's
+  actually missing" evaluator), `DecisionAIClarifyingQuestion`
+  (one question targeting one missing field, with an `InputKind`
+  picking the right control), `DecisionAIClarificationPlan`
+  (bounded — capped at `maxQuestions = 3`),
+  `DecisionAIClarificationAnswer` (raw user input value), and
+  `DecisionAIClarificationPlanner` (pure namespace that turns
+  kind + missing list into the bounded ordered plan). The
+  interpreter no longer computes missing fields itself —
+  `FoundationModelsDraftInterpreter.toInterpretation(...)` now
+  returns `missingFields: []` and the app decides what to ask
+  about, so the model stays a pure extractor and the rule lives
+  in one auditable place. `DecisionAIIntakeViewModel` gains a
+  new `.clarifying(index:)` stage between `.interpreting` and
+  `.review`, plus `currentClarifyingQuestion`,
+  `submitClarificationAnswer()`, `skipCurrentClarification()`,
+  and `skipAllClarification()`. The intake sheet renders one
+  question at a time with a "Question N of M" progress
+  affordance, the matching input control (short text, decimal
+  pad, currency picker, kind picker), and four affordances per
+  Apple HIG generative-AI guidance: Continue (primary), Skip
+  this question, Skip clarifying questions, Use the typed form
+  instead. Kind-aware contract: `creditTiming`, `taxEducation`,
+  `investingEducation`, and `other` never produce
+  purchase-shaped questions because their required-field sets
+  are empty by design; `purchase` and `travel` ask only about
+  amount + currency. Loop is bounded — three questions max,
+  remaining gaps surface verbatim on the existing review form.
+  Save still requires explicit `confirmAndSave(in:)`; the loop
+  never persists. Orphaned `NewDecisionScaffoldCard.swift`
+  (replaced by `DecisionAssistantCaptureHero` in the IA
+  redesign) was retired in the same slice; stale doc-comment
+  references on `DecisionAssistantViewModel` and
+  `DecisionIdentity` were updated. _Evidence:
+  `DecisionDraftKindCompletenessTests.swift`,
+  `DecisionAIClarificationPlannerTests.swift`,
+  `DecisionAIIntakeClarificationLoopTests.swift`._
 - **Phase 9A — on-device structured intake — shipped**
-  (2026-04-24). The Apple Intelligence row in
-  `NewDecisionScaffoldCard` is now a real entry point. Pure
+  (2026-04-24). The Apple Intelligence row in the Decision
+  Assistant capture hero is a real entry point. Pure
   value-layer types (`DecisionDraftInterpretation`,
   `DecisionDraftInterpretationMissingField`,
   `DecisionAIIntakeAvailability`, `DecisionAIIntakeResult`),

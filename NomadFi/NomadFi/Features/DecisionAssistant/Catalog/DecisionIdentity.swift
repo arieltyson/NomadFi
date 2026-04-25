@@ -53,8 +53,8 @@ extension DecisionIdentity {
 
     /// Whether NomadFi currently has a deterministic engine behind
     /// this decision. The Decision Assistant surfaces only available
-    /// decisions as actionable; anything else belongs in the
-    /// `NewDecisionScaffoldCard` as "coming soon".
+    /// decisions as actionable in the redesigned tab; anything else
+    /// stays out of the catalog until an engine ships.
     var hasDeterministicEngine: Bool {
         switch id {
         case .amazonArrivalOrder: true

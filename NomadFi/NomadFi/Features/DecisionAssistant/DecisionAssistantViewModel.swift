@@ -78,8 +78,8 @@ final class DecisionAssistantViewModel {
 
     /// True when the decision-draft capture sheet is presented.
     /// Owned by the view model so the capture affordance on
-    /// `NewDecisionScaffoldCard` can be driven through a tested
-    /// `@Observable` surface instead of scattered `@State`.
+    /// `DecisionAssistantCaptureHero` can be driven through a
+    /// tested `@Observable` surface instead of scattered `@State`.
     var isDraftFormPresented: Bool = false
 
     /// True when the Phase 9A Apple Intelligence intake sheet is
@@ -210,14 +210,14 @@ final class DecisionAssistantViewModel {
     }
 
     /// Presents the decision-draft capture sheet. Tapped from the
-    /// "Capture decision" button on ``NewDecisionScaffoldCard``.
+    /// "Capture decision" button on ``DecisionAssistantCaptureHero``.
     func presentDraftForm() {
         isDraftFormPresented = true
     }
 
     /// Presents the Phase 9A Apple Intelligence intake sheet.
-    /// Tapped from the "Apple Intelligence context" row on
-    /// ``NewDecisionScaffoldCard``.
+    /// Tapped from the "Apple Intelligence" supporting row on
+    /// ``DecisionAssistantCaptureHero``.
     func presentAIIntake() {
         isAIIntakePresented = true
     }
