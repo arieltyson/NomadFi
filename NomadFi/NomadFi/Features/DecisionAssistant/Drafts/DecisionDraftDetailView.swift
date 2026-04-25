@@ -40,10 +40,29 @@ struct DecisionDraftDetailView: View {
     /// this sheet so the now-dangling reference is released.
     let onRequestDelete: (DecisionDraftRecord) -> Void
 
+    /// Phase 1 follow-through — invoked when the user taps a
+    /// handoff action ("Open purchase check" / "Open credit timing
+    /// check"). The parent dismisses this sheet and routes through
+    /// the existing engine surface. `nil` is allowed so previews and
+    /// tests can render the view without a router.
+    var onRequestHandoff: ((DecisionDraftRecord, DecisionDraftNextAction) -> Void)? = nil
+
+    /// Phase 1 follow-through — pure account snapshot the evaluator
+    /// uses for credit-timing draft readiness. Defaults to empty so
+    /// previews and tests can render the view without a query.
+    var accountSnapshot: DecisionDraftAccountSnapshot = .empty
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
     @State private var isDeleteConfirmationPresented = false
+
+    private var evaluation: DecisionDraftEvaluation {
+        DecisionDraftEvaluator.evaluate(
+            draft,
+            accountSnapshot: accountSnapshot
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -78,6 +97,8 @@ struct DecisionDraftDetailView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
+
+                    nextStepSection
 
                     timestamps
 
@@ -249,12 +270,63 @@ struct DecisionDraftDetailView: View {
         }
     }
 
+    // MARK: - Next step (Phase 1 follow-through)
+
+    @ViewBuilder
+    private var nextStepSection: some View {
+        if evaluation.hasContent {
+            DraftDetailSection(title: "What NomadFi can do now") {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    Text(evaluation.headline)
+                        .font(TypographyTokens.body)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if !evaluation.nextActions.isEmpty {
+                        Divider()
+                        VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                            ForEach(evaluation.nextActions) { action in
+                                actionRow(for: action)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func actionRow(for action: DecisionDraftNextAction) -> some View {
+        if action.isHandoff {
+            Button {
+                onRequestHandoff?(draft, action)
+            } label: {
+                Label(action.displayLabel, systemImage: action.systemImage)
+                    .font(TypographyTokens.body)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+            .accessibilityHint(action.accessibilityHint)
+        } else {
+            Label {
+                Text(action.displayLabel)
+                    .font(TypographyTokens.body)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: action.systemImage)
+                    .foregroundStyle(ColorTokens.brandPrimary)
+                    .accessibilityHidden(true)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityHint(action.accessibilityHint)
+        }
+    }
+
     // MARK: - Integrity note
 
     private var integrityNote: some View {
         GlassCard {
             Label {
-                Text("NomadFi stored this draft on-device only. A deterministic engine for this kind of decision hasn't shipped yet — until one does, NomadFi will not generate a recommendation from this capture.")
+                Text("NomadFi stored this draft on-device only. Drafts are never auto-analyzed; NomadFi only opens an existing deterministic engine when you tap a handoff button above.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

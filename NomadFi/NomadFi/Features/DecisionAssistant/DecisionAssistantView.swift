@@ -132,7 +132,9 @@ struct DecisionAssistantView: View {
             DecisionDraftDetailView(
                 draft: draft,
                 onRequestEdit: handleRequestEdit,
-                onRequestDelete: handleRequestDelete
+                onRequestDelete: handleRequestDelete,
+                onRequestHandoff: handleRequestHandoff,
+                accountSnapshot: draftAccountSnapshot
             )
         }
         .sheet(item: $draftBeingEdited) { draft in
@@ -161,6 +163,33 @@ struct DecisionAssistantView: View {
         selectedDraft = nil
         Task { @MainActor in
             DecisionDraftStore.delete(draft, in: modelContext)
+        }
+    }
+
+    /// Phase 1 follow-through — routes a draft into the matching
+    /// existing deterministic engine when the user explicitly taps
+    /// a handoff button on the detail sheet. Dismisses the detail
+    /// sheet first so SwiftUI never has two sheets in flight at
+    /// once (Apple HIG).
+    ///
+    /// Honesty contract: this method never marks the draft itself
+    /// as "analyzed". The draft's persisted
+    /// ``DecisionDraftStatus`` stays unchanged.
+    private func handleRequestHandoff(
+        _ draft: DecisionDraftRecord,
+        _ action: DecisionDraftNextAction
+    ) {
+        selectedDraft = nil
+        Task { @MainActor in
+            switch action {
+            case .openPurchaseCheck:
+                viewModel.openPurchaseDecisionBrief(prefillFrom: draft)
+            case .openCreditTimingCheck:
+                viewModel.openCreditTimingBrief()
+            case .reviewInTaxVault, .reviewInInvestingLearn,
+                 .addContext, .noEngineYet:
+                break
+            }
         }
     }
 }
@@ -201,6 +230,15 @@ private extension DecisionAssistantView {
         SpendingTrendComputer.summary(
             transactions: transactions,
             homeCurrency: homeCurrency
+        )
+    }
+
+    /// Phase 1 follow-through — minimal account projection the
+    /// draft evaluator needs. Built fresh from the live `@Query`
+    /// each time the detail sheet renders.
+    var draftAccountSnapshot: DecisionDraftAccountSnapshot {
+        DecisionDraftAccountSnapshot(
+            hasAnyCreditCard: accounts.contains(where: \.isCreditCard)
         )
     }
 }

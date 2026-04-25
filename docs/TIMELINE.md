@@ -190,8 +190,22 @@ points at the test file that pins the behaviour.
   `confirmationDialog`-guarded delete via `DecisionDraftStore`. _Evidence:
   `DecisionDraftLifecycleTests.swift`, `DecisionDraftRecordTests.swift`._
 - [x] Draft archive / active section separation in the Decision Assistant.
-- [x] Drafts are never auto-analyzed, never promoted to the catalog,
-  never routed into `ScenarioDecisionEngine`.
+- [x] Drafts are never auto-analyzed and never promoted to the catalog
+  automatically. Phase 1 follow-through added a deterministic, pure
+  `DecisionDraftEvaluator` that names *what NomadFi can do now* for a
+  draft and a "What NomadFi can do now" section on the detail sheet.
+  When the user explicitly taps a handoff button:
+    • Purchase / Travel drafts prefill the singleton
+      `PurchaseDecisionRecord` via `DraftToPurchaseRecordPrefill` and
+      open the existing Purchase Card Check brief — never marking the
+      draft itself "analyzed".
+    • Credit-timing drafts open the existing Credit Timing brief
+      (which reads the user's saved credit cards live).
+    • Tax / Investing drafts surface a calm `Review in Tax Vault` /
+      `Review in Investing Learn` reminder — no cross-tab deep link.
+    • `.other` drafts stay captured-only with a factual
+      `noEngineYet` note. _Evidence: `DecisionDraftEvaluatorTests.swift`,
+  `DraftToPurchaseRecordPrefillTests.swift`._
 
 ### Voice / App Intents surface
 
@@ -595,6 +609,19 @@ and Credit Timing v1; automatic aggregation (Phase 4 / Phase 5) is still out.
 - `[x]` **Decision Draft lifecycle v1.** Create + edit, archive, restore, and
   per-draft destructive delete with `confirmationDialog`. Archived drafts get
   their own quieter section.
+- `[x]` **Decision Draft v2 — deterministic evaluator + engine handoff.**
+  Pure `DecisionDraftEvaluator` (over `DecisionDraftRecord` +
+  `DecisionDraftAccountSnapshot`) names the engine coverage state for every
+  draft kind without auto-analyzing anything. The detail sheet renders a
+  "What NomadFi can do now" section with calm, factual next-step buttons.
+  Purchase / Travel drafts can prefill the singleton
+  `PurchaseDecisionRecord` (via the pure `DraftToPurchaseRecordPrefill`
+  helper) and open the existing Purchase Card Check brief; credit-timing
+  drafts open the existing Credit Timing brief; tax / investing drafts
+  surface a non-deep-link "Review in Tax Vault / Investing Learn" reminder;
+  `.other` drafts stay captured-only. The draft's persisted
+  `DecisionDraftStatus` is *never* flipped to "analyzed" — the handoff is
+  a one-way prefill into a separate engine record, not a status promotion.
 - `[x]` **Siri / App Shortcut draft intake v1.** `CaptureDecisionDraftIntent`
   captures a dictated scenario as a draft on-device, `.background` mode,
   never analyzed. Dialog copy explicitly marks the result as needing an
@@ -1937,6 +1964,18 @@ Highest-leverage remaining work, in order:
   page restates it. No new persistence; no notifications; no
   reminders. Source-map at
   [`TaxDocumentOrganizationSourceMap.md`](./research/TaxDocumentOrganizationSourceMap.md).
+- **Phase 1 follow-through — Decision Drafts v2 — shipped**
+  (2026-04-24). Pure `DecisionDraftEvaluator` and
+  `DraftToPurchaseRecordPrefill` turn captured drafts into a
+  source-honest "What NomadFi can do now" section on the detail
+  sheet. Purchase / Travel drafts can prefill the singleton
+  `PurchaseDecisionRecord` and open the existing Purchase Card
+  Check brief; credit-timing drafts open the existing Credit
+  Timing brief; tax / investing drafts surface a calm
+  `Review in Tax Vault` / `Review in Investing Learn` reminder;
+  `.other` drafts stay captured-only. Drafts are still never
+  auto-analyzed, the persisted `DecisionDraftStatus` is never
+  flipped to "analyzed", and there is no LLM classification.
 
 ---
 

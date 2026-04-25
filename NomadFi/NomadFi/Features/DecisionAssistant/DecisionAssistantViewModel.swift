@@ -156,6 +156,37 @@ final class DecisionAssistantViewModel {
         isDraftFormPresented = true
     }
 
+    // MARK: - Draft → engine handoff (Phase 1 follow-through)
+
+    /// Prefills the singleton ``PurchaseDecisionRecord`` from a
+    /// captured draft and opens the existing Purchase Card Check
+    /// brief. Pure user-invoked routing — never automatic.
+    ///
+    /// Honesty contract: this method never marks the draft itself
+    /// as "analyzed". The draft's persisted ``DecisionDraftStatus``
+    /// stays `.needsEngine` regardless of what the user does in the
+    /// brief. The handoff is a one-way *prefill into a separate
+    /// engine record*, not a status promotion.
+    func openPurchaseDecisionBrief(
+        prefillFrom draft: DecisionDraftRecord,
+        now: Date = .now
+    ) {
+        guard let viewModel = purchaseDecisionBriefViewModel else {
+            Self.logger.warning(
+                "openPurchaseDecisionBrief(prefillFrom:) called before bootstrap completed"
+            )
+            return
+        }
+        DraftToPurchaseRecordPrefill.apply(
+            draft: draft,
+            into: viewModel.record,
+            now: now
+        )
+        viewModel.amountText = PurchaseDecisionBriefViewModel
+            .amountEditingText(for: viewModel.record.amount)
+        isPurchaseDecisionBriefPresented = true
+    }
+
     // MARK: - Summaries
 
     /// One-line summary for the hero row corresponding to `id`.
