@@ -140,22 +140,24 @@ extension DetectedSubscriptionCard {
 
     fileprivate var actionButtons: some View {
         HStack(spacing: SpacingTokens.small) {
-            Button("Track", systemImage: "checkmark.circle") {
-                onConfirm()
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .accessibilityHint(
-                "Confirms this detected subscription and starts tracking it."
+            NomadFiActionButton(
+                title: "Track",
+                systemImage: "checkmark.circle",
+                style: .primary,
+                controlSize: .small,
+                fillsWidth: false,
+                accessibilityHint: "Confirms this detected subscription and starts tracking it.",
+                action: onConfirm
             )
 
-            Button("Dismiss", systemImage: "xmark.circle") {
-                onDismiss()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            .accessibilityHint(
-                "Dismisses this detected subscription suggestion."
+            NomadFiActionButton(
+                title: "Dismiss",
+                systemImage: "xmark.circle",
+                style: .secondary,
+                controlSize: .small,
+                fillsWidth: false,
+                accessibilityHint: "Dismisses this detected subscription suggestion.",
+                action: onDismiss
             )
         }
     }

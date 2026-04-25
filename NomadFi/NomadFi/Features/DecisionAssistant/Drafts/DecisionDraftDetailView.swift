@@ -297,15 +297,13 @@ struct DecisionDraftDetailView: View {
     @ViewBuilder
     private func actionRow(for action: DecisionDraftNextAction) -> some View {
         if action.isHandoff {
-            Button {
-                onRequestHandoff?(draft, action)
-            } label: {
-                Label(action.displayLabel, systemImage: action.systemImage)
-                    .font(TypographyTokens.body)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .accessibilityHint(action.accessibilityHint)
+            NomadFiActionButton(
+                title: action.displayLabel,
+                systemImage: action.systemImage,
+                style: .primary,
+                accessibilityHint: action.accessibilityHint,
+                action: { onRequestHandoff?(draft, action) }
+            )
         } else {
             Label {
                 Text(action.displayLabel)

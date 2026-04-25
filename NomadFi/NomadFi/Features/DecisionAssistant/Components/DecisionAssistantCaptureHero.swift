@@ -74,14 +74,18 @@ struct DecisionAssistantCaptureHero: View {
     // MARK: - Primary CTA
 
     private var ctaButton: some View {
-        Button(action: onCaptureTapped) {
-            Label("Capture decision", systemImage: "square.and.pencil")
-                .font(TypographyTokens.body.bold())
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .accessibilityHint("Opens a local form to capture a new decision draft on this device. NomadFi will not analyze it automatically.")
+        // Routed through `NomadFiActionButton` so the
+        // `square.and.pencil` glyph renders next to the title at
+        // every control size + Dynamic Type level — no
+        // press-only icon flash.
+        NomadFiActionButton(
+            title: "Capture decision",
+            systemImage: "square.and.pencil",
+            style: .primary,
+            controlSize: .large,
+            accessibilityHint: "Opens a local form to capture a new decision draft on this device. NomadFi will not analyze it automatically.",
+            action: onCaptureTapped
+        )
     }
 
     // MARK: - Supporting rows

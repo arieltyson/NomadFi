@@ -65,15 +65,17 @@ struct TaxDocumentOrganizationPromptCard: View {
     @ViewBuilder
     private var actionButton: some View {
         if let title = prompt.actionTitle, prompt.actionTarget != .none {
-            Button {
-                onSelectTarget(prompt.actionTarget)
-            } label: {
-                Label(title, systemImage: actionSystemImage)
-                    .font(TypographyTokens.body)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .accessibilityHint(accessibilityHint)
+            // Always routes through `NomadFiActionButton`, which
+            // bakes in `.labelStyle(.titleAndIcon)` so the SF
+            // Symbol renders at every control size, every Dynamic
+            // Type level, and every press / focus state.
+            NomadFiActionButton(
+                title: title,
+                systemImage: actionSystemImage,
+                style: .primary,
+                accessibilityHint: accessibilityHint.isEmpty ? nil : accessibilityHint,
+                action: { onSelectTarget(prompt.actionTarget) }
+            )
         }
     }
 

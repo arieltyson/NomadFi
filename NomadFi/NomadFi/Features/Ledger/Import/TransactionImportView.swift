@@ -135,30 +135,19 @@ private extension TransactionImportView {
                 prerequisiteHint
             }
 
-            Button {
-                isShowingFilePicker = true
-            } label: {
-                // Pin the label style so the glyph always renders
-                // across container / control-state combinations —
-                // same fix pattern used on the Tax Vault scan CTA.
-                Label {
-                    Text("Choose CSV File…")
-                } icon: {
-                    Image(systemName: "doc.badge.plus")
-                }
-                .labelStyle(.titleAndIcon)
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            NomadFiActionButton(
+                title: "Choose CSV File…",
+                systemImage: "doc.badge.plus",
+                style: .primary,
+                controlSize: .large,
+                accessibilityHint: isAccountMissing
+                    ? "Pick an account above to enable file selection."
+                    : "Opens the file picker. Parsing happens on this device only.",
+                action: { isShowingFilePicker = true }
+            )
             .disabled(isAccountMissing)
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
-            .accessibilityHint(
-                isAccountMissing
-                    ? "Pick an account above to enable file selection."
-                    : "Opens the file picker. Parsing happens on this device only."
-            )
         } header: {
             Text("Import file")
         } footer: {

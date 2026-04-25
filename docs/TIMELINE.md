@@ -2044,6 +2044,37 @@ Highest-leverage remaining work, in order:
   test file documents the exact upgrade procedure for the next
   schema change. _Evidence: `SchemaSnapshotTests.swift`,
   `Core/Persistence/`._
+- **Design system action-button guardrail — shipped**
+  (2026-04-24). Centralises every prominent action button in the
+  app through a single primitive, `NomadFiActionButton`, that
+  bakes in `.labelStyle(.titleAndIcon)` so the SF Symbol next to
+  the title always renders — across every control size, Dynamic
+  Type level, and press / focus state. Closes a recurring class
+  of bug where SwiftUI's default label-style propagation
+  collapsed `Label` content to title-only inside `.borderedProminent`
+  / `.bordered` containers, so glyphs only flashed during the
+  press animation (most recently visible on the Tax Vault Learn
+  "Open Review" / "Open Archive" CTAs). Three styles map to
+  Apple's standard prominence ladder (`.borderedProminent`,
+  `.bordered`, `.borderless`) so the primitive feels native;
+  `accessibilityHint` is a first-class API parameter rather than
+  an afterthought; `fillsWidth` defaults to `true` so primary
+  CTAs land as full-bleed command bars. Migrated all qualifying
+  call sites: `TaxDocumentOrganizationPromptCard`,
+  `DecisionAssistantCaptureHero`, `NewDecisionScaffoldCard`,
+  `DecisionAIIntakeSheet`, `DecisionDraftDetailView`,
+  `TransactionImportView`, `SubscriptionsView`, `LedgerView`,
+  `AccountConnectionView`, `AppLockView`,
+  `DetectedSubscriptionCard`. Toolbar buttons, menu rows, and
+  Form-section row buttons stay on the system row treatment —
+  they do not have the same propagation issue. The
+  `NomadFiActionButtonTests` suite pins the title-and-icon
+  contract by reading the primitive's source file at test time
+  and asserting `.labelStyle(.titleAndIcon)` is present, plus
+  snapshots the three-case style ladder so a fourth, undocumented
+  variant cannot land silently. _Evidence:
+  `NomadFiActionButtonTests.swift`,
+  `DesignSystem/Components/NomadFiActionButton.swift`._
 - **Decisions tab IA / UI redesign — shipped** (2026-04-24).
   Restructured the Decisions tab around six clearly-separated
   sections — Capture decision (primary command module), Reusable

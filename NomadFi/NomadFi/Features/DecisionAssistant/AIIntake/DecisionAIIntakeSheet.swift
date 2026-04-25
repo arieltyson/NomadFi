@@ -105,12 +105,14 @@ struct DecisionAIIntakeSheet: View {
                     }
                     .accessibilityElement(children: .combine)
 
-                    Button {
-                        onSwitchToTypedForm()
-                    } label: {
-                        Label("Capture with the typed form instead", systemImage: "square.and.pencil")
-                    }
-                    .accessibilityHint("Closes this sheet and opens the typed draft form.")
+                    NomadFiActionButton(
+                        title: "Capture with the typed form instead",
+                        systemImage: "square.and.pencil",
+                        style: .secondary,
+                        fillsWidth: false,
+                        accessibilityHint: "Closes this sheet and opens the typed draft form.",
+                        action: onSwitchToTypedForm
+                    )
                 }
             } else {
                 Section {
@@ -125,16 +127,15 @@ struct DecisionAIIntakeSheet: View {
                 }
 
                 Section {
-                    Button {
-                        Task { await viewModel.interpret() }
-                    } label: {
-                        Label("Interpret on device", systemImage: "apple.intelligence")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    NomadFiActionButton(
+                        title: "Interpret on device",
+                        systemImage: "apple.intelligence",
+                        style: .primary,
+                        controlSize: .large,
+                        accessibilityHint: "Asks the on-device model to structure this scenario into draft fields. You will review and confirm before saving.",
+                        action: { Task { await viewModel.interpret() } }
+                    )
                     .disabled(!viewModel.canInterpret)
-                    .accessibilityHint("Asks the on-device model to structure this scenario into draft fields. You will review and confirm before saving.")
                 }
             }
         }
@@ -286,19 +287,21 @@ struct DecisionAIIntakeSheet: View {
             }
             .accessibilityElement(children: .combine)
 
-            Button {
-                viewModel.backToCapture()
-            } label: {
-                Label("Edit scenario and try again", systemImage: "arrow.uturn.backward")
-            }
-            .buttonStyle(.bordered)
+            NomadFiActionButton(
+                title: "Edit scenario and try again",
+                systemImage: "arrow.uturn.backward",
+                style: .secondary,
+                fillsWidth: false,
+                action: { viewModel.backToCapture() }
+            )
 
-            Button {
-                onSwitchToTypedForm()
-            } label: {
-                Label("Capture with the typed form instead", systemImage: "square.and.pencil")
-            }
-            .buttonStyle(.bordered)
+            NomadFiActionButton(
+                title: "Capture with the typed form instead",
+                systemImage: "square.and.pencil",
+                style: .secondary,
+                fillsWidth: false,
+                action: onSwitchToTypedForm
+            )
 
             Spacer()
         }

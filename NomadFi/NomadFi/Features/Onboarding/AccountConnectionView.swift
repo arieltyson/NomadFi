@@ -359,12 +359,14 @@ private extension AccountConnectionView {
 
     var footer: some View {
         VStack(spacing: SpacingTokens.small) {
-            Button("Add Account", systemImage: "plus") {
-                isShowingForm = true
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .accessibilityHint("Opens a form to add a bank account or card.")
+            NomadFiActionButton(
+                title: "Add Account",
+                systemImage: "plus",
+                style: .secondary,
+                controlSize: .large,
+                accessibilityHint: "Opens a form to add a bank account or card.",
+                action: { isShowingForm = true }
+            )
 
             Button("Finish Setup", action: handleFinishSetup)
                 .buttonStyle(.borderedProminent)

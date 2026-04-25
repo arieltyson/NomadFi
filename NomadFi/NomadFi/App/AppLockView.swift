@@ -50,15 +50,17 @@ struct AppLockView: View {
 
                 Spacer()
 
-                Button(appLockManager.isAuthenticating ? "Authenticating..." : "Unlock NomadFi", systemImage: biometricIcon) {
-                    Task {
-                        await appLockManager.authenticate()
+                NomadFiActionButton(
+                    title: appLockManager.isAuthenticating ? "Authenticating..." : "Unlock NomadFi",
+                    systemImage: biometricIcon,
+                    style: .primary,
+                    controlSize: .large,
+                    accessibilityHint: "Authenticates with \(biometricAccessLabel) or device passcode.",
+                    action: {
+                        Task { await appLockManager.authenticate() }
                     }
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                )
                 .disabled(appLockManager.isAuthenticating)
-                .accessibilityHint("Authenticates with \(biometricAccessLabel) or device passcode.")
                 .accessibilityIdentifier("appLock.unlockButton")
             }
             .padding(SpacingTokens.large)

@@ -268,10 +268,13 @@ private extension SubscriptionsView {
         } description: {
             Text("Add transactions to auto-detect subscriptions, or add them manually.")
         } actions: {
-            Button("Add Subscription", systemImage: "plus") {
-                isShowingAddSubscription = true
-            }
-            .buttonStyle(.borderedProminent)
+            NomadFiActionButton(
+                title: "Add Subscription",
+                systemImage: "plus",
+                style: .primary,
+                fillsWidth: false,
+                action: { isShowingAddSubscription = true }
+            )
         }
     }
 }

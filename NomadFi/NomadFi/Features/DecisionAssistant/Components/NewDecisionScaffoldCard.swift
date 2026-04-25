@@ -33,14 +33,14 @@ struct NewDecisionScaffoldCard: View {
                     onAppleIntelligenceTapped: onAppleIntelligenceTapped
                 )
 
-                Button(action: onCaptureTapped) {
-                    Label("Capture decision", systemImage: "square.and.pencil")
-                        .font(TypographyTokens.body.bold())
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityHint("Opens a local form to capture a new decision draft on this device.")
+                NomadFiActionButton(
+                    title: "Capture decision",
+                    systemImage: "square.and.pencil",
+                    style: .primary,
+                    controlSize: .large,
+                    accessibilityHint: "Opens a local form to capture a new decision draft on this device.",
+                    action: onCaptureTapped
+                )
 
                 Text("Drafts stay on this device. NomadFi shows what it can do with each one — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything.")
                     .font(TypographyTokens.caption)

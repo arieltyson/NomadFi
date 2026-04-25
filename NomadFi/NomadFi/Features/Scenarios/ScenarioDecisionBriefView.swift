@@ -417,6 +417,7 @@ private extension ScenarioDecisionBriefView {
                     Image(systemName: "arrow.down.doc")
                         .foregroundStyle(ColorTokens.brandPrimary)
                 }
+                .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.bordered)
             .controlSize(.regular)

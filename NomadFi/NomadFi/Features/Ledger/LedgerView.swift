@@ -158,10 +158,13 @@ private extension LedgerView {
         } description: {
             Text("Your cross-border transactions will appear here. Tap + to add one manually.")
         } actions: {
-            Button("Add Transaction", systemImage: "plus") {
-                isShowingAddTransaction = true
-            }
-            .buttonStyle(.borderedProminent)
+            NomadFiActionButton(
+                title: "Add Transaction",
+                systemImage: "plus",
+                style: .primary,
+                fillsWidth: false,
+                action: { isShowingAddTransaction = true }
+            )
         }
     }
 }
