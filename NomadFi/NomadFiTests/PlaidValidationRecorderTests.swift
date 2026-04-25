@@ -87,7 +87,7 @@ struct PlaidValidationRecorderTests {
     func startSessionStampsSchemaVersion() {
         let recorder = PlaidValidationRecorder()
         recorder.startSession()
-        let session = try? #require(recorder.currentSession)
+        let session = recorder.currentSession
         #expect(session?.events.count == 1)
         #expect(session?.events.first?.kind == .sessionStarted)
         #expect(
@@ -105,7 +105,7 @@ struct PlaidValidationRecorderTests {
 
         #expect(recorder.currentSession == nil)
         #expect(recorder.finalizedSessionCount == 1)
-        let last = try? #require(recorder.lastFinalizedSession)
+        let last = recorder.lastFinalizedSession
         #expect(last?.result == .pass)
         #expect(last?.note == "Smooth OAuth return.")
         #expect(last?.events.last?.kind == .sessionEnded)
@@ -214,7 +214,7 @@ struct PlaidValidationRecorderTests {
         )
         recorder.endSession(result: PlaidValidationSession.Result.pass)
 
-        let markdown = try? #require(recorder.exportMarkdown())
+        let markdown = recorder.exportMarkdown()
         #expect(markdown?.contains("# NomadFi Plaid Sandbox Validation Report") == true)
         #expect(markdown?.contains("## Criterion 5 self-assessment") == true)
         #expect(markdown?.contains("Broker reachable: yes") == true)
@@ -259,7 +259,7 @@ struct PlaidValidationRecorderTests {
         )
         recorder.endSession(result: PlaidValidationSession.Result.pass)
 
-        let markdown = try? #require(recorder.exportMarkdown())
+        let markdown = recorder.exportMarkdown()
         #expect(
             markdown?.contains(
                 "Broker reachable: yes (inferred from successful exchange/sync)"
@@ -297,7 +297,7 @@ struct PlaidValidationRecorderTests {
         // Immediately discard: one auto-generated `session_started`
         // event remains, so the events table isn't truly empty.
         recorder.endSession(result: PlaidValidationSession.Result.inconclusive)
-        let markdown = try? #require(recorder.exportMarkdown())
+        let markdown = recorder.exportMarkdown()
         #expect(markdown?.contains("| 1 |") == true)
         #expect(markdown?.contains("Result: inconclusive") == true)
     }
@@ -324,7 +324,7 @@ struct PlaidValidationRecorderTests {
         recorder.recordItemHandlePersisted(rawHandle: "itm_29f63c0ccff1abcd")
         recorder.endSession(result: .fail)
 
-        let markdown = try? #require(recorder.exportMarkdown())
+        let markdown = recorder.exportMarkdown()
         let forbidden = [
             "192.168.1.42",
             "29f63c0ccff1",

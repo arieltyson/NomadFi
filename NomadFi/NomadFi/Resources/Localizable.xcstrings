@@ -383,6 +383,8 @@
     "AI structures input. Deterministic engines decide. NomadFi will mark this draft Needs engine until you tap a handoff button on the detail sheet." : {
 
     },
+    "AI structures input. Deterministic engines decide. NomadFi will not save anything until you confirm on the next screen." : {
+    },
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
 
     },
@@ -550,14 +552,13 @@
     "Capture a scenario in your own words. NomadFi keeps it on this device and shows you what it can do with it." : {
 
     },
-    "Capture a scenario in your own words. NomadFi keeps it on-device and shows you what it can do with it." : {
-
-    },
     "Capture Decision" : {
 
     },
     "Capture Decision Draft" : {
 
+    },
+    "Capture with Apple Intelligence" : {
     },
     "Captured draft" : {
 
@@ -867,6 +868,8 @@
     "Describe the decision in your own words — what you're weighing, and any context that matters." : {
 
     },
+    "Describe the decision in your own words — what you're weighing, and any context that matters. NomadFi will not pick a card or account on your behalf." : {
+    },
     "Describe the scenario" : {
 
     },
@@ -931,9 +934,6 @@
 
     },
     "Drafts stay on this device. NomadFi never analyzes them automatically — you decide when to hand a draft to a deterministic engine." : {
-
-    },
-    "Drafts stay on this device. NomadFi shows what it can do with each one — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything." : {
 
     },
     "Duplicate" : {
@@ -1101,9 +1101,6 @@
 
     },
     "FX Rate Alerts" : {
-
-    },
-    "Gather intelligence" : {
 
     },
     "GBP — British Pound" : {
@@ -1647,6 +1644,8 @@
     },
     "Open Decisions" : {
 
+    },
+    "Open NomadFi and start a new on-device Apple Intelligence intake with the scenario you dictated already filled in. NomadFi never analyzes or saves anything until you confirm in the app." : {
     },
     "Open NomadFi directly on the Decisions tab." : {
 

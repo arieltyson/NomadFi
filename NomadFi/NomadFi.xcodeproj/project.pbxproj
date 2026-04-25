@@ -56,9 +56,22 @@
 		AF3AAAE72F4C4E8600393A16 /* NomadFiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NomadFiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AFF15715717E1CEF15710001 /* Exceptions for "NomadFi" folder in "NomadFi" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"NomadFi-Info.plist",
+			);
+			target = AF3AAACD2F4C4E8500393A16 /* NomadFi */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AF3AAAD02F4C4E8500393A16 /* NomadFi */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AFF15715717E1CEF15710001 /* Exceptions for "NomadFi" folder in "NomadFi" target */,
+			);
 			path = NomadFi;
 			sourceTree = "<group>";
 		};

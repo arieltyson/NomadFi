@@ -62,7 +62,7 @@ struct DecisionDraftEvaluatorTests {
         #expect(result.nextActions.map(\.id) == [
             DecisionDraftNextAction.openPurchaseCheck.id,
         ])
-        let handoff = try? #require(result.primaryHandoff)
+        let handoff = result.primaryHandoff
         #expect(handoff == .openPurchaseCheck)
     }
 

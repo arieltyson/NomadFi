@@ -446,8 +446,12 @@ points at the test file that pins the behaviour.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
-- [ ] Apple Intelligence on-device context (optional input to the
-  scenario engine when entitlements and user consent are in place).
+- [x] Apple Intelligence on-device structured intake — shipped via
+  Phase 9A (`FoundationModelsDraftInterpreter` + the bounded
+  clarifying-question loop) and reachable from Siri / App
+  Shortcuts via `OpenAIIntakeIntent`. The on-device model
+  *structures input only*; deterministic engines remain the
+  source of truth for every recommendation.
 - [!] Generic-AI financial recommendations — deferred indefinitely by
   product decision; violates the deterministic source-backed rule.
 - [!] Credit-score prediction — deferred; scoring models are proprietary.

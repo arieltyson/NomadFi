@@ -65,7 +65,7 @@ struct RecurringChargeDetectorTests {
         let candidates = RecurringChargeDetector.detect(from: transactions, now: Self.now)
 
         #expect(candidates.count == 1)
-        let first = try? #require(candidates.first)
+        let first = candidates.first
         #expect(first?.frequency == .weekly)
         #expect(first?.confidence == .high)
         #expect(first?.matchedTransactionCount == 4)
