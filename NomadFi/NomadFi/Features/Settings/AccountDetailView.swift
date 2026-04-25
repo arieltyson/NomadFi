@@ -76,9 +76,8 @@ struct AccountDetailView: View {
                 .disabled(viewModel?.canSave != true)
                 .accessibilityHint("Saves your changes to this account and returns to Settings.")
             }
-
-            KeyboardDismissToolbarItem { focusedField = nil }
         }
+        .keyboardDoneAccessory(focused: $focusedField)
         .onChange(of: viewModel?.accountType) { _, newType in
             // Guard against focus lingering on a field that disappears
             // when the user switches away from Credit Card.

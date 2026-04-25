@@ -119,9 +119,8 @@ struct SettingsAddAccountSheet: View {
                             : "Enter account name and institution to save this account."
                     )
                 }
-
-                KeyboardDismissToolbarItem { focusedField = nil }
             }
+            .keyboardDoneAccessory(focused: $focusedField)
             .onChange(of: draft.accountType) { _, newType in
                 // If the user switches to a non-credit-card type while
                 // a credit-card-only field is focused, clear focus so a

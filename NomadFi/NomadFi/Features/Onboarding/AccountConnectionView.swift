@@ -131,9 +131,8 @@ private struct AddAccountSheet: View {
                             : "Enter at least account name and institution to add this account."
                     )
                 }
-
-                KeyboardDismissToolbarItem { focusedField = nil }
             }
+            .keyboardDoneAccessory(focused: $focusedField)
             .onChange(of: viewModel.accountType) { _, newType in
                 // Clear focus if it was parked on a credit-card-only
                 // field and the user has since switched to another type.

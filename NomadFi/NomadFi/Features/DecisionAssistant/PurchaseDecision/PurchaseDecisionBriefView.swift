@@ -13,7 +13,8 @@
 //
 // Reuses the same Decision Assistant visual language as the Credit
 // Timing brief (`ScrollView { LazyVStack { GlassCard … } }`), with
-// `KeyboardDismissToolbarItem` for the `.decimalPad` amount field.
+// the design-system `.keyboardDoneAccessory(focused:)` modifier
+// for the `.decimalPad` amount field.
 
 import SwiftData
 import SwiftUI
@@ -63,11 +64,8 @@ struct PurchaseDecisionBriefView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
-                KeyboardDismissToolbarItem {
-                    focusedField = nil
-                    viewModel.commitAmountEdit()
-                }
             }
+            .keyboardDoneAccessory(focused: $focusedField)
         }
     }
 

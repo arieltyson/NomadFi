@@ -1,32 +1,35 @@
 // KeyboardDismissToolbarTests.swift
 // NomadFi
 //
-// Pins the contract of `KeyboardDismissToolbarItem` plus the
-// source-level guarantee that no NomadFi screen reintroduces the
-// retired `.keyboardDismissToolbar { … }` view modifier.
+// Pins the contract of the design-system keyboard accessory plus
+// the source-level guarantee that no NomadFi screen reintroduces
+// either of the retired SwiftUI-toolbar shapes:
 //
-// Why this guardrail exists (incident learning):
+//   1. The original `.keyboardDismissToolbar { … }` view modifier
+//      (wrapped a keyboard `ToolbarItemGroup` in its own
+//      `.toolbar { }` block — raced with the screen's navigation
+//      `.toolbar { }`).
+//   2. `KeyboardDismissToolbarItem` composed into a navigation
+//      `.toolbar { }` block — Apple's
+//      `ToolbarItemGroup(placement: .keyboard)` silently fails to
+//      re-register on subsequent focus changes inside sheets and
+//      alongside other toolbar items, leaving the user stuck on a
+//      `.decimalPad` keyboard with no Done button after the very
+//      first focus.
 //
-//   The previous version of `KeyboardDismissToolbar.swift`
-//   exported a view modifier that internally wrapped the
-//   keyboard `ToolbarItemGroup` in its own `.toolbar { }` block.
-//   When a screen called `.toolbar { … }` (for navigation items)
-//   AND `.keyboardDismissToolbar { }` (for the keyboard accessory)
-//   the two `.toolbar` modifiers raced at registration and the
-//   keyboard group silently failed to attach — leaving the user
-//   stuck on a `.decimalPad` keyboard with no Done button. The
-//   modifier has been retired; this suite enforces that the only
-//   public shape is `KeyboardDismissToolbarItem`, composed inside
-//   the screen's single `.toolbar { }` block.
+// Both shapes have been retired in favour of the
+// `safeAreaInset`-backed `.keyboardDoneAccessory(focused:)`
+// modifier, which renders our own bar above the keyboard tied to
+// the screen's `@FocusState`. The bar is visible whenever any
+// field is focused, every time, without exception.
 //
 // SwiftUI views can't be deeply introspected from a unit test, so
-// the guarantee is pinned the same way the other design-system
+// the contract is pinned the same way the other design-system
 // guardrails are: build-time signature smoke + a source-level
-// guard that reads `KeyboardDismissToolbar.swift` off disk and
-// asserts the modifier is absent. The simulator sandbox can block
-// file reads outside the bundle; the source-level cases degrade
-// to a soft-skip in that environment so the suite still runs
-// cleanly.
+// guard that reads the touched files off disk and asserts the
+// chokepoint call. The simulator sandbox can block file reads
+// outside the bundle; the source-level cases degrade to a
+// soft-skip in that environment so the suite still runs cleanly.
 
 import Foundation
 import SwiftUI
@@ -39,37 +42,37 @@ struct KeyboardDismissToolbarTests {
 
     // MARK: - API surface smoke
 
-    @Test("KeyboardDismissToolbarItem composes inside a single .toolbar { } block alongside navigation items — the canonical placement")
-    func toolbarItemComposesAlongsideNavigation() {
+    @Test("`.keyboardDoneAccessory(focused:)` accepts an optional-enum focus binding — primary call shape")
+    func enumFocusOverloadCompiles() {
         struct Host: View {
             @FocusState var focused: Field?
-            enum Field: Hashable { case amount }
+            enum Field: Hashable { case amount, currency }
             var body: some View {
-                NavigationStack {
-                    TextField("Amount", text: .constant(""))
-                        .focused($focused, equals: .amount)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {}
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {}
-                            }
-                            KeyboardDismissToolbarItem { focused = nil }
-                        }
-                }
+                TextField("Amount", text: .constant(""))
+                    .focused($focused, equals: .amount)
+                    .keyboardDoneAccessory(focused: $focused)
             }
         }
-        // Building Host is enough — if the `ToolbarContent`
-        // signature regresses, this fails to compile rather than
-        // at runtime in the keyboard accessory.
         _ = Host()
     }
 
-    // MARK: - Modifier removal guardrail
+    @Test("`.keyboardDoneAccessory(focused:)` accepts a Bool focus binding — overload for single-field screens")
+    func boolFocusOverloadCompiles() {
+        struct Host: View {
+            @FocusState var focused: Bool
+            var body: some View {
+                TextField("Note", text: .constant(""))
+                    .focused($focused)
+                    .keyboardDoneAccessory(focused: $focused)
+            }
+        }
+        _ = Host()
+    }
 
-    @Test("KeyboardDismissToolbar.swift no longer exports the racing `.keyboardDismissToolbar { }` view modifier")
-    func modifierIsRetired() throws {
+    // MARK: - Retired-shape guardrails (file-level)
+
+    @Test("KeyboardDismissToolbar.swift no longer exports the retired `.keyboardDismissToolbar { }` view modifier")
+    func retiredModifierIsAbsent() throws {
         guard let source = Self.sourceIfReadable(
             relativePath: "NomadFi/DesignSystem/Components/KeyboardDismissToolbar.swift"
         ) else { return }
@@ -78,59 +81,84 @@ struct KeyboardDismissToolbarTests {
             !source.contains("func keyboardDismissToolbar"),
             """
             KeyboardDismissToolbar.swift must not declare a \
-            `.keyboardDismissToolbar { }` view modifier. The \
-            previous version's modifier wrapped the toolbar item \
-            in its own `.toolbar { }` block, which raced with the \
-            screen's navigation `.toolbar { }` and silently \
-            de-registered the keyboard accessory. Compose \
-            `KeyboardDismissToolbarItem` inside the screen's \
-            single `.toolbar { }` block instead.
-            """
-        )
-        #expect(
-            !source.contains("KeyboardDismissToolbarModifier"),
-            """
-            KeyboardDismissToolbar.swift must not declare a \
-            `KeyboardDismissToolbarModifier`. Use \
-            `KeyboardDismissToolbarItem` composed inside the \
-            screen's existing `.toolbar { }` block.
+            `.keyboardDismissToolbar { }` view modifier — that \
+            shape wraps the toolbar item in its own `.toolbar { }` \
+            block and races with the screen's navigation \
+            `.toolbar { }`.
             """
         )
     }
 
-    // MARK: - Call-site guardrail
+    @Test("KeyboardDismissToolbar.swift no longer exports the retired `KeyboardDismissToolbarItem` ToolbarContent")
+    func retiredToolbarItemIsAbsent() throws {
+        guard let source = Self.sourceIfReadable(
+            relativePath: "NomadFi/DesignSystem/Components/KeyboardDismissToolbar.swift"
+        ) else { return }
 
-    @Test("No NomadFi feature view calls the retired `.keyboardDismissToolbar { }` modifier")
-    func noFeatureViewUsesRetiredModifier() throws {
+        #expect(
+            !source.contains("struct KeyboardDismissToolbarItem"),
+            """
+            KeyboardDismissToolbar.swift must not declare a \
+            `KeyboardDismissToolbarItem` ToolbarContent. \
+            `ToolbarItemGroup(placement: .keyboard)` silently \
+            de-registers on subsequent focus changes inside sheets \
+            — the user sees the Done button on the first field \
+            tap and never again. Use the \
+            `safeAreaInset`-backed `KeyboardDoneAccessoryBar` + \
+            `.keyboardDoneAccessory(focused:)` modifier instead.
+            """
+        )
+    }
+
+    // MARK: - Call-site guardrails
+
+    @Test("Every NomadFi screen that previously used a SwiftUI keyboard toolbar now uses `.keyboardDoneAccessory(focused:)`")
+    func callSitesUseDesignSystemAccessory() throws {
         let touchedRelativePaths = [
             "NomadFi/Features/Scenarios/ScenarioDecisionBriefView.swift",
             "NomadFi/Features/Ledger/AddTransactionView.swift",
             "NomadFi/Features/Subscriptions/AddSubscriptionView.swift",
             "NomadFi/Features/TaxVault/ReceiptConfirmationView.swift",
             "NomadFi/Features/TaxVault/TaxDocumentDetailView.swift",
+            "NomadFi/Features/Settings/AccountDetailView.swift",
+            "NomadFi/Features/Settings/SettingsAddAccountSheet.swift",
+            "NomadFi/Features/Settings/CreditCardRewardsEditView.swift",
+            "NomadFi/Features/DecisionAssistant/Drafts/DecisionDraftFormView.swift",
+            "NomadFi/Features/DecisionAssistant/PurchaseDecision/PurchaseDecisionBriefView.swift",
+            "NomadFi/Features/Onboarding/AccountConnectionView.swift",
         ]
 
         for path in touchedRelativePaths {
             guard let source = Self.sourceIfReadable(relativePath: path) else { continue }
+
+            #expect(
+                source.contains(".keyboardDoneAccessory(focused:"),
+                """
+                \(path) must call \
+                `.keyboardDoneAccessory(focused: $focusedField)` — \
+                the design-system keyboard accessory is the only \
+                supported way to add a Done bar above a \
+                `.decimalPad` / `.numberPad` keyboard.
+                """
+            )
+            #expect(
+                !source.contains("KeyboardDismissToolbarItem"),
+                """
+                \(path) must not reference \
+                `KeyboardDismissToolbarItem` — that shape was \
+                retired because Apple's `ToolbarItemGroup(placement: .keyboard)` \
+                silently de-registers on subsequent focus changes \
+                inside sheets, leaving the user stuck on a \
+                `.decimalPad` keyboard with no Done button.
+                """
+            )
             #expect(
                 !source.contains(".keyboardDismissToolbar"),
                 """
                 \(path) must not call `.keyboardDismissToolbar { }` \
-                — that modifier was retired because it raced with \
-                the screen's navigation `.toolbar { }` and left the \
-                user stuck on `.decimalPad` keyboards with no Done \
-                button. Compose `KeyboardDismissToolbarItem` inside \
-                the existing `.toolbar { }` block instead.
-                """
-            )
-            #expect(
-                source.contains("KeyboardDismissToolbarItem"),
-                """
-                \(path) must compose `KeyboardDismissToolbarItem` \
-                inside its `.toolbar { }` block — every NomadFi \
-                form that accepts numeric input needs an explicit \
-                Done affordance because `.decimalPad` and \
-                `.numberPad` keyboards have no Return key.
+                — that modifier was retired with the same \
+                rationale as `KeyboardDismissToolbarItem`. Use \
+                `.keyboardDoneAccessory(focused:)` instead.
                 """
             )
         }
@@ -140,8 +168,8 @@ struct KeyboardDismissToolbarTests {
 
     /// Loads `relativePath` (under the app's source root) off disk.
     /// Returns `nil` when the sandbox blocks file reads (typical
-    /// for iOS Simulator unit-test runs) so callers can degrade to
-    /// a soft-skip rather than fail spuriously.
+    /// for iOS Simulator unit-test runs) so callers can degrade
+    /// to a soft-skip rather than fail spuriously.
     private static func sourceIfReadable(relativePath: String) -> String? {
         let candidates = candidateSourcePaths(for: relativePath)
         for url in candidates where FileManager.default.fileExists(atPath: url.path) {

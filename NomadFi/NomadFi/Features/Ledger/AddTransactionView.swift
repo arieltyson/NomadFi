@@ -48,9 +48,8 @@ struct AddTransactionView: View {
                                 : "Enter merchant and amount to enable saving."
                         )
                 }
-
-                KeyboardDismissToolbarItem { focusedField = nil }
             }
+            .keyboardDoneAccessory(focused: $focusedField)
             .sensoryFeedback(.success, trigger: saveCount)
         }
         .onAppear { focusedField = .merchant }

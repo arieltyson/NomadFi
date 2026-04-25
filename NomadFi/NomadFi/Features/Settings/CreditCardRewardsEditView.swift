@@ -54,9 +54,8 @@ struct CreditCardRewardsEditView: View {
                 .disabled(!viewModel.canSave)
                 .accessibilityHint("Saves the rewards terms for this card.")
             }
-
-            KeyboardDismissToolbarItem { focusedField = nil }
         }
+        .keyboardDoneAccessory(focused: $focusedField)
         .confirmationDialog(
             "Clear rewards terms?",
             isPresented: $isShowingClearConfirmation,

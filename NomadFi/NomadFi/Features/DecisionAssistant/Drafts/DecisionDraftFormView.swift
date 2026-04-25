@@ -61,6 +61,7 @@ struct DecisionDraftFormView: View {
             .navigationTitle(viewModel.mode.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
+            .keyboardDoneAccessory(focused: $focusedField)
         }
     }
 
@@ -218,10 +219,6 @@ struct DecisionDraftFormView: View {
             }
             .disabled(!viewModel.canSave)
             .accessibilityHint("Saves the draft on this device. NomadFi does not analyze it yet.")
-        }
-
-        KeyboardDismissToolbarItem {
-            focusedField = nil
         }
     }
 }

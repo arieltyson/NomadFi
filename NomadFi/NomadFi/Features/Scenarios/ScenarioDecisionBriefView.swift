@@ -63,8 +63,8 @@ struct ScenarioDecisionBriefView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close", systemImage: "xmark", action: { dismiss() })
                 }
-                KeyboardDismissToolbarItem { focusedField = nil }
             }
+            .keyboardDoneAccessory(focused: $focusedField)
         }
     }
 }
