@@ -278,9 +278,11 @@ points at the test file that pins the behaviour.
   starter (Phase 7A), persisted progression (Phase 7B),
   knowledge-check quizzes (Phase 7C), and calm recognition
   badges (Phase 7D); Archive owns the searchable year /
-  jurisdiction document list with per-year exports. Remaining
-  work: receipt / document organisation prompts. (Deeper
-  investment-account lessons are now tracked under Investing
+  jurisdiction document list with per-year exports. Phase 7E
+  added a deterministic, source-backed organization-prompt
+  section to Learn that bridges the user to Review or Archive
+  based on whether the archive holds documents for each region.
+  (Deeper investment-account lessons are tracked under Investing
   Learn / Phase 8A follow-through, not Tax Vault.)
 - [~] Region-specific tax education (Phase 7A + 7B + 7C + 7D) —
   locally-authored, source-backed starter covering United States
@@ -318,8 +320,17 @@ points at the test file that pins the behaviour.
   withholding tax) cite CRA only. _Evidence:
   [`InvestingEducationSourceMap.md`](./research/InvestingEducationSourceMap.md),
   `InvestingEducationCatalogTests.swift`._
-- [ ] Receipt / document organisation prompts tied to the
-  education checklists.
+- [x] Receipt / document organisation prompts tied to the
+  education checklists — shipped under Phase 7E. Deterministic
+  per-region prompts derived from active jurisdictions and the
+  existing `TaxDocument` archive; bridges Learn to Review when a
+  region has zero documents on file and to Archive when it has at
+  least one. Recordkeeping principles cite IRS (US),
+  CRA (Canada), and IRD Trinidad and Tobago — only CRA's
+  six-year line is restated because that exact number appears on
+  the regulator's page. _Evidence:
+  [`TaxDocumentOrganizationSourceMap.md`](./research/TaxDocumentOrganizationSourceMap.md),
+  `TaxDocumentOrganizationPromptServiceTests.swift`._
 - [~] Investing education — Phase 8A starter shipped; Phase 8A
   follow-through deep dives shipped; Phase 8B fund tracking
   remains externally blocked.
@@ -1305,10 +1316,11 @@ pointer), Phase 7C (region-aware knowledge-check quizzes with explicit
 submit + retake, deterministic scoring, and quiz-aware next-step /
 progress-summary logic), and Phase 7D (calm current-state recognition
 badges + Tax Vault IA split into Review / Learn / Archive peer surfaces)
-are all live. Receipt / document organisation prompts are the outstanding
-Tax Vault continuation. Deeper investment-account lessons (IRA / TFSA /
-RRSP) shipped separately under Phase 8A follow-through (Investing Learn),
-not as part of this Tax Vault phase.
+are all live. Phase 7E (deterministic, source-backed receipt / document
+organisation prompts inside Tax Vault Learn) is also live. Deeper
+investment-account lessons (IRA / TFSA / RRSP) shipped separately under
+Phase 8A follow-through (Investing Learn), not as part of this Tax
+Vault phase.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -1407,10 +1419,11 @@ tax advice.
 
 ### Still to build
 
-- Receipt and document organization prompts tied to the education
-  checklists. (Deeper investment-account lessons moved to Phase 8A
-  follow-through — see "Phase 8 — Investment Education and Index Fund
-  Tracking" below.)
+- _All scoped Tax Vault continuations have shipped._ Phase 7E
+  (deterministic receipt / document organisation prompts) is
+  live in Learn. Deeper investment-account lessons moved to
+  Phase 8A follow-through under Investing Learn — see "Phase 8 —
+  Investment Education and Index Fund Tracking" below.
 
 ### Do Not Build
 
@@ -1690,7 +1703,7 @@ re-debating whether the foundation exists.
     value-layer services under
     `Features/DecisionAssistant/CreditTiming/`; none modifies
     paydown targets or promises an issuer-side outcome.
-14. `[~]` Phase 7 — Tax Vault education. Entry: tax-category
+14. `[x]` Phase 7 — Tax Vault education (7A–7E shipped). Entry: tax-category
     suggestion bridge (`Core/Services/TaxSuggestions/`,
     `Features/TaxVault/Suggestions/`). 7A: locally-authored
     source-backed education starter (`Core/Services/TaxEducation/`,
@@ -1711,9 +1724,12 @@ re-debating whether the foundation exists.
     segmented switcher, in-content scan CTA on Review, and calm
     current-state recognition badges under
     `Core/Services/TaxEducation/Recognition/` — purely derived,
-    no new persistence. Receipt / document organisation prompts
-    remain as a Tax Vault follow-up. Deeper investment-account
-    lessons moved to Phase 8A follow-through (Investing Learn).
+    no new persistence. Phase 7E added a deterministic, source-
+    backed organization-prompt section to Learn that bridges the
+    user to Review or Archive based on the existing
+    `TaxDocument` archive — also no new persistence. Deeper
+    investment-account lessons moved to Phase 8A follow-through
+    (Investing Learn).
 15. `[~]` Phase 5 — financial-data access strategy.
     5A ✅: abstraction + coordinator + adapters under
     `Core/Services/FinancialData/` (manual / CSV / FinanceKit /
@@ -1871,9 +1887,16 @@ Highest-leverage remaining work, in order:
   deduction-limit confirmation, RRSP withdrawal mechanics and
   withholding tax) cite CRA only. Education-only — no account
   recommendation, no suitability framing, no predicted returns.
-- **Receipt / document organisation prompts** remain open as a
-  Tax Vault follow-up, explicitly lower priority than the
-  provider work above.
+- **Phase 7E receipt / document organisation prompts — shipped**
+  (2026-04-24). Deterministic per-region prompts derived from
+  active jurisdictions and the existing `TaxDocument` archive,
+  rendered inside Tax Vault Learn. Bridges Learn to Review when
+  a region has no documents on file and to Archive when it has
+  at least one. Recordkeeping copy cites IRS / CRA / IRD only —
+  no retention number is restated unless the regulator's own
+  page restates it. No new persistence; no notifications; no
+  reminders. Source-map at
+  [`TaxDocumentOrganizationSourceMap.md`](./research/TaxDocumentOrganizationSourceMap.md).
 
 ---
 

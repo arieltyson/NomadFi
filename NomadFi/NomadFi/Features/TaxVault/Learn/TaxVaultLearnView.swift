@@ -2,9 +2,12 @@
 // NomadFi
 //
 // Learn is the "understand it" surface — source-backed education
-// starter, per-region progression, knowledge-check quizzes, and a
-// calm recognition strip. No scan CTA here (that belongs to
-// Review), no archive noise (that belongs to Archive).
+// starter, per-region progression, knowledge-check quizzes, a calm
+// recognition strip, and (Phase 7E) a deterministic organization-
+// prompt section that bridges Learn to Review or Archive when the
+// user is ready to act on what they just read. No scan CTA here
+// (that belongs to Review), no archive noise (that belongs to
+// Archive).
 
 import SwiftData
 import SwiftUI
@@ -16,11 +19,33 @@ struct TaxVaultLearnView: View {
 
     @Bindable var education: TaxEducationViewModel
 
+    /// Active jurisdictions — feeds both the existing education
+    /// section and the Phase 7E organization-prompt section.
+    let jurisdictions: [JurisdictionProfile]
+
+    /// Documents already on file — only used to decide whether the
+    /// per-region action prompt routes to Review or Archive.
+    let documents: [TaxDocument]
+
+    /// Called when the user taps a prompt's primary action button.
+    /// Parent (`TaxVaultView`) flips its `@State` `surface` so
+    /// Learn can hand off to a peer surface without a new
+    /// navigation destination.
+    let onRequestSurface: (TaxVaultSurface) -> Void
+
     /// Derived per refresh — recomputed as the VM bundles change.
     var recognition: TaxEducationRecognitionSummary {
         TaxEducationRecognitionComputer.summary(
             for: education.regionBundles,
             in: progressRecords
+        )
+    }
+
+    /// Deterministic prompt list for the current archive state.
+    var organizationPrompts: [TaxDocumentOrganizationPrompt] {
+        TaxDocumentOrganizationPromptService.prompts(
+            for: jurisdictions,
+            documents: documents
         )
     }
 
@@ -30,6 +55,10 @@ struct TaxVaultLearnView: View {
                 if !recognition.portfolioBadges.isEmpty {
                     recognitionSection
                 }
+                TaxDocumentOrganizationPromptSection(
+                    prompts: organizationPrompts,
+                    onSelectTarget: handleOrganizationTarget(_:)
+                )
                 TaxEducationSection(
                     bundles: education.regionBundles,
                     progressRecords: progressRecords,
@@ -95,6 +124,24 @@ struct TaxVaultLearnView: View {
             Label("No jurisdictions on file", systemImage: "books.vertical")
         } description: {
             Text("Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed lessons for supported regions.")
+        }
+    }
+
+    // MARK: - Routing
+
+    /// Translates a prompt-card action target into a Tax Vault
+    /// peer-surface request. `.none` is a no-op so source-only
+    /// cards never trigger a surface switch.
+    private func handleOrganizationTarget(
+        _ target: TaxDocumentOrganizationPromptTarget
+    ) {
+        switch target {
+        case .review:
+            onRequestSurface(.review)
+        case .archive:
+            onRequestSurface(.archive)
+        case .none:
+            break
         }
     }
 }

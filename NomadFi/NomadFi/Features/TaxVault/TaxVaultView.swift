@@ -149,7 +149,12 @@ struct TaxVaultView: View {
             TaxVaultLearnView(
                 progressRecords: progressRecords,
                 modelContext: modelContext,
-                education: education
+                education: education,
+                jurisdictions: jurisdictions,
+                documents: documents,
+                onRequestSurface: { requested in
+                    surface = requested
+                }
             )
         case .archive:
             TaxVaultArchiveView(
