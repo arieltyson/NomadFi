@@ -2095,6 +2095,42 @@ Highest-leverage remaining work, in order:
   one primary vertical scroll only, accessibility headers per
   section, no colour-only differentiation. _Evidence:
   `DecisionAssistantIATests.swift`._
+- **Phase 9A system-surface follow-through — Siri / App Intent
+  hand-off into AI intake — shipped** (2026-04-25). Connects
+  the bounded on-device AI intake flow to the App Intents
+  surface NomadFi already supports. New value-typed payload
+  `PendingAIIntakeRequest` carries a single scenario string and
+  round-trips losslessly through `@AppStorage` via JSON; new
+  `PendingAIIntakeRequestStore` is a pure `UserDefaults` adapter
+  with `read` / `write` / `clear` and a one-shot `consume(from:)`
+  that decodes and atomically clears the slot. New
+  `OpenAIIntakeIntent` runs in `.foreground(.immediate)` (mirrors
+  `OpenDecisionAssistantIntent`), writes
+  `MainTabSelection.decisions` to the same `@AppStorage`-backed
+  routing slot, then writes the pre-seeded scenario through the
+  store. `NomadFiShortcuts` registers the new shortcut under
+  short title "Capture with Apple Intelligence" with phrases
+  ("Capture this with Apple Intelligence in NomadFi", "Start an
+  Apple Intelligence intake in NomadFi", "Open Apple
+  Intelligence intake in NomadFi"). `DecisionAIIntakeSheet`
+  gains a `seedScenarioText` parameter applied exactly once on
+  `.task` and only when the user hasn't already typed —
+  re-presentations never silently re-seed previously-typed text.
+  `DecisionAssistantView` reads the pending slot via
+  `@AppStorage(PendingAIIntakeRequest.storageKey)`, consumes it
+  in `.onChange(initial: true)` via the one-shot
+  `PendingAIIntakeRequestStore.consume()`, sets the local
+  `aiIntakeSeedText`, and presents the sheet — `onDismiss`
+  clears the seed so the next manual open starts blank.
+  Honesty contract preserved end-to-end: voice / Shortcut surface
+  is *navigation only* — interpretation runs on device inside
+  `FoundationModelsDraftInterpreter`, the bounded clarifying
+  loop runs in-app, and persistence still requires explicit
+  `confirmAndSave(in:)` from the review screen. Availability
+  fallback re-uses the existing `DecisionAIIntakeAvailability`
+  unavailable-state surface — the intent itself never fakes
+  capability. _Evidence: `PendingAIIntakeRequestTests.swift`,
+  `OpenAIIntakeIntentTests.swift`._
 - **Phase 9A follow-through — kind-aware clarifying-question
   loop — shipped** (2026-04-25). Upgrades the on-device intake
   from "single extraction + manual review" to "single extraction

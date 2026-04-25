@@ -77,6 +77,19 @@ struct DecisionAssistantView: View {
 
     @State private var viewModel = DecisionAssistantViewModel()
 
+    /// One-shot scenario seed handed across by `OpenAIIntakeIntent`
+    /// (Siri / Shortcuts) via `PendingAIIntakeRequestStore`. Read
+    /// reactively through `@AppStorage` so the View re-evaluates as
+    /// soon as the App Intent writes the slot, even if the
+    /// Decisions tab was already mounted when the intent fired.
+    @AppStorage(PendingAIIntakeRequest.storageKey)
+    private var pendingAIIntakeRaw: String = ""
+
+    /// Per-presentation seed text passed into `DecisionAIIntakeSheet`.
+    /// Cleared after the sheet dismisses so a re-open without an
+    /// intent never re-seeds previously-typed text.
+    @State private var aiIntakeSeedText: String = ""
+
     /// Currently-selected draft for the detail sheet.
     @State private var selectedDraft: DecisionDraftRecord?
 
@@ -129,6 +142,9 @@ struct DecisionAssistantView: View {
         .navigationTitle("Decisions")
         .glassToolbar()
         .task { viewModel.bootstrap(modelContext: modelContext) }
+        .onChange(of: pendingAIIntakeRaw, initial: true) { _, _ in
+            consumePendingAIIntakeIfAvailable()
+        }
         .sheet(isPresented: $viewModel.isBriefPresented) {
             if let briefViewModel = viewModel.scenario1BriefViewModel {
                 ScenarioDecisionBriefView(
@@ -154,9 +170,13 @@ struct DecisionAssistantView: View {
         .sheet(isPresented: $viewModel.isDraftFormPresented) {
             DecisionDraftFormView()
         }
-        .sheet(isPresented: $viewModel.isAIIntakePresented) {
+        .sheet(
+            isPresented: $viewModel.isAIIntakePresented,
+            onDismiss: { aiIntakeSeedText = "" }
+        ) {
             DecisionAIIntakeSheet(
                 interpreter: aiInterpreter,
+                seedScenarioText: aiIntakeSeedText,
                 onSavedDraft: { draft in
                     Task { @MainActor in
                         selectedDraft = draft
@@ -185,6 +205,27 @@ struct DecisionAssistantView: View {
     }
 
     // MARK: - Lifecycle handlers
+
+    /// Consumes a pending AI-intake request from the system-surface
+    /// hand-off slot (`PendingAIIntakeRequestStore`) when one is
+    /// available, seeds the AI intake sheet's scenario field, and
+    /// presents the sheet. One-shot — `consume` clears the slot
+    /// atomically so the sheet does not keep reappearing if the
+    /// view re-renders, and `aiIntakeSeedText` is cleared on sheet
+    /// dismissal so a re-open without a fresh intent never silently
+    /// re-seeds previously-typed text.
+    ///
+    /// Honesty contract: the request only carries a scenario string.
+    /// Interpretation, the bounded clarifying loop, and persistence
+    /// all happen in-app with explicit user confirmation — same as
+    /// the in-app AI intake entry point.
+    private func consumePendingAIIntakeIfAvailable() {
+        guard let request = PendingAIIntakeRequestStore.consume() else {
+            return
+        }
+        aiIntakeSeedText = request.scenarioText
+        viewModel.presentAIIntake()
+    }
 
     /// Closes the detail sheet and, on the next runloop turn, opens
     /// the edit form for the same draft.

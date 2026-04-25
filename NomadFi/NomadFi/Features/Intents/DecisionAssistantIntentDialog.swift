@@ -100,6 +100,22 @@ enum DecisionAssistantIntentDialog {
     static let openDecisionAssistant: String =
         "Opening your Decision Assistant in NomadFi. Today it covers your Amazon arrival order; more decisions land as the deterministic engines do."
 
+    // MARK: - "Capture with Apple Intelligence" (Siri / Shortcuts → AI intake)
+
+    /// Dialog for the `OpenAIIntakeIntent` foreground hand-off.
+    ///
+    /// The voice surface is intentionally short and explicit about
+    /// three things, per Apple's Generative AI HIG (clear task
+    /// framing, user control, no hidden side effects):
+    ///
+    ///   1. NomadFi is opening — the spoken acknowledgement matches
+    ///      the app appearing in the foreground.
+    ///   2. The intake runs *on device* — never a networked LLM.
+    ///   3. Nothing saves until the user confirms in the app — the
+    ///      voice path cannot persist a draft on the user's behalf.
+    static let openAIIntakeAcknowledgement: String =
+        "Opening NomadFi to the on-device Apple Intelligence intake with what you said pre-filled. You'll review the extracted fields and confirm before anything saves."
+
     // MARK: - "Capture a decision" (Siri / Shortcuts intake)
 
     /// Dialog returned when the voice intake can't save because the

@@ -30,6 +30,14 @@ struct DecisionAIIntakeSheet: View {
 
     @State private var viewModel: DecisionAIIntakeViewModel
 
+    /// Optional pre-seed scenario string the parent supplies when
+    /// the sheet was opened from a system-surface hand-off (Siri /
+    /// App Shortcut via `OpenAIIntakeIntent`). Applied once on
+    /// `.task` if the view-model's scenario field is still empty,
+    /// so user typing always wins on a freshly opened sheet and
+    /// re-opens never silently re-seed previously-typed text.
+    let seedScenarioText: String
+
     /// Closure the sheet calls after a successful save so the
     /// parent (`DecisionAssistantView`) can open the existing
     /// detail sheet for the freshly-inserted draft.
@@ -42,12 +50,14 @@ struct DecisionAIIntakeSheet: View {
 
     init(
         interpreter: DecisionDraftInterpreter,
+        seedScenarioText: String = "",
         onSavedDraft: @escaping (DecisionDraftRecord) -> Void,
         onSwitchToTypedForm: @escaping () -> Void
     ) {
         _viewModel = State(
             wrappedValue: DecisionAIIntakeViewModel(interpreter: interpreter)
         )
+        self.seedScenarioText = seedScenarioText
         self.onSavedDraft = onSavedDraft
         self.onSwitchToTypedForm = onSwitchToTypedForm
     }
@@ -59,7 +69,25 @@ struct DecisionAIIntakeSheet: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarContent }
         }
-        .task { viewModel.refreshAvailability() }
+        .task {
+            viewModel.refreshAvailability()
+            applySeedIfNeeded()
+        }
+    }
+
+    /// Applies `seedScenarioText` to the view-model's scenario
+    /// field exactly once per sheet presentation, and only when
+    /// the user hasn't already typed something. Keeps the user in
+    /// control on every subsequent re-render — see Apple's
+    /// Generative AI HIG: no hidden side effects.
+    private func applySeedIfNeeded() {
+        let trimmedSeed = seedScenarioText.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+        guard !trimmedSeed.isEmpty,
+              viewModel.scenarioText.isEmpty
+        else { return }
+        viewModel.scenarioText = trimmedSeed
     }
 
     // MARK: - Stage routing

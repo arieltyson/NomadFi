@@ -93,6 +93,17 @@ struct NomadFiShortcuts: AppShortcutsProvider {
         )
 
         AppShortcut(
+            intent: OpenAIIntakeIntent(),
+            phrases: [
+                "Capture this with Apple Intelligence in \(.applicationName)",
+                "Start an Apple Intelligence intake in \(.applicationName)",
+                "Open Apple Intelligence intake in \(.applicationName)",
+            ],
+            shortTitle: "Capture with Apple Intelligence",
+            systemImageName: "apple.intelligence"
+        )
+
+        AppShortcut(
             intent: CheckNetWorthIntent(),
             phrases: [
                 "What's my net worth in \(.applicationName)",
