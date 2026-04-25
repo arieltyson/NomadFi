@@ -15,9 +15,15 @@
 //   - **Archive / Restore** are reversible, so they run inline
 //     without a confirmation (HIG alert guidance: don't interrupt
 //     for reversible actions).
-//   - **Delete** is irreversible. It uses `confirmationDialog` with
-//     an explicit destructive role; once confirmed, the parent
-//     removes the record and the sheet dismisses cleanly.
+//   - **Delete** is irreversible. It uses an `.alert` (not a
+//     confirmation dialog) so the prompt presents as a centered
+//     modal on every size class — including the anchored-popover
+//     behaviour `.confirmationDialog` produces on iPad — and per
+//     Apple HIG: alerts are the right control for destructive
+//     operations that risk irretrievable data loss. The Delete
+//     button carries the explicit destructive role; once
+//     confirmed, the parent removes the record and the sheet
+//     dismisses cleanly.
 
 import SwiftData
 import SwiftUI
@@ -111,10 +117,9 @@ struct DecisionDraftDetailView: View {
             .navigationTitle("Captured draft")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .confirmationDialog(
+            .alert(
                 "Delete this draft from this device?",
-                isPresented: $isDeleteConfirmationPresented,
-                titleVisibility: .visible
+                isPresented: $isDeleteConfirmationPresented
             ) {
                 Button("Delete draft", role: .destructive) {
                     onRequestDelete(draft)
