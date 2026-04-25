@@ -63,3 +63,38 @@ extension DecisionIdentity {
         }
     }
 }
+
+// MARK: - Surface category (Decisions IA)
+
+/// How a decision should surface on the Decisions tab. The IA
+/// redesign separates evergreen tools the user can invoke any time
+/// from scenario-specific decisions tied to a particular real-world
+/// situation, so the screen reads honestly at first glance.
+enum DecisionSurfaceCategory: Sendable, Equatable, Hashable {
+
+    /// Reusable check — an evergreen tool the user can invoke any
+    /// time (Purchase Card Check, Credit Timing Check). Rendered
+    /// in the `Reusable checks` section as a compact action card.
+    case reusableCheck
+
+    /// Pinned scenario — a decision tied to a specific real-world
+    /// situation, kept visible because it is ongoing rather than
+    /// invocable on demand (Amazon arrival order today). Rendered
+    /// in the `Pinned scenario` section with its own visual
+    /// treatment so it never reads as a reusable tool.
+    case pinnedScenario
+}
+
+extension DecisionIdentity {
+
+    /// How this identity should surface on the Decisions tab.
+    /// Decided per-`DecisionID` so the catalog stays the single
+    /// source of truth and the view never branches on string
+    /// matches.
+    var surfaceCategory: DecisionSurfaceCategory {
+        switch id {
+        case .amazonArrivalOrder: .pinnedScenario
+        case .creditTimingCheck, .purchaseCardCheck: .reusableCheck
+        }
+    }
+}

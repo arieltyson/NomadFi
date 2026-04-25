@@ -42,6 +42,17 @@ final class DecisionAssistantViewModel {
     /// snapshot tests stay readable.
     let historicalDecisions: [DecisionIdentity]
 
+    /// Reusable checks the user can invoke any time. Rendered in
+    /// the Decisions tab's `Reusable checks` section after the IA
+    /// redesign so evergreen tools stay visually distinct from the
+    /// pinned scenario surface.
+    let reusableChecks: [DecisionIdentity]
+
+    /// Scenario-specific decisions tied to a particular real-world
+    /// situation (Amazon arrival order today). Rendered in the
+    /// `Pinned scenario` section.
+    let pinnedScenarios: [DecisionIdentity]
+
     // MARK: - Per-engine state
 
     /// Brief view-model behind Scenario 1. Lazily materialised once
@@ -85,11 +96,15 @@ final class DecisionAssistantViewModel {
     init(
         activeDecision: DecisionIdentity? = DecisionCatalog.activeDecision,
         activeDecisions: [DecisionIdentity] = DecisionCatalog.all.filter(\.hasDeterministicEngine),
-        historicalDecisions: [DecisionIdentity] = DecisionCatalog.historicalCandidates
+        historicalDecisions: [DecisionIdentity] = DecisionCatalog.historicalCandidates,
+        reusableChecks: [DecisionIdentity] = DecisionCatalog.reusableChecks,
+        pinnedScenarios: [DecisionIdentity] = DecisionCatalog.pinnedScenarios
     ) {
         self.activeDecision = activeDecision
         self.activeDecisions = activeDecisions
         self.historicalDecisions = historicalDecisions
+        self.reusableChecks = reusableChecks
+        self.pinnedScenarios = pinnedScenarios
     }
 
     // MARK: - Bootstrap

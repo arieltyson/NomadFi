@@ -1,29 +1,33 @@
 // DecisionAssistantView.swift
 // NomadFi
 //
-// The Decisions tab's root screen. Composes three clearly-separated
-// regions:
+// The Decisions tab's root screen. IA/UI redesign: the surface is
+// organised into six sectioned bands so the user immediately sees
+// (1) how to start a decision, (2) which checks are reusable
+// tools, (3) which scenarios are pinned, (4) which decisions they
+// have actually reviewed, (5) where captured drafts live, and
+// (6) which drafts they have archived. Lower-priority sections
+// progressively disclose so the screen never feels infinite.
 //
-//   1. Active decision — a GlassCard hero that previews the current
-//      ruling and opens the full `ScenarioDecisionBriefView` sheet.
-//   2. Previous decisions — a section of saved decision records with
-//      real "last updated" timestamps and a calm empty state.
-//   3. Gather intelligence — a scaffold card naming the intake
-//      channels that will land later (typed scenarios, Siri / App
-//      Intents, Apple Intelligence context) without pretending any
-//      of them work today.
+// Layout follows Apple's HIG layout + scroll-views + accessibility
+// guidance:
+//   • One primary vertical scroll only.
+//   • Strong section headers per region; calm visual hierarchy.
+//   • Capture decision is the dominant first-viewport command.
+//   • Reusable tools, pinned scenarios, history, and drafts each
+//     read as a different kind of thing.
+//   • Drafts and archived drafts cap at a small preview with a
+//     calm "Show all" disclosure when there is more to see.
 //
-// Uses `ScrollView { LazyVStack }` rather than `List` to match the
-// Dashboard's visual language (GlassCard hero, section headers on a
-// subtle gradient) — this is a command-center surface, not a settings
-// list.
+// The screen never fakes data — empty states stay reachable for
+// fresh users (no previous decisions, no captured drafts).
 
 import SwiftData
 import SwiftUI
 
-/// The root of the Decisions tab. Uses `@Query` for reactive account
-/// context (needed by the Scenario brief) and drives everything else
-/// through ``DecisionAssistantViewModel``.
+/// The root of the Decisions tab. Uses `@Query` for reactive
+/// account context (needed by the Scenario brief) and drives
+/// everything else through ``DecisionAssistantViewModel``.
 struct DecisionAssistantView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -44,7 +48,7 @@ struct DecisionAssistantView: View {
     private var jurisdictions: [JurisdictionProfile]
 
     /// Active decision drafts, newest first. Archived drafts are
-    /// excluded — they render in their own section below.
+    /// excluded — they render in their own quieter section below.
     @Query(
         filter: #Predicate<DecisionDraftRecord> {
             $0.statusRawValue == "needsEngine"
@@ -73,17 +77,21 @@ struct DecisionAssistantView: View {
 
     @State private var viewModel = DecisionAssistantViewModel()
 
-    /// Currently-selected draft for the detail sheet. Kept as
-    /// view-local state because the sheet presentation binds to an
-    /// `Identifiable` record, which stays cleaner here than on the
-    /// view model.
+    /// Currently-selected draft for the detail sheet.
     @State private var selectedDraft: DecisionDraftRecord?
 
     /// Draft being edited. Mutually exclusive with `selectedDraft`
-    /// by construction: Edit requests from the detail sheet first
-    /// clear `selectedDraft` and then set `draftBeingEdited`, so we
-    /// never have two sheets open at once (Apple HIG).
+    /// by construction so SwiftUI never has two sheets open at
+    /// once (Apple HIG).
     @State private var draftBeingEdited: DecisionDraftRecord?
+
+    /// Whether the drafts section is showing every captured draft
+    /// or only the top preview window. Local UI state — never
+    /// persisted, never needs CloudKit.
+    @State private var draftsExpanded = false
+
+    /// Same disclosure flag for the archived-drafts section.
+    @State private var archivedDraftsExpanded = false
 
     var body: some View {
         ScrollView {
@@ -101,6 +109,8 @@ struct DecisionAssistantView: View {
                 reviewedDecisions: viewModel.reviewedDecisions(
                     reviewMarkers: reviewMarkers
                 ),
+                draftsExpanded: $draftsExpanded,
+                archivedDraftsExpanded: $archivedDraftsExpanded,
                 onDraftTapped: { selectedDraft = $0 },
                 onOpenDecision: { id in
                     viewModel.openDecision(id, modelContext: modelContext)
@@ -116,7 +126,7 @@ struct DecisionAssistantView: View {
             )
             .ignoresSafeArea()
         }
-        .navigationTitle("Decision Assistant")
+        .navigationTitle("Decisions")
         .glassToolbar()
         .task { viewModel.bootstrap(modelContext: modelContext) }
         .sheet(isPresented: $viewModel.isBriefPresented) {
@@ -177,9 +187,7 @@ struct DecisionAssistantView: View {
     // MARK: - Lifecycle handlers
 
     /// Closes the detail sheet and, on the next runloop turn, opens
-    /// the edit form for the same draft. The tiny `Task` defer keeps
-    /// SwiftUI from fighting a "dismiss one sheet + present another"
-    /// in the same frame, which can leave the edit sheet stranded.
+    /// the edit form for the same draft.
     private func handleRequestEdit(_ draft: DecisionDraftRecord) {
         selectedDraft = nil
         Task { @MainActor in
@@ -188,9 +196,7 @@ struct DecisionAssistantView: View {
     }
 
     /// Deletes a draft after the confirmation dialog has already
-    /// been accepted by the user. Dismisses the detail sheet first
-    /// so SwiftData's delete doesn't race a sheet that's still
-    /// reading the record.
+    /// been accepted by the user.
     private func handleRequestDelete(_ draft: DecisionDraftRecord) {
         selectedDraft = nil
         Task { @MainActor in
@@ -198,15 +204,10 @@ struct DecisionAssistantView: View {
         }
     }
 
-    /// Phase 1 follow-through — routes a draft into the matching
-    /// existing deterministic engine when the user explicitly taps
-    /// a handoff button on the detail sheet. Dismisses the detail
-    /// sheet first so SwiftUI never has two sheets in flight at
-    /// once (Apple HIG).
-    ///
-    /// Honesty contract: this method never marks the draft itself
-    /// as "analyzed". The draft's persisted
-    /// ``DecisionDraftStatus`` stays unchanged.
+    /// Routes a draft into the matching existing deterministic
+    /// engine when the user explicitly taps a handoff button on
+    /// the detail sheet. Drafts v2 / v3 contract: this never marks
+    /// the draft itself as "analyzed".
     private func handleRequestHandoff(
         _ draft: DecisionDraftRecord,
         _ action: DecisionDraftNextAction
@@ -230,9 +231,9 @@ struct DecisionAssistantView: View {
 
 private extension DecisionAssistantView {
 
-    /// Credit-card accounts sorted to match the Settings order so the
-    /// brief's linked-card picker stays consistent with Credit Card
-    /// Calendar. Mirrors the helper that used to live on Dashboard.
+    /// Credit-card accounts sorted to match the Settings order so
+    /// the brief's linked-card picker stays consistent with the
+    /// Credit Card Calendar.
     var creditCardAccounts: [Account] {
         accounts
             .filter { $0.accountType == .creditCard }
@@ -245,19 +246,16 @@ private extension DecisionAssistantView {
     }
 
     /// Home currency the Credit Timing brief prefers when picking
-    /// the dominant currency for the spending trend. Mirrors the
-    /// Dashboard's own home-currency resolution rule so both
-    /// surfaces stay consistent.
+    /// the dominant currency for the spending trend.
     var homeCurrency: CurrencyCode {
         jurisdictions
             .first { $0.isHome }?
             .currencyCode ?? .usd
     }
 
-    /// Deterministic spending-trend summary, or `nil` when the user
-    /// doesn't have enough transactions for a meaningful trend.
-    /// Computed lazily each time the sheet presents — the
-    /// computer is pure and cheap on this scale.
+    /// Deterministic spending-trend summary, or `nil` when the
+    /// user doesn't have enough transactions for a meaningful
+    /// trend.
     var spendingTrendSummary: SpendingTrendSummary? {
         SpendingTrendComputer.summary(
             transactions: transactions,
@@ -266,8 +264,7 @@ private extension DecisionAssistantView {
     }
 
     /// Phase 1 follow-through — minimal account projection the
-    /// draft evaluator needs. Built fresh from the live `@Query`
-    /// each time the detail sheet renders.
+    /// draft evaluator needs.
     var draftAccountSnapshot: DecisionDraftAccountSnapshot {
         DecisionDraftAccountSnapshot(
             hasAnyCreditCard: accounts.contains(where: \.isCreditCard)
@@ -275,9 +272,7 @@ private extension DecisionAssistantView {
     }
 
     /// Phase 9A — production interpreter wired into the AI intake
-    /// sheet. Resolves to the Foundation Models adapter on iOS 26+
-    /// when available; the adapter itself is responsible for
-    /// reporting `.foundationModelsUnavailable` cleanly when not.
+    /// sheet. Resolves to the Foundation Models adapter on iOS 26+.
     var aiInterpreter: DecisionDraftInterpreter {
         FoundationModelsDraftInterpreter()
     }
@@ -285,8 +280,8 @@ private extension DecisionAssistantView {
 
 // MARK: - Content
 
-/// Extracted so the root stays thin and each region composes as its
-/// own `View` struct per the project style rules.
+/// Composes the six redesigned sections in IA order. Extracted so
+/// the root stays thin and each section composes as its own view.
 private struct DecisionAssistantContent: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
@@ -295,26 +290,39 @@ private struct DecisionAssistantContent: View {
 
     /// Active drafts already decorated with their evaluator-derived
     /// readiness and group-sorted by `DecisionDraftListPresentation`.
-    /// Engine-ready drafts come first; archived drafts live in the
-    /// quieter section below.
     let draftItems: [DecisionDraftListItem]
 
     /// Archived drafts decorated with the `.archived` readiness.
-    /// Order preserved from the upstream `@Query` (`updatedAt`
-    /// descending).
     let archivedDraftItems: [DecisionDraftListItem]
 
     let reviewedDecisions: [DecisionIdentity]
+
+    @Binding var draftsExpanded: Bool
+    @Binding var archivedDraftsExpanded: Bool
+
     let onDraftTapped: (DecisionDraftRecord) -> Void
     let onOpenDecision: (DecisionID) -> Void
 
     var body: some View {
         LazyVStack(spacing: SpacingTokens.large) {
-            DecisionAssistantActiveSection(
+
+            // 1. Capture decision — primary command module.
+            DecisionAssistantCaptureSection(viewModel: viewModel)
+
+            // 2. Reusable checks — evergreen tools.
+            DecisionAssistantReusableChecksSection(
                 viewModel: viewModel,
-                allAccounts: allAccounts
+                onOpenDecision: onOpenDecision
             )
 
+            // 3. Pinned scenario — situational, not a tool.
+            DecisionAssistantPinnedScenarioSection(
+                viewModel: viewModel,
+                allAccounts: allAccounts,
+                onOpenDecision: onOpenDecision
+            )
+
+            // 4. Previous decisions — actually reviewed only.
             DecisionAssistantHistorySection(
                 viewModel: viewModel,
                 allAccounts: allAccounts,
@@ -322,16 +330,18 @@ private struct DecisionAssistantContent: View {
                 onOpenDecision: onOpenDecision
             )
 
-            DecisionAssistantNewSection(viewModel: viewModel)
-
+            // 5. Captured drafts — saved raw context.
             DecisionAssistantDraftsSection(
                 items: draftItems,
+                expanded: $draftsExpanded,
                 onDraftTapped: onDraftTapped
             )
 
+            // 6. Archived drafts — only when non-empty.
             if !archivedDraftItems.isEmpty {
                 DecisionAssistantArchivedDraftsSection(
                     items: archivedDraftItems,
+                    expanded: $archivedDraftsExpanded,
                     onDraftTapped: onDraftTapped
                 )
             }
@@ -343,33 +353,40 @@ private struct DecisionAssistantContent: View {
     }
 }
 
-// MARK: - Active section
+// MARK: - 1. Capture decision
 
-private struct DecisionAssistantActiveSection: View {
+private struct DecisionAssistantCaptureSection: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
-    let allAccounts: [Account]
 
     var body: some View {
-        if !viewModel.activeDecisions.isEmpty {
+        DecisionAssistantCaptureHero(
+            onCaptureTapped: { viewModel.presentDraftForm() },
+            onAppleIntelligenceTapped: { viewModel.presentAIIntake() }
+        )
+    }
+}
+
+// MARK: - 2. Reusable checks
+
+private struct DecisionAssistantReusableChecksSection: View {
+
+    @Bindable var viewModel: DecisionAssistantViewModel
+    let onOpenDecision: (DecisionID) -> Void
+
+    var body: some View {
+        if !viewModel.reusableChecks.isEmpty {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 DecisionAssistantSectionHeader(
-                    title: "Now",
-                    subtitle: "Where NomadFi has a deterministic recommendation."
+                    title: "Reusable checks",
+                    subtitle: "Evergreen tools you can run any time."
                 )
 
-                VStack(spacing: SpacingTokens.small) {
-                    ForEach(viewModel.activeDecisions) { identity in
-                        let summary = viewModel.summary(
-                            for: identity.id,
-                            accounts: allAccounts
-                        )
-                        ActiveDecisionHeroCard(
+                VStack(spacing: SpacingTokens.xSmall) {
+                    ForEach(viewModel.reusableChecks) { identity in
+                        ReusableCheckCard(
                             identity: identity,
-                            ruling: summary.ruling,
-                            lastUpdatedAt: summary.lastUpdatedAt,
-                            outstandingCheckCount: summary.outstandingCheckCount,
-                            action: { viewModel.openDecision(identity.id) }
+                            action: { onOpenDecision(identity.id) }
                         )
                     }
                 }
@@ -378,7 +395,43 @@ private struct DecisionAssistantActiveSection: View {
     }
 }
 
-// MARK: - History section
+// MARK: - 3. Pinned scenario
+
+private struct DecisionAssistantPinnedScenarioSection: View {
+
+    @Bindable var viewModel: DecisionAssistantViewModel
+    let allAccounts: [Account]
+    let onOpenDecision: (DecisionID) -> Void
+
+    var body: some View {
+        if !viewModel.pinnedScenarios.isEmpty {
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                DecisionAssistantSectionHeader(
+                    title: "Pinned scenario",
+                    subtitle: "A specific decision NomadFi keeps visible because it's ongoing."
+                )
+
+                VStack(spacing: SpacingTokens.xSmall) {
+                    ForEach(viewModel.pinnedScenarios) { identity in
+                        let summary = viewModel.summary(
+                            for: identity.id,
+                            accounts: allAccounts
+                        )
+                        ScenarioPinnedCard(
+                            identity: identity,
+                            ruling: summary.ruling,
+                            lastUpdatedAt: summary.lastUpdatedAt,
+                            outstandingCheckCount: summary.outstandingCheckCount,
+                            action: { onOpenDecision(identity.id) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - 4. Previous decisions
 
 private struct DecisionAssistantHistorySection: View {
 
@@ -386,8 +439,8 @@ private struct DecisionAssistantHistorySection: View {
     let allAccounts: [Account]
 
     /// Decisions the user has actually reviewed — filtered through
-    /// `DecisionReviewEvidence`. Empty for fresh users, which is
-    /// the path the empty-state copy is meant to hit.
+    /// `DecisionReviewEvidence`. Empty for fresh users; the
+    /// empty-state path stays reachable.
     let reviewedDecisions: [DecisionIdentity]
 
     let onOpenDecision: (DecisionID) -> Void
@@ -440,10 +493,6 @@ private struct DecisionAssistantHistoryList: View {
                 }
                 .buttonStyle(.plain)
             }
-
-            if reviewedDecisions.count == 1 {
-                DecisionAssistantHistoryHorizon()
-            }
         }
     }
 }
@@ -455,7 +504,7 @@ private struct DecisionAssistantHistoryEmptyState: View {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No previous decisions yet")
                     .font(TypographyTokens.body)
-                Text("Open a decision from the Now section to start a record NomadFi can reopen later.")
+                Text("Open a reusable check or the pinned scenario above to start a record NomadFi can reopen later.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -464,76 +513,58 @@ private struct DecisionAssistantHistoryEmptyState: View {
     }
 }
 
-private struct DecisionAssistantHistoryHorizon: View {
+// MARK: - 5. Captured drafts
 
-    var body: some View {
-        Label {
-            Text("More decisions will appear here as you review the others in the Now section.")
-                .font(TypographyTokens.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        } icon: {
-            Image(systemName: "arrow.up.circle")
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-        }
-        .padding(.top, SpacingTokens.xxSmall)
-        .accessibilityElement(children: .combine)
-    }
-}
-
-// MARK: - New decision section
-
-private struct DecisionAssistantNewSection: View {
-
-    @Bindable var viewModel: DecisionAssistantViewModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.small) {
-            DecisionAssistantSectionHeader(
-                title: "Gather intelligence",
-                subtitle: "Capture a scenario locally — NomadFi stores it until a deterministic engine can analyze it."
-            )
-
-            NewDecisionScaffoldCard(
-                onCaptureTapped: { viewModel.presentDraftForm() },
-                onAppleIntelligenceTapped: { viewModel.presentAIIntake() }
-            )
-        }
-    }
-}
-
-// MARK: - Drafts section
-
-/// Shows captured drafts separately from the catalog-backed
-/// "Previous decisions" list so the user can never mistake a raw
-/// draft for an analyzed decision. Drafts v3 alignment: each row
-/// surfaces evaluator-derived readiness ("Engine ready", "Add
-/// amount first", "Review in Tax Vault", …) so the list is honest
-/// at first glance about what NomadFi can do with each draft right
-/// now. Engine-ready drafts surface first; the order otherwise
-/// follows readiness group then `updatedAt` desc within each group.
+/// Drafts v3 alignment preserved: each row surfaces evaluator-
+/// derived readiness ("Engine ready", "Add amount first", "Review
+/// in Tax Vault", …). The IA redesign caps the visible window at a
+/// small preview and exposes a calm "Show all" disclosure when
+/// there is more to see — Apple's progressive-disclosure pattern.
 private struct DecisionAssistantDraftsSection: View {
 
     let items: [DecisionDraftListItem]
+
+    @Binding var expanded: Bool
+
     let onDraftTapped: (DecisionDraftRecord) -> Void
+
+    /// Default preview window for the active draft list. Three
+    /// rows is enough to communicate the section without dragging
+    /// the screen below the fold.
+    private static let previewLimit = 3
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
             DecisionAssistantSectionHeader(
-                title: "Gathered intelligence",
-                subtitle: "Saved drafts on this device. Each row shows what NomadFi can do with it right now."
+                title: "Captured drafts",
+                subtitle: "Saved raw context. Each row shows what NomadFi can do with it right now."
             )
 
             if items.isEmpty {
                 DecisionAssistantDraftsEmptyState()
             } else {
                 DecisionAssistantDraftsList(
-                    items: items,
+                    items: visibleItems,
                     onDraftTapped: onDraftTapped
                 )
+
+                if items.count > Self.previewLimit {
+                    DecisionAssistantShowMoreRow(
+                        expanded: $expanded,
+                        totalCount: items.count,
+                        previewLimit: Self.previewLimit,
+                        noun: "draft"
+                    )
+                }
             }
         }
+    }
+
+    private var visibleItems: [DecisionDraftListItem] {
+        if expanded || items.count <= Self.previewLimit {
+            return items
+        }
+        return Array(items.prefix(Self.previewLimit))
     }
 }
 
@@ -569,7 +600,7 @@ private struct DecisionAssistantDraftsEmptyState: View {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No drafts captured yet")
                     .font(TypographyTokens.body)
-                Text("Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything.")
+                Text("Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -578,17 +609,21 @@ private struct DecisionAssistantDraftsEmptyState: View {
     }
 }
 
-// MARK: - Archived drafts section
+// MARK: - 6. Archived drafts
 
-/// Quieter secondary list of archived drafts. Only renders when the
-/// user actually has archived drafts, so the Decision Assistant's
-/// primary surface stays focused on actionable captures. Archived
-/// rows are dimmed to make the status visually unambiguous without
-/// relying on colour alone.
+/// Quieter secondary list of archived drafts. Only renders when
+/// the user actually has archived drafts. Same progressive-
+/// disclosure pattern as the captured-drafts section so the
+/// archive doesn't bloat the surface.
 private struct DecisionAssistantArchivedDraftsSection: View {
 
     let items: [DecisionDraftListItem]
+
+    @Binding var expanded: Bool
+
     let onDraftTapped: (DecisionDraftRecord) -> Void
+
+    private static let previewLimit = 2
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
@@ -598,7 +633,7 @@ private struct DecisionAssistantArchivedDraftsSection: View {
             )
 
             VStack(spacing: SpacingTokens.xSmall) {
-                ForEach(items) { item in
+                ForEach(visibleItems) { item in
                     Button {
                         onDraftTapped(item.draft)
                     } label: {
@@ -614,7 +649,71 @@ private struct DecisionAssistantArchivedDraftsSection: View {
                     .accessibilityHint("Opens the archived draft. Restore or delete from the detail sheet.")
                 }
             }
+
+            if items.count > Self.previewLimit {
+                DecisionAssistantShowMoreRow(
+                    expanded: $expanded,
+                    totalCount: items.count,
+                    previewLimit: Self.previewLimit,
+                    noun: "archived draft"
+                )
+            }
         }
+    }
+
+    private var visibleItems: [DecisionDraftListItem] {
+        if expanded || items.count <= Self.previewLimit {
+            return items
+        }
+        return Array(items.prefix(Self.previewLimit))
+    }
+}
+
+// MARK: - Show-more disclosure
+
+/// Calm progressive-disclosure row used by the drafts and
+/// archived-drafts sections. Tapping toggles the section between
+/// preview and fully expanded. No magic numbers — both call sites
+/// pass their own `previewLimit`.
+private struct DecisionAssistantShowMoreRow: View {
+
+    @Binding var expanded: Bool
+    let totalCount: Int
+    let previewLimit: Int
+    let noun: String
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                expanded.toggle()
+            }
+        } label: {
+            HStack(spacing: SpacingTokens.xSmall) {
+                Image(systemName: expanded ? "chevron.up.circle" : "chevron.down.circle")
+                    .foregroundStyle(ColorTokens.brandPrimary)
+                    .accessibilityHidden(true)
+                Text(label)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.brandPrimary)
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, SpacingTokens.xxSmall)
+            .padding(.horizontal, SpacingTokens.xSmall)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private var label: String {
+        if expanded {
+            return "Show fewer"
+        }
+        let hidden = totalCount - previewLimit
+        let suffix = hidden == 1 ? noun : "\(noun)s"
+        return "Show all (\(hidden) more \(suffix))"
     }
 }
 
@@ -629,28 +728,6 @@ private struct DecisionAssistantFooterNote: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityLabel("Decision support only. NomadFi distinguishes screenshot facts, official-source checks, user inputs, and inference, and never labels AI-assisted drafts as verified.")
-    }
-}
-
-// MARK: - Section header
-
-private struct DecisionAssistantSectionHeader: View {
-
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-            Text(title)
-                .font(TypographyTokens.sectionHeader)
-                .accessibilityAddTraits(.isHeader)
-            Text(subtitle)
-                .font(TypographyTokens.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
     }
 }
 

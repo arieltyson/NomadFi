@@ -2028,6 +2028,25 @@ Highest-leverage remaining work, in order:
   same untouched rows. _Evidence:
   `DecisionReviewEvidenceTests.swift`,
   `DecisionAssistantTests.swift` (`reviewedDecisions(...)` case)._
+- **Decisions tab IA / UI redesign — shipped** (2026-04-24).
+  Restructured the Decisions tab around six clearly-separated
+  sections — Capture decision (primary command module), Reusable
+  checks (evergreen tools), Pinned scenario (situational, not a
+  tool), Previous decisions (actually reviewed only), Captured
+  drafts (with a calm `Show all` disclosure), and Archived drafts
+  (also disclosure-capped, only when non-empty). Three new
+  components: `DecisionAssistantCaptureHero`, `ReusableCheckCard`,
+  `ScenarioPinnedCard`. Catalog gained
+  `DecisionCatalog.reusableChecks` / `pinnedScenarios` + the
+  `DecisionSurfaceCategory` enum so tools and scenarios partition
+  the catalog cleanly. Section header extracted into its own
+  reusable component. Capture-decision CTA is now the dominant
+  first-viewport action on iPhone; Drafts v2/v3 readiness
+  semantics are preserved verbatim. Per Apple HIG: hierarchy +
+  harmony, progressive disclosure for lower-priority sections,
+  one primary vertical scroll only, accessibility headers per
+  section, no colour-only differentiation. _Evidence:
+  `DecisionAssistantIATests.swift`._
 - **Phase 9A — on-device structured intake — shipped**
   (2026-04-24). The Apple Intelligence row in
   `NewDecisionScaffoldCard` is now a real entry point. Pure
