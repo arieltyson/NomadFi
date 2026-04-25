@@ -2028,6 +2028,22 @@ Highest-leverage remaining work, in order:
   same untouched rows. _Evidence:
   `DecisionReviewEvidenceTests.swift`,
   `DecisionAssistantTests.swift` (`reviewedDecisions(...)` case)._
+- **SwiftData schema-migration guardrail — shipped**
+  (2026-04-24). Centralises every `@Model` registration through
+  `NomadFiSchemaV1: VersionedSchema` and routes the production
+  `ModelContainer` through `NomadFiMigrationPlan: SchemaMigrationPlan`
+  via the new `NomadFiModelContainerFactory`. Construction
+  failures now `preconditionFailure` instead of silently falling
+  back, so a broken migration crashes loudly rather than wiping
+  the on-disk store. The test factory uses the same versioned
+  schema + plan so production and tests cannot drift.
+  `SchemaSnapshotTests` pins the V1 model list, the version
+  identifier (1.0.0), and the empty stages list — adding or
+  removing a `@Model` without defining `NomadFiSchemaV2` and a
+  matching `MigrationStage` fails CI. The header on the snapshot
+  test file documents the exact upgrade procedure for the next
+  schema change. _Evidence: `SchemaSnapshotTests.swift`,
+  `Core/Persistence/`._
 - **Decisions tab IA / UI redesign — shipped** (2026-04-24).
   Restructured the Decisions tab around six clearly-separated
   sections — Capture decision (primary command module), Reusable

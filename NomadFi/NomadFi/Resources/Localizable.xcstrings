@@ -335,6 +335,8 @@
     "Add accounts from Settings > Accounts to see your global net worth." : {
 
     },
+    "Add before saving" : {
+    },
     "Add More Accounts" : {
 
     },
@@ -376,6 +378,8 @@
     },
     "Advanced Tools" : {
 
+    },
+    "AI structures input. Deterministic engines decide. NomadFi will mark this draft Needs engine until you tap a handoff button on the detail sheet." : {
     },
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
 
@@ -452,6 +456,10 @@
     },
     "Ask NomadFi which saved payment method clears the hard rules for a purchase. The engine is deterministic — it will not invent rewards claims or predict a credit-score outcome." : {
 
+    },
+    "Asking the on-device model to structure your scenario…" : {
+    },
+    "Asks the on-device model to structure this scenario into draft fields. You will review and confirm before saving." : {
     },
     "At 80%, 90%, and 100%" : {
 
@@ -544,8 +552,9 @@
     "Cancel" : {
 
     },
-    "Capture a scenario now, in your own words. NomadFi keeps it on-device until a deterministic engine can analyze it." : {
-
+    "Capture a scenario in your own words. NomadFi keeps it on this device and shows you what it can do with it." : {
+    },
+    "Capture a scenario in your own words. NomadFi keeps it on-device and shows you what it can do with it." : {
     },
     "Capture decision" : {
 
@@ -555,6 +564,8 @@
     },
     "Capture Decision Draft" : {
 
+    },
+    "Capture with the typed form instead" : {
     },
     "Captured draft" : {
 
@@ -655,6 +666,8 @@
     "Closes %@" : {
 
     },
+    "Closes this sheet and opens the typed draft form." : {
+    },
     "CNY — Chinese Yuan" : {
 
     },
@@ -665,6 +678,7 @@
 
     },
     "Confidence" : {
+
     },
     "Confirm and add to Tax Vault" : {
 
@@ -773,6 +787,7 @@
 
     },
     "Cross-border context" : {
+
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -826,8 +841,7 @@
     "Date" : {
 
     },
-    "Decision Assistant" : {
-
+    "Decision" : {
     },
     "Decision Assistant, Not a Ledger" : {
 
@@ -934,6 +948,10 @@
     "Double tap to select" : {
 
     },
+    "Drafts stay on this device. NomadFi never analyzes them automatically — you decide when to hand a draft to a deterministic engine." : {
+    },
+    "Drafts stay on this device. NomadFi shows what it can do with each one — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything." : {
+    },
     "Duplicate" : {
 
     },
@@ -954,6 +972,8 @@
     },
     "Edit draft" : {
 
+    },
+    "Edit scenario and try again" : {
     },
     "Education only — this review does not mean a tax return is done." : {
 
@@ -1185,6 +1205,9 @@
     "Institution" : {
 
     },
+    "Interpret on device" : {
+
+    },
     "Investing & learning" : {
 
     },
@@ -1394,8 +1417,6 @@
     "More actions" : {
 
     },
-    "More decisions will appear here as you review the others in the Now section." : {
-    },
     "More draft actions" : {
 
     },
@@ -1534,7 +1555,10 @@
     "NomadFi reads your receipts on device, suggests a category, and waits for you to confirm." : {
 
     },
+    "NomadFi runs Apple Intelligence on this device only. The model extracts structured inputs — it does not recommend a card, account, or payment method." : {
+    },
     "NomadFi stored this draft on-device only. Drafts are never auto-analyzed; NomadFi only opens an existing deterministic engine when you tap a handoff button above." : {
+
     },
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
@@ -1635,8 +1659,7 @@
     "Online shopping" : {
 
     },
-    "Open a decision from the Now section to start a record NomadFi can reopen later." : {
-
+    "Open a reusable check or the pinned scenario above to start a record NomadFi can reopen later." : {
     },
     "Open Decision Assistant" : {
 
@@ -1659,6 +1682,8 @@
     "Opens a local form to capture a new decision draft on this device." : {
 
     },
+    "Opens a local form to capture a new decision draft on this device. NomadFi will not analyze it automatically." : {
+    },
     "Opens a screen to add, remove, or change your home jurisdiction." : {
 
     },
@@ -1668,17 +1693,18 @@
     "Opens short, source-backed investing lessons. Education only — not investment advice." : {
 
     },
+    "Opens the %@ brief. NomadFi runs this engine against your saved data and shows the rationale and sources." : {
+    },
     "Opens the account editor to correct balances, limits, and other details." : {
 
     },
     "Opens the archived draft. Restore or delete from the detail sheet." : {
 
     },
-    "Opens the captured draft details. Read-only." : {
-
-    },
     "Opens the CSV import preview flow. No data leaves this device." : {
 
+    },
+    "Opens the draft details. The detail sheet shows what NomadFi can do with this draft." : {
     },
     "Opens the draft in the edit form." : {
 
@@ -1703,6 +1729,8 @@
     },
     "Opens the official source in your browser." : {
 
+    },
+    "Opens the pinned scenario's full brief." : {
     },
     "Opens the provider's authorization prompt." : {
 
@@ -1776,6 +1804,8 @@
     "Optional. Your account name is only changed when you tap this row." : {
 
     },
+    "Or another way" : {
+    },
     "Organize your records" : {
 
     },
@@ -1796,6 +1826,8 @@
     },
     "Parsing rows…" : {
 
+    },
+    "Paste or type the scenario" : {
     },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
@@ -1820,6 +1852,8 @@
     },
     "Pick an option for every question to enable Submit." : {
 
+    },
+    "Pinned scenario" : {
     },
     "Plaid item linked (handle %@)." : {
 
@@ -2065,14 +2099,15 @@
     "Save a decision you're weighing as a private, on-device draft. NomadFi will not analyze or recommend anything from it until a deterministic engine covers this kind of decision." : {
 
     },
+    "Save draft" : {
+    },
     "Saved drafts stay on this device and are marked **Needs engine** until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
 
     },
     "Saved drafts stay on this device and are marked needs engine until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
 
     },
-    "Saved drafts stay on-device and are marked needs engine until a deterministic NomadFi engine covers them. NomadFi does not auto-analyze drafts with generic AI." : {
-
+    "Saves the AI-assisted draft on this device. NomadFi will not analyze it automatically." : {
     },
     "Saves the credit-card calendar." : {
 
@@ -2204,6 +2239,8 @@
     "Shares the most recently exported tax report." : {
 
     },
+    "Short hint, not a full address." : {
+    },
     "Short title (optional)" : {
 
     },
@@ -2245,6 +2282,8 @@
     },
     "Stamps today's date as the last time you verified this schedule." : {
 
+    },
+    "Start a decision" : {
     },
     "Statement balance (optional)" : {
 
@@ -2298,8 +2337,7 @@
     "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
 
     },
-    "Tap Capture decision above to save a scenario. Drafts stay on this device and are marked Needs engine until a deterministic NomadFi engine covers them." : {
-
+    "Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything." : {
     },
     "Tap the button below to add your first account." : {
 
@@ -2342,6 +2380,8 @@
     },
     "The expense category" : {
 
+    },
+    "The model left these blank. Fill them in below before saving the draft, or save as-is and finish in the draft detail sheet." : {
     },
     "The more accounts you connect, the better NomadFi can optimize your cross-border finances and detect hidden fees." : {
 

@@ -36,31 +36,26 @@ import SwiftData
 enum SwiftDataTestContainerFactory {
 
     /// Every `@Model` type the production `NomadFiApp.modelContainer`
-    /// registers today. Ordered to mirror the app's registration
-    /// order so future diffs line up.
-    static let fullAppSchema: [any PersistentModel.Type] = [
-        Currency.self,
-        JurisdictionProfile.self,
-        Account.self,
-        Transaction.self,
-        ExchangeRate.self,
-        TaxDocument.self,
-        Subscription.self,
-        Budget.self,
-        ScenarioDecisionRecord.self,
-        DecisionDraftRecord.self,
-        PurchaseDecisionRecord.self,
-        DecisionReviewMarker.self,
-        TaxEducationProgressRecord.self,
-        InvestingEducationProgressRecord.self,
-    ]
+    /// registers today. Sourced from `NomadFiSchemaV1.models` so a
+    /// schema bump in production cannot drift from the test
+    /// container — both reference the same versioned schema.
+    static var fullAppSchema: [any PersistentModel.Type] {
+        NomadFiSchemaV1.models
+    }
 
-    /// Builds an in-memory `ModelContainer` with the full app schema.
-    /// Each call returns a fresh container so tests remain isolated.
+    /// Builds an in-memory `ModelContainer` with the full app schema
+    /// **and** the production `NomadFiMigrationPlan`. Tests exercise
+    /// the same migration path the app does so a broken plan fails
+    /// in CI rather than on a user device.
     static func makeFullSchemaContainer() throws -> ModelContainer {
-        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let schema = Schema(versionedSchema: NomadFiSchemaV1.self)
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: true
+        )
         return try ModelContainer(
-            for: Schema(fullAppSchema),
+            for: schema,
+            migrationPlan: NomadFiMigrationPlan.self,
             configurations: configuration
         )
     }

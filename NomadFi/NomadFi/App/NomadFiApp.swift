@@ -124,22 +124,13 @@ struct NomadFiApp: App {
 #endif
             .tint(ColorTokens.actionTint)
         }
-        .modelContainer(for: [
-            Currency.self,
-            JurisdictionProfile.self,
-            Account.self,
-            Transaction.self,
-            ExchangeRate.self,
-            TaxDocument.self,
-            Subscription.self,
-            Budget.self,
-            ScenarioDecisionRecord.self,
-            DecisionDraftRecord.self,
-            PurchaseDecisionRecord.self,
-            DecisionReviewMarker.self,
-            TaxEducationProgressRecord.self,
-            InvestingEducationProgressRecord.self,
-        ])
+        // Single chokepoint: every `@Model` type is registered
+        // through `NomadFiSchemaV1` and migrated by
+        // `NomadFiMigrationPlan`. Future schema changes must add
+        // a new versioned schema + migration stage rather than
+        // appending to a list — that's what stops a quiet local-
+        // store reset from happening on the next install.
+        .modelContainer(NomadFiModelContainerFactory.makeProduction())
     }
 }
 
