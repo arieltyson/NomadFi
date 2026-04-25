@@ -10,7 +10,16 @@
 // user opens (jurisdiction home repair, credit-card reminder re-sync)
 // run on this root's `.task`, so they fire as soon as the tab is
 // visited. Nothing on the root mutates account data directly.
+//
+// SwiftData reads use `@Query` rather than synchronous
+// `modelContext.fetch(...)` calls. The synchronous-fetch pattern
+// hit a SwiftData runtime trap on iOS 26 when invoked from inside
+// `.task { ... }`; the canonical Apple-recommended approach is to
+// declare the query and operate on its results. See
+// `JurisdictionHomeRepairPlan` for the pure planner this view
+// drives.
 
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -21,7 +30,15 @@ struct SettingsView: View {
 
     @Query private var accounts: [Account]
 
+    @Query(sort: \JurisdictionProfile.displayOrder)
+    private var jurisdictionProfiles: [JurisdictionProfile]
+
     @State private var notificationManager = NotificationManager()
+
+    private static let logger = Logger(
+        subsystem: "com.nomadfi.app",
+        category: "SettingsView"
+    )
 
     @AppStorage("creditCardRemindersEnabled")
     private var creditCardRemindersEnabled: Bool = false
@@ -147,14 +164,30 @@ private extension SettingsView {
     }
 
     /// Collapses duplicate-home or zero-home jurisdiction states on
-    /// visit. Cheap, no-op when the set is already consistent.
+    /// visit. Drives the pure `JurisdictionHomeRepairPlan` over the
+    /// `@Query`-resolved profile set so SwiftData never sees a
+    /// synchronous fetch from inside this view's `.task`. Cheap,
+    /// no-op when the set is already consistent.
     func repairHomeJurisdictionIfNeeded() {
+        let outcome = JurisdictionHomeRepairPlan.plan(for: jurisdictionProfiles)
+        guard case let .repair(winnerCountryCode) = outcome else { return }
+
+        for profile in jurisdictionProfiles {
+            let shouldBeHome = profile.countryCode == winnerCountryCode
+            if profile.isHome != shouldBeHome {
+                profile.isHome = shouldBeHome
+            }
+        }
+
         do {
-            _ = try JurisdictionManager(modelContext: modelContext)
-                .repairHomeJurisdictionIfNeeded()
+            try modelContext.save()
+            Self.logger.info(
+                "Repaired home jurisdiction to \(winnerCountryCode, privacy: .public)"
+            )
         } catch {
-            // Soft failure — the management screen can still be used
-            // to set a home manually; the manager logs the error.
+            Self.logger.error(
+                "Failed to save repaired home jurisdiction: \(error.localizedDescription, privacy: .public)"
+            )
         }
     }
 }

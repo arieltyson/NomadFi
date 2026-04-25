@@ -5,6 +5,20 @@
 // re-running the pure engine whenever the user edits an input.
 // Persistence is handled by SwiftData's autosave; the view model only
 // stamps `updatedAt` so the UI has a consistent signal for edits.
+//
+// Crash-safety note (incident learning):
+//   Holding a long-lived strong reference to a SwiftData `@Model`
+//   instance is unsafe — when SwiftData's runtime resets the
+//   underlying context (e.g. as part of error recovery or a
+//   cross-context refresh after an unrelated save), the held
+//   reference is destroyed. Subsequent property access traps with
+//   `"This model instance was destroyed by calling
+//   ModelContext.reset and is no longer usable."`. The fix is to
+//   re-resolve the record from the `ModelContext` on every access
+//   via `ModelContext.registeredModel(for:)`, falling back to a
+//   stable-ID re-fetch when the row is no longer registered (post-
+//   reset). Apple's documented `PersistentIdentifier` round-trip is
+//   the supported way to keep a stable handle to a SwiftData row.
 
 import Foundation
 import OSLog
@@ -23,22 +37,78 @@ final class ScenarioDecisionBriefViewModel {
     /// The curated source catalog shown in the "Sources" section.
     let citations: [ScenarioCitation]
 
-    /// The persisted record backing the decision inputs. Mutations on
-    /// this record auto-save through SwiftData.
-    let record: ScenarioDecisionRecord
+    /// SwiftData context used to re-resolve `record` on every access.
+    /// `nil` for previews and pure-value tests, where the held
+    /// `detachedRecord` is the source of truth.
+    private let modelContext: ModelContext?
+
+    /// Stable identifier captured at init time when a `modelContext`
+    /// was supplied. Used by `record` to re-resolve via
+    /// `ModelContext.registeredModel(for:)` after a context reset.
+    private let recordID: PersistentIdentifier?
+
+    /// Fallback record used when no `modelContext` was supplied
+    /// (previews, pure-value tests, fixtures).
+    private let detachedRecord: ScenarioDecisionRecord
 
     // MARK: - Init
 
-    init(
+    /// Detached initializer for previews + pure-value tests. The
+    /// held `record` is the source of truth; no re-resolution
+    /// happens because nothing is destroying it from another path.
+    convenience init(
         facts: ScenarioFacts = .scenario1,
         record: ScenarioDecisionRecord = ScenarioDecisionRecord(
             scenarioID: ScenarioDecisionRecord.scenario1ID
         ),
         citations: [ScenarioCitation] = ScenarioCitationCatalog.scenario1
     ) {
+        self.init(
+            facts: facts,
+            modelContext: nil,
+            record: record,
+            citations: citations
+        )
+    }
+
+    /// Production initializer. Captures the `ModelContext` so the
+    /// view model can re-resolve `record` after a SwiftData context
+    /// reset, instead of holding a strong reference that may be
+    /// destroyed by an unrelated save on the same context.
+    init(
+        facts: ScenarioFacts = .scenario1,
+        modelContext: ModelContext?,
+        record: ScenarioDecisionRecord,
+        citations: [ScenarioCitation] = ScenarioCitationCatalog.scenario1
+    ) {
         self.facts = facts
-        self.record = record
+        self.modelContext = modelContext
+        // Only capture a `PersistentIdentifier` when we actually have
+        // a context to round-trip through; otherwise `recordID` would
+        // be useless for resolution.
+        self.recordID = modelContext != nil ? record.persistentModelID : nil
+        self.detachedRecord = record
         self.citations = citations
+    }
+
+    // MARK: - Record resolution
+
+    /// The persisted record. When backed by a `ModelContext`, this
+    /// re-resolves on every access — surviving the SwiftData
+    /// "destroyed by ModelContext.reset" trap that fires when an
+    /// unrelated save invalidates a held reference. When detached
+    /// (previews / tests), returns the held instance directly.
+    var record: ScenarioDecisionRecord {
+        guard let modelContext, let recordID else {
+            return detachedRecord
+        }
+        let registered: ScenarioDecisionRecord? = modelContext
+            .registeredModel(for: recordID)
+        if let registered { return registered }
+        // Not registered — the context was reset or the row was
+        // pruned. Re-fetch by stable scenario ID, which re-registers
+        // a fresh, valid instance.
+        return Self.fetchOrCreateScenario1Record(in: modelContext)
     }
 
     // MARK: - Derived

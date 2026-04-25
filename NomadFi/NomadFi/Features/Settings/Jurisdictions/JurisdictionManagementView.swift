@@ -222,29 +222,37 @@ private struct ActiveJurisdictionRow: View {
 
             Spacer(minLength: 0)
 
-            Menu {
-                if !profile.isHome {
-                    Button {
-                        onSetHome()
-                    } label: {
-                        Label("Set as Home", systemImage: "house")
+            // HIG: don't show controls that do nothing. The home
+            // jurisdiction can't be re-homed-to-itself, and the only
+            // remaining row can't be removed — so there is nothing to
+            // offer in the menu. The "Home" badge above already
+            // communicates the status, so we hide the affordance
+            // entirely instead of rendering an empty, disabled menu
+            // that feels broken when tapped.
+            if hasMenuActions {
+                Menu {
+                    if !profile.isHome {
+                        Button {
+                            onSetHome()
+                        } label: {
+                            Label("Set as Home", systemImage: "house")
+                        }
                     }
-                }
 
-                if canRemove {
-                    Button(role: .destructive) {
-                        onRemove()
-                    } label: {
-                        Label("Remove", systemImage: "trash")
+                    if canRemove {
+                        Button(role: .destructive) {
+                            onRemove()
+                        } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
                     }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.title3)
+                        .foregroundStyle(ColorTokens.brandPrimary)
+                        .accessibilityLabel("Actions for \(profile.countryName)")
                 }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.title3)
-                    .foregroundStyle(ColorTokens.brandPrimary)
-                    .accessibilityLabel("Actions for \(profile.countryName)")
             }
-            .disabled(profile.isHome && !canRemove)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
@@ -257,6 +265,14 @@ private struct ActiveJurisdictionRow: View {
             parts.append("currency \(currency.rawValue)")
         }
         return parts.joined(separator: ", ")
+    }
+
+    /// True when the row has at least one actionable menu entry to
+    /// show. Drives whether the trailing menu button is rendered at
+    /// all — we hide it entirely rather than render an empty menu so
+    /// the user never taps a control that produces no feedback.
+    fileprivate var hasMenuActions: Bool {
+        !profile.isHome || canRemove
     }
 }
 

@@ -5,6 +5,19 @@
 // (amount text -> `Double?`) and engine re-runs out of the view so
 // both the disabled states and the decision payload are
 // unit-testable.
+//
+// Crash-safety note (incident learning):
+//   The view model used to hold a strong `let record` reference to
+//   a SwiftData `@Model` instance. Under iOS 26, an unrelated save
+//   on the same context can destroy that instance, and any
+//   subsequent property access traps with `"This model instance was
+//   destroyed by calling ModelContext.reset and is no longer
+//   usable."`. The fix mirrors the one in
+//   `ScenarioDecisionBriefViewModel`: store the
+//   `PersistentIdentifier` + a context, then re-resolve via
+//   `ModelContext.registeredModel(for:)` on every access, falling
+//   back to a stable-ID re-fetch when the row is no longer
+//   registered.
 
 import Foundation
 import Observation
@@ -13,18 +26,42 @@ import SwiftData
 
 /// Observable view model behind ``PurchaseDecisionBriefView``.
 ///
-/// Owns a live reference to the persisted ``PurchaseDecisionRecord``
-/// and mirrors its fields as form state. Mutations flow through the
-/// view model so trimming and amount parsing happen in one place.
+/// Re-resolves the persisted ``PurchaseDecisionRecord`` from the
+/// model context on every access so a SwiftData context reset can
+/// never leave the view holding a destroyed reference.
 @MainActor
 @Observable
 final class PurchaseDecisionBriefViewModel {
 
     // MARK: - Persistence
 
-    /// The record the user is editing. Mutations here persist
-    /// through SwiftData's autosave on the shared `ModelContext`.
-    let record: PurchaseDecisionRecord
+    /// SwiftData context used to re-resolve `record` on every
+    /// access. `nil` for previews and pure-value tests.
+    private let modelContext: ModelContext?
+
+    /// Stable identifier captured at init time when a `modelContext`
+    /// was supplied. Used to round-trip back to a valid record after
+    /// a context reset.
+    private let recordID: PersistentIdentifier?
+
+    /// Fallback record used when no `modelContext` was supplied.
+    private let detachedRecord: PurchaseDecisionRecord
+
+    /// The record the user is editing. Re-resolves on every access
+    /// when backed by a `ModelContext`. Mutations on the returned
+    /// instance persist through SwiftData's autosave on the shared
+    /// context.
+    var record: PurchaseDecisionRecord {
+        guard let modelContext, let recordID else {
+            return detachedRecord
+        }
+        let registered: PurchaseDecisionRecord? = modelContext
+            .registeredModel(for: recordID)
+        if let registered { return registered }
+        return PurchaseDecisionRecord.fetchOrCreateActiveRecord(
+            in: modelContext
+        )
+    }
 
     // MARK: - Form state
 
@@ -41,8 +78,18 @@ final class PurchaseDecisionBriefViewModel {
 
     // MARK: - Init
 
-    init(record: PurchaseDecisionRecord) {
-        self.record = record
+    /// Detached initializer for previews + pure-value tests.
+    convenience init(record: PurchaseDecisionRecord) {
+        self.init(modelContext: nil, record: record)
+    }
+
+    /// Production initializer. Captures the `ModelContext` so the
+    /// view model can survive a context reset by re-resolving the
+    /// record from a stable `PersistentIdentifier`.
+    init(modelContext: ModelContext?, record: PurchaseDecisionRecord) {
+        self.modelContext = modelContext
+        self.recordID = modelContext != nil ? record.persistentModelID : nil
+        self.detachedRecord = record
         self.amountText = Self.amountEditingText(for: record.amount)
     }
 

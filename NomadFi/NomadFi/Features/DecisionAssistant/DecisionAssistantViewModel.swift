@@ -112,20 +112,30 @@ final class DecisionAssistantViewModel {
     /// Fetches or creates the deterministic engine records and
     /// wraps them in brief view-models. Safe to call more than once
     /// — each brief bootstraps once and stays stable across view
-    /// rebuilds.
+    /// rebuilds. The `modelContext` is captured by the brief view
+    /// models so they can re-resolve their records on every access,
+    /// surviving a SwiftData context reset that would otherwise
+    /// destroy a held strong reference (see the crash-safety note
+    /// in `ScenarioDecisionBriefViewModel`).
     func bootstrap(modelContext: ModelContext) {
         if scenario1BriefViewModel == nil {
             let record = ScenarioDecisionBriefViewModel.fetchOrCreateScenario1Record(
                 in: modelContext
             )
-            scenario1BriefViewModel = ScenarioDecisionBriefViewModel(record: record)
+            scenario1BriefViewModel = ScenarioDecisionBriefViewModel(
+                modelContext: modelContext,
+                record: record
+            )
         }
 
         if purchaseDecisionBriefViewModel == nil {
             let record = PurchaseDecisionRecord.fetchOrCreateActiveRecord(
                 in: modelContext
             )
-            purchaseDecisionBriefViewModel = PurchaseDecisionBriefViewModel(record: record)
+            purchaseDecisionBriefViewModel = PurchaseDecisionBriefViewModel(
+                modelContext: modelContext,
+                record: record
+            )
         }
     }
 

@@ -185,34 +185,35 @@ struct JurisdictionManager {
     /// Ensures exactly one home profile exists when any profile does.
     /// If rows pre-dating this manager lost their home flag (multiple
     /// homes, or zero homes with profiles present), re-home to the
-    /// earliest-created profile deterministically so ordering is
-    /// reproducible across CloudKit replicas.
+    /// deterministic winner picked by `JurisdictionHomeRepairPlan`
+    /// so ordering is reproducible across CloudKit replicas.
+    ///
+    /// Non-SwiftUI callers use this method; SwiftUI views drive the
+    /// same planner over their own `@Query` results to avoid the
+    /// synchronous-fetch trap on iOS 26.
     @discardableResult
     func repairHomeJurisdictionIfNeeded() throws -> JurisdictionProfile? {
         let profiles = try activeProfiles()
-        guard !profiles.isEmpty else { return nil }
+        let outcome = JurisdictionHomeRepairPlan.plan(for: profiles)
 
-        let homes = profiles.filter(\.isHome)
-        if homes.count == 1 { return homes.first }
-
-        // Deterministic winner: the earliest `createdAt`, breaking ties
-        // by `countryCode`. `displayOrder` is not used here because it
-        // is itself repaired below.
-        let winner = profiles.min {
-            if $0.createdAt == $1.createdAt {
-                return $0.countryCode < $1.countryCode
+        switch outcome {
+        case .alreadyConsistent:
+            return profiles.first(where: \.isHome)
+        case let .repair(winnerCountryCode):
+            var winner: JurisdictionProfile?
+            for candidate in profiles {
+                let shouldBeHome = candidate.countryCode == winnerCountryCode
+                if candidate.isHome != shouldBeHome {
+                    candidate.isHome = shouldBeHome
+                }
+                if shouldBeHome { winner = candidate }
             }
-            return $0.createdAt < $1.createdAt
+            try modelContext.save()
+            if let winner {
+                Self.logger.info("Repaired missing home to \(winner.countryCode, privacy: .public)")
+            }
+            return winner
         }
-
-        for candidate in profiles {
-            candidate.isHome = (candidate.persistentModelID == winner?.persistentModelID)
-        }
-        try modelContext.save()
-        if let winner {
-            Self.logger.info("Repaired missing home to \(winner.countryCode, privacy: .public)")
-        }
-        return winner
     }
 
     /// Re-packs `displayOrder` so it stays contiguous starting at zero
