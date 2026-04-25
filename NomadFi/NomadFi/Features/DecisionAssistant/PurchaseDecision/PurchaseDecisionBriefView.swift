@@ -88,7 +88,7 @@ struct PurchaseDecisionBriefView: View {
                             set: { viewModel.record.merchantName = $0 }
                         )
                     )
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.nomadFi)
                     .focused($focusedField, equals: .merchant)
                     .textInputAutocapitalization(.words)
                     .submitLabel(.next)
@@ -118,7 +118,7 @@ struct PurchaseDecisionBriefView: View {
                                 set: { viewModel.amountText = $0 }
                             )
                         )
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.nomadFi)
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .amount)
                         .accessibilityLabel("Amount")
@@ -149,7 +149,7 @@ struct PurchaseDecisionBriefView: View {
                             set: { viewModel.record.countryCode = $0 }
                         )
                     )
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.nomadFi)
                     .focused($focusedField, equals: .country)
                     .textInputAutocapitalization(.words)
                     .submitLabel(.next)
@@ -163,7 +163,7 @@ struct PurchaseDecisionBriefView: View {
                             set: { viewModel.record.timingText = $0 }
                         )
                     )
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.nomadFi)
                     .focused($focusedField, equals: .timing)
                     .submitLabel(.done)
                     .accessibilityLabel("Timing note")

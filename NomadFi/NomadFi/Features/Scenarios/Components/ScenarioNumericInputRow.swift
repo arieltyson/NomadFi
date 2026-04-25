@@ -51,7 +51,7 @@ struct ScenarioNumericInputRow<Field: Hashable>: View {
                 )
                 .multilineTextAlignment(.trailing)
                 .keyboardType(.decimalPad)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.nomadFi)
                 .frame(maxWidth: 140)
                 .monospacedDigit()
                 .focused($focusedField, equals: field)
