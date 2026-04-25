@@ -15,15 +15,14 @@
 //   - **Archive / Restore** are reversible, so they run inline
 //     without a confirmation (HIG alert guidance: don't interrupt
 //     for reversible actions).
-//   - **Delete** is irreversible. It uses an `.alert` (not a
-//     confirmation dialog) so the prompt presents as a centered
-//     modal on every size class — including the anchored-popover
-//     behaviour `.confirmationDialog` produces on iPad — and per
-//     Apple HIG: alerts are the right control for destructive
-//     operations that risk irretrievable data loss. The Delete
-//     button carries the explicit destructive role; once
-//     confirmed, the parent removes the record and the sheet
-//     dismisses cleanly.
+//   - **Delete** is irreversible. It routes through the
+//     `destructiveDataLossAlert` design-system primitive (centered
+//     modal alert + always-present cancel + destructive role on
+//     the confirm button) instead of `.confirmationDialog`'s
+//     anchored-popover behaviour on iPad. Per Apple HIG: alerts
+//     are the right control for destructive operations that risk
+//     irretrievable data loss. Once confirmed, the parent removes
+//     the record and the sheet dismisses cleanly.
 
 import SwiftData
 import SwiftUI
@@ -117,16 +116,13 @@ struct DecisionDraftDetailView: View {
             .navigationTitle("Captured draft")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .alert(
+            .destructiveDataLossAlert(
                 "Delete this draft from this device?",
-                isPresented: $isDeleteConfirmationPresented
+                isPresented: $isDeleteConfirmationPresented,
+                confirmationLabel: "Delete draft",
+                message: "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone."
             ) {
-                Button("Delete draft", role: .destructive) {
-                    onRequestDelete(draft)
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone.")
+                onRequestDelete(draft)
             }
         }
     }

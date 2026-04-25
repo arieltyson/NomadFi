@@ -6,6 +6,15 @@
 // Grouping these into one page keeps the two kinds of protection
 // (prevent access vs. erase data) in a single place the user can
 // reason about at once.
+//
+// The wipe-all-data flow is the most catastrophic action in the
+// app — every account, transaction, receipt, subscription, budget,
+// captured draft, and education-progress record is removed. It
+// routes through the `destructiveDataLossAlert` design-system
+// primitive (centered modal alert) rather than
+// `.confirmationDialog` (anchored sheet/popover), per Apple HIG:
+// alerts are the right control for destructive operations that
+// risk irretrievable data loss.
 
 import LocalAuthentication
 import SwiftData
@@ -27,19 +36,16 @@ struct PrivacySecuritySettingsView: View {
         }
         .navigationTitle("Privacy & Security")
         .glassToolbar()
-        .confirmationDialog(
+        .destructiveDataLossAlert(
             "Delete All Data",
             isPresented: $isShowingDeleteConfirmation,
-            titleVisibility: .visible
+            confirmationLabel: "Delete Everything",
+            message: "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone."
         ) {
-            Button("Delete Everything", role: .destructive) {
-                DataGovernancePolicy.deleteAllUserData(
-                    in: modelContext,
-                    notificationManager: notificationManager
-                )
-            }
-        } message: {
-            Text("This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone.")
+            DataGovernancePolicy.deleteAllUserData(
+                in: modelContext,
+                notificationManager: notificationManager
+            )
         }
         .sheet(isPresented: $isShowingPrivacyPolicy) {
             PrivacyPolicySheet()
