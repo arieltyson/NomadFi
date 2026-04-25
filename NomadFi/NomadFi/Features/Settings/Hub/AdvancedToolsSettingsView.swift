@@ -87,6 +87,24 @@ struct AdvancedToolsSettingsView: View {
                     }
                 }
                 .accessibilityHint("Opens the receipts and tax document archive.")
+
+                NavigationLink {
+                    InvestingLearnView()
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                            Text("Investing Learn")
+                                .font(TypographyTokens.body)
+                            Text("Source-backed investing literacy starter for your jurisdictions.")
+                                .font(TypographyTokens.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "books.vertical")
+                            .foregroundStyle(ColorTokens.brandPrimary)
+                    }
+                }
+                .accessibilityHint("Opens short, source-backed investing lessons. Education only — not investment advice.")
             } footer: {
                 Text("Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking.")
             }

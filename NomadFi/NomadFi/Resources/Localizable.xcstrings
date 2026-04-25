@@ -320,6 +320,8 @@
     "Add a credit-card account above to track statement close and payment due dates here." : {
 
     },
+    "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed investing lessons for supported regions." : {
+    },
     "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed lessons for supported regions." : {
 
     },
@@ -521,6 +523,7 @@
 
     },
     "Broker URL not set. Save one first, then run health check." : {
+
     },
     "Broker URL saved." : {
 
@@ -685,6 +688,7 @@
 
     },
     "Contacting Plaid sandbox broker…" : {
+
     },
     "Context" : {
 
@@ -952,6 +956,8 @@
     "Education only. Not a substitute for a qualified professional. NomadFi does not file on your behalf." : {
 
     },
+    "Education only. Not investment advice. Not a substitute for a registered investment professional. NomadFi does not recommend specific funds or accounts." : {
+    },
     "Enable Notifications" : {
 
     },
@@ -1050,6 +1056,7 @@
 
     },
     "Finishing the link" : {
+
     },
     "Fix Mis-Entered Data" : {
 
@@ -1174,6 +1181,8 @@
     },
     "Investing & learning" : {
 
+    },
+    "Investing Learn" : {
     },
     "Jurisdiction" : {
 
@@ -1648,6 +1657,8 @@
     "Opens Plaid Link against the locally-configured sandbox broker." : {
 
     },
+    "Opens short, source-backed investing lessons. Education only — not investment advice." : {
+    },
     "Opens the account editor to correct balances, limits, and other details." : {
 
     },
@@ -1997,6 +2008,8 @@
     "Reviewed" : {
 
     },
+    "Reviewed means you read the education content. It does not mean a portfolio decision is made and it is not a recommendation to buy or sell." : {
+    },
     "Reviewed means you read the education content. It does not mean a tax return is done and it does not make the underlying expense deductible." : {
 
     },
@@ -2022,6 +2035,7 @@
 
     },
     "Sandbox bank linked" : {
+
     },
     "Save" : {
 
@@ -2061,6 +2075,8 @@
     },
     "Saves this lesson as reviewed. NomadFi does not file on your behalf — this is a review flag only." : {
 
+    },
+    "Saves this lesson as reviewed. NomadFi does not recommend specific funds or accounts — this is a review flag only." : {
     },
     "Saves this receipt to Tax Vault with the current details." : {
 
@@ -2204,6 +2220,8 @@
     "Source URL" : {
 
     },
+    "Source-backed investing literacy starter for your jurisdictions." : {
+    },
     "Sources" : {
 
     },
@@ -2326,6 +2344,7 @@
 
     },
     "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
+
     },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 

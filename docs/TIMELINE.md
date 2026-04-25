@@ -1413,41 +1413,106 @@ requires more source coverage, disclaimers, and potentially professional review.
 
 ## Phase 8 — Investment Education and Index Fund Tracking
 
-**Status:** `[ ]` Planned.
+Phase 8 is split so the literacy starter can ship today without
+waiting on the externally-blocked data-source work that fund
+tracking and watchlists depend on.
 
-**Goal:** Help users learn and track long-term investing without becoming an
-unregistered investment advisor.
+### Phase 8A — Investing Education Starter
 
-### Build
+**Status:** `[x]` Shipped (2026-04-23).
 
-- Index-fund education:
-  - what an index fund is
-  - S&P 500 basics
-  - diversification
-  - expense ratios
-  - currency exposure
-  - account type fit
-  - risk and time horizon
-- Watchlist and tracker for user-selected funds.
-- Fee and allocation comparison.
-- Official-source linking:
-  - fund prospectus
-  - issuer page
-  - regulator/investor-protection sources
-- Clear distinction between education and recommendation.
+**Goal:** Give users a calm, source-backed first investing-learning
+surface while Plaid Limited Production access and Apple's
+FinanceKit response are externally pending. No fund picks, no
+predictions, no suitability framing.
 
-### Do Not Build Initially
+#### What shipped
 
-- "Tell me exactly which fund to buy." (`[!]` Deferred by product rule.)
+- Sibling `InvestingEducation` module under
+  `Core/Services/InvestingEducation/` — kept as a parallel stack
+  to `TaxEducation` so the mature tax progression stays untouched
+  while investing evolves on its own cadence.
+- Source-backed lessons for two regions:
+  - **United States:** index funds, ETFs vs. mutual funds, asset
+    allocation / diversification / time horizon, fund fees, IRA
+    basics. Cites Investor.gov / SEC and IRS.
+  - **Canada:** investing fees and costs, investor rights, CIPF
+    coverage, TFSA basics, RRSP basics. Cites CIRO, CIPF, and
+    CRA.
+- Per-region procedural checklist with explicit tap-to-toggle
+  rows; no streaks, no scoreboards.
+- Deterministic per-region "Next to review" pointer, ordered
+  checklist-first then lessons.
+- Lesson detail sheet mirroring the Tax Vault pattern: hero,
+  what-it-is, why-it-matters, what-to-review-next, official
+  sources (external regulator links), an optional "Ask a
+  professional" escalation note for cross-border subjects, and
+  an explicit "Mark reviewed / Mark not reviewed yet" toggle.
+- CloudKit-safe `InvestingEducationProgressRecord` SwiftData
+  model registered in the production schema and the test
+  container factory.
+- New destination at **Settings → Advanced Tools → Investing
+  Learn**, sibling to Tax Vault. Standing footer disclaimer:
+  "Education only. Not investment advice. Not a substitute for a
+  registered investment professional. NomadFi does not recommend
+  specific funds or accounts."
+- Source-map artifact at
+  `docs/research/InvestingEducationSourceMap.md` — records the
+  exact URLs cited, the rationale for the regions that ship, the
+  Trinidad-and-Tobago deferral rationale, and the editing rules
+  the catalogue tests pin.
+
+#### What was deliberately excluded from 8A
+
+- Trinidad and Tobago lessons. TTSEC publishes investor-education
+  material but the per-account-type retirement layer in TT does
+  not have the single canonical regulator landing page that the
+  IRS IRA page or the CRA TFSA / RRSP pages provide. Shipping a
+  TT retirement-account lesson today would either require
+  synthesizing across non-canonical sources or staying so generic
+  that the lesson teaches less than just linking the regulator's
+  homepage. Deferred until that bar can be met. See
+  `docs/research/InvestingEducationSourceMap.md`.
+- Quizzes, recognition badges, streaks. Not part of the 8A bar.
+- Predicted returns, example portfolios, "if you had invested"
+  charts, suitability framing.
+- Any path that recommends a specific fund, ETF, or account.
+
+### Phase 8B — Fund Tracking and Watchlist
+
+**Status:** `[!]` Deferred. Externally blocked on the same data
+sources Phase 5 is waiting for (Plaid Limited Production access
+and Apple's FinanceKit response). When 5 unblocks, 8B can plan.
+
+#### Build (when unblocked)
+
+- Watchlist and tracker for user-selected funds with
+  user-confirmed inputs (no scraping).
+- Fee and allocation comparison built on top of confirmed
+  account data.
+- Cross-region cost framing using the regulator definitions 8A
+  already taught.
+- Continued primary-source linking — fund prospectus, issuer
+  page, regulator pages — never blogs or marketing pages.
+- Continued explicit separation between education and
+  recommendation.
+
+#### Do Not Build
+
+- "Tell me exactly which fund to buy." (`[!]` Deferred by product
+  rule.)
 - Automated portfolio advice. (`[!]` Deferred by product rule.)
 - Suitability recommendations. (`[!]` Deferred by product rule.)
 - Guaranteed-return framing. (`[!]` Deferred by product rule.)
 
 ### Tradeoff
 
-Investment education supports financial leverage and social impact, but direct
-investment recommendations can create regulatory risk. Start with literacy,
-tracking, and transparent comparisons.
+Investment education supports financial leverage and social
+impact; direct investment recommendations create regulatory risk.
+Splitting 8 into 8A (literacy, shipped) and 8B (tracking,
+externally blocked) lets users get value from the literacy layer
+right now without inventing data the upstream stack is not yet
+allowed to provide.
 
 ---
 
@@ -1646,7 +1711,12 @@ re-debating whether the foundation exists.
     redirect URI. Akoya comparison paused until that real flow
     runs.
     5F stays parked on real production use + live upstream.
-16. `[ ]` Investing education and index-fund tracking (Phase 8).
+16. `[x]` Investing education starter (Phase 8A) — Settings →
+    Advanced Tools → Investing Learn. Source-backed lessons for
+    US (Investor.gov / SEC + IRS) and Canada (CIRO + CIPF + CRA).
+    `[!]` Index-fund tracking and watchlists (Phase 8B) deferred —
+    blocked on the same upstream data sources Phase 5 is waiting
+    for.
 17. `[!]` Apple Pay — only if NomadFi starts accepting payments.
 18. `[!]` Wallet passes — only if NomadFi ships a pass with concrete user
     value.
@@ -1727,9 +1797,14 @@ Highest-leverage remaining work, in order:
   otherwise it stays paused.
 - **Phase 5F — production hardening for provider scale.** Parked
   until at least one real upstream is live in production.
-- **Phase 8 investing education + index-fund tracking** — the next
-  net-new Learn surface once the financial-data layer has a live
-  upstream.
+- **Phase 8A investing education starter — shipped** (2026-04-23).
+  Sibling `InvestingEducation` module under
+  `Core/Services/InvestingEducation/`, surface at Settings →
+  Advanced Tools → Investing Learn, source-map at
+  [`InvestingEducationSourceMap.md`](./research/InvestingEducationSourceMap.md).
+- **Phase 8B fund tracking + watchlist** — deferred. Externally
+  blocked on the same upstreams Phase 5 is waiting for. When 5
+  unblocks, 8B becomes plannable.
 - **Deeper investment-account lessons** (IRA / TFSA / RRSP) and
   **receipt / document organisation prompts** remain open as Tax
   Vault follow-ups, explicitly lower priority than the provider
