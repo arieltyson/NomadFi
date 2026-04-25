@@ -24,10 +24,14 @@
 //   • Materials and translucency — uses `.thinMaterial` so the
 //     field reads as a slightly elevated surface within a
 //     translucent card, matching the `GlassCard` aesthetic.
+//   • Brand identity — the outline uses `ColorTokens.actionTint`
+//     (the app's accent green) at a calm resting opacity so every
+//     NomadFi-owned text field reads as branded chrome rather
+//     than a generic system control.
 //   • Inclusivity — falls back to `ColorTokens.surfaceTertiary`
-//     when Reduce Transparency is on; reuses the same border
-//     helper that the rest of the app uses for selectable rows
-//     so the contrast ladder stays consistent across surfaces.
+//     when Reduce Transparency is on; lifts the outline to full
+//     opacity under increased-contrast so the brand stroke stays
+//     readable for users who turned that setting on.
 //   • Layout / Dynamic Type — only the *container chrome* is
 //     opinionated; the inner `TextField` is unchanged, so the
 //     text scales with Dynamic Type exactly as the system intends.
@@ -58,6 +62,12 @@ struct NomadFiTextFieldStyle: TextFieldStyle {
     /// pass can lift this single constant rather than chasing
     /// magic numbers across the codebase.
     private static let strokeWidth: CGFloat = 1
+
+    /// Resting opacity for the brand-tinted outline. Slightly
+    /// muted so the field reads as branded without being shouty
+    /// against a quiet card surface; lifts to fully opaque under
+    /// `colorSchemeContrast == .increased` for inclusivity.
+    private static let restingStrokeOpacity: Double = 0.55
 
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
@@ -92,15 +102,17 @@ struct NomadFiTextFieldStyle: TextFieldStyle {
         }
     }
 
-    /// Border colour — reuses the existing
-    /// `ColorTokens.selectableRowBorder` helper so increased-
-    /// contrast support comes "for free" and the field's hairline
-    /// matches the rest of the selectable surfaces in the app.
+    /// Border colour — uses the app's accent green
+    /// (`ColorTokens.actionTint`) so every NomadFi-owned text
+    /// field carries the brand identity at rest. Lifts to fully
+    /// opaque under increased-contrast for inclusivity; otherwise
+    /// muted slightly so the outline reads as branded chrome
+    /// rather than a focus ring.
     private var strokeColor: Color {
-        ColorTokens.selectableRowBorder(
-            isSelected: false,
-            contrast: colorSchemeContrast
-        )
+        let opacity = colorSchemeContrast == .increased
+            ? 1.0
+            : Self.restingStrokeOpacity
+        return ColorTokens.actionTint.opacity(opacity)
     }
 }
 

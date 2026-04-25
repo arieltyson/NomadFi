@@ -64,8 +64,9 @@ struct AddSubscriptionView: View {
                             : "Saves this subscription to your list."
                     )
                 }
+
+                KeyboardDismissToolbarItem { focusedField = nil }
             }
-            .keyboardDismissToolbar { focusedField = nil }
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }

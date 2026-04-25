@@ -36,7 +36,9 @@ struct TaxDocumentDetailView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Receipt Details")
         .navigationBarTitleDisplayMode(.inline)
-        .keyboardDismissToolbar { isMerchantFocused = false }
+        .toolbar {
+            KeyboardDismissToolbarItem { isMerchantFocused = false }
+        }
     }
 }
 

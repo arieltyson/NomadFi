@@ -63,8 +63,9 @@ struct ReceiptConfirmationView: View {
                     .disabled(viewModel.draftMerchantName.isEmpty)
                     .accessibilityHint("Saves this receipt to Tax Vault with the current details.")
                 }
+
+                KeyboardDismissToolbarItem { focusedField = nil }
             }
-            .keyboardDismissToolbar { focusedField = nil }
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }

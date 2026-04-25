@@ -14,24 +14,28 @@
 //   explicit, visible dismissal affordance — no UIKit hacks, no
 //   background tap gestures.
 //
-// Two shapes are exported:
-// • `KeyboardDismissToolbarItem` — a `ToolbarContent` value intended
-//   to be composed inside an existing `.toolbar { }` block alongside
-//   navigation items (Cancel/Save/Close). This is the canonical,
-//   most-reliable placement: SwiftUI registers every toolbar item in
-//   one pass, avoiding the keyboard-accessory registration race that
-//   happens when two separate `.toolbar` modifiers are stacked.
-// • `.keyboardDismissToolbar { }` — view modifier for screens whose
-//   view hierarchy has no navigation toolbar to merge with. It just
-//   wraps `KeyboardDismissToolbarItem` in its own `.toolbar` block so
-//   the two call styles stay behaviourally identical.
+// Single-shape contract (incident learning):
+//   The previous version of this file also exported a
+//   `.keyboardDismissToolbar { }` view modifier that internally
+//   wrapped the toolbar item in its own `.toolbar { }` block. When a
+//   screen called `.toolbar { ... }` for navigation items AND
+//   `.keyboardDismissToolbar { }` afterwards, the two `.toolbar`
+//   modifiers raced at registration time and the keyboard
+//   `ToolbarItemGroup` would silently fail to attach to the
+//   keyboard accessory — leaving the user stuck on a `.decimalPad`
+//   keyboard with no Done button. The modifier has been retired so
+//   only the `ToolbarContent` shape remains; every call site
+//   composes it inside its single `.toolbar { }` block alongside
+//   any navigation items, which is the placement Apple's keyboard
+//   `ToolbarItemPlacement` documentation explicitly recommends.
 
 import SwiftUI
 
 /// A trailing `Done` keyboard-accessory button as composable
-/// `ToolbarContent`. Use this inside a single `.toolbar { }` block
-/// alongside navigation toolbar items — one `.toolbar` call keeps the
-/// keyboard accessory from racing with navigation item registration.
+/// `ToolbarContent`. Compose this inside the screen's single
+/// `.toolbar { }` block alongside navigation toolbar items — one
+/// `.toolbar` call keeps the keyboard accessory from racing with
+/// navigation item registration.
 ///
 /// ```swift
 /// @FocusState private var focusedField: Field?
@@ -58,37 +62,5 @@ struct KeyboardDismissToolbarItem: ToolbarContent {
                 .bold()
                 .accessibilityHint("Dismisses the keyboard.")
         }
-    }
-}
-
-/// View-modifier shorthand for screens without any other toolbar
-/// content. Prefer embedding ``KeyboardDismissToolbarItem`` inside
-/// your existing `.toolbar { }` block when the screen has navigation
-/// items — stacking two `.toolbar` modifiers can leave the keyboard
-/// group unregistered until the next layout pass.
-private struct KeyboardDismissToolbarModifier: ViewModifier {
-
-    let action: () -> Void
-
-    func body(content: Content) -> some View {
-        content.toolbar {
-            KeyboardDismissToolbarItem(action: action)
-        }
-    }
-}
-
-extension View {
-
-    /// Adds a system keyboard toolbar whose trailing Done button runs
-    /// `action`. Use on screens that have no other `.toolbar { }`
-    /// block; otherwise compose ``KeyboardDismissToolbarItem`` inside
-    /// your existing toolbar for more reliable registration.
-    ///
-    /// - Parameter action: Runs when Done is tapped. Clear the active
-    ///   focus here (for example `{ focusedField = nil }`).
-    func keyboardDismissToolbar(
-        _ action: @escaping () -> Void
-    ) -> some View {
-        modifier(KeyboardDismissToolbarModifier(action: action))
     }
 }
