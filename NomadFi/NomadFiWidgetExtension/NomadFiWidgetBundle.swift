@@ -6,5 +6,6 @@ struct NomadFiWidgetBundle: WidgetBundle {
     var body: some Widget {
         NomadFiDashboardWidget()
         NomadFiLockScreenWidget()
+        AIIntakeControlWidget()
     }
 }

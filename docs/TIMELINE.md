@@ -2099,6 +2099,43 @@ Highest-leverage remaining work, in order:
   one primary vertical scroll only, accessibility headers per
   section, no colour-only differentiation. _Evidence:
   `DecisionAssistantIATests.swift`._
+- **Phase 9A control-surface follow-through — Control Widget /
+  Lock Screen / Action button entry for AI intake — shipped**
+  (2026-04-25). Extends the on-device Apple Intelligence intake
+  flow into Apple's controls surface so the user can launch a
+  blank intake one tap away from Control Center, the Lock
+  Screen, or the Action button. New parameterless
+  `StartAIIntakeIntent` (`.foreground(.immediate)`) sits next
+  to the existing parameterized `OpenAIIntakeIntent` (preserved
+  for Siri / Shortcuts that supply dictated text); the new
+  intent is parameterless specifically because a
+  `ControlWidgetButton` cannot surface a parameter sheet
+  without breaking "one tap into the intake flow". New
+  `AIIntakeControlWidget` (`StaticControlConfiguration` +
+  `ControlWidgetButton`) registered in `NomadFiWidgetBundle`
+  alongside the existing dashboard / lock-screen widgets, with
+  the `apple.intelligence` SF Symbol matching the in-app
+  capture hero so the affordance reads as the same control
+  across surfaces. `PendingAIIntakeRequest.scenarioText`
+  evolved from `String` to `String?` so the same one-shot
+  routing slot represents both seeded launches (Siri /
+  Shortcut) and blank launches (control); the consumer in
+  `DecisionAssistantView` resolves `nil` to the empty seed,
+  presenting the AI intake sheet ready for typing. `perform()`
+  in both intent copies (main app + widget mirror, duplicated
+  because Xcode 16's synchronized folders own each file by
+  exactly one default target) writes only the routing slot and
+  the blank-launch payload — no interpretation, no
+  recommendation, no save. Three drift guards pin the dual
+  source: the widget mirror declares the same identifier, the
+  same `.foreground(.immediate)` mode, and the same hardcoded
+  routing keys + blank-launch JSON literal as the main-app
+  copy. README normalised: removed four stale ActivityKit /
+  Live Activity claims (no ActivityKit anywhere in the repo)
+  and replaced them with WidgetKit Control Widget claims that
+  reflect what's actually shipped. _Evidence:
+  `StartAIIntakeIntentTests.swift`,
+  `PendingAIIntakeRequestTests.swift` (blank-launch coverage)._
 - **Phase 9A system-surface follow-through — Siri / App Intent
   hand-off into AI intake — shipped** (2026-04-25). Connects
   the bounded on-device AI intake flow to the App Intents

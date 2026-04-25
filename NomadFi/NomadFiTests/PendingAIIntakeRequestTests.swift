@@ -74,6 +74,63 @@ struct PendingAIIntakeRequestTests {
         #expect(decoded.scenarioText == scenario)
     }
 
+    // MARK: - Blank-launch payload (Control Widget path)
+
+    @Test("blankLaunch is a sentinel payload with nil scenarioText — represents a one-tap control launch with no dictation to seed")
+    func blankLaunchHasNilScenario() {
+        #expect(PendingAIIntakeRequest.blankLaunch.scenarioText == nil)
+    }
+
+    @Test("Blank-launch payload round-trips through rawValue / init?(rawValue:) without losing its nil scenarioText")
+    func blankLaunchRoundTripsViaRawValue() throws {
+        let original = PendingAIIntakeRequest.blankLaunch
+        let raw = original.rawValue
+        #expect(!raw.isEmpty)
+
+        let decoded = try #require(PendingAIIntakeRequest(rawValue: raw))
+        #expect(decoded == original)
+        #expect(decoded.scenarioText == nil)
+    }
+
+    @Test("Widget extension's hardcoded blank-launch JSON literal matches the value type's encoded shape — pinned because the widget mirror cannot import the main-app value type")
+    func widgetCopyMatchesBlankLaunchEncoding() {
+        // The widget extension's `StartAIIntakeIntent` writes this
+        // literal string to UserDefaults because it cannot reach
+        // the main-app `PendingAIIntakeRequest` value type at
+        // compile time. The two must always encode to the same
+        // shape — otherwise the consumer's `init?(rawValue:)`
+        // would reject the widget-written payload.
+        let widgetLiteral = "{\"scenarioText\":null}"
+        #expect(PendingAIIntakeRequest.blankLaunch.rawValue == widgetLiteral)
+    }
+
+    // MARK: - Store: blank-launch
+
+    @Test("Store one-shot consume returns the blank-launch payload exactly once and clears the slot — control taps cannot re-trigger")
+    func consumeIsOneShotForBlankLaunch() {
+        let defaults = makeDefaults()
+        PendingAIIntakeRequestStore.write(.blankLaunch, to: defaults)
+
+        let first = PendingAIIntakeRequestStore.consume(from: defaults)
+        #expect(first == .blankLaunch)
+        #expect(first?.scenarioText == nil)
+
+        let second = PendingAIIntakeRequestStore.consume(from: defaults)
+        #expect(second == nil)
+    }
+
+    @Test("A blank-launch overwrites a prior seeded request — last writer wins regardless of payload shape")
+    func blankLaunchOverwritesSeededRequest() {
+        let defaults = makeDefaults()
+        PendingAIIntakeRequestStore.write(
+            PendingAIIntakeRequest(scenarioText: "Will be replaced."),
+            to: defaults
+        )
+        PendingAIIntakeRequestStore.write(.blankLaunch, to: defaults)
+        let readBack = PendingAIIntakeRequestStore.read(from: defaults)
+        #expect(readBack?.scenarioText == nil)
+    }
+
     // MARK: - Store: read / write / clear
 
     @Test("write then read returns the same request — basic store contract")

@@ -215,15 +215,23 @@ struct DecisionAssistantView: View {
     /// dismissal so a re-open without a fresh intent never silently
     /// re-seeds previously-typed text.
     ///
-    /// Honesty contract: the request only carries a scenario string.
-    /// Interpretation, the bounded clarifying loop, and persistence
-    /// all happen in-app with explicit user confirmation — same as
-    /// the in-app AI intake entry point.
+    /// Two launch shapes feed the same consumer:
+    ///   • Siri / Shortcut (`OpenAIIntakeIntent`) supplies a
+    ///     dictated scenario — `request.scenarioText` is non-nil.
+    ///   • Control Widget / Lock Screen / Action button
+    ///     (`StartAIIntakeIntent`) supplies a blank-launch payload
+    ///     — `request.scenarioText` is nil; the sheet opens with
+    ///     an empty scenario field ready for typing.
+    ///
+    /// Honesty contract: the request only carries an optional
+    /// scenario string. Interpretation, the bounded clarifying
+    /// loop, and persistence all happen in-app with explicit user
+    /// confirmation — same as the in-app AI intake entry point.
     private func consumePendingAIIntakeIfAvailable() {
         guard let request = PendingAIIntakeRequestStore.consume() else {
             return
         }
-        aiIntakeSeedText = request.scenarioText
+        aiIntakeSeedText = request.scenarioText ?? ""
         viewModel.presentAIIntake()
     }
 

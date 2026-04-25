@@ -12,7 +12,7 @@
 
 "NomadFi" is an iOS app built with SwiftUI that acts as a **Personal CFO for international students** managing money across multiple countries. Instead of juggling separate banking apps across jurisdictions, NomadFi unifies fragmented finances into a single dashboard that surfaces hidden costs, optimizes payment decisions, and automates cross-border tax compliance.
 
-The app applies [Ramp's](https://ramp.com) B2B spend-management logic to the personal B2C context — combining Apple's `FinanceKit` for on-device financial data, `VisionKit` for receipt OCR, `App Intents` for Siri automation, and `ActivityKit` for Live Activity card recommendations to eliminate the "financial leakage" (hidden FX fees, poor exchange rates, tax confusion) that costs international students real money every day.
+The app applies [Ramp's](https://ramp.com) B2B spend-management logic to the personal B2C context — combining Apple's `FinanceKit` for on-device financial data, `VisionKit` for receipt OCR, `App Intents` for Siri automation, and `WidgetKit` Control Widgets for one-tap on-device intake from Control Center, the Lock Screen, and the Action button to eliminate the "financial leakage" (hidden FX fees, poor exchange rates, tax confusion) that costs international students real money every day.
 
 Current personal finance apps are domestic-focused. They break when you add a Trinidadian bank account, a Canadian credit card, and a US J-1 salary. **NomadFi doesn't.**
 
@@ -37,7 +37,7 @@ Current personal finance apps are domestic-focused. They break when you add a Tr
 
 ### Siri & System Integration 🗣️
 - **App Intents** enable voice-first interactions: *"Hey Siri, I just spent $15 USD on lunch"* logs a transaction; *"Which card should I use?"* returns a location-aware recommendation.
-- **WidgetKit** brings global net worth to the Home Screen; **ActivityKit** delivers real-time card recommendations on the Lock Screen.
+- **WidgetKit** brings global net worth to the Home Screen and a one-tap **Control Widget** that puts NomadFi's on-device Apple Intelligence intake on Control Center, the Lock Screen, and the Action button.
 
 ### Production Hardening & Accessibility 🦾
 - **Accessibility-first design** ensures full VoiceOver narratives, Dynamic Type at every scale (including AX5), and complete support for Reduce Motion, Reduce Transparency, and Differentiate Without Color.
@@ -86,7 +86,7 @@ This project leverages modern Swift, SwiftUI, and Apple platform APIs for a nati
 - [x] Vision (Text Recognition)
 - [x] Core Haptics
 - [x] CoreLocation
-- [x] ActivityKit + WidgetKit (Live Activities & Widgets)
+- [x] WidgetKit (Home Screen widgets, Lock Screen widgets, Control Widgets)
 - [x] AppIntents + Shortcuts (Siri Integration)
 - [x] Charts
 - [x] TipKit
@@ -100,7 +100,7 @@ This project is designed to showcase distinguished-level iOS engineering practic
 
 - [x] **SYSTEM DESIGN**: Privacy-first, on-device architecture with graceful degradation across FinanceKit availability, network conditions, and jurisdiction coverage.
 - [x] **CROSS-BORDER DATA MODELING**: SwiftData schema that natively represents multi-currency transactions, jurisdiction-aware accounts, and real-time FX rate snapshots.
-- [x] **PLATFORM INTEGRATION**: Deep integration with FinanceKit, VisionKit, App Intents, ActivityKit, WidgetKit, and CoreLocation for a system-native experience.
+- [x] **PLATFORM INTEGRATION**: Deep integration with FinanceKit, VisionKit, App Intents, WidgetKit (including Control Widgets), Foundation Models, and CoreLocation for a system-native experience.
 - [x] **SOCIAL IMPACT**: Purpose-built tooling that addresses a real affordability crisis — making hidden FX fees visible and cross-border tax compliance manageable for a vulnerable population.
 - [x] **ACCESSIBILITY EXCELLENCE**: VoiceOver narratives, Dynamic Type at AX5, Reduce Motion/Transparency support, and WCAG 2.1 AA contrast compliance on every screen.
 - [x] **TESTABILITY**: Protocol-oriented service layer with mock implementations from Day 1, enabling comprehensive unit testing and SwiftUI Previews.
