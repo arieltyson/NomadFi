@@ -279,8 +279,9 @@ points at the test file that pins the behaviour.
   knowledge-check quizzes (Phase 7C), and calm recognition
   badges (Phase 7D); Archive owns the searchable year /
   jurisdiction document list with per-year exports. Remaining
-  work: deeper investment-account lessons and receipt /
-  document organisation prompts.
+  work: receipt / document organisation prompts. (Deeper
+  investment-account lessons are now tracked under Investing
+  Learn / Phase 8A follow-through, not Tax Vault.)
 - [~] Region-specific tax education (Phase 7A + 7B + 7C + 7D) —
   locally-authored, source-backed starter covering United States
   (3 lessons + 1 checklist + 1 quiz), Canada
@@ -305,11 +306,23 @@ points at the test file that pins the behaviour.
   `TaxEducationQuizServiceTests.swift`,
   `TaxEducationRecognitionComputerTests.swift`,
   `TaxVaultSurfaceTests.swift`._
-- [ ] Deeper investment-account lessons (IRA for the U.S.,
-  TFSA / RRSP deep dives beyond the current high-level starter).
+- [x] Deeper investment-account lessons — shipped under Phase 8A
+  follow-through (Investing Learn). United States IRA deep dives
+  (Traditional vs. Roth at a procedural level, contribution
+  eligibility / combined limit, distributions at a procedural
+  level) cite IRS Traditional IRAs, Roth IRAs, and the IRS
+  Traditional and Roth IRAs comparison page. Canada deep dives
+  (TFSA contribution-room and recontribution timing, TFSA
+  over-contribution and non-resident contributions, where to
+  confirm RRSP deduction limit, RRSP withdrawal mechanics and
+  withholding tax) cite CRA only. _Evidence:
+  [`InvestingEducationSourceMap.md`](./research/InvestingEducationSourceMap.md),
+  `InvestingEducationCatalogTests.swift`._
 - [ ] Receipt / document organisation prompts tied to the
   education checklists.
-- [ ] Investing education + index-fund tracking.
+- [~] Investing education — Phase 8A starter shipped; Phase 8A
+  follow-through deep dives shipped; Phase 8B fund tracking
+  remains externally blocked.
 
 ### Apple capability tracks
 
@@ -1292,8 +1305,10 @@ pointer), Phase 7C (region-aware knowledge-check quizzes with explicit
 submit + retake, deterministic scoring, and quiz-aware next-step /
 progress-summary logic), and Phase 7D (calm current-state recognition
 badges + Tax Vault IA split into Review / Learn / Archive peer surfaces)
-are all live. Deeper investment-account lessons and receipt / document
-organisation prompts are the outstanding continuations.
+are all live. Receipt / document organisation prompts are the outstanding
+Tax Vault continuation. Deeper investment-account lessons (IRA / TFSA /
+RRSP) shipped separately under Phase 8A follow-through (Investing Learn),
+not as part of this Tax Vault phase.
 
 **Goal:** Teach region-specific tax concepts without crossing into professional
 tax advice.
@@ -1392,10 +1407,10 @@ tax advice.
 
 ### Still to build
 
-- Deeper investment-account lessons (IRA for the U.S., TFSA/RRSP for Canada
-  beyond the high-level starter).
 - Receipt and document organization prompts tied to the education
-  checklists.
+  checklists. (Deeper investment-account lessons moved to Phase 8A
+  follow-through — see "Phase 8 — Investment Education and Index Fund
+  Tracking" below.)
 
 ### Do Not Build
 
@@ -1417,16 +1432,19 @@ Phase 8 is split so the literacy starter can ship today without
 waiting on the externally-blocked data-source work that fund
 tracking and watchlists depend on.
 
-### Phase 8A — Investing Education Starter
+### Phase 8A — Investing Education Starter (Starter + Follow-Through)
 
-**Status:** `[x]` Shipped (2026-04-23).
+**Status:** `[x]` Starter shipped (2026-04-23). `[x]` Follow-through
+deep dives shipped (2026-04-24).
 
 **Goal:** Give users a calm, source-backed first investing-learning
 surface while Plaid Limited Production access and Apple's
-FinanceKit response are externally pending. No fund picks, no
-predictions, no suitability framing.
+FinanceKit response are externally pending. Then deepen the
+registered-account layer (IRA / TFSA / RRSP) without changing the
+education-only contract. No fund picks, no predictions, no
+suitability framing.
 
-#### What shipped
+#### What shipped — starter (2026-04-23)
 
 - Sibling `InvestingEducation` module under
   `Core/Services/InvestingEducation/` — kept as a parallel stack
@@ -1461,6 +1479,30 @@ predictions, no suitability framing.
   exact URLs cited, the rationale for the regions that ship, the
   Trinidad-and-Tobago deferral rationale, and the editing rules
   the catalogue tests pin.
+
+#### What shipped — follow-through deep dives (2026-04-24)
+
+- Three U.S. IRA deep-dive lessons added to the existing catalog:
+  Traditional vs. Roth at a procedural level, IRA contribution
+  eligibility and the combined limit, IRA distributions at a
+  procedural level. Each cites IRS Traditional IRAs / Roth IRAs /
+  the IRS Traditional and Roth IRAs comparison page.
+- Four Canada TFSA + RRSP deep-dive lessons added: TFSA
+  contribution-room and recontribution timing, TFSA
+  over-contribution and non-resident contributions, where to
+  confirm RRSP deduction limit, RRSP withdrawal mechanics and
+  withholding tax. Each cites CRA only — CIRO and CIPF are kept
+  for fees / rights / protection but are not used as substitutes
+  for TFSA / RRSP rule pages.
+- Per-region checklists extended with the new procedural review
+  steps (combined limit confirmation, recontribution-timing rule,
+  before-you-contribute residency check, withholding-tax review).
+- Source-map doc updated with the new lesson families and exact
+  CRA / IRS URLs.
+- No new persistence; no new destination; no UI restructure —
+  all new content surfaces through the existing Investing Learn
+  region sections, lesson rows, and lesson detail sheet. Progress
+  service handles the larger lesson set unchanged.
 
 #### What was deliberately excluded from 8A
 
@@ -1669,8 +1711,9 @@ re-debating whether the foundation exists.
     segmented switcher, in-content scan CTA on Review, and calm
     current-state recognition badges under
     `Core/Services/TaxEducation/Recognition/` — purely derived,
-    no new persistence. Deeper investment-account lessons and
-    receipt / document organisation prompts remain as follow-ups.
+    no new persistence. Receipt / document organisation prompts
+    remain as a Tax Vault follow-up. Deeper investment-account
+    lessons moved to Phase 8A follow-through (Investing Learn).
 15. `[~]` Phase 5 — financial-data access strategy.
     5A ✅: abstraction + coordinator + adapters under
     `Core/Services/FinancialData/` (manual / CSV / FinanceKit /
@@ -1711,9 +1754,13 @@ re-debating whether the foundation exists.
     redirect URI. Akoya comparison paused until that real flow
     runs.
     5F stays parked on real production use + live upstream.
-16. `[x]` Investing education starter (Phase 8A) — Settings →
-    Advanced Tools → Investing Learn. Source-backed lessons for
-    US (Investor.gov / SEC + IRS) and Canada (CIRO + CIPF + CRA).
+16. `[x]` Investing education (Phase 8A starter + Phase 8A
+    follow-through) — Settings → Advanced Tools → Investing
+    Learn. Starter lessons for US (Investor.gov / SEC + IRS) and
+    Canada (CIRO + CIPF + CRA), plus deeper IRA / TFSA / RRSP
+    lessons (IRS Traditional + Roth + comparison page; CRA TFSA
+    contribution-room / before-you-contribute / withdrawal pages
+    and RRSP deduction-limit / withdrawal / withholding pages).
     `[!]` Index-fund tracking and watchlists (Phase 8B) deferred —
     blocked on the same upstream data sources Phase 5 is waiting
     for.
@@ -1802,13 +1849,31 @@ Highest-leverage remaining work, in order:
   `Core/Services/InvestingEducation/`, surface at Settings →
   Advanced Tools → Investing Learn, source-map at
   [`InvestingEducationSourceMap.md`](./research/InvestingEducationSourceMap.md).
+- **Phase 8A follow-through deep dives — shipped** (2026-04-24).
+  Three U.S. IRA deep dives (Traditional vs. Roth procedural,
+  contribution eligibility / combined limit, distributions
+  procedural) citing IRS pages. Four Canada TFSA + RRSP deep
+  dives (TFSA contribution-room and recontribution timing, TFSA
+  over-contribution and non-resident contributions, RRSP
+  deduction-limit confirmation, RRSP withdrawal mechanics and
+  withholding) citing CRA only. Catalogue extended in place; no
+  new persistence; no new destination.
 - **Phase 8B fund tracking + watchlist** — deferred. Externally
   blocked on the same upstreams Phase 5 is waiting for. When 5
   unblocks, 8B becomes plannable.
-- **Deeper investment-account lessons** (IRA / TFSA / RRSP) and
-  **receipt / document organisation prompts** remain open as Tax
-  Vault follow-ups, explicitly lower priority than the provider
-  work above.
+- **Phase 8A follow-through — shipped** (2026-04-24). Deeper
+  registered-account lessons under Investing Learn: U.S. IRA
+  (Traditional vs. Roth procedural, contribution eligibility,
+  distributions) cite IRS Traditional IRAs / Roth IRAs / IRS
+  Traditional and Roth IRAs comparison page; Canada TFSA + RRSP
+  (TFSA contribution-room and recontribution timing, TFSA
+  over-contribution and non-resident contributions, RRSP
+  deduction-limit confirmation, RRSP withdrawal mechanics and
+  withholding tax) cite CRA only. Education-only — no account
+  recommendation, no suitability framing, no predicted returns.
+- **Receipt / document organisation prompts** remain open as a
+  Tax Vault follow-up, explicitly lower priority than the
+  provider work above.
 
 ---
 

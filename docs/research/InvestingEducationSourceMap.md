@@ -41,6 +41,8 @@ unaffected by 8A.
 NomadFi cites U.S. federal investor-education and tax-authority
 material only.
 
+#### Starter lessons
+
 | Lesson | Primary source | URL |
 | --- | --- | --- |
 | What an index fund is | Investor.gov / SEC — Mutual Funds and ETFs | <https://www.investor.gov/introduction-investing/investing-basics/investment-products/mutual-funds-and-exchange-traded-4> |
@@ -49,16 +51,30 @@ material only.
 | Fund fees and expenses | Investor.gov / SEC — Mutual Fund Fees and Expenses | <https://www.investor.gov/introduction-investing/investing-basics/glossary/mutual-fund-fees-and-expenses> |
 | IRA basics | IRS — Individual Retirement Arrangements (IRAs) | <https://www.irs.gov/retirement-plans/individual-retirement-arrangements-iras> |
 
+#### IRA deep dives (Phase 8A follow-through)
+
+| Lesson | Primary sources |
+| --- | --- |
+| Traditional vs. Roth IRA at a procedural level | IRS — [Traditional and Roth IRAs](https://www.irs.gov/retirement-plans/traditional-and-roth-iras), [Traditional IRAs](https://www.irs.gov/retirement-plans/traditional-iras), [Roth IRAs](https://www.irs.gov/retirement-plans/roth-iras) |
+| IRA contribution eligibility and the combined limit | IRS — [Traditional and Roth IRAs](https://www.irs.gov/retirement-plans/traditional-and-roth-iras), [Individual Retirement Arrangements (IRAs)](https://www.irs.gov/retirement-plans/individual-retirement-arrangements-iras) |
+| IRA distributions at a procedural level | IRS — [Traditional IRAs](https://www.irs.gov/retirement-plans/traditional-iras), [Roth IRAs](https://www.irs.gov/retirement-plans/roth-iras), [Individual Retirement Arrangements (IRAs)](https://www.irs.gov/retirement-plans/individual-retirement-arrangements-iras) |
+
 Investor.gov is the SEC's Office of Investor Education and
 Advocacy. The IRS landing page is the canonical reference for IRA
 contribution limits, deductibility, and the difference between
-traditional and Roth accounts.
+traditional and Roth accounts. The deep-dive lessons stay
+procedural — they describe rules, never recommend an account
+type for a specific reader.
 
 ### Canada
 
 NomadFi cites CIRO (the self-regulatory organization that replaced
 IIROC and the MFDA), CIPF (Canadian Investor Protection Fund), and
-CRA (Canada Revenue Agency).
+CRA (Canada Revenue Agency). For TFSA and RRSP mechanics the
+catalogue cites CRA only — CIRO and CIPF are kept for fees,
+investor rights, and investor-protection coverage.
+
+#### Starter lessons
 
 | Lesson | Primary source | URL |
 | --- | --- | --- |
@@ -68,11 +84,23 @@ CRA (Canada Revenue Agency).
 | TFSA basics at a high level | CRA — The Tax-Free Savings Account | <https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account.html> |
 | RRSP basics at a high level | CRA — RRSPs and related plans | <https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans.html> |
 
+#### TFSA + RRSP deep dives (Phase 8A follow-through)
+
+| Lesson | Primary sources |
+| --- | --- |
+| TFSA contribution room and recontribution timing | CRA — [Calculate your TFSA contribution room](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/calculate-room.html), [Withdrawing from a TFSA](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/withdraw.html) |
+| TFSA over-contribution and non-resident contributions | CRA — [Before you contribute to a TFSA](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html), [Withdrawing from a TFSA](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/withdraw.html) |
+| Where to confirm your RRSP deduction limit | CRA — [Where can you find your RRSP deduction limit](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/where-you-find-your-rrsp-prpp-deduction-limit.html), [Registered Retirement Savings Plan (RRSP)](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/registered-retirement-savings-plan-rrsp.html) |
+| RRSP withdrawal mechanics and withholding tax | CRA — [Withdrawing from your own RRSPs](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/making-withdrawals/withdrawing-your-rrsps.html), [Tax rates on withdrawals](https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/making-withdrawals/tax-rates-on-withdrawals.html) |
+
 CIRO is the recognized self-regulatory organization for investment
 dealers in Canada. CIPF coverage details change; the catalogue
 lesson links the homepage and instructs the reader to read the
 current published coverage summary rather than embedding a number
-that could go stale.
+that could go stale. CRA TFSA / RRSP deep-dive content links each
+specific CRA reference page rather than restating the rule, since
+the rule numbers change yearly and the regulator's page is always
+the current source.
 
 ---
 

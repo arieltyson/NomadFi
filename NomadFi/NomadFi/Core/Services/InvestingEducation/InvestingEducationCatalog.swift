@@ -106,6 +106,30 @@ enum InvestingEducationCatalog {
         summary: "IRS landing page covering IRA contribution limits, deductibility, and the difference between traditional and Roth accounts."
     )
 
+    private static let irsTraditionalIRAs = InvestingEducationSource(
+        id: "irs-traditional-iras",
+        publisher: "IRS",
+        title: "Traditional IRAs",
+        url: URL(string: "https://www.irs.gov/retirement-plans/traditional-iras")!,
+        summary: "IRS reference for traditional IRA contribution mechanics, deductibility, and the procedural rules around distributions."
+    )
+
+    private static let irsRothIRAs = InvestingEducationSource(
+        id: "irs-roth-iras",
+        publisher: "IRS",
+        title: "Roth IRAs",
+        url: URL(string: "https://www.irs.gov/retirement-plans/roth-iras")!,
+        summary: "IRS reference for Roth IRA contribution mechanics, income-based eligibility, and qualified-distribution rules."
+    )
+
+    private static let irsTraditionalAndRothIRAs = InvestingEducationSource(
+        id: "irs-traditional-and-roth-iras",
+        publisher: "IRS",
+        title: "Traditional and Roth IRAs",
+        url: URL(string: "https://www.irs.gov/retirement-plans/traditional-and-roth-iras")!,
+        summary: "IRS comparison page outlining the procedural differences between traditional and Roth IRAs side by side."
+    )
+
     // ---- CIRO --------------------------------------------------------
 
     private static let ciroFees = InvestingEducationSource(
@@ -150,6 +174,62 @@ enum InvestingEducationCatalog {
         title: "RRSPs and related plans",
         url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans.html")!,
         summary: "CRA landing page for Registered Retirement Savings Plans and related registered accounts."
+    )
+
+    private static let craTFSABeforeContributing = InvestingEducationSource(
+        id: "cra-tfsa-before-contributing",
+        publisher: "CRA",
+        title: "Before you contribute to a TFSA",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/before.html")!,
+        summary: "CRA guidance on residency, eligibility, and the over-contribution rules to review before adding to a TFSA."
+    )
+
+    private static let craTFSACalculateRoom = InvestingEducationSource(
+        id: "cra-tfsa-calculate-room",
+        publisher: "CRA",
+        title: "Calculate your TFSA contribution room",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/calculate-room.html")!,
+        summary: "CRA reference for how unused TFSA room carries forward and how withdrawals add room back the following calendar year."
+    )
+
+    private static let craTFSAWithdrawing = InvestingEducationSource(
+        id: "cra-tfsa-withdrawing",
+        publisher: "CRA",
+        title: "Withdrawing from a TFSA",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/withdraw.html")!,
+        summary: "CRA reference for TFSA withdrawal mechanics, including how recontributions interact with the calendar-year room rule."
+    )
+
+    private static let craRRSPCorePage = InvestingEducationSource(
+        id: "cra-rrsp-core",
+        publisher: "CRA",
+        title: "Registered Retirement Savings Plan (RRSP)",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/registered-retirement-savings-plan-rrsp.html")!,
+        summary: "CRA core RRSP reference covering deduction limits, contribution mechanics, and how RRSP contributions interact with the prior-year earned-income calculation."
+    )
+
+    private static let craRRSPDeductionLimit = InvestingEducationSource(
+        id: "cra-rrsp-deduction-limit",
+        publisher: "CRA",
+        title: "Where can you find your RRSP deduction limit",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/where-you-find-your-rrsp-prpp-deduction-limit.html")!,
+        summary: "CRA reference for the canonical places to confirm your current RRSP deduction limit (Notice of Assessment, CRA My Account, MyCRA mobile)."
+    )
+
+    private static let craRRSPWithdrawing = InvestingEducationSource(
+        id: "cra-rrsp-withdrawing",
+        publisher: "CRA",
+        title: "Withdrawing from your own RRSPs",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/making-withdrawals/withdrawing-your-rrsps.html")!,
+        summary: "CRA reference for the procedural mechanics of withdrawing from your own RRSP outside the Home Buyers' Plan and Lifelong Learning Plan."
+    )
+
+    private static let craRRSPWithholding = InvestingEducationSource(
+        id: "cra-rrsp-withholding",
+        publisher: "CRA",
+        title: "Tax rates on withdrawals",
+        url: URL(string: "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/making-withdrawals/tax-rates-on-withdrawals.html")!,
+        summary: "CRA reference for the withholding-tax rates RRSP issuers apply at withdrawal time, separate from the final tax on the year's total income."
     )
 
     // MARK: - United States lessons
@@ -225,6 +305,48 @@ enum InvestingEducationCatalog {
             sources: [irsIRAs],
             escalationNote: "Cross-border earners often have non-trivial IRA eligibility and reporting questions. A cross-border-tax professional is the right escalation when residency or earned-income status is unclear."
         ),
+        InvestingEducationLesson(
+            id: "us-traditional-vs-roth-ira",
+            region: .unitedStates,
+            title: "Traditional vs. Roth IRA at a procedural level",
+            whatItIs: "Traditional and Roth IRAs differ in when contributions are taxed and when distributions are taxed. The IRS publishes side-by-side rules for contribution mechanics, deductibility, and qualified-distribution timing.",
+            whyItMatters: "Choosing which account to read about first is a procedural step, not a recommendation. Reading the IRS comparison before any product page keeps the framing on rules — taxed-now vs. taxed-later — rather than on outcome predictions NomadFi cannot make.",
+            whatToReviewNext: [
+                "Open the IRS Traditional and Roth IRAs comparison page in full.",
+                "On the IRS Traditional IRAs page, locate the deductibility rules and how they interact with workplace plan coverage.",
+                "On the IRS Roth IRAs page, locate the income-based contribution limits and the qualified-distribution rules.",
+            ],
+            sources: [irsTraditionalAndRothIRAs, irsTraditionalIRAs, irsRothIRAs],
+            escalationNote: "Choosing between IRA types interacts with current-year and projected-year tax brackets, workplace coverage, and residency. A registered tax professional is the right escalation when those factors interact for you."
+        ),
+        InvestingEducationLesson(
+            id: "us-ira-contribution-eligibility",
+            region: .unitedStates,
+            title: "IRA contribution eligibility and the combined limit",
+            whatItIs: "IRA contribution rules cap the combined amount across all of a single person's traditional and Roth IRAs each year. The IRS publishes the current-year limit, the catch-up amount for older taxpayers, and the earned-income requirement.",
+            whyItMatters: "Treating each IRA's contribution room as independent is a common error the IRS pages call out. Reading the rules before contributing avoids over-contribution penalties and the corrective paperwork they trigger.",
+            whatToReviewNext: [
+                "Open the IRS Traditional and Roth IRAs page and locate the combined annual contribution limit.",
+                "Note the catch-up contribution amount the IRS lists for taxpayers aged 50 or older.",
+                "Confirm the IRS rule that contributions require taxable compensation for the year.",
+            ],
+            sources: [irsTraditionalAndRothIRAs, irsIRAs],
+            escalationNote: nil
+        ),
+        InvestingEducationLesson(
+            id: "us-ira-distributions-basics",
+            region: .unitedStates,
+            title: "IRA distributions at a procedural level",
+            whatItIs: "Distribution rules cover when a withdrawal is qualified, how early distributions are treated, and how required minimum distributions (RMDs) eventually apply to traditional IRAs. The IRS publishes the procedural mechanics on its IRA pages.",
+            whyItMatters: "Procedural distribution rules — qualified vs. non-qualified, exceptions to the early-withdrawal additional tax, RMD timing — are easier to read in advance than to reverse. The IRS page is the canonical reference before any retirement-income calculator.",
+            whatToReviewNext: [
+                "Open the IRS Traditional IRAs page and locate the distribution-rules section.",
+                "Open the IRS Roth IRAs page and locate the qualified-distribution criteria.",
+                "Note the IRS RMD reference — RMD details are a future deeper-review topic, not a same-day decision.",
+            ],
+            sources: [irsTraditionalIRAs, irsRothIRAs, irsIRAs],
+            escalationNote: "RMD planning, early-withdrawal exceptions, and rollover mechanics often interact with the rest of a tax return. A registered tax professional is the right escalation for the year in which a distribution actually happens."
+        ),
     ]
 
     private static let unitedStatesChecklist = InvestingEducationChecklist(
@@ -246,6 +368,14 @@ enum InvestingEducationCatalog {
             InvestingEducationChecklistItem(
                 id: "us-read-iras",
                 text: "Read the IRS landing page for Individual Retirement Arrangements (IRAs)."
+            ),
+            InvestingEducationChecklistItem(
+                id: "us-read-traditional-vs-roth",
+                text: "Read the IRS Traditional and Roth IRAs comparison page."
+            ),
+            InvestingEducationChecklistItem(
+                id: "us-confirm-combined-limit",
+                text: "Note the IRS combined annual contribution limit across traditional and Roth IRAs."
             ),
         ],
         escalationNote: "Education only. Not a substitute for a registered investment adviser. NomadFi does not recommend specific funds or accounts."
@@ -324,6 +454,62 @@ enum InvestingEducationCatalog {
             sources: [craRRSP],
             escalationNote: "RRSP rules change each year and interact with cross-border tax treaties. A CRA-registered professional is the right escalation for non-resident situations."
         ),
+        InvestingEducationLesson(
+            id: "ca-tfsa-contribution-room",
+            region: .canada,
+            title: "TFSA contribution room and recontribution timing",
+            whatItIs: "TFSA contribution room is the sum of the current year's dollar limit, unused room carried forward from prior years, and withdrawals from prior years that are added back the following calendar year. CRA publishes the calculation rules.",
+            whyItMatters: "Recontributing a withdrawn amount in the same calendar year is a common over-contribution trigger that the CRA page calls out directly. Reading the rule before redepositing prevents the 1% per-month over-contribution charge.",
+            whatToReviewNext: [
+                "Open CRA's Calculate your TFSA contribution room page in full.",
+                "Confirm in CRA My Account that your displayed room reflects the current calendar year.",
+                "Note CRA's rule that withdrawals add room back on January 1 of the following year, not immediately.",
+            ],
+            sources: [craTFSACalculateRoom, craTFSAWithdrawing],
+            escalationNote: nil
+        ),
+        InvestingEducationLesson(
+            id: "ca-tfsa-overcontribution-and-residency",
+            region: .canada,
+            title: "TFSA over-contribution and non-resident contributions",
+            whatItIs: "CRA's Before you contribute page documents two specific risks: an over-contribution charge of 1% per month on excess amounts, and a 1% per month tax on contributions made while the holder is a non-resident of Canada.",
+            whyItMatters: "Both risks accrue silently — the account itself does not block the deposit. Reading CRA's page before contributing is the procedural step that catches these before they accumulate.",
+            whatToReviewNext: [
+                "Open CRA's Before you contribute to a TFSA page in full.",
+                "Confirm your residency status for the calendar year before any TFSA contribution.",
+                "If you have ever held a TFSA while non-resident, read CRA's section on the non-resident contribution charge.",
+            ],
+            sources: [craTFSABeforeContributing, craTFSAWithdrawing],
+            escalationNote: "Residency-status questions, especially during the year of a move, often need a CRA-registered professional. NomadFi cannot determine your residency status."
+        ),
+        InvestingEducationLesson(
+            id: "ca-rrsp-deduction-limit",
+            region: .canada,
+            title: "Where to confirm your RRSP deduction limit",
+            whatItIs: "CRA documents the canonical places to confirm your current RRSP deduction limit: your most recent Notice of Assessment, CRA My Account, and the MyCRA mobile reference. Third-party calculators are not authoritative.",
+            whyItMatters: "Acting on a stale or estimated deduction limit is one of the more common RRSP planning mistakes. Reading the CRA page is the procedural way to confirm the current-year number before any contribution.",
+            whatToReviewNext: [
+                "Open CRA's Where can you find your RRSP deduction limit page.",
+                "Confirm the limit in CRA My Account before contributing.",
+                "Cross-check that the most recent Notice of Assessment matches the CRA My Account figure.",
+            ],
+            sources: [craRRSPDeductionLimit, craRRSPCorePage],
+            escalationNote: nil
+        ),
+        InvestingEducationLesson(
+            id: "ca-rrsp-withdrawal-withholding",
+            region: .canada,
+            title: "RRSP withdrawal mechanics and withholding tax",
+            whatItIs: "When you withdraw from your own RRSP outside the Home Buyers' Plan or Lifelong Learning Plan, the issuer applies a withholding tax at the time of the withdrawal. CRA publishes both the withholding-rate brackets and the procedural mechanics.",
+            whyItMatters: "Withholding tax at the moment of withdrawal is not the final tax on the amount. The total still flows into the year's income calculation, which can change the effective tax owed at filing time. CRA's page is the canonical anchor for both numbers.",
+            whatToReviewNext: [
+                "Open CRA's Withdrawing from your own RRSPs page.",
+                "Read CRA's Tax rates on withdrawals page and note the published withholding brackets.",
+                "Note that the withholding amount is not the final tax — the withdrawal is added to total income for the year.",
+            ],
+            sources: [craRRSPWithdrawing, craRRSPWithholding],
+            escalationNote: "RRSP withdrawals during a residency change often interact with treaty provisions. A CRA-registered professional is the right escalation when residency or treaty status is in flux."
+        ),
     ]
 
     private static let canadaChecklist = InvestingEducationChecklist(
@@ -349,6 +535,18 @@ enum InvestingEducationCatalog {
             InvestingEducationChecklistItem(
                 id: "ca-read-rrsp",
                 text: "Read CRA's RRSP page and look up your deduction limit in CRA My Account."
+            ),
+            InvestingEducationChecklistItem(
+                id: "ca-read-tfsa-room-rule",
+                text: "Read CRA's Calculate your TFSA contribution room page so the recontribution-timing rule is fresh."
+            ),
+            InvestingEducationChecklistItem(
+                id: "ca-read-tfsa-before",
+                text: "Read CRA's Before you contribute to a TFSA page before any new contribution."
+            ),
+            InvestingEducationChecklistItem(
+                id: "ca-read-rrsp-withholding",
+                text: "Read CRA's RRSP Tax rates on withdrawals page so the withholding mechanics are not a surprise."
             ),
         ],
         escalationNote: "Education only. Not a substitute for a registered Canadian advisor or a CRA-registered professional. NomadFi does not recommend specific funds or accounts."

@@ -46,6 +46,76 @@ struct InvestingEducationCatalogTests {
         }
     }
 
+    @Test("Both supported regions ship the Phase 8A follow-through deep-dive layer")
+    func deepDiveLayerIsPresent() {
+        let usLessonIDs = Set(
+            InvestingEducationCatalog.lessons(for: .unitedStates).map(\.id)
+        )
+        // U.S. IRA deep dives that landed with the Phase 8A
+        // follow-through. If any of these stops shipping the
+        // surface drops below the bar this slice committed to.
+        let requiredUSDeepDives: Set<String> = [
+            "us-traditional-vs-roth-ira",
+            "us-ira-contribution-eligibility",
+            "us-ira-distributions-basics",
+        ]
+        #expect(
+            requiredUSDeepDives.isSubset(of: usLessonIDs),
+            "Missing required U.S. IRA deep-dive lessons: \(requiredUSDeepDives.subtracting(usLessonIDs))"
+        )
+
+        let caLessonIDs = Set(
+            InvestingEducationCatalog.lessons(for: .canada).map(\.id)
+        )
+        let requiredCADeepDives: Set<String> = [
+            "ca-tfsa-contribution-room",
+            "ca-tfsa-overcontribution-and-residency",
+            "ca-rrsp-deduction-limit",
+            "ca-rrsp-withdrawal-withholding",
+        ]
+        #expect(
+            requiredCADeepDives.isSubset(of: caLessonIDs),
+            "Missing required Canada TFSA / RRSP deep-dive lessons: \(requiredCADeepDives.subtracting(caLessonIDs))"
+        )
+    }
+
+    @Test("U.S. IRA deep dives cite IRS Traditional / Roth / comparison pages — not generic landing only")
+    func usDeepDivesCiteSpecificIRSPages() throws {
+        let lessons = InvestingEducationCatalog.lessons(for: .unitedStates)
+        let traditionalVsRoth = try #require(
+            lessons.first(where: { $0.id == "us-traditional-vs-roth-ira" })
+        )
+        let citedSourceIDs = Set(traditionalVsRoth.sources.map(\.id))
+        let requiredSpecificSources: Set<String> = [
+            "irs-traditional-and-roth-iras",
+            "irs-traditional-iras",
+            "irs-roth-iras",
+        ]
+        #expect(
+            requiredSpecificSources.isSubset(of: citedSourceIDs),
+            "Traditional vs. Roth deep dive must cite the IRS comparison + per-account pages, not just the generic IRA landing."
+        )
+    }
+
+    @Test("Canada TFSA / RRSP deep dives cite CRA only — not CIRO or CIPF")
+    func canadianDeepDivesCiteOnlyCRA() throws {
+        let lessons = InvestingEducationCatalog.lessons(for: .canada)
+        let canadianDeepDiveIDs: Set<String> = [
+            "ca-tfsa-contribution-room",
+            "ca-tfsa-overcontribution-and-residency",
+            "ca-rrsp-deduction-limit",
+            "ca-rrsp-withdrawal-withholding",
+        ]
+        for lesson in lessons where canadianDeepDiveIDs.contains(lesson.id) {
+            for source in lesson.sources {
+                #expect(
+                    source.publisher == "CRA",
+                    "Canada deep-dive lesson \(lesson.id) cites \(source.publisher); CRA-only required for TFSA / RRSP rule lessons."
+                )
+            }
+        }
+    }
+
     @Test("Every supported region ships exactly one starter checklist with non-empty items")
     func checklistShape() {
         for region in InvestingEducationCatalog.supportedRegions {
@@ -161,8 +231,11 @@ struct InvestingEducationCatalogTests {
         // the education-only contract this surface is built on.
         let bannedPhrases: [String] = [
             "best fund",
+            "best account",
             "you should buy",
             "you should invest",
+            "you should open",
+            "you should choose",
             "guaranteed",
             "you'll earn",
             "you will earn",
@@ -171,6 +244,7 @@ struct InvestingEducationCatalogTests {
             "investment advice",
             "personal advice",
             "recommended fund",
+            "recommended account",
             "we recommend",
             "buy this",
             "sell this",
@@ -179,6 +253,9 @@ struct InvestingEducationCatalogTests {
             "high return",
             "low risk",
             "risk-free",
+            "tax-optimization guarantee",
+            "optimal account",
+            "right account for you",
         ]
 
         var inspected: [String] = []
