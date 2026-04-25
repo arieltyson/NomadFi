@@ -48,6 +48,24 @@ struct PurchaseDecision: Sendable, Equatable {
     /// `now` the engine used. Tests pin this; the UI surfaces an
     /// absolute "evaluated as of" timestamp.
     let evaluatedAt: Date
+
+    /// Phase 3 follow-through — deterministic travel / cross-border
+    /// signals derived from the typed context and the candidate
+    /// account currencies. Used by the brief and the dialog layer
+    /// to surface DCC / FX-verification / dispute caveats only when
+    /// the context warrants them. Never a geolocation result.
+    let travelContext: PurchaseTravelContext
+
+    /// Phase 3 follow-through — explicit, deterministic confidence
+    /// label for the recommendation. Procedural; never marketing.
+    /// `.lowOrUnverified` when the engine cannot stand behind the
+    /// recommendation (FX unverified or no recommendation at all).
+    let confidence: PurchaseDecisionConfidence
+
+    /// Short, factual reasons that drove the confidence label.
+    /// Rendered in the brief's confidence section and read out by
+    /// the voice dialog when relevant.
+    let confidenceExplanations: [String]
 }
 
 // MARK: - Derived

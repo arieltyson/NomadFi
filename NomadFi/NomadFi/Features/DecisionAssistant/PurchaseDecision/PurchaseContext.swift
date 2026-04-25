@@ -37,6 +37,13 @@ struct PurchaseContext: Sendable, Equatable {
     /// Short hint about the purchase location — "U.S. summer
     /// address", "Toronto", etc. Never a full street address; the
     /// engine surfaces privacy copy in the capture form.
+    ///
+    /// _Naming note:_ this field is called `countryCode` for
+    /// historical persistence reasons (`PurchaseDecisionRecord`
+    /// stores it under that name across CloudKit). It is not an
+    /// ISO country code — the user types a free-form short hint.
+    /// Engine reads should use ``locationHint`` so the intent is
+    /// clear at the call site.
     let countryCode: String
 
     /// Urgency / timing note in the user's own words ("before the
@@ -57,5 +64,17 @@ struct PurchaseContext: Sendable, Equatable {
     /// produce a ruling beyond "needs purchase context".
     var isComplete: Bool {
         hasUsableAmount
+    }
+
+    /// Honest alias over ``countryCode``. Engine and signal-
+    /// derivation code should read this rather than `countryCode`
+    /// to keep the semantics ("free-form hint, not an ISO code")
+    /// obvious at every call site.
+    var locationHint: String { countryCode }
+
+    /// Whether the user has typed a non-empty, non-whitespace
+    /// location hint. Feeds ``PurchaseTravelContext``.
+    var hasLocationHint: Bool {
+        !locationHint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

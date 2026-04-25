@@ -587,16 +587,28 @@ struct PurchaseDecisionEngineTests {
 
     // MARK: - Citations
 
-    @Test("Citations include CFPB and myFICO entries")
-    func citationsAnchorCFPBAndMyFICO() {
+    @Test("Citations are anchored on the cross-border purchase mission — CFPB / HelpWithMyBank / FCAC / Visa / Mastercard, no myFICO")
+    func citationsAnchorCrossBorderPurchaseMission() {
         let decision = PurchaseDecisionEngine.decide(
             context: baseContext(),
             accounts: [checkingAccount()],
             now: Self.now
         )
         let publishers = Set(decision.citations.map(\.publisher))
-        #expect(publishers.contains("CFPB"))
-        #expect(publishers.contains("myFICO"))
+        let required: Set<String> = [
+            "CFPB",
+            "HelpWithMyBank",
+            "FCAC",
+            "Visa",
+            "Mastercard",
+        ]
+        #expect(
+            required.isSubset(of: publishers),
+            "Missing required cross-border purchase publishers: \(required.subtracting(publishers))"
+        )
+        // myFICO citations belong to the Credit Timing engine — they
+        // are intentionally absent from the purchase brief now.
+        #expect(!publishers.contains("myFICO"))
         for citation in decision.citations {
             #expect(citation.evidence == .officialSource)
         }

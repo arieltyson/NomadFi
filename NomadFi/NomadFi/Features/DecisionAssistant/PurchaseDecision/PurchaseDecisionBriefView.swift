@@ -41,6 +41,8 @@ struct PurchaseDecisionBriefView: View {
                 ) {
                     captureFormSection
                     rulingSection
+                    confidenceSection
+                    travelContextSection
                     recommendationSection
                     fallbackSection
                     otherCandidatesSection
@@ -215,6 +217,103 @@ struct PurchaseDecisionBriefView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Confidence (Phase 3 follow-through)
+
+    private var confidenceSection: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.small) {
+            Text("Confidence")
+                .font(TypographyTokens.sectionHeader)
+                .accessibilityAddTraits(.isHeader)
+
+            GlassCard {
+                VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                    HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
+                        Image(systemName: decision.confidence.systemImage)
+                            .font(.title3)
+                            .foregroundStyle(ColorTokens.brandPrimary)
+                            .frame(width: 28, alignment: .center)
+                            .accessibilityHidden(true)
+
+                        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                            Text(decision.confidence.displayLabel)
+                                .font(TypographyTokens.body)
+                                .bold()
+                                .accessibilityAddTraits(.isHeader)
+                            Text(decision.confidence.summary)
+                                .font(TypographyTokens.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+
+                    if !decision.confidenceExplanations.isEmpty {
+                        Divider()
+                        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                            ForEach(decision.confidenceExplanations, id: \.self) { note in
+                                Label {
+                                    Text(note)
+                                        .font(TypographyTokens.caption)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                } icon: {
+                                    Image(systemName: "info.circle")
+                                        .foregroundStyle(ColorTokens.brandPrimary)
+                                        .accessibilityHidden(true)
+                                }
+                                .accessibilityElement(children: .combine)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Travel context (Phase 3 follow-through)
+
+    @ViewBuilder
+    private var travelContextSection: some View {
+        if decision.travelContext.isLikelyCrossBorder {
+            VStack(alignment: .leading, spacing: SpacingTokens.small) {
+                Text("Cross-border context")
+                    .font(TypographyTokens.sectionHeader)
+                    .accessibilityAddTraits(.isHeader)
+
+                GlassCard {
+                    VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
+                        ForEach(travelContextSignals, id: \.self) { line in
+                            Label {
+                                Text(line)
+                                    .font(TypographyTokens.body)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } icon: {
+                                Image(systemName: "globe")
+                                    .foregroundStyle(ColorTokens.brandPrimary)
+                                    .accessibilityHidden(true)
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var travelContextSignals: [String] {
+        var signals: [String] = []
+        if decision.travelContext.isCrossCurrency {
+            signals.append("At least one of your saved accounts is in a different currency from this purchase.")
+        }
+        if decision.travelContext.hasLocationHint {
+            signals.append("You typed a location hint, so cross-border DCC and dispute caveats apply.")
+        }
+        if decision.travelContext.isTravelCategory {
+            signals.append("Travel category — card acceptance and fallback are part of the picture.")
+        }
+        return signals
     }
 
     // MARK: - Recommendation

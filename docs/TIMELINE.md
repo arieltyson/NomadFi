@@ -127,16 +127,20 @@ points at the test file that pins the behaviour.
   `nearLimitAvoidMoreSpend`), near-limit / paydown guidance, stale-snapshot
   and unconfirmed-schedule gates. _Evidence:
   `CreditTimingDecisionEngineTests.swift`._
-- [x] Generic Purchase Decision Engine v1 — `PurchaseDecisionEngine` with
-  merchant / category / amount / currency / location context, per-account
-  stances (`recommended`, `fallback`, `usableWithCaveats`, `insufficientFunds`,
-  `insufficientCreditCoverage`, `snapshotStale`, `needsSetup`,
-  `excludedInvestment`), FX-verification caveats, and CFPB + myFICO
-  citations. Rewards are intentionally *not* used for ranking. _Evidence:
-  `PurchaseDecisionEngineTests.swift`, `PurchaseDecisionRecordTests.swift`._
-- [~] "Which card should I use?" — routed through Scenario 1 today. With
-  the generic engine in place, the voice surface can be widened in the
-  next phase via `RecommendCardIntent`.
+- [x] Generic Purchase Decision Engine v1 + Phase 3 follow-through —
+  `PurchaseDecisionEngine` with merchant / category / amount / currency /
+  location context, per-account stances (`recommended`, `fallback`,
+  `usableWithCaveats`, `insufficientFunds`, `insufficientCreditCoverage`,
+  `snapshotStale`, `needsSetup`, `excludedInvestment`), FX-verification
+  caveats, deterministic `PurchaseTravelContext` / `PurchaseDecisionConfidence`,
+  cross-border DCC + dispute + acceptance reminders, and citations
+  re-anchored on CFPB / HelpWithMyBank / FCAC / Visa / Mastercard.
+  Rewards are intentionally *not* used for ranking. _Evidence:
+  `PurchaseDecisionEngineTests.swift`, `PurchaseDecisionRecordTests.swift`,
+  `PurchaseTravelContextTests.swift`, `PurchaseDecisionConfidenceTests.swift`._
+- [x] "Which card should I use?" — voice path is `RecommendCardIntent`
+  on top of the generic engine; the legacy `ActiveCardIntent` stays
+  for discoverability and routes to Scenario 1 when applicable.
 - [x] Verified rewards / category-bonus model on `Account` —
   CloudKit-safe primitive fields (`rewardProgramName`,
   `rewardUnitRawValue`, `baseRewardRate`,
@@ -615,10 +619,11 @@ Trinidad and Tobago, Wise, and other cross-border accounts.
 
 ## Phase 2 — Siri and App Intent Card Recommendation
 
-**Status:** `[~]` Partially shipped. The App Shortcuts surface is modernised
-and wired to Decision Assistant / Scenario 1 / draft capture. A merchant- and
-category-agnostic `RecommendCardIntent` is **not** yet shipped and is
-dependent on Phase 3.
+**Status:** `[x]` Shipped. The App Shortcuts surface is modernised and
+wired to Decision Assistant / Scenario 1 / draft capture, and the
+merchant- and category-aware `RecommendCardIntent` plus the portfolio
+`ReviewCreditTimingIntent` voice surfaces are live on top of the
+deterministic engines.
 
 **Goal:** Let the user ask for a card recommendation in natural language.
 
@@ -638,12 +643,13 @@ dependent on Phase 3.
 - `[x]` `CaptureDecisionDraftIntent` — voice draft intake.
 - `[x]` App Shortcuts metadata extraction confirmed in every build.
 
-### Still to build
+### Now shipped (was previously listed here as still to build)
 
-- `[ ]` `ReviewCreditTimingIntent` — voice-only background review of the
-  Credit Timing engine.
-- `[ ]` `RecommendCardIntent` with merchant, category, amount, currency,
-  and location-context parameters. Blocked on Phase 3's generic engine.
+- `[x]` `ReviewCreditTimingIntent` — voice-only background review of the
+  Credit Timing engine. Already live; this section was stale.
+- `[x]` `RecommendCardIntent` with merchant, category, amount, currency,
+  and location-context parameters. Already live on top of
+  `PurchaseDecisionEngine`; this section was stale.
 
 ### Example user request
 
@@ -660,40 +666,65 @@ the data NomadFi already has.
 
 ## Phase 3 — Context-Aware Card Decision Engine
 
-**Status:** `[~]` Partially shipped. Generic Purchase Decision Engine v1
-(see [`PurchaseDecisionEngine`](../NomadFi/NomadFi/Features/DecisionAssistant/PurchaseDecision/PurchaseDecisionEngine.swift)
-and tests `PurchaseDecisionEngineTests.swift` / `PurchaseDecisionRecordTests.swift`)
-now ranks the user's saved accounts for a typed merchant / category /
-amount / currency / location purchase. Rewards ranking is intentionally
-out of scope until verified issuer rewards data exists; the engine only
-emits a consolidated "verify rewards" checklist entry for
-rewards-sensitive categories. A merchant-aware Siri
-`RecommendCardIntent` is still `[ ]`.
+**Status:** `[x]` Phase 3 v1 + Phase 3 follow-through both shipped.
 
-**Goal:** Make the recommendation engine robust enough to operate across real
-life contexts.
+The deterministic
+[`PurchaseDecisionEngine`](../NomadFi/NomadFi/Features/DecisionAssistant/PurchaseDecision/PurchaseDecisionEngine.swift)
+ranks the user's saved accounts for a typed merchant / category /
+amount / currency / location purchase. The Phase 3 follow-through
+slice (2026-04-24) added travel-aware confidence hardening:
+
+- A pure `PurchaseTravelContext` derived from the user-confirmed
+  inputs (purchase currency vs. account currencies, optional
+  location hint, `.travel` category). No geolocation, no
+  merchant-acceptance database.
+- A deterministic `PurchaseDecisionConfidence`
+  (`.high` / `.moderate` / `.lowOrUnverified`) surfaced on the
+  brief and the Siri voice dialog with a short, factual
+  explanation list.
+- Cross-border guidance — Dynamic Currency Conversion reminder,
+  network conversion verification, dispute-process steps,
+  fallback / acceptance reminder — fired only when the travel
+  signal is positive.
+- Citations re-anchored against the cross-border purchase
+  mission: CFPB (pay-in-full + dispute), HelpWithMyBank
+  (disputes & unauthorized charges), FCAC (Canadian complaint
+  handling + how credit cards work), Visa (DCC explainer +
+  exchange-rate calculator), Mastercard (currency converter).
+  myFICO citations were moved out — credit-score / FICO ranking
+  belongs to the Credit Timing engine, not the cross-border
+  purchase engine.
+
+Rewards ranking remains intentionally out of scope until verified
+issuer rewards data exists; the engine only emits a consolidated
+"verify rewards" checklist entry for rewards-sensitive
+categories.
+
+**Goal:** Keep the recommendation engine deterministic, source-backed,
+and honest about cross-border context.
 
 ### Build
 
 - A merchant/category model for groceries, dining, transit, online shopping,
   school, health, subscriptions, and travel.
-- A travel-mode detector based on user-confirmed location context.
+- A travel-mode detector based on user-confirmed inputs (currency mismatch,
+  location hint, travel category) — never a geolocation result.
 - A deterministic ranking engine that weighs:
   - no debt / no interest as a hard constraint
   - statement close timing
   - current utilization
   - available credit
-  - foreign transaction fees
-  - rewards value
-  - issuer acceptance risk
-  - refund / dispute considerations
+  - foreign transaction fees (verified vs. unverified)
+  - rewards value (only when verified + fresh + comparable)
+  - issuer acceptance risk (carry a backup payment method)
+  - refund / dispute considerations (CFPB / HelpWithMyBank / FCAC)
   - cash-flow timing
 - A recommendation format that always includes:
   - best option
   - why
   - when not to use it
   - fallback
-  - source confidence
+  - source confidence (`.high` / `.moderate` / `.lowOrUnverified`)
 
 ### Hard Rules
 
@@ -702,6 +733,15 @@ life contexts.
 - Never guarantee a credit-limit increase.
 - Never present score effects as deterministic.
 - Never rank rewards above avoiding interest, fees, or missed payments.
+- Never claim to know the merchant country or merchant card acceptance.
+- Never claim DCC is always cheaper or always more expensive — surface
+  the choice and link the network's published terms.
+
+### Deferred (Phase 3.x or later)
+
+- Live FX feeds and merchant-side acceptance databases. Both are
+  out of scope by product rule, not by missing engineering.
+- Geolocation-based travel detection. Out of scope by product rule.
 
 ### Tradeoff
 

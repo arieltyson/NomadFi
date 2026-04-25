@@ -74,24 +74,47 @@ enum PurchaseDecisionEngine {
         let recommendation = decorated.first { $0.stance == .recommended }
         let fallback = decorated.first { $0.stance == .fallback }
 
+        // Phase 3 follow-through — derive cross-border / travel
+        // signals from inputs we already have, so DCC, FX, and
+        // dispute-process caveats only fire when the context warrants.
+        let travelContext = PurchaseTravelContext.from(
+            context: context,
+            accountCurrencies: accounts.map(\.currencyCodeRawValue)
+        )
+
+        let checks = aggregatedChecks(
+            candidates: decorated,
+            context: context,
+            travelContext: travelContext
+        )
+
+        let warningList = warnings(
+            for: recommendation,
+            fallback: fallback,
+            context: context,
+            travelContext: travelContext
+        )
+
+        let confidenceResult = derivedConfidence(
+            recommendation: recommendation,
+            outstandingCheckCount: checks.count,
+            travelContext: travelContext
+        )
+
         return PurchaseDecision(
             context: context,
             ruling: ruling,
             recommendation: recommendation,
             fallback: fallback,
             candidates: decorated,
-            whenNotToUseWarnings: warnings(
-                for: recommendation,
-                fallback: fallback,
-                context: context
-            ),
-            missingDataChecklist: aggregatedChecks(
-                candidates: decorated,
-                context: context
-            ),
+            whenNotToUseWarnings: warningList,
+            missingDataChecklist: checks,
             hardRules: hardRules,
             citations: PurchaseDecisionCitationCatalog.purchaseDecision,
-            evaluatedAt: now
+            evaluatedAt: now,
+            travelContext: travelContext,
+            confidence: confidenceResult.label,
+            confidenceExplanations: confidenceResult.explanations
         )
     }
 }
@@ -697,7 +720,8 @@ private extension PurchaseDecisionEngine {
 
     static func aggregatedChecks(
         candidates: [PurchaseCandidateAssessment],
-        context: PurchaseContext
+        context: PurchaseContext,
+        travelContext: PurchaseTravelContext
     ) -> [String] {
         var seen = Set<String>()
         var ordered: [String] = []
@@ -722,13 +746,24 @@ private extension PurchaseDecisionEngine {
                 }
             }
         }
+
+        // Phase 3 follow-through — cross-border / travel checks. Only
+        // appended when the travel signal is positive so single-
+        // currency purchases stay calm.
+        if travelContext.isLikelyCrossBorder {
+            for note in crossBorderChecks(travelContext: travelContext)
+                where seen.insert(note).inserted {
+                ordered.append(note)
+            }
+        }
         return ordered
     }
 
     static func warnings(
         for recommendation: PurchaseCandidateAssessment?,
         fallback: PurchaseCandidateAssessment?,
-        context: PurchaseContext
+        context: PurchaseContext,
+        travelContext: PurchaseTravelContext
     ) -> [String] {
         var warnings: [String] = []
         if let recommendation {
@@ -748,7 +783,119 @@ private extension PurchaseDecisionEngine {
                 "The fallback is a credit card. Treat it as a pay-in-full path, not a financing path."
             )
         }
+
+        // Phase 3 follow-through — DCC reminder fires when the purchase
+        // is likely cross-border. Procedural; never claims that paying
+        // in local currency is always cheaper, only that the choice
+        // matters and the network conversion terms are the place to
+        // verify it.
+        if travelContext.isLikelyCrossBorder {
+            warnings.append(
+                "If the merchant offers a choice between paying in the local currency or your card's currency (Dynamic Currency Conversion), the rate the merchant quotes is set by the merchant — not your network. Confirm the conversion against your network's published terms before agreeing."
+            )
+        }
         return warnings
+    }
+
+    /// Procedural cross-border / DCC / dispute-process reminders.
+    /// Each entry maps to a regulator or network publication — the
+    /// citation catalog backs the same claims with linked sources.
+    static func crossBorderChecks(
+        travelContext: PurchaseTravelContext
+    ) -> [String] {
+        var notes: [String] = []
+        notes.append(
+            "Verify your card's foreign-currency conversion against the network's published rate or your issuer's current terms before treating the converted amount as final."
+        )
+        notes.append(
+            "If a dispute or refund issue comes up, start with the merchant first. If that does not resolve it, follow your issuer's or bank's published billing-error / dispute process — the procedural steps are not identical across jurisdictions."
+        )
+        notes.append(
+            "Card acceptance and fall-back behaviour can vary by merchant and network. Carry a backup payment method that doesn't rely on the same network or issuer."
+        )
+        return notes
+    }
+
+    // MARK: - Confidence
+
+    /// Result tuple returned by ``derivedConfidence(...)`` — the
+    /// label plus the short factual reasons that produced it. Both
+    /// are surfaced verbatim in the brief and the dialog layer.
+    struct ConfidenceResult: Sendable, Equatable {
+        let label: PurchaseDecisionConfidence
+        let explanations: [String]
+    }
+
+    /// Pure derivation of the recommendation's confidence label.
+    /// Rules (highest specificity first):
+    ///
+    ///   1. No recommendation → `.lowOrUnverified` ("engine could
+    ///      not pick").
+    ///   2. Recommendation is cross-currency and FX is unverified →
+    ///      `.lowOrUnverified`.
+    ///   3. Any of: cross-currency with verified FX, travel signal,
+    ///      outstanding checks > 0 → `.moderate`.
+    ///   4. Otherwise → `.high`.
+    static func derivedConfidence(
+        recommendation: PurchaseCandidateAssessment?,
+        outstandingCheckCount: Int,
+        travelContext: PurchaseTravelContext
+    ) -> ConfidenceResult {
+        guard let recommendation else {
+            return ConfidenceResult(
+                label: .lowOrUnverified,
+                explanations: [
+                    "No saved account cleared the engine's guardrails for this purchase, so NomadFi has no recommendation to stand behind.",
+                ]
+            )
+        }
+
+        var notes: [String] = []
+        let isCrossCurrency = !recommendation.matchesPurchaseCurrency
+        let fxUnverified = isCrossCurrency
+            && !recommendation.foreignTransactionFeeIsVerified
+
+        if isCrossCurrency {
+            if fxUnverified {
+                notes.append(
+                    "Recommendation crosses currencies and the foreign-transaction fee on this account is not verified — verify it against the issuer's current terms."
+                )
+            } else {
+                notes.append(
+                    "Recommendation crosses currencies; the foreign-transaction fee is verified but the final converted amount still depends on network and merchant timing."
+                )
+            }
+        }
+        if travelContext.hasLocationHint {
+            notes.append(
+                "Location hint is set, so cross-border DCC and dispute-process caveats apply."
+            )
+        }
+        if travelContext.isTravelCategory {
+            notes.append(
+                "Category is travel — card acceptance and fallback risk are part of the picture."
+            )
+        }
+        if outstandingCheckCount > 0 {
+            notes.append(
+                "\(outstandingCheckCount) outstanding check\(outstandingCheckCount == 1 ? "" : "s") remain in the brief — clearing them strengthens the next ruling."
+            )
+        }
+
+        if fxUnverified {
+            return ConfidenceResult(label: .lowOrUnverified, explanations: notes)
+        }
+        if isCrossCurrency
+            || travelContext.isLikelyCrossBorder
+            || outstandingCheckCount > 0 {
+            return ConfidenceResult(label: .moderate, explanations: notes)
+        }
+        return ConfidenceResult(
+            label: .high,
+            explanations: [
+                "Recommendation matches the purchase currency, no travel signal applies, and no outstanding checks remain — this is the strongest pick the engine produces from saved inputs."
+            ]
+        )
     }
 
     // MARK: - Identity

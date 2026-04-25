@@ -10,10 +10,13 @@ import Foundation
 
 /// Read-only catalog of decisions surfaced in the Decision Assistant.
 ///
-/// The catalog is intentionally small today — Scenario 1 (Amazon
-/// arrival order) is the single entry with a deterministic engine.
-/// The structure leaves room for more decisions without bending the
-/// UI later.
+/// Three deterministic engines ship today: the Amazon arrival
+/// scenario (`ScenarioDecisionEngine`), the portfolio-wide credit-
+/// timing check (`CreditTimingDecisionEngine`), and the generic
+/// purchase-card check (`PurchaseDecisionEngine` — which covers
+/// cross-border / travel context as of Phase 3 follow-through).
+/// The structure leaves room for more decisions without bending
+/// the UI later.
 enum DecisionCatalog {
 
     /// All decisions known to the app, in display order. The first

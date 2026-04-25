@@ -275,6 +275,12 @@ enum DecisionAssistantIntentDialog {
             "NomadFi's recommended option for this purchase is your \(rec.accountName) — \(rec.accountTypeDisplay)."
         )
 
+        // Phase 3 follow-through — surface the deterministic
+        // confidence label right after the recommendation so the
+        // listener hears NomadFi's own honesty about how strongly
+        // the pick is backed.
+        parts.append(confidenceSentence(for: decision))
+
         if let fallback = decision.fallback {
             parts.append(
                 "If that isn't available, fall back to your \(fallback.accountName)."
@@ -293,6 +299,17 @@ enum DecisionAssistantIntentDialog {
             }
         }
 
+        // Phase 3 follow-through — DCC reminder fires when the
+        // travel signal is positive even if the recommendation
+        // itself happens to match the purchase currency (the user
+        // may still be paying a foreign merchant in their own
+        // currency at checkout).
+        if decision.travelContext.isLikelyCrossBorder {
+            parts.append(
+                "If the merchant offers Dynamic Currency Conversion, the rate the merchant quotes is set by the merchant — not your network. Confirm it against the network's published terms before agreeing."
+            )
+        }
+
         if decision.outstandingCheckCount > 0 {
             let checks = formattedCheckCount(decision.outstandingCheckCount)
             parts.append("\(checks) still need your input — open the Decisions tab for the list.")
@@ -307,6 +324,22 @@ enum DecisionAssistantIntentDialog {
         appendRewardCopy(for: decision, into: &parts)
 
         return parts.joined(separator: " ")
+    }
+
+    /// One short sentence that names the deterministic confidence
+    /// label NomadFi attaches to the recommendation. Voice-friendly
+    /// — the brief carries the full per-reason explanation list.
+    private static func confidenceSentence(
+        for decision: PurchaseDecision
+    ) -> String {
+        switch decision.confidence {
+        case .high:
+            return "NomadFi's confidence in this pick is high — same currency, no outstanding checks, no travel signal."
+        case .moderate:
+            return "NomadFi's confidence in this pick is moderate — at least one soft caveat applies. Open the Decisions tab for the rationale."
+        case .lowOrUnverified:
+            return "NomadFi's confidence in this pick is low or unverified — verify the inputs the brief lists before committing."
+        }
     }
 
     /// Appends reward-specific copy to the `.ready` dialog. Covers
