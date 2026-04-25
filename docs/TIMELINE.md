@@ -1976,6 +1976,24 @@ Highest-leverage remaining work, in order:
   `.other` drafts stay captured-only. Drafts are still never
   auto-analyzed, the persisted `DecisionDraftStatus` is never
   flipped to "analyzed", and there is no LLM classification.
+- **Decision Assistant history semantics hardening — shipped**
+  (2026-04-24). The rendered "Previous decisions" list now means
+  *decisions the user has actually reviewed*, not "every
+  deterministic decision in the catalog". Pure
+  `DecisionReviewEvidence` derivation rule gates membership: a
+  decision appears under "Previous decisions" only when (a) the
+  Scenario 1 record carries real input, (b) the Purchase
+  `record.hasUsableContext` is true (positive amount typed), or
+  (c) a CloudKit-safe `DecisionReviewMarker` for the Credit
+  Timing engine has been stamped (the only honest signal — that
+  engine has no per-engine input record). The marker is stamped
+  inside `DecisionAssistantViewModel.openCreditTimingBrief(...)`,
+  so opening the brief is the explicit user action that flips
+  the bit. The empty-state path is reachable again for fresh
+  users; "Now" and "Previous decisions" no longer duplicate the
+  same untouched rows. _Evidence:
+  `DecisionReviewEvidenceTests.swift`,
+  `DecisionAssistantTests.swift` (`reviewedDecisions(...)` case)._
 
 ---
 

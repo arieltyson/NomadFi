@@ -56,13 +56,15 @@ struct DecisionAssistantTests {
 
     // MARK: - View model
 
-    @Test("Fresh view model exposes every catalog decision and empty Scenario 1 history state")
+    @Test("Fresh view model exposes every catalog decision but reviewedDecisions is empty until evidence exists")
     func freshViewModelExposesActiveIdentity() {
         let viewModel = DecisionAssistantViewModel()
         // Scenario 1 stays the primary active decision for back-compat
         // callers; every deterministic decision (Amazon, Credit Timing,
-        // and the generic Purchase Card Check) renders as a hero and
-        // a history row.
+        // and the generic Purchase Card Check) is a *catalog candidate*
+        // for the history list — but `reviewedDecisions(...)` filters
+        // that candidate set down to actually-reviewed evidence (none
+        // yet on a fresh install).
         #expect(viewModel.activeDecision?.id == .amazonArrivalOrder)
         #expect(viewModel.activeDecisions.map(\.id) == [
             .amazonArrivalOrder,
@@ -74,6 +76,7 @@ struct DecisionAssistantTests {
             .creditTimingCheck,
             .purchaseCardCheck,
         ])
+        #expect(viewModel.reviewedDecisions(reviewMarkers: []).isEmpty)
         #expect(!viewModel.hasInteractedWithActiveDecision)
         #expect(viewModel.activeDecisionOutstandingCheckCount == 0)
     }

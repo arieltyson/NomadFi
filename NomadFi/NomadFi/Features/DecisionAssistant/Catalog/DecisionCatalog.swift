@@ -84,9 +84,13 @@ enum DecisionCatalog {
         all.first { $0.hasDeterministicEngine }
     }
 
-    /// Decisions eligible for the history list. Any identity with a
-    /// deterministic engine becomes a history row once the user has
-    /// interacted with its persistence record.
+    /// Decisions *eligible* to appear in the "Previous decisions"
+    /// list — i.e. every catalog identity that ships a deterministic
+    /// engine. Membership in this set is **not** the same as
+    /// "actually reviewed". The view-model filters this candidate
+    /// list through `DecisionReviewEvidence.reviewedDecisionIDs(...)`
+    /// at render time so untouched decisions never appear under
+    /// "Previous decisions".
     static var historicalCandidates: [DecisionIdentity] {
         all.filter(\.hasDeterministicEngine)
     }

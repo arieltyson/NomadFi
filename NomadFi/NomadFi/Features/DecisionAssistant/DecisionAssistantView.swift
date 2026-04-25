@@ -66,6 +66,11 @@ struct DecisionAssistantView: View {
     )
     private var archivedDrafts: [DecisionDraftRecord]
 
+    /// Decision review markers (Credit Timing, future engines).
+    /// Drives whether a catalog decision counts as "previously
+    /// reviewed" — see `DecisionReviewEvidence`.
+    @Query private var reviewMarkers: [DecisionReviewMarker]
+
     @State private var viewModel = DecisionAssistantViewModel()
 
     /// Currently-selected draft for the detail sheet. Kept as
@@ -88,7 +93,13 @@ struct DecisionAssistantView: View {
                 creditCardAccounts: creditCardAccounts,
                 drafts: drafts,
                 archivedDrafts: archivedDrafts,
-                onDraftTapped: { selectedDraft = $0 }
+                reviewedDecisions: viewModel.reviewedDecisions(
+                    reviewMarkers: reviewMarkers
+                ),
+                onDraftTapped: { selectedDraft = $0 },
+                onOpenDecision: { id in
+                    viewModel.openDecision(id, modelContext: modelContext)
+                }
             )
         }
         .scrollIndicators(.hidden)
@@ -254,7 +265,9 @@ private struct DecisionAssistantContent: View {
     let creditCardAccounts: [Account]
     let drafts: [DecisionDraftRecord]
     let archivedDrafts: [DecisionDraftRecord]
+    let reviewedDecisions: [DecisionIdentity]
     let onDraftTapped: (DecisionDraftRecord) -> Void
+    let onOpenDecision: (DecisionID) -> Void
 
     var body: some View {
         LazyVStack(spacing: SpacingTokens.large) {
@@ -265,7 +278,9 @@ private struct DecisionAssistantContent: View {
 
             DecisionAssistantHistorySection(
                 viewModel: viewModel,
-                allAccounts: allAccounts
+                allAccounts: allAccounts,
+                reviewedDecisions: reviewedDecisions,
+                onOpenDecision: onOpenDecision
             )
 
             DecisionAssistantNewSection(viewModel: viewModel)
@@ -331,19 +346,28 @@ private struct DecisionAssistantHistorySection: View {
     @Bindable var viewModel: DecisionAssistantViewModel
     let allAccounts: [Account]
 
+    /// Decisions the user has actually reviewed — filtered through
+    /// `DecisionReviewEvidence`. Empty for fresh users, which is
+    /// the path the empty-state copy is meant to hit.
+    let reviewedDecisions: [DecisionIdentity]
+
+    let onOpenDecision: (DecisionID) -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
             DecisionAssistantSectionHeader(
                 title: "Previous decisions",
-                subtitle: "Saved inputs for decisions you've reviewed before."
+                subtitle: "Decisions you've reviewed at least once on this device."
             )
 
-            if viewModel.historicalDecisions.isEmpty {
+            if reviewedDecisions.isEmpty {
                 DecisionAssistantHistoryEmptyState()
             } else {
                 DecisionAssistantHistoryList(
                     viewModel: viewModel,
-                    allAccounts: allAccounts
+                    allAccounts: allAccounts,
+                    reviewedDecisions: reviewedDecisions,
+                    onOpenDecision: onOpenDecision
                 )
             }
         }
@@ -354,47 +378,33 @@ private struct DecisionAssistantHistoryList: View {
 
     @Bindable var viewModel: DecisionAssistantViewModel
     let allAccounts: [Account]
+    let reviewedDecisions: [DecisionIdentity]
+    let onOpenDecision: (DecisionID) -> Void
 
     var body: some View {
         VStack(spacing: SpacingTokens.xSmall) {
-            ForEach(viewModel.historicalDecisions) { identity in
+            ForEach(reviewedDecisions) { identity in
                 let summary = viewModel.summary(
                     for: identity.id,
                     accounts: allAccounts
                 )
                 Button {
-                    viewModel.openDecision(identity.id)
+                    onOpenDecision(identity.id)
                 } label: {
                     GlassCard {
                         DecisionHistoryRow(
                             identity: identity,
                             ruling: summary.ruling,
-                            lastUpdatedAt: summary.lastUpdatedAt,
-                            isInteracted: isInteracted(with: identity)
+                            lastUpdatedAt: summary.lastUpdatedAt
                         )
                     }
                 }
                 .buttonStyle(.plain)
             }
 
-            if viewModel.historicalDecisions.count == 1 {
+            if reviewedDecisions.count == 1 {
                 DecisionAssistantHistoryHorizon()
             }
-        }
-    }
-
-    /// Per-decision interaction flag. Scenario 1 uses the VM's
-    /// existing helper; Credit Timing treats "interacted" as "at
-    /// least one credit card exists on file" since the engine doesn't
-    /// require additional user input beyond the saved cards.
-    private func isInteracted(with identity: DecisionIdentity) -> Bool {
-        switch identity.id {
-        case .amazonArrivalOrder:
-            return viewModel.hasInteractedWithActiveDecision
-        case .creditTimingCheck:
-            return allAccounts.contains(where: \.isCreditCard)
-        case .purchaseCardCheck:
-            return viewModel.purchaseDecisionBriefViewModel?.record.hasUsableContext ?? false
         }
     }
 }
@@ -419,12 +429,12 @@ private struct DecisionAssistantHistoryHorizon: View {
 
     var body: some View {
         Label {
-            Text("More decisions will appear here as NomadFi ships deterministic engines for them.")
+            Text("More decisions will appear here as you review the others in the Now section.")
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         } icon: {
-            Image(systemName: "hourglass")
+            Image(systemName: "arrow.up.circle")
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
         }
@@ -610,5 +620,6 @@ private struct DecisionAssistantSectionHeader: View {
         ScenarioDecisionRecord.self,
         DecisionDraftRecord.self,
         PurchaseDecisionRecord.self,
+        DecisionReviewMarker.self,
     ], inMemory: true)
 }

@@ -34,8 +34,12 @@ final class DecisionAssistantViewModel {
     /// order. Each one renders its own hero card.
     let activeDecisions: [DecisionIdentity]
 
-    /// Decisions that can appear in the history / previous list,
-    /// regardless of whether they have a persisted record yet.
+    /// Catalog set of decisions that are *eligible* to appear in
+    /// the "Previous decisions" list. Membership in this set is
+    /// not the same as actually-reviewed — see
+    /// `reviewedDecisions(reviewMarkers:)` for the rendered list.
+    /// Kept under the legacy name `historicalDecisions` so existing
+    /// snapshot tests stay readable.
     let historicalDecisions: [DecisionIdentity]
 
     // MARK: - Per-engine state
@@ -122,7 +126,28 @@ final class DecisionAssistantViewModel {
 
     /// Presents the Credit Timing brief. No bootstrap required — the
     /// engine reads the `@Query<Account>` live from the view.
-    func openCreditTimingBrief() {
+    ///
+    /// Also stamps the `DecisionReviewMarker` for
+    /// `.creditTimingCheck` so the "Previous decisions" section can
+    /// honestly distinguish "engine available" from "user has
+    /// reviewed it at least once". This is the only honest signal
+    /// for Credit Timing — that engine has no per-engine input
+    /// record like Scenario 1 or Purchase Card Check.
+    ///
+    /// `modelContext` is optional so legacy / preview call sites
+    /// keep working unchanged. The Decision Assistant view passes
+    /// the live `@Environment(\.modelContext)` value.
+    func openCreditTimingBrief(
+        modelContext: ModelContext? = nil,
+        now: Date = .now
+    ) {
+        if let modelContext {
+            DecisionReviewMarker.stamp(
+                .creditTimingCheck,
+                in: modelContext,
+                now: now
+            )
+        }
         isCreditTimingBriefPresented = true
     }
 
@@ -138,13 +163,18 @@ final class DecisionAssistantViewModel {
     }
 
     /// Opens a specific decision by identifier. Used by the history
-    /// list and reserved for future App Intent deep links.
-    func openDecision(_ id: DecisionID) {
+    /// list and reserved for future App Intent deep links. Passes
+    /// the `modelContext` through so Credit Timing can stamp its
+    /// review marker at brief-open time.
+    func openDecision(
+        _ id: DecisionID,
+        modelContext: ModelContext? = nil
+    ) {
         switch id {
         case .amazonArrivalOrder:
             openActiveDecision()
         case .creditTimingCheck:
-            openCreditTimingBrief()
+            openCreditTimingBrief(modelContext: modelContext)
         case .purchaseCardCheck:
             openPurchaseDecisionBrief()
         }
@@ -185,6 +215,30 @@ final class DecisionAssistantViewModel {
         viewModel.amountText = PurchaseDecisionBriefViewModel
             .amountEditingText(for: viewModel.record.amount)
         isPurchaseDecisionBriefPresented = true
+    }
+
+    // MARK: - Review evidence (Decision Assistant history hardening)
+
+    /// Returns the deterministic "previously reviewed" subset of
+    /// the catalog, filtered through `DecisionReviewEvidence`.
+    /// The view passes the live `@Query<DecisionReviewMarker>`
+    /// results in so the rendered "Previous decisions" list stays
+    /// in lockstep with persisted review state.
+    func reviewedDecisions(
+        reviewMarkers: [DecisionReviewMarker]
+    ) -> [DecisionIdentity] {
+        let scenarioInteracted = hasInteractedWithActiveDecision
+        let purchaseHasUsableContext = purchaseDecisionBriefViewModel?
+            .record.hasUsableContext ?? false
+        let creditTimingMarkerStamped = DecisionReviewEvidence
+            .markerStamped(for: .creditTimingCheck, in: reviewMarkers)
+
+        let reviewedIDs = DecisionReviewEvidence.reviewedDecisionIDs(
+            scenarioInteracted: scenarioInteracted,
+            purchaseHasUsableContext: purchaseHasUsableContext,
+            creditTimingMarkerStamped: creditTimingMarkerStamped
+        )
+        return historicalDecisions.filter { reviewedIDs.contains($0.id) }
     }
 
     // MARK: - Summaries
