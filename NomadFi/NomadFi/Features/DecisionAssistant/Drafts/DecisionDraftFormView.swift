@@ -62,7 +62,29 @@ struct DecisionDraftFormView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .keyboardDoneAccessory(focused: $focusedField)
+            .task { focusScenarioFieldIfBlank() }
         }
+    }
+
+    /// Focuses the scenario `TextEditor` on appear when the form
+    /// opens for a *fresh* capture and the field is empty.
+    /// Symmetric with the AI sheet's blank-launch focus polish:
+    /// one-tap launches from system surfaces (Control Widget /
+    /// Lock Screen / Action button / Shortcut) land directly in
+    /// typing mode rather than asking for an extra tap before
+    /// the keyboard appears.
+    ///
+    /// Edit mode intentionally does not auto-focus — the user is
+    /// reviewing existing content and shouldn't have the keyboard
+    /// rise over it. Capture mode with a non-empty scenario
+    /// (e.g. an in-app edit-then-reopen path) also doesn't
+    /// auto-focus, because forcing focus would steal the
+    /// keyboard from whatever the user was scrolling.
+    private func focusScenarioFieldIfBlank() {
+        guard !viewModel.mode.isEditing,
+              viewModel.scenarioText.isEmpty
+        else { return }
+        focusedField = .scenario
     }
 
     // MARK: - Sections

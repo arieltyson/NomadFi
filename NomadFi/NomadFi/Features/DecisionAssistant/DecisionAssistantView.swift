@@ -89,6 +89,16 @@ struct DecisionAssistantView: View {
     @AppStorage(PendingAIIntakeRequest.storageKey, store: AppRoutingDefaults.shared)
     private var pendingAIIntakeRaw: String = ""
 
+    /// One-shot routing flag handed across by
+    /// `StartDraftCaptureIntent` (Control Widget / Lock Screen /
+    /// Action button / Shortcut). Read reactively through
+    /// `@AppStorage(_:store:)` against the App Group shared
+    /// suite so writes from the widget extension's process — not
+    /// just the main app's — observe here, regardless of which
+    /// process iOS dispatched the intent in.
+    @AppStorage(PendingDraftCaptureFlag.storageKey, store: AppRoutingDefaults.shared)
+    private var pendingDraftCapture: Bool = false
+
     /// Per-presentation seed text passed into `DecisionAIIntakeSheet`.
     /// Cleared after the sheet dismisses so a re-open without an
     /// intent never re-seeds previously-typed text.
@@ -148,6 +158,9 @@ struct DecisionAssistantView: View {
         .task { viewModel.bootstrap(modelContext: modelContext) }
         .onChange(of: pendingAIIntakeRaw, initial: true) { _, _ in
             consumePendingAIIntakeIfAvailable()
+        }
+        .onChange(of: pendingDraftCapture, initial: true) { _, _ in
+            consumePendingDraftCaptureIfAvailable()
         }
         .sheet(isPresented: $viewModel.isBriefPresented) {
             if let briefViewModel = viewModel.scenario1BriefViewModel {
@@ -237,6 +250,21 @@ struct DecisionAssistantView: View {
         }
         aiIntakeSeedText = request.scenarioText ?? ""
         viewModel.presentAIIntake()
+    }
+
+    /// Consumes a pending typed-draft launch flag from the
+    /// system-surface hand-off slot
+    /// (`PendingDraftCaptureFlag`) when one is available, then
+    /// presents the typed `DecisionDraftFormView`. One-shot —
+    /// `consume` clears the slot atomically so the form does not
+    /// keep reappearing if the view re-renders.
+    ///
+    /// Honesty contract: the flag carries no payload. The launch
+    /// is purely navigational; the form's existing Save button
+    /// remains the only write path.
+    private func consumePendingDraftCaptureIfAvailable() {
+        guard PendingDraftCaptureFlag.consume() else { return }
+        viewModel.presentDraftForm()
     }
 
     /// Closes the detail sheet and, on the next runloop turn, opens

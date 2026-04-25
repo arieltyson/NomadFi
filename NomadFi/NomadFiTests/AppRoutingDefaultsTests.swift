@@ -65,6 +65,7 @@ struct AppRoutingDefaultsTests {
             "NomadFi/Features/Intents/OpenDecisionAssistantIntent.swift",
             "NomadFi/Features/Intents/OpenAIIntakeIntent.swift",
             "NomadFi/Features/Intents/StartAIIntakeIntent.swift",
+            "NomadFi/Features/Intents/StartDraftCaptureIntent.swift",
             "NomadFi/Features/Intents/ContinueAmazonArrivalDecisionIntent.swift",
         ]
         for path in mainAppIntents {

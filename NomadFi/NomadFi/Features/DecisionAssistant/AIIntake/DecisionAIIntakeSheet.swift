@@ -30,6 +30,16 @@ struct DecisionAIIntakeSheet: View {
 
     @State private var viewModel: DecisionAIIntakeViewModel
 
+    /// Programmatic focus binding for the capture-stage scenario
+    /// `TextEditor`. Auto-set to `true` on `.task` when the
+    /// editor is empty (a true blank launch — the user tapped a
+    /// one-tap control surface and expects to start typing
+    /// immediately, like Apple's own quick-entry surfaces).
+    /// Seeded launches (Siri / Shortcut dictation) leave the
+    /// editor unfocused so the user can scroll and review the
+    /// pre-filled scenario without the keyboard rising over it.
+    @FocusState private var isCaptureScenarioFocused: Bool
+
     /// Optional pre-seed scenario string the parent supplies when
     /// the sheet was opened from a system-surface hand-off (Siri /
     /// App Shortcut via `OpenAIIntakeIntent`). Applied once on
@@ -72,6 +82,7 @@ struct DecisionAIIntakeSheet: View {
         .task {
             viewModel.refreshAvailability()
             applySeedIfNeeded()
+            focusCaptureScenarioIfBlank()
         }
     }
 
@@ -88,6 +99,22 @@ struct DecisionAIIntakeSheet: View {
               viewModel.scenarioText.isEmpty
         else { return }
         viewModel.scenarioText = trimmedSeed
+    }
+
+    /// Focuses the capture-stage scenario `TextEditor` on
+    /// appear, but **only** when the editor is empty — i.e. a
+    /// true blank launch from a one-tap system surface (Control
+    /// Widget / Lock Screen / Action button). Seeded launches
+    /// (Siri / Shortcut dictation that filled the editor via
+    /// `applySeedIfNeeded`) intentionally do not auto-focus, so
+    /// the user can scroll and review the pre-filled scenario
+    /// without the keyboard rising over it. Predictable, not
+    /// jumpy.
+    private func focusCaptureScenarioIfBlank() {
+        guard viewModel.scenarioText.isEmpty,
+              viewModel.availability.isReadyToRun
+        else { return }
+        isCaptureScenarioFocused = true
     }
 
     // MARK: - Stage routing
@@ -149,6 +176,7 @@ struct DecisionAIIntakeSheet: View {
                 Section {
                     TextEditor(text: $viewModel.scenarioText)
                         .frame(minHeight: 160)
+                        .focused($isCaptureScenarioFocused)
                         .accessibilityLabel("Scenario description")
                 } header: {
                     Text("Paste or type the scenario")

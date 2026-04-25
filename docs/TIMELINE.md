@@ -2099,6 +2099,55 @@ Highest-leverage remaining work, in order:
   one primary vertical scroll only, accessibility headers per
   section, no colour-only differentiation. _Evidence:
   `DecisionAssistantIATests.swift`._
+- **Phase 9A capture-entry parity follow-through — typed-form
+  system entry + blank-launch focus polish — shipped**
+  (2026-04-25). Closes the ergonomic asymmetry between the AI
+  intake and the typed-form capture paths. Two problems
+  resolved at once:
+  (1) the AI intake sheet from a blank one-tap launch required
+  an extra tap before the keyboard rose, and
+  (2) the typed form — NomadFi's primary in-app CTA — had no
+  one-tap system-surface entry, only the AI path did. New
+  parameterless `StartDraftCaptureIntent`
+  (`.foreground(.immediate)`) sits next to `StartAIIntakeIntent`
+  with the same routing shape; widget-side mirror copy pinned
+  by source-level drift guards (same dual-source pattern Xcode
+  16's synchronized folder groups force on the AI mirror).
+  New `PendingDraftCaptureFlag` is a `Bool` sentinel sibling
+  of `PendingAIIntakeRequestStore` (no payload to carry — the
+  typed form starts blank), routed through
+  `AppRoutingDefaults.shared` so the cross-process write from
+  the widget extension's `DraftCaptureControlWidget` reaches
+  the main-app `@AppStorage` consumer. New
+  `DraftCaptureControlWidget` registered in
+  `NomadFiWidgetBundle` alongside `AIIntakeControlWidget`;
+  `square.and.pencil` SF Symbol matches the in-app capture
+  hero so the user can pin whichever capture path matches
+  their preference (or both) to whichever surface they
+  actually use, with no reliance on color to distinguish AI
+  from typed (HIG inclusivity guidance). New shortcut
+  registered in `NomadFiShortcuts` ("Start a draft in
+  NomadFi" / "Open the typed draft form in NomadFi" /
+  "Capture a typed decision in NomadFi"). The seeded Siri /
+  Shortcut path via `OpenAIIntakeIntent` stays untouched,
+  pinned by the existing parameter regression test. Blank-
+  launch focus polish on `DecisionAIIntakeSheet`: a new
+  `@FocusState private var isCaptureScenarioFocused: Bool`
+  drives `.focused(_:)` on the capture-stage `TextEditor`,
+  auto-set on `.task` only when the editor is empty (true
+  blank launch from a one-tap surface) — seeded launches
+  intentionally do not auto-focus so the user can scroll the
+  pre-filled prompt without the keyboard rising over it.
+  Symmetric polish on `DecisionDraftFormView` for the typed
+  path: scenario field auto-focuses on `.task` when the form
+  opens for a fresh capture and the field is empty; edit mode
+  intentionally does not auto-focus. Honesty boundary
+  preserved end-to-end: both control widgets and both
+  shortcut intents are *navigation only* — no persistence,
+  no interpretation, no recommendation, no ranking from any
+  system surface. _Evidence:
+  `StartDraftCaptureIntentTests.swift`,
+  `PendingDraftCaptureFlagTests.swift`._
 - **Phase 9A control-surface follow-through — Control Widget /
   Lock Screen / Action button entry for AI intake — shipped**
   (2026-04-25). Extends the on-device Apple Intelligence intake

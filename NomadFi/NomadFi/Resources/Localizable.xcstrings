@@ -384,6 +384,7 @@
 
     },
     "AI structures input. Deterministic engines decide. NomadFi will not save anything until you confirm on the next screen." : {
+
     },
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
 
@@ -559,6 +560,7 @@
 
     },
     "Capture with Apple Intelligence" : {
+
     },
     "Captured draft" : {
 
@@ -869,6 +871,7 @@
 
     },
     "Describe the decision in your own words — what you're weighing, and any context that matters. NomadFi will not pick a card or account on your behalf." : {
+
     },
     "Describe the scenario" : {
 
@@ -1646,12 +1649,15 @@
 
     },
     "Open NomadFi and start a new on-device Apple Intelligence intake with the scenario you dictated already filled in. NomadFi never analyzes or saves anything until you confirm in the app." : {
+
     },
     "Open NomadFi directly on the Decisions tab." : {
 
     },
     "Open NomadFi on the Decisions tab so you can finish your Amazon arrival-order decision." : {
 
+    },
+    "Open NomadFi to a blank on-device Apple Intelligence intake. NomadFi never analyzes or saves anything until you confirm in the app." : {
     },
     "Opens a form to add a new bank account or card." : {
 
@@ -2263,6 +2269,8 @@
     },
     "Start a decision" : {
 
+    },
+    "Start Apple Intelligence Intake" : {
     },
     "Statement balance (optional)" : {
 

@@ -26,17 +26,16 @@ import AppIntents
 struct NomadFiShortcuts: AppShortcutsProvider {
 
     static var appShortcuts: [AppShortcut] {
-        AppShortcut(
-            intent: OpenDecisionAssistantIntent(),
-            phrases: [
-                "Open Decision Assistant in \(.applicationName)",
-                "Open my decisions in \(.applicationName)",
-                "Show my decision assistant in \(.applicationName)",
-            ],
-            shortTitle: "Open Decisions",
-            systemImageName: "scale.3d"
-        )
-
+        // The bare `OpenDecisionAssistantIntent` is intentionally
+        // *not* registered as an App Shortcut here: iOS caps each
+        // app at 10 App Shortcuts, and the catalog already exposes
+        // three more specific Decisions-tab destinations
+        // (`OpenAIIntakeIntent`, `StartDraftCaptureIntent`,
+        // `ContinueAmazonArrivalDecisionIntent`). The intent type
+        // itself is preserved for non-Shortcut callers and for
+        // future use; only its discoverability through the
+        // system's suggested-shortcuts list is dropped to make
+        // room for `StartDraftCaptureIntent`.
         AppShortcut(
             intent: RecommendCardIntent(),
             phrases: [
@@ -101,6 +100,17 @@ struct NomadFiShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Capture with Apple Intelligence",
             systemImageName: "apple.intelligence"
+        )
+
+        AppShortcut(
+            intent: StartDraftCaptureIntent(),
+            phrases: [
+                "Start a draft in \(.applicationName)",
+                "Open the typed draft form in \(.applicationName)",
+                "Capture a typed decision in \(.applicationName)",
+            ],
+            shortTitle: "Start Draft",
+            systemImageName: "square.and.pencil"
         )
 
         AppShortcut(

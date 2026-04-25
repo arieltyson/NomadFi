@@ -7,5 +7,6 @@ struct NomadFiWidgetBundle: WidgetBundle {
         NomadFiDashboardWidget()
         NomadFiLockScreenWidget()
         AIIntakeControlWidget()
+        DraftCaptureControlWidget()
     }
 }
