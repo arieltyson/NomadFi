@@ -1,30 +1,37 @@
 // NewDecisionScaffoldCard.swift
 // NomadFi
 //
-// The "Gather intelligence" card in the Decision Assistant. Composes
-// an honest intake header, a planned-channels list, and a primary
-// "Capture decision" action that opens the on-device draft form.
-// Drafts are stored locally and flagged as "needs engine" — this
-// card never pretends NomadFi has analyzed them.
+// The "Gather intelligence" card in the Decision Assistant.
+// Composes an honest intake header, the available intake channels,
+// and a primary "Capture decision" action that opens the on-device
+// draft form. Drafts are stored locally; readiness is surfaced
+// inline in the list. NomadFi never auto-analyzes drafts.
+//
+// Phase 9A: the Apple Intelligence row is now a tappable entry
+// into `DecisionAIIntakeSheet` — on-device structured intake that
+// still requires explicit user confirmation before save.
 
 import SwiftUI
 
-/// Intake scaffold for the Decision Assistant. Surfaces the
-/// available (typed draft) and planned (Siri, Apple Intelligence)
-/// channels, and exposes a single prominent button to capture a new
-/// decision draft on-device.
+/// Intake scaffold for the Decision Assistant.
 struct NewDecisionScaffoldCard: View {
 
-    /// Fires when the user taps the primary capture affordance. The
-    /// parent view presents the ``DecisionDraftFormView`` sheet.
+    /// Fires when the user taps the primary capture affordance.
+    /// The parent view presents `DecisionDraftFormView`.
     let onCaptureTapped: () -> Void
+
+    /// Fires when the user taps the Apple Intelligence row. The
+    /// parent view presents `DecisionAIIntakeSheet`.
+    let onAppleIntelligenceTapped: () -> Void
 
     var body: some View {
         GlassCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 NewDecisionScaffoldHeader()
 
-                NewDecisionScaffoldIntakeList()
+                NewDecisionScaffoldIntakeList(
+                    onAppleIntelligenceTapped: onAppleIntelligenceTapped
+                )
 
                 Button(action: onCaptureTapped) {
                     Label("Capture decision", systemImage: "square.and.pencil")
@@ -35,7 +42,7 @@ struct NewDecisionScaffoldCard: View {
                 .controlSize(.large)
                 .accessibilityHint("Opens a local form to capture a new decision draft on this device.")
 
-                Text("Saved drafts stay on-device and are marked needs engine until a deterministic NomadFi engine covers them. NomadFi does not auto-analyze drafts with generic AI.")
+                Text("Drafts stay on this device. NomadFi shows what it can do with each one — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -61,7 +68,7 @@ private struct NewDecisionScaffoldHeader: View {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                Text("Capture a scenario now, in your own words. NomadFi keeps it on-device until a deterministic engine can analyze it.")
+                Text("Capture a scenario in your own words. NomadFi keeps it on-device and shows you what it can do with it.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -76,25 +83,30 @@ private struct NewDecisionScaffoldHeader: View {
 
 private struct NewDecisionScaffoldIntakeList: View {
 
+    let onAppleIntelligenceTapped: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
             NewDecisionIntakeRow(
                 systemImage: "square.and.pencil",
                 title: "Typed scenario",
                 subtitle: "Capture a decision draft right now. Stored on-device.",
-                status: .available
+                status: .available,
+                action: nil
             )
             NewDecisionIntakeRow(
                 systemImage: "mic.circle.fill",
                 title: "Siri & Shortcuts intake",
                 subtitle: "Say “Capture a decision in NomadFi” and dictate the scenario. Stored on-device as a draft.",
-                status: .available
+                status: .available,
+                action: nil
             )
             NewDecisionIntakeRow(
                 systemImage: "apple.intelligence",
                 title: "Apple Intelligence context",
-                subtitle: "Optional on-device context when you grant access. Planned.",
-                status: .planned
+                subtitle: "On-device structuring. NomadFi extracts draft fields from a natural-language scenario; you review and confirm before save.",
+                status: .available,
+                action: onAppleIntelligenceTapped
             )
         }
     }
@@ -111,8 +123,28 @@ private struct NewDecisionIntakeRow: View {
     let title: String
     let subtitle: String
     let status: Status
+    /// Optional tap handler. When non-nil, the row renders as a
+    /// `Button` so the affordance is reachable via tap and via
+    /// VoiceOver. When nil, the row renders as a static label.
+    let action: (() -> Void)?
 
     var body: some View {
+        if let action {
+            Button(action: action) {
+                rowContent
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(title). \(subtitle)")
+            .accessibilityAddTraits(.isButton)
+        } else {
+            rowContent
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(title). \(subtitle)")
+        }
+    }
+
+    private var rowContent: some View {
         HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
             Image(systemName: systemImage)
                 .foregroundStyle(ColorTokens.brandPrimary)
@@ -132,8 +164,6 @@ private struct NewDecisionIntakeRow: View {
 
             badge
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title). \(subtitle)")
     }
 
     @ViewBuilder
@@ -156,6 +186,9 @@ private struct NewDecisionIntakeRow: View {
 }
 
 #Preview {
-    NewDecisionScaffoldCard(onCaptureTapped: {})
-        .padding()
+    NewDecisionScaffoldCard(
+        onCaptureTapped: {},
+        onAppleIntelligenceTapped: {}
+    )
+    .padding()
 }

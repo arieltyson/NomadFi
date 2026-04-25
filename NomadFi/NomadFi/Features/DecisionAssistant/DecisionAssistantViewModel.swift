@@ -71,6 +71,10 @@ final class DecisionAssistantViewModel {
     /// `@Observable` surface instead of scattered `@State`.
     var isDraftFormPresented: Bool = false
 
+    /// True when the Phase 9A Apple Intelligence intake sheet is
+    /// presented.
+    var isAIIntakePresented: Bool = false
+
     // MARK: - Dependencies
 
     private static let logger = Logger(
@@ -184,6 +188,13 @@ final class DecisionAssistantViewModel {
     /// "Capture decision" button on ``NewDecisionScaffoldCard``.
     func presentDraftForm() {
         isDraftFormPresented = true
+    }
+
+    /// Presents the Phase 9A Apple Intelligence intake sheet.
+    /// Tapped from the "Apple Intelligence context" row on
+    /// ``NewDecisionScaffoldCard``.
+    func presentAIIntake() {
+        isAIIntakePresented = true
     }
 
     // MARK: - Draft → engine handoff (Phase 1 follow-through)

@@ -1640,10 +1640,41 @@ allowed to provide.
 
 ## Phase 9 — AI and Machine Learning Layer
 
-**Status:** `[ ]` Planned. Nothing in the app runs a language model today;
-every decision is deterministic.
+**Status:** `[~]` Partially shipped. Phase 9A (on-device
+natural-language intake into structured Decision drafts via Apple
+Foundation Models, with explicit user confirmation before save)
+shipped 2026-04-24 — see "Phase 9A — On-device structured intake"
+below. Deterministic engines remain the source of truth for every
+recommendation; the model only structures input.
 
-**Goal:** Make NomadFi feel intelligent while preserving financial rigor.
+### Phase 9A — On-device structured intake (shipped)
+
+The Apple Intelligence row on `NewDecisionScaffoldCard` is now a
+real entry into `DecisionAIIntakeSheet`:
+
+- **Capture** — user pastes / types a natural-language scenario.
+- **Interpret on device** — `FoundationModelsDraftInterpreter`
+  uses guided generation (`@Generable` schema mirroring the
+  draft fields) to extract a `DecisionDraftInterpretation`.
+- **Review** — extracted fields seed an editable form; missing
+  fields are listed verbatim so the user knows the gaps.
+- **Confirm and save** — user taps Save, the pure
+  `DecisionDraftInterpretationMapper` builds a fresh
+  `DecisionDraftRecord` (status `.needsEngine`), and the existing
+  Drafts v2/v3 detail sheet opens for handoff.
+
+Honesty boundary preserved: AI structures input; deterministic
+engines decide. The model never produces a recommendation,
+"verified", "best card", or "analyzed" string — pinned by the
+copy-guard tests. Availability is reported through
+`DecisionAIIntakeAvailability` so the sheet renders calm
+unavailable states for `modelNotReady`,
+`appleIntelligenceDisabled`, `unsupportedOnThisDevice`, and
+`foundationModelsUnavailable`. The typed form remains the
+universal intake on every code path. _Evidence:
+`DecisionAIIntakeTests.swift`._
+
+**Goal (overall Phase 9):** Make NomadFi feel intelligent while preserving financial rigor.
 
 ### AI Responsibilities
 
@@ -1855,7 +1886,19 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-**Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
+The unblocked product surfaces (Decision Assistant, Tax Vault,
+Investing Learn) keep advancing while the externally-blocked
+provider track (Phase 5 / 8B) waits on Plaid Limited Production
+approval and Apple's FinanceKit response. Phase 9A — on-device
+natural-language intake into structured Decision drafts via
+Apple Foundation Models — shipped on 2026-04-24 and is the first
+concrete AI implementation in the repo. Drafts v1 → v2 → v3 plus
+the Decision Assistant history-semantics hardening close out the
+Decisions surface alignment loop. Phase 7E is shipped; Phase 8A
+starter + follow-through deep dives are shipped.
+
+**Externally-blocked provider track (unchanged status):**
+Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
 real Plaid Link / OAuth readiness + operational real-device unblock +
 DEBUG-only validation recorder / redacted evidence export +
 **first real-device sandbox plumbing run on April 24, 2026** +
@@ -1865,7 +1908,8 @@ target Canadian FI) remains *unresolved*; Phase 5E remains
 *blocked* on (a) Plaid Limited Production access being granted for
 `com.arieljtyson.NomadFi` and the live-data Canadian-FI run from
 [`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
-clearing, and (b) Apple's FinanceKit response landing.** The FinanceKit capability request for
+clearing, and (b) Apple's FinanceKit response landing. The
+FinanceKit capability request for
 `com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
 is awaiting Apple's response. The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
@@ -1944,16 +1988,6 @@ Highest-leverage remaining work, in order:
 - **Phase 8B fund tracking + watchlist** — deferred. Externally
   blocked on the same upstreams Phase 5 is waiting for. When 5
   unblocks, 8B becomes plannable.
-- **Phase 8A follow-through — shipped** (2026-04-24). Deeper
-  registered-account lessons under Investing Learn: U.S. IRA
-  (Traditional vs. Roth procedural, contribution eligibility,
-  distributions) cite IRS Traditional IRAs / Roth IRAs / IRS
-  Traditional and Roth IRAs comparison page; Canada TFSA + RRSP
-  (TFSA contribution-room and recontribution timing, TFSA
-  over-contribution and non-resident contributions, RRSP
-  deduction-limit confirmation, RRSP withdrawal mechanics and
-  withholding tax) cite CRA only. Education-only — no account
-  recommendation, no suitability framing, no predicted returns.
 - **Phase 7E receipt / document organisation prompts — shipped**
   (2026-04-24). Deterministic per-region prompts derived from
   active jurisdictions and the existing `TaxDocument` archive,
@@ -1994,6 +2028,27 @@ Highest-leverage remaining work, in order:
   same untouched rows. _Evidence:
   `DecisionReviewEvidenceTests.swift`,
   `DecisionAssistantTests.swift` (`reviewedDecisions(...)` case)._
+- **Phase 9A — on-device structured intake — shipped**
+  (2026-04-24). The Apple Intelligence row in
+  `NewDecisionScaffoldCard` is now a real entry point. Pure
+  value-layer types (`DecisionDraftInterpretation`,
+  `DecisionDraftInterpretationMissingField`,
+  `DecisionAIIntakeAvailability`, `DecisionAIIntakeResult`),
+  protocol-backed `DecisionDraftInterpreter`, production
+  `FoundationModelsDraftInterpreter` (gated on
+  `canImport(FoundationModels)` + iOS 26), pure
+  `DecisionDraftInterpretationMapper`,
+  `DecisionAIIntakeViewModel`, and `DecisionAIIntakeSheet`. The
+  on-device model extracts structured *inputs* — kind, title,
+  merchant, location hint, amount, currency, timing, optional
+  notes, missing-fields list, optional confidence note. The user
+  reviews, edits, and confirms before persistence. After save,
+  the existing Drafts v2/v3 detail sheet opens for engine
+  handoff. No background analysis, no networked LLM, no
+  recommendation language, no `DecisionDraftStatus` promotion.
+  Foundation Models availability is mapped into a calm
+  unavailable-state surface so the typed form stays the
+  universal intake. _Evidence: `DecisionAIIntakeTests.swift`._
 - **Decision Drafts v3 — list readiness alignment — shipped**
   (2026-04-24). The captured-draft rows now render evaluator-
   derived *readiness* ("Engine ready", "Add amount first", "Add

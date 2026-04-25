@@ -144,6 +144,22 @@ struct DecisionAssistantView: View {
         .sheet(isPresented: $viewModel.isDraftFormPresented) {
             DecisionDraftFormView()
         }
+        .sheet(isPresented: $viewModel.isAIIntakePresented) {
+            DecisionAIIntakeSheet(
+                interpreter: aiInterpreter,
+                onSavedDraft: { draft in
+                    Task { @MainActor in
+                        selectedDraft = draft
+                    }
+                },
+                onSwitchToTypedForm: {
+                    Task { @MainActor in
+                        viewModel.isAIIntakePresented = false
+                        viewModel.presentDraftForm()
+                    }
+                }
+            )
+        }
         .sheet(item: $selectedDraft) { draft in
             DecisionDraftDetailView(
                 draft: draft,
@@ -256,6 +272,14 @@ private extension DecisionAssistantView {
         DecisionDraftAccountSnapshot(
             hasAnyCreditCard: accounts.contains(where: \.isCreditCard)
         )
+    }
+
+    /// Phase 9A — production interpreter wired into the AI intake
+    /// sheet. Resolves to the Foundation Models adapter on iOS 26+
+    /// when available; the adapter itself is responsible for
+    /// reporting `.foundationModelsUnavailable` cleanly when not.
+    var aiInterpreter: DecisionDraftInterpreter {
+        FoundationModelsDraftInterpreter()
     }
 }
 
@@ -472,7 +496,8 @@ private struct DecisionAssistantNewSection: View {
             )
 
             NewDecisionScaffoldCard(
-                onCaptureTapped: { viewModel.presentDraftForm() }
+                onCaptureTapped: { viewModel.presentDraftForm() },
+                onAppleIntelligenceTapped: { viewModel.presentAIIntake() }
             )
         }
     }
