@@ -37,41 +37,77 @@
 
 import SwiftUI
 
-/// The visible "Done" bar that floats above the software keyboard.
-/// Rendered by ``View/keyboardDoneAccessory(focused:)``; not
-/// intended to be instantiated directly at call sites.
+/// The visible "Done" affordance that floats above the software
+/// keyboard. Rendered by ``View/keyboardDoneAccessory(focused:)``;
+/// not intended to be instantiated directly at call sites.
+///
+/// Visual language (iOS 26 Liquid Glass):
+///   • Deliberately *no* full-width material strip behind the
+///     button. iOS 26's design language moves away from imposed
+///     toolbar chrome and toward floating controls that carry
+///     their own glass treatment — the capsule itself provides
+///     all the visual weight the bar needs.
+///   • The trailing-aligned `KeyboardDoneCapsuleButton` is a
+///     brand-tinted glass capsule that reads unambiguously as a
+///     tap target against the parent surface above the keyboard.
+///   • A 44pt minimum tap target is preserved through the
+///     button's intrinsic padding plus the surrounding HStack
+///     padding; both grow with Dynamic Type because the inner
+///     `Text` uses `TypographyTokens.body`.
 struct KeyboardDoneAccessoryBar: View {
 
     let action: () -> Void
 
-    /// Hairline divider thickness above the bar — single named
-    /// constant rather than a magic number scattered across the
-    /// design system.
-    private static let dividerHeight: CGFloat = 0.5
-
     var body: some View {
         HStack(spacing: 0) {
             Spacer(minLength: 0)
-            Button("Done", action: action)
-                .bold()
-                .accessibilityHint("Dismisses the keyboard.")
+            KeyboardDoneCapsuleButton(action: action)
         }
         .padding(.horizontal, SpacingTokens.medium)
         .padding(.vertical, SpacingTokens.xSmall)
         .frame(maxWidth: .infinity)
-        .background {
-            // Material in a Shape, per the iOS 26 SwiftUI rule.
-            Rectangle().fill(.bar)
-        }
-        .overlay(alignment: .top) {
-            // Hairline that visually separates the bar from the
-            // content above it. Same opacity ladder the rest of
-            // the design system uses for low-emphasis dividers.
-            Rectangle()
-                .fill(Color.secondary.opacity(0.2))
-                .frame(height: Self.dividerHeight)
-        }
         .accessibilityElement(children: .contain)
+    }
+}
+
+// MARK: - Done capsule button
+
+/// Solid brand-tinted capsule used as the keyboard accessory's
+/// only affordance. Lives in its own struct so the visual
+/// treatment (filled `actionTint` capsule + `onActionTint` bold
+/// label) stays a single source of truth and the parent bar
+/// doesn't break the "no view computed properties" rule.
+///
+/// Why a solid filled capsule instead of a tinted-glass one:
+/// the bar floats above the keyboard with *no* container chrome
+/// behind it, so the affordance has to carry all of its own
+/// visual weight. A subtly-tinted glass capsule reads as
+/// secondary chrome against the keyboard's blur; a solid
+/// `actionTint` capsule reads unambiguously as the primary
+/// action — same prominence ladder `NomadFiActionButton.primary`
+/// uses elsewhere in the app, just adapted to a capsule shape
+/// for the keyboard-accessory context.
+private struct KeyboardDoneCapsuleButton: View {
+
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text("Done")
+                .font(TypographyTokens.body)
+                .bold()
+                .foregroundStyle(ColorTokens.onActionTint)
+                .padding(.horizontal, SpacingTokens.medium)
+                .padding(.vertical, SpacingTokens.xxSmall)
+                .background {
+                    Capsule(style: .continuous)
+                        .fill(ColorTokens.actionTint)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Done")
+        .accessibilityHint("Dismisses the keyboard.")
+        .accessibilityAddTraits(.isButton)
     }
 }
 
