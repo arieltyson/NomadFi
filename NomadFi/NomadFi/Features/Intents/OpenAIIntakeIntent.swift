@@ -80,17 +80,21 @@ struct OpenAIIntakeIntent: AppIntent {
         }
 
         // Route the launch to the Decisions tab so the AI intake
-        // sheet's host view actually mounts. Same `@AppStorage`
-        // chokepoint OpenDecisionAssistantIntent uses.
-        UserDefaults.standard.set(
+        // sheet's host view actually mounts. Routes through the
+        // App Group shared suite so the write is observable across
+        // app + extension processes — same chokepoint
+        // `OpenDecisionAssistantIntent` and `StartAIIntakeIntent`
+        // use.
+        AppRoutingDefaults.shared.set(
             MainTabSelection.decisions.rawValue,
             forKey: MainTabSelection.storageKey
         )
 
         // Hand the pre-seeded scenario across via the value-typed
         // pending-request slot. `DecisionAssistantView` reads from
-        // the slot via `@AppStorage`, consumes it once, and
-        // presents the AI intake sheet with the scenario filled in.
+        // the same shared suite via `@AppStorage(_:store:)`,
+        // consumes it once, and presents the AI intake sheet with
+        // the scenario filled in.
         PendingAIIntakeRequestStore.write(
             PendingAIIntakeRequest(scenarioText: trimmed)
         )

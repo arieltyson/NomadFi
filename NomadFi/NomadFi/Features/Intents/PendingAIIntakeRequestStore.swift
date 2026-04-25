@@ -12,8 +12,16 @@
 //     `consume(from:)` one-shot helper from a `Task @MainActor`
 //     context for paths that don't fit the `@AppStorage` reactive
 //     model, while still using `@AppStorage` as the read-trigger.
-//   • Tests can pass a fresh `UserDefaults(suiteName:)` so we
-//     never write the developer's standard defaults.
+//   • Tests can pass a fresh `UserDefaults(suiteName:)` so they
+//     never pollute the production routing slot.
+//
+// Defaults to the App Group shared suite via
+// `AppRoutingDefaults.shared` so cross-process writes (widget
+// extension's `ControlWidgetButton` tap) are observable from the
+// main-app consumer. Routing through `UserDefaults.standard`
+// would re-create the original bug — the widget process and
+// main-app process see different `.standard` stores, so the
+// hand-off would silently no-op on the control surface.
 //
 // Honesty contract pinned in
 // `PendingAIIntakeRequestStoreTests`:
@@ -46,7 +54,7 @@ enum PendingAIIntakeRequestStore {
     /// slot. Callers that want one-shot semantics use
     /// `consume(from:)`.
     static func read(
-        from defaults: UserDefaults = .standard
+        from defaults: UserDefaults = AppRoutingDefaults.shared
     ) -> PendingAIIntakeRequest? {
         guard let raw = defaults.string(forKey: PendingAIIntakeRequest.storageKey),
               !raw.isEmpty
@@ -59,7 +67,7 @@ enum PendingAIIntakeRequestStore {
     /// the same request twice. Safe to call from any thread that
     /// owns the supplied `UserDefaults`.
     static func consume(
-        from defaults: UserDefaults = .standard
+        from defaults: UserDefaults = AppRoutingDefaults.shared
     ) -> PendingAIIntakeRequest? {
         let request = read(from: defaults)
         clear(in: defaults)
@@ -73,7 +81,7 @@ enum PendingAIIntakeRequestStore {
     /// `consume` runs or `clear` is called.
     static func write(
         _ request: PendingAIIntakeRequest,
-        to defaults: UserDefaults = .standard
+        to defaults: UserDefaults = AppRoutingDefaults.shared
     ) {
         let raw = request.rawValue
         guard !raw.isEmpty else {
@@ -88,7 +96,7 @@ enum PendingAIIntakeRequestStore {
     /// Idempotent clear — leaves the slot empty regardless of the
     /// prior contents. Safe to call defensively.
     static func clear(
-        in defaults: UserDefaults = .standard
+        in defaults: UserDefaults = AppRoutingDefaults.shared
     ) {
         defaults.removeObject(forKey: PendingAIIntakeRequest.storageKey)
     }

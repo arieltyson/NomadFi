@@ -78,11 +78,15 @@ struct DecisionAssistantView: View {
     @State private var viewModel = DecisionAssistantViewModel()
 
     /// One-shot scenario seed handed across by `OpenAIIntakeIntent`
-    /// (Siri / Shortcuts) via `PendingAIIntakeRequestStore`. Read
-    /// reactively through `@AppStorage` so the View re-evaluates as
-    /// soon as the App Intent writes the slot, even if the
-    /// Decisions tab was already mounted when the intent fired.
-    @AppStorage(PendingAIIntakeRequest.storageKey)
+    /// (Siri / Shortcuts), `StartAIIntakeIntent` (Control Widget /
+    /// Lock Screen / Action button), or any future routing entry
+    /// via `PendingAIIntakeRequestStore`. Read reactively through
+    /// `@AppStorage(_:store:)` against the App Group shared suite
+    /// (``AppRoutingDefaults/shared``) so writes from the widget
+    /// extension's process — not just the main app's — observe
+    /// here, regardless of which process iOS dispatched the
+    /// intent in.
+    @AppStorage(PendingAIIntakeRequest.storageKey, store: AppRoutingDefaults.shared)
     private var pendingAIIntakeRaw: String = ""
 
     /// Per-presentation seed text passed into `DecisionAIIntakeSheet`.

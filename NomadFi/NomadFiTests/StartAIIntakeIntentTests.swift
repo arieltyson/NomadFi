@@ -64,27 +64,40 @@ struct StartAIIntakeIntentTests {
         )
     }
 
-    @Test("StartAIIntakeIntent perform() writes the Decisions tab routing slot + a blank-launch payload, then returns — no recommendation, no save, no interpretation")
-    func performWritesRoutingSlotAndBlankPayload() async throws {
-        // Defensive — clear both routing slots so the test starts
-        // from a known empty state regardless of prior runs.
+    @Test("StartAIIntakeIntent perform() writes the Decisions tab routing slot + a blank-launch payload to the App Group shared suite, never to UserDefaults.standard — cross-process routing must observe from either process")
+    func performWritesRoutingSlotAndBlankPayloadToSharedSuite() async throws {
+        let shared = AppRoutingDefaults.shared
+
+        // Defensive — clear both routing slots in BOTH stores so
+        // the test starts from a known empty state regardless of
+        // prior runs.
+        shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: PendingAIIntakeRequest.storageKey)
         UserDefaults.standard.removeObject(forKey: MainTabSelection.storageKey)
         UserDefaults.standard.removeObject(forKey: PendingAIIntakeRequest.storageKey)
 
         _ = try await StartAIIntakeIntent().perform()
 
-        let tab = UserDefaults.standard.string(forKey: MainTabSelection.storageKey)
-        #expect(tab == MainTabSelection.decisions.rawValue)
+        // The shared suite must carry the routing payloads — that
+        // is the cross-process channel the consumer reads.
+        let sharedTab = shared.string(forKey: MainTabSelection.storageKey)
+        #expect(sharedTab == MainTabSelection.decisions.rawValue)
 
-        let pendingRaw = UserDefaults.standard.string(forKey: PendingAIIntakeRequest.storageKey)
-        let pending = pendingRaw.flatMap(PendingAIIntakeRequest.init(rawValue:))
-        #expect(pending == .blankLaunch)
-        #expect(pending?.scenarioText == nil)
+        let sharedPendingRaw = shared.string(forKey: PendingAIIntakeRequest.storageKey)
+        let sharedPending = sharedPendingRaw.flatMap(PendingAIIntakeRequest.init(rawValue:))
+        #expect(sharedPending == .blankLaunch)
+        #expect(sharedPending?.scenarioText == nil)
 
-        // Cleanup so the test never leaves the developer's
-        // standard defaults in an inconsistent state.
-        UserDefaults.standard.removeObject(forKey: MainTabSelection.storageKey)
-        UserDefaults.standard.removeObject(forKey: PendingAIIntakeRequest.storageKey)
+        // `.standard` must NOT carry the routing payloads — writing
+        // there would re-introduce the per-process bug the slice
+        // exists to fix.
+        #expect(UserDefaults.standard.string(forKey: MainTabSelection.storageKey) == nil)
+        #expect(UserDefaults.standard.string(forKey: PendingAIIntakeRequest.storageKey) == nil)
+
+        // Cleanup so the test never leaves the shared suite or the
+        // developer's standard defaults in an inconsistent state.
+        shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: PendingAIIntakeRequest.storageKey)
     }
 
     // MARK: - Existing parameterized intent preserved
@@ -172,6 +185,34 @@ struct StartAIIntakeIntentTests {
             payload (\(PendingAIIntakeRequest.blankLaunch.rawValue)) \
             verbatim — drift would emit a payload the main-app \
             consumer's `init?(rawValue:)` would reject.
+            """
+        )
+    }
+
+    @Test("Widget mirror writes routing payloads through the App Group shared suite — never UserDefaults.standard, which is per-process and would not reach the main-app consumer")
+    func widgetCopyUsesSharedSuite() throws {
+        guard let widgetSource = Self.sourceIfReadable(
+            relativePath: "NomadFiWidgetExtension/StartAIIntakeIntent.swift"
+        ) else { return }
+
+        #expect(
+            widgetSource.contains("UserDefaults(\n            suiteName: NomadFiWidgetSharedConstants.appGroupIdentifier"),
+            """
+            Widget mirror must construct its UserDefaults via \
+            `UserDefaults(suiteName: NomadFiWidgetSharedConstants.appGroupIdentifier)` \
+            so the routing writes are visible in the App Group \
+            shared suite. The main-app consumer reads from the \
+            same suite via `AppRoutingDefaults.shared`.
+            """
+        )
+        #expect(
+            !widgetSource.contains("UserDefaults.standard"),
+            """
+            Widget mirror must not use `UserDefaults.standard` — \
+            that is the *widget's* per-process defaults, not the \
+            shared App Group suite the main-app consumer reads. \
+            Writing through `.standard` re-introduces the \
+            cross-process bug this slice exists to fix.
             """
         )
     }

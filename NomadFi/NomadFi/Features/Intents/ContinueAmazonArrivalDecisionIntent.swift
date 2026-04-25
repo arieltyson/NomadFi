@@ -38,7 +38,7 @@ struct ContinueAmazonArrivalDecisionIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        UserDefaults.standard.set(
+        AppRoutingDefaults.shared.set(
             MainTabSelection.decisions.rawValue,
             forKey: MainTabSelection.storageKey
         )

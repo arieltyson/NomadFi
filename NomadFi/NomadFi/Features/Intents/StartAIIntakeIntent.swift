@@ -71,19 +71,21 @@ struct StartAIIntakeIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         // Route the launch to the Decisions tab so the AI intake
-        // sheet's host view actually mounts. Same `@AppStorage`
-        // chokepoint `OpenDecisionAssistantIntent` and
-        // `OpenAIIntakeIntent` use.
-        UserDefaults.standard.set(
+        // sheet's host view actually mounts. Routes through the
+        // App Group shared suite — the widget process and the
+        // main-app process see the same write, which the
+        // foreground-immediate happy path used to depend on by
+        // luck.
+        AppRoutingDefaults.shared.set(
             MainTabSelection.decisions.rawValue,
             forKey: MainTabSelection.storageKey
         )
 
         // Hand a blank-launch payload across via the value-typed
         // pending-request slot. `DecisionAssistantView` reads from
-        // the slot via `@AppStorage`, consumes it once, and
-        // presents the AI intake sheet with an empty scenario
-        // field ready for typing.
+        // the same shared suite via `@AppStorage(_:store:)`,
+        // consumes it once, and presents the AI intake sheet with
+        // an empty scenario field ready for typing.
         PendingAIIntakeRequestStore.write(.blankLaunch)
 
         return .result()

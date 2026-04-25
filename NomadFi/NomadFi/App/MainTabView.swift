@@ -19,9 +19,15 @@ import SwiftUI
 /// ``MainTabSelection/storageKey`` before the system brings the app
 /// forward, and the tab bar honours the requested route reactively
 /// on first appearance.
+///
+/// The store is the App Group shared suite via
+/// ``AppRoutingDefaults/shared`` so a tap from the widget
+/// extension's `ControlWidgetButton` (whose `perform()` body may
+/// run in the widget process) writes to the same suite the
+/// main-app `@AppStorage` reads from.
 struct MainTabView: View {
 
-    @AppStorage(MainTabSelection.storageKey)
+    @AppStorage(MainTabSelection.storageKey, store: AppRoutingDefaults.shared)
     private var storedSelection: MainTabSelection = .default
 
     var body: some View {
