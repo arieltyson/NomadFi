@@ -5,6 +5,13 @@
 // Decision Assistant's "Gathered intelligence" list. Visually
 // distinct from ``DecisionHistoryRow`` (which shows analyzed
 // decisions) so drafts never read as recommendations.
+//
+// Drafts v3 alignment: the row badge now reflects evaluator-derived
+// *readiness* (engine ready / requires context / route to advanced
+// tool / no engine yet / archived), not just the persisted
+// `DecisionDraftStatus` lifecycle. The lifecycle stays unchanged —
+// archived drafts always render as archived; active drafts render
+// the more precise readiness label.
 
 import SwiftUI
 
@@ -14,6 +21,13 @@ import SwiftUI
 struct DecisionDraftRow: View {
 
     let draft: DecisionDraftRecord
+
+    /// Pre-derived readiness from
+    /// `DecisionDraftRowReadiness.from(draft:accountSnapshot:)`.
+    /// Required so the row stays purely presentational and so
+    /// callers (the view + tests) make the readiness derivation
+    /// explicit at the call site.
+    let readiness: DecisionDraftRowReadiness
 
     var body: some View {
         HStack(alignment: .top, spacing: SpacingTokens.small) {
@@ -32,7 +46,7 @@ struct DecisionDraftRow: View {
                         .lineLimit(2)
                 }
 
-                DecisionDraftRowFooter(draft: draft)
+                DecisionDraftRowFooter(draft: draft, readiness: readiness)
             }
 
             Spacer(minLength: 0)
@@ -53,6 +67,12 @@ struct DecisionDraftRow: View {
 
     // MARK: - Accessibility
 
+    /// Composed from kind + title + readiness + last-updated date.
+    /// Drafts v3: replaces the prior stale `draft.status` lookup
+    /// for active drafts, which read every active draft as
+    /// "Captured. Awaiting a deterministic engine — not yet
+    /// analyzed." even when an engine handoff was already
+    /// available.
     private var accessibilityDescription: String {
         let updated = draft.updatedAt.formatted(
             .dateTime.year().month(.wide).day()
@@ -60,7 +80,7 @@ struct DecisionDraftRow: View {
         return [
             draft.kind.accessibilityLabel,
             draft.displayTitle,
-            draft.status.accessibilityLabel,
+            readiness.accessibilityDescription,
             "Last updated \(updated)",
         ].joined(separator: ", ")
     }
@@ -71,6 +91,7 @@ struct DecisionDraftRow: View {
 private struct DecisionDraftRowFooter: View {
 
     let draft: DecisionDraftRecord
+    let readiness: DecisionDraftRowReadiness
 
     var body: some View {
         HStack(spacing: SpacingTokens.xSmall) {
@@ -81,9 +102,9 @@ private struct DecisionDraftRowFooter: View {
             )
 
             StatusBadge(
-                label: draft.status.displayLabel,
-                color: statusColor,
-                systemImage: draft.status.systemImage
+                label: readiness.displayLabel,
+                color: readinessColor(for: readiness),
+                systemImage: readiness.systemImage
             )
 
             Spacer(minLength: 0)
@@ -95,10 +116,18 @@ private struct DecisionDraftRowFooter: View {
         .accessibilityHidden(true)
     }
 
-    private var statusColor: Color {
-        switch draft.status {
-        case .needsEngine: ColorTokens.warning
+    /// Colour mapping for the readiness badge. Kept in the view
+    /// layer so the value-layer `DecisionDraftRowReadiness` stays
+    /// free of SwiftUI imports.
+    private func readinessColor(
+        for readiness: DecisionDraftRowReadiness
+    ) -> Color {
+        switch readiness {
         case .archived: ColorTokens.neutral
+        case .engineReady: ColorTokens.positive
+        case .requiresContext: ColorTokens.warning
+        case .routedToAdvancedTool: ColorTokens.brandPrimary
+        case .noEngineYet: ColorTokens.neutral
         }
     }
 }
@@ -117,6 +146,9 @@ private struct DecisionDraftRowFooter: View {
     )
 
     return List {
-        DecisionDraftRow(draft: preview)
+        DecisionDraftRow(
+            draft: preview,
+            readiness: .engineReady
+        )
     }
 }

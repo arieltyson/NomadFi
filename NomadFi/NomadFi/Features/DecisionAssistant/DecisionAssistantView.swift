@@ -91,8 +91,13 @@ struct DecisionAssistantView: View {
                 viewModel: viewModel,
                 allAccounts: accounts,
                 creditCardAccounts: creditCardAccounts,
-                drafts: drafts,
-                archivedDrafts: archivedDrafts,
+                draftItems: DecisionDraftListPresentation
+                    .decoratedActiveDrafts(
+                        drafts,
+                        accountSnapshot: draftAccountSnapshot
+                    ),
+                archivedDraftItems: DecisionDraftListPresentation
+                    .decoratedArchivedDrafts(archivedDrafts),
                 reviewedDecisions: viewModel.reviewedDecisions(
                     reviewMarkers: reviewMarkers
                 ),
@@ -263,8 +268,18 @@ private struct DecisionAssistantContent: View {
     @Bindable var viewModel: DecisionAssistantViewModel
     let allAccounts: [Account]
     let creditCardAccounts: [Account]
-    let drafts: [DecisionDraftRecord]
-    let archivedDrafts: [DecisionDraftRecord]
+
+    /// Active drafts already decorated with their evaluator-derived
+    /// readiness and group-sorted by `DecisionDraftListPresentation`.
+    /// Engine-ready drafts come first; archived drafts live in the
+    /// quieter section below.
+    let draftItems: [DecisionDraftListItem]
+
+    /// Archived drafts decorated with the `.archived` readiness.
+    /// Order preserved from the upstream `@Query` (`updatedAt`
+    /// descending).
+    let archivedDraftItems: [DecisionDraftListItem]
+
     let reviewedDecisions: [DecisionIdentity]
     let onDraftTapped: (DecisionDraftRecord) -> Void
     let onOpenDecision: (DecisionID) -> Void
@@ -286,13 +301,13 @@ private struct DecisionAssistantContent: View {
             DecisionAssistantNewSection(viewModel: viewModel)
 
             DecisionAssistantDraftsSection(
-                drafts: drafts,
+                items: draftItems,
                 onDraftTapped: onDraftTapped
             )
 
-            if !archivedDrafts.isEmpty {
+            if !archivedDraftItems.isEmpty {
                 DecisionAssistantArchivedDraftsSection(
-                    drafts: archivedDrafts,
+                    items: archivedDraftItems,
                     onDraftTapped: onDraftTapped
                 )
             }
@@ -465,27 +480,31 @@ private struct DecisionAssistantNewSection: View {
 
 // MARK: - Drafts section
 
-/// Shows captured drafts separately from the catalog-backed "Previous
-/// decisions" list so the user can never mistake a raw draft for an
-/// analyzed decision. Renders an empty-state pointer when no drafts
-/// exist yet, or a glass-card list sorted by `updatedAt` descending.
+/// Shows captured drafts separately from the catalog-backed
+/// "Previous decisions" list so the user can never mistake a raw
+/// draft for an analyzed decision. Drafts v3 alignment: each row
+/// surfaces evaluator-derived readiness ("Engine ready", "Add
+/// amount first", "Review in Tax Vault", …) so the list is honest
+/// at first glance about what NomadFi can do with each draft right
+/// now. Engine-ready drafts surface first; the order otherwise
+/// follows readiness group then `updatedAt` desc within each group.
 private struct DecisionAssistantDraftsSection: View {
 
-    let drafts: [DecisionDraftRecord]
+    let items: [DecisionDraftListItem]
     let onDraftTapped: (DecisionDraftRecord) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
             DecisionAssistantSectionHeader(
                 title: "Gathered intelligence",
-                subtitle: "Saved drafts on this device. Not yet analyzed."
+                subtitle: "Saved drafts on this device. Each row shows what NomadFi can do with it right now."
             )
 
-            if drafts.isEmpty {
+            if items.isEmpty {
                 DecisionAssistantDraftsEmptyState()
             } else {
                 DecisionAssistantDraftsList(
-                    drafts: drafts,
+                    items: items,
                     onDraftTapped: onDraftTapped
                 )
             }
@@ -495,21 +514,24 @@ private struct DecisionAssistantDraftsSection: View {
 
 private struct DecisionAssistantDraftsList: View {
 
-    let drafts: [DecisionDraftRecord]
+    let items: [DecisionDraftListItem]
     let onDraftTapped: (DecisionDraftRecord) -> Void
 
     var body: some View {
         VStack(spacing: SpacingTokens.xSmall) {
-            ForEach(drafts) { draft in
+            ForEach(items) { item in
                 Button {
-                    onDraftTapped(draft)
+                    onDraftTapped(item.draft)
                 } label: {
                     GlassCard {
-                        DecisionDraftRow(draft: draft)
+                        DecisionDraftRow(
+                            draft: item.draft,
+                            readiness: item.readiness
+                        )
                     }
                 }
                 .buttonStyle(.plain)
-                .accessibilityHint("Opens the captured draft details. Read-only.")
+                .accessibilityHint("Opens the draft details. The detail sheet shows what NomadFi can do with this draft.")
             }
         }
     }
@@ -522,7 +544,7 @@ private struct DecisionAssistantDraftsEmptyState: View {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No drafts captured yet")
                     .font(TypographyTokens.body)
-                Text("Tap Capture decision above to save a scenario. Drafts stay on this device and are marked Needs engine until a deterministic NomadFi engine covers them.")
+                Text("Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft — open Purchase Card Check, open Credit Timing, or point at Tax Vault / Investing Learn — without auto-analyzing anything.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -540,7 +562,7 @@ private struct DecisionAssistantDraftsEmptyState: View {
 /// relying on colour alone.
 private struct DecisionAssistantArchivedDraftsSection: View {
 
-    let drafts: [DecisionDraftRecord]
+    let items: [DecisionDraftListItem]
     let onDraftTapped: (DecisionDraftRecord) -> Void
 
     var body: some View {
@@ -551,12 +573,15 @@ private struct DecisionAssistantArchivedDraftsSection: View {
             )
 
             VStack(spacing: SpacingTokens.xSmall) {
-                ForEach(drafts) { draft in
+                ForEach(items) { item in
                     Button {
-                        onDraftTapped(draft)
+                        onDraftTapped(item.draft)
                     } label: {
                         GlassCard {
-                            DecisionDraftRow(draft: draft)
+                            DecisionDraftRow(
+                                draft: item.draft,
+                                readiness: item.readiness
+                            )
                         }
                     }
                     .buttonStyle(.plain)

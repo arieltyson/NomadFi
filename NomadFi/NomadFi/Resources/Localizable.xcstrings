@@ -664,6 +664,8 @@
     "Comparison Error" : {
 
     },
+    "Confidence" : {
+    },
     "Confirm and add to Tax Vault" : {
 
     },
@@ -769,6 +771,8 @@
     },
     "Credit timing check" : {
 
+    },
+    "Cross-border context" : {
     },
     "Cross-border transactions and real-cost insights arrive in Phase 3." : {
 
@@ -1390,8 +1394,7 @@
     "More actions" : {
 
     },
-    "More decisions will appear here as NomadFi ships deterministic engines for them." : {
-
+    "More decisions will appear here as you review the others in the Now section." : {
     },
     "More draft actions" : {
 
@@ -1531,8 +1534,7 @@
     "NomadFi reads your receipts on device, suggests a category, and waits for you to confirm." : {
 
     },
-    "NomadFi stored this draft on-device only. A deterministic engine for this kind of decision hasn't shipped yet — until one does, NomadFi will not generate a recommendation from this capture." : {
-
+    "NomadFi stored this draft on-device only. Drafts are never auto-analyzed; NomadFi only opens an existing deterministic engine when you tap a handoff button above." : {
     },
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
@@ -1613,6 +1615,7 @@
 
     },
     "Official source" : {
+
     },
     "Official sources" : {
 
@@ -1774,6 +1777,7 @@
 
     },
     "Organize your records" : {
+
     },
     "Other" : {
 

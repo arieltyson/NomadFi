@@ -1994,6 +1994,25 @@ Highest-leverage remaining work, in order:
   same untouched rows. _Evidence:
   `DecisionReviewEvidenceTests.swift`,
   `DecisionAssistantTests.swift` (`reviewedDecisions(...)` case)._
+- **Decision Drafts v3 — list readiness alignment — shipped**
+  (2026-04-24). The captured-draft rows now render evaluator-
+  derived *readiness* ("Engine ready", "Add amount first", "Add
+  a credit card first", "Review in Tax Vault", "Review in
+  Investing Learn", "No engine yet"), not the misleading bare
+  "Needs engine" lifecycle label. Pure `DecisionDraftRowReadiness`
+  adapter sits over the existing `DecisionDraftEvaluator` so the
+  detail sheet and the row share one truth. Pure
+  `DecisionDraftListPresentation` group-sorts the active list so
+  engine-ready drafts surface first, then requires-context, then
+  routed-to-advanced-tool, then no-engine-yet, with `updatedAt`
+  desc inside each group. Archived drafts keep their lifecycle
+  badge and live in their own quieter section unchanged. Row
+  accessibility now reads kind + title + readiness + last-updated
+  date instead of the prior stale `draft.status.accessibilityLabel`.
+  No persistence changes; no auto-analysis; no cross-tab deep
+  links; no row-level action buttons (the detail sheet remains
+  the action surface). _Evidence:
+  `DecisionDraftRowReadinessTests.swift`._
 
 ---
 
