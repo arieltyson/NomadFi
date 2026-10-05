@@ -12,8 +12,8 @@
 //   6. Cited sources.
 //
 // Reuses the same Decision Assistant visual language as the Credit
-// Timing brief (`ScrollView { LazyVStack { GlassCard … } }`), with
-// the design-system `.keyboardDoneAccessory(focused:)` modifier
+// Timing brief (`ScrollView { LazyVStack { SurfaceCard … } }`), with
+// the design-system `.keyboardDone(_:)` modifier
 // for the `.decimalPad` amount field.
 
 import SwiftData
@@ -57,7 +57,6 @@ struct PurchaseDecisionBriefView: View {
                 .padding(.vertical, SpacingTokens.medium)
             }
             .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Purchase card check")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,7 +64,7 @@ struct PurchaseDecisionBriefView: View {
                     Button("Done") { dismiss() }
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
         }
     }
 
@@ -77,7 +76,7 @@ struct PurchaseDecisionBriefView: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.small) {
                     TextField(
                         "Merchant (optional)",
@@ -178,7 +177,7 @@ struct PurchaseDecisionBriefView: View {
     // MARK: - Ruling
 
     private var rulingSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
                     Image(systemName: "creditcard.and.123")
@@ -225,7 +224,7 @@ struct PurchaseDecisionBriefView: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
                         Image(systemName: decision.confidence.systemImage)
@@ -280,7 +279,7 @@ struct PurchaseDecisionBriefView: View {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                GlassCard {
+                SurfaceCard {
                     VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                         ForEach(travelContextSignals, id: \.self) { line in
                             Label {
@@ -353,7 +352,7 @@ struct PurchaseDecisionBriefView: View {
 
                 VStack(spacing: SpacingTokens.xSmall) {
                     ForEach(others) { candidate in
-                        GlassCard {
+                        SurfaceCard {
                             PurchaseCandidateRow(assessment: candidate)
                         }
                     }
@@ -372,7 +371,7 @@ struct PurchaseDecisionBriefView: View {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                GlassCard {
+                SurfaceCard {
                     VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                         ForEach(decision.missingDataChecklist, id: \.self) { item in
                             Label {
@@ -402,7 +401,7 @@ struct PurchaseDecisionBriefView: View {
                     .font(TypographyTokens.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
 
-                GlassCard {
+                SurfaceCard {
                     VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                         ForEach(decision.whenNotToUseWarnings, id: \.self) { item in
                             Label {
@@ -430,7 +429,7 @@ struct PurchaseDecisionBriefView: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     ForEach(decision.hardRules, id: \.self) { rule in
                         Label {
@@ -460,7 +459,7 @@ struct PurchaseDecisionBriefView: View {
             VStack(spacing: SpacingTokens.xSmall) {
                 ForEach(decision.citations) { citation in
                     Link(destination: citation.url) {
-                        GlassCard {
+                        SurfaceCard {
                             PurchaseDecisionSourceRow(citation: citation)
                         }
                     }
@@ -506,7 +505,7 @@ private struct PurchaseDecisionHighlightSection: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 PurchaseCandidateRow(
                     assessment: assessment,
                     highlightBadgeColor: badgeColor

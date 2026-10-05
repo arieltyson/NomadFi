@@ -107,7 +107,6 @@ private struct AddAccountSheet: View {
 
                 amountsSection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -132,7 +131,7 @@ private struct AddAccountSheet: View {
                     )
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .onChange(of: viewModel.accountType) { _, newType in
                 // Clear focus if it was parked on a credit-card-only
                 // field and the user has since switched to another type.

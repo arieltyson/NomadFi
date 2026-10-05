@@ -30,7 +30,6 @@ struct AddTransactionView: View {
 
                 notesSection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Transaction")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -49,7 +48,7 @@ struct AddTransactionView: View {
                         )
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .sensoryFeedback(.success, trigger: saveCount)
         }
         .onAppear { focusedField = .merchant }

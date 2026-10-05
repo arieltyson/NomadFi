@@ -58,10 +58,10 @@ struct AccountDetailView: View {
                         rewardsTermsLinkSection
                     }
                 }
-                .scrollDismissesKeyboard(.interactively)
                 .sensoryFeedback(.success, trigger: creditSuffixCleanupCount)
             } else {
-                ProgressView()
+                LoadingIndicator("Loading account")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .task { viewModel = AccountDetailViewModel(account: account) }
             }
         }
@@ -77,7 +77,7 @@ struct AccountDetailView: View {
                 .accessibilityHint("Saves your changes to this account and returns to Settings.")
             }
         }
-        .keyboardDoneAccessory(focused: $focusedField)
+        .keyboardDone($focusedField)
         .onChange(of: viewModel?.accountType) { _, newType in
             // Guard against focus lingering on a field that disappears
             // when the user switches away from Credit Card.

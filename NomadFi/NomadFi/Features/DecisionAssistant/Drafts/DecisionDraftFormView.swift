@@ -19,7 +19,7 @@
 //     not the SF Symbol.
 //   - Dynamic Type scales through `TypographyTokens` and through
 //     Form's built-in scaling.
-//   - `.scrollDismissesKeyboard(.interactively)` lets keyboard users
+//   - `.keyboardDone(_:)` also lets keyboard users
 //     drop focus without tapping the toolbar button.
 
 import SwiftData
@@ -57,11 +57,10 @@ struct DecisionDraftFormView: View {
                 notesSection
                 integritySection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle(viewModel.mode.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .task { focusScenarioFieldIfBlank() }
         }
     }

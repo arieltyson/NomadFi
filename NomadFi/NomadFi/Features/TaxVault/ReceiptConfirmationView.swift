@@ -42,7 +42,6 @@ struct ReceiptConfirmationView: View {
 
                 lineItemsSection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Confirm Receipt")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -64,7 +63,7 @@ struct ReceiptConfirmationView: View {
                     .accessibilityHint("Saves this receipt to Tax Vault with the current details.")
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }

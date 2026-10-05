@@ -33,10 +33,9 @@ struct TaxDocumentDetailView: View {
 
             metadataSection
         }
-        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Receipt Details")
         .navigationBarTitleDisplayMode(.inline)
-        .keyboardDoneAccessory(focused: $isMerchantFocused)
+        .keyboardDone($isMerchantFocused)
     }
 }
 
@@ -58,7 +57,7 @@ private extension TaxDocumentDetailView {
                     size: CGSize(width: 400, height: 600),
                     contentMode: .fit
                 )
-                .clipShape(.rect(cornerRadius: SpacingTokens.small))
+                .clipShape(.rect(cornerRadius: RadiusTokens.medium, style: .continuous))
                 .frame(maxHeight: 300)
                 .frame(maxWidth: .infinity)
                 .listRowInsets(EdgeInsets(
@@ -203,7 +202,7 @@ private extension TaxDocumentDetailView {
                 .bold()
                 .padding(.horizontal, SpacingTokens.xSmall)
                 .padding(.vertical, SpacingTokens.xxSmall)
-                .background(statusColor.opacity(increasedContrast ? 0.24 : 0.12))
+                .background(ColorTokens.tintedFill(statusColor, contrast: colorSchemeContrast))
                 .foregroundStyle(increasedContrast ? .primary : statusColor)
                 .overlay {
                     if increasedContrast {

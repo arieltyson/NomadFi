@@ -95,7 +95,6 @@ struct SettingsAddAccountSheet: View {
 
                 amountsSection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Account")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -120,7 +119,7 @@ struct SettingsAddAccountSheet: View {
                     )
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .onChange(of: draft.accountType) { _, newType in
                 // If the user switches to a non-credit-card type while
                 // a credit-card-only field is focused, clear focus so a

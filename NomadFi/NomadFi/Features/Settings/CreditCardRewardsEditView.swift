@@ -41,7 +41,6 @@ struct CreditCardRewardsEditView: View {
             notesSection
             clearSection
         }
-        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(viewModel.account.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -55,7 +54,7 @@ struct CreditCardRewardsEditView: View {
                 .accessibilityHint("Saves the rewards terms for this card.")
             }
         }
-        .keyboardDoneAccessory(focused: $focusedField)
+        .keyboardDone($focusedField)
         .confirmationDialog(
             "Clear rewards terms?",
             isPresented: $isShowingClearConfirmation,

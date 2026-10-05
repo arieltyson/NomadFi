@@ -41,8 +41,9 @@ final class NomadFiUITests: XCTestCase {
         tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Ledger", in: app)
 
-        XCTAssertTrue(app.buttons["Add Transaction"].waitForExistence(timeout: 8))
-        app.buttons["Add Transaction"].tap()
+        let addTransaction = app.navigationBars["Ledger"].buttons["Add Transaction"]
+        XCTAssertTrue(addTransaction.waitForExistence(timeout: 8))
+        addTransaction.tap()
 
         XCTAssertTrue(app.textFields["Merchant Name"].waitForExistence(timeout: 8))
         app.textFields["Merchant Name"].tap()
@@ -56,6 +57,37 @@ final class NomadFiUITests: XCTestCase {
         app.buttons["Save"].tap()
 
         XCTAssertTrue(app.staticTexts["Coffee Shop UI Test"].waitForExistence(timeout: 8))
+    }
+
+    /// The keyboard's Done button must survive every focus change, not
+    /// just the first — the decimal pad has no other way out.
+    @MainActor
+    func testKeyboardDoneSurvivesRepeatedFocusChanges() {
+        let app = makeApp(hasCompletedOnboarding: true)
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Settings"].tap()
+
+        tapButton(containing: "Advanced Tools", in: app)
+        tapButton(containing: "Ledger", in: app)
+
+        let addTransaction = app.navigationBars["Ledger"].buttons["Add Transaction"]
+        XCTAssertTrue(addTransaction.waitForExistence(timeout: 8))
+        addTransaction.tap()
+
+        let merchant = app.textFields["Merchant Name"]
+        let amount = app.textFields["Amount"]
+        let done = app.buttons["keyboard.done"]
+        XCTAssertTrue(merchant.waitForExistence(timeout: 8))
+
+        for field in [merchant, amount, merchant, amount] {
+            field.tap()
+            XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 8))
+            XCTAssertTrue(done.waitForExistence(timeout: 8))
+            done.tap()
+            XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 8))
+        }
     }
 
     @MainActor
@@ -93,8 +125,9 @@ final class NomadFiUITests: XCTestCase {
         tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Subscriptions", in: app)
 
-        XCTAssertTrue(app.buttons["Add Subscription"].waitForExistence(timeout: 8))
-        app.buttons["Add Subscription"].tap()
+        let addSubscription = app.navigationBars["Subscriptions"].buttons["Add Subscription"]
+        XCTAssertTrue(addSubscription.waitForExistence(timeout: 8))
+        addSubscription.tap()
 
         XCTAssertTrue(app.textFields["Service name"].waitForExistence(timeout: 8))
         app.textFields["Service name"].tap()
@@ -145,7 +178,6 @@ private extension NomadFiUITests {
         app.launchEnvironment = [
             "UI_TEST_MODE": "1",
             "UI_TEST_RESET_STATE": "1",
-            "UI_TEST_DISABLE_SPLASH": "1",
             "UI_TEST_DISABLE_APP_LOCK": "1",
             "UI_TEST_FORCE_REDUCE_MOTION": "1",
             "UI_TEST_HAS_COMPLETED_ONBOARDING": hasCompletedOnboarding ? "1" : "0",

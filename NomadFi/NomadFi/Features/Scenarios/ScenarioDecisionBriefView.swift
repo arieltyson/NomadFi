@@ -57,14 +57,13 @@ struct ScenarioDecisionBriefView: View {
                 .padding(SpacingTokens.medium)
             }
             .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Amazon arrival order")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close", systemImage: "xmark", action: { dismiss() })
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
         }
     }
 }
@@ -78,7 +77,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var rulingSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Ruling", systemImage: "scale.3d")
                     .font(TypographyTokens.sectionHeader)
@@ -107,7 +106,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var beforeCheckoutSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Before checkout", systemImage: "checklist")
                     .font(TypographyTokens.sectionHeader)
@@ -203,7 +202,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var computedValuesSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 Label("From your numbers", systemImage: "function")
                     .font(TypographyTokens.sectionHeader)
@@ -238,7 +237,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var costBreakdownSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Cost breakdown", systemImage: "number")
                     .font(TypographyTokens.sectionHeader)
@@ -264,7 +263,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var chaseGuardrailSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 Label("Chase utilization guardrail", systemImage: "shield.checkered")
                     .font(TypographyTokens.sectionHeader)
@@ -279,7 +278,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var hardRulesSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 Label("Hard rules", systemImage: "exclamationmark.shield")
                     .font(TypographyTokens.sectionHeader)
@@ -293,7 +292,7 @@ private extension ScenarioDecisionBriefView {
     }
 
     var outstandingChecksSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 Label("Evidence and assumptions", systemImage: "doc.text.magnifyingglass")
                     .font(TypographyTokens.sectionHeader)

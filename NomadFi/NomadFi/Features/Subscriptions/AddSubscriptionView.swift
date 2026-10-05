@@ -41,7 +41,6 @@ struct AddSubscriptionView: View {
                 billingSection
                 regionSection
             }
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Subscription")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,7 +64,7 @@ struct AddSubscriptionView: View {
                     )
                 }
             }
-            .keyboardDoneAccessory(focused: $focusedField)
+            .keyboardDone($focusedField)
             .sensoryFeedback(.success, trigger: saveCount)
         }
     }
