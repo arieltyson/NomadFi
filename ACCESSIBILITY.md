@@ -5,9 +5,10 @@ NomadFi is an iOS personal-finance app built with SwiftUI.
 ## Current implementation
 
 The [shared accessibility components](NomadFi/NomadFi/DesignSystem/Components/AccessibilityModifiers.swift)
-provide animation that respects Reduce Motion, layouts that switch to a
-vertical arrangement at accessibility text sizes, Reduce Transparency
-handling, and status cues for Differentiate Without Color.
+provide animation that respects Reduce Motion and status cues for
+Differentiate Without Color. Content sits on solid surfaces; navigation
+bars, tab bars and sheets use the system's Liquid Glass, which handles
+Reduce Transparency itself.
 
 [Contrast regression tests](NomadFi/NomadFiTests/AccessibilityContrastComplianceTests.swift)
 cover selected brand and action-colour combinations in light and dark
