@@ -67,11 +67,8 @@ struct TaxVaultArchiveView: View {
                 documents,
                 jurisdictions: jurisdictions
             )
-            ForEach(jurisdictionGroups, id: \.jurisdiction.id) { group in
-                jurisdictionSection(
-                    jurisdiction: group.jurisdiction,
-                    documents: group.documents
-                )
+            ForEach(jurisdictionGroups) { group in
+                jurisdictionSection(group)
             }
 
             Button("Export \(String(year)) Tax Report", systemImage: "square.and.arrow.up") {
@@ -96,12 +93,9 @@ struct TaxVaultArchiveView: View {
         }
     }
 
-    private func jurisdictionSection(
-        jurisdiction: JurisdictionProfile,
-        documents: [TaxDocument]
-    ) -> some View {
+    private func jurisdictionSection(_ group: TaxDocumentJurisdictionGroup) -> some View {
         Section {
-            ForEach(documents) { document in
+            ForEach(group.documents) { document in
                 TaxDocumentRow(document: document)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button("Delete", systemImage: "trash", role: .destructive) {
@@ -110,7 +104,7 @@ struct TaxVaultArchiveView: View {
                     }
             }
         } header: {
-            Label(jurisdiction.countryName, systemImage: "flag")
+            Label(group.title, systemImage: "flag")
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
         }

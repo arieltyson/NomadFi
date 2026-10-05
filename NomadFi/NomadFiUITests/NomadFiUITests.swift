@@ -111,7 +111,21 @@ final class NomadFiUITests: XCTestCase {
         app.buttons["Save"].tap()
 
         XCTAssertTrue(app.navigationBars["Tax Vault"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.staticTexts["UITest Market"].waitForExistence(timeout: 8))
+
+        // Saved documents are listed on the Archive surface; Tax Vault
+        // opens on Review.
+        let archive = app.segmentedControls.buttons
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Archive"))
+            .firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8))
+        archive.tap()
+
+        // Each row is one combined accessibility element, so match the
+        // merchant at the start of its label rather than a static text.
+        let savedReceipt = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "UITest Market,"))
+            .firstMatch
+        XCTAssertTrue(savedReceipt.waitForExistence(timeout: 8))
     }
 
     @MainActor

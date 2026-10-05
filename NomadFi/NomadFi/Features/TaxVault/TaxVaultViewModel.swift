@@ -68,16 +68,40 @@ final class TaxVaultViewModel {
             .map { (year: $0.key, documents: $0.value.sorted { $0.documentDate > $1.documentDate }) }
     }
 
-    /// Groups documents for a given year by jurisdiction.
+    /// Groups documents for a given year by jurisdiction, in profile
+    /// order.
+    ///
+    /// Every document lands in exactly one group. Documents whose
+    /// jurisdiction matches no profile — saved without one, or under a
+    /// jurisdiction since removed — trail in an "Other" group rather
+    /// than vanishing from the list while still counting toward the
+    /// year and its export.
     func documentsByJurisdiction(
         _ documents: [TaxDocument],
         jurisdictions: [JurisdictionProfile]
-    ) -> [(jurisdiction: JurisdictionProfile, documents: [TaxDocument])] {
-        jurisdictions.compactMap { profile in
+    ) -> [TaxDocumentJurisdictionGroup] {
+        let known = Set(jurisdictions.map(\.countryCode))
+        var groups: [TaxDocumentJurisdictionGroup] = jurisdictions.compactMap { profile in
             let matching = documents.filter { $0.jurisdiction == profile.countryCode }
             guard !matching.isEmpty else { return nil }
-            return (jurisdiction: profile, documents: matching)
+            return TaxDocumentJurisdictionGroup(
+                id: profile.countryCode,
+                title: profile.countryName,
+                documents: matching
+            )
         }
+
+        let unmatched = documents.filter { !known.contains($0.jurisdiction) }
+        if !unmatched.isEmpty {
+            groups.append(
+                TaxDocumentJurisdictionGroup(
+                    id: TaxDocumentJurisdictionGroup.otherID,
+                    title: "Other",
+                    documents: unmatched
+                )
+            )
+        }
+        return groups
     }
 
     /// Filters documents by search text across merchant name, extracted text, and category.
