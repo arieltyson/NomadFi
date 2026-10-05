@@ -357,10 +357,13 @@ points at the test file that pins the behaviour.
 
 - [~] **Financial-data access strategy (Phase 5A + 5B + 5C-in-code +
   5D research + Phase 5D bounded Plaid sandbox proof shipped;
-  FinanceKit capability request for `com.arieljtyson.NomadFi` is
-  submitted and awaiting Apple; real-device validation still ahead
-  for 5C; Phase 5E blocked on Apple's response + a real Plaid Link
-  flow against one target Canadian FI).**
+  FinanceKit capability request for `com.arieljtyson.NomadFi` was
+  submitted in April 2026 and closed by Apple on 2026-04-28 because
+  FinanceKit is not currently available in NomadFi's developer
+  region — currently US-only and UK-only — so 5C real-device
+  validation is parked until FinanceKit launches in our region;
+  Phase 5E now turns on the real Plaid Link flow against one target
+  Canadian FI rather than on Apple's response).**
   5A shipped the provider-neutral architecture under
   `Core/Services/FinancialData/`: `FinancialDataProvider`,
   `FinancialDataProviderKind` (manual / csvImport / financeKit /
@@ -1099,11 +1102,28 @@ Shipped in-code:
 Remaining (outside the repo):
 
 - The `com.apple.developer.financekit` capability request for
-  `com.arieljtyson.NomadFi` has **been submitted** (April 2026);
-  NomadFi is awaiting Apple's response. The public product site
+  `com.arieljtyson.NomadFi` was **submitted in April 2026 and
+  closed by Apple on 2026-04-28** because FinanceKit is not
+  currently available in NomadFi's developer region. Apple's
+  Wallet Entitlements team confirmed FinanceKit is presently
+  limited to the United States (Apple Card excluding Apple Card
+  Family, Apple Cash excluding Apple Cash Family children, and
+  Savings) and the United Kingdom (open-banking access via
+  Barclays, Barclaycard, First Direct, Halifax, HSBC, Lloyds,
+  M&S Bank, MBNA, Monzo, Nationwide, NatWest, Royal Bank of
+  Scotland, and Santander). The denial was regional, not about
+  the submission's content. The public product site
   (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy
   policy (`https://arieltyson.github.io/nomadfi-privacy/privacy/`)
-  are live and were referenced in the capability request.
+  remain live and were referenced in the request. The submission
+  answers are kept locally in
+  `docs/financekit-application.md` (gitignored) for reuse.
+- **Resubmission is gated on Apple expanding FinanceKit to
+  NomadFi's developer region.** Watch WWDC announcements and
+  Apple developer news; refile via
+  <https://developer.apple.com/contact/request/financekit> when
+  the region opens. Until then, FinanceKit cannot become more
+  central to the product regardless of how 5C-in-code is wired.
 - Once Apple provisions the capability, add the entitlement key to
   `NomadFi/NomadFi.entitlements` and regenerate provisioning
   profiles.

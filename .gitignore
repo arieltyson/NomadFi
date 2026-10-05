@@ -52,6 +52,10 @@ Secrets/
 ## being pushed.
 docs/ARIEL.md
 
+## Local working copy of the FinanceKit capability request answers.
+## Kept on disk for resubmission but never pushed.
+docs/financekit-application.md
+
 # Local agent/editor settings
 .claude/
 
