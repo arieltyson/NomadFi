@@ -13,6 +13,10 @@ struct ToolsView: View {
 
     var body: some View {
         List {
+            HubNavigationRow("Exchange Rates", systemImage: "dollarsign.arrow.circlepath") {
+                ExchangeRatesView()
+            }
+
             HubNavigationRow("Subscriptions", systemImage: "arrow.triangle.2.circlepath") {
                 SubscriptionsView()
             }

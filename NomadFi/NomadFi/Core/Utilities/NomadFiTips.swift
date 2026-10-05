@@ -8,24 +8,6 @@
 import SwiftUI
 import TipKit
 
-// MARK: - Exchange Rate Tip
-
-/// Encourages users to explore the exchange rate ticker on the dashboard.
-struct ExchangeRateTip: Tip {
-
-    var title: Text {
-        Text("Live Exchange Rates")
-    }
-
-    var message: Text? {
-        Text("Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates.")
-    }
-
-    var image: Image? {
-        Image(systemName: "chart.line.uptrend.xyaxis")
-    }
-}
-
 // MARK: - Active Card Tip
 
 /// Explains the location-aware Active Card recommendation feature.

@@ -33,7 +33,11 @@ protocol ExchangeRateService: Sendable {
 /// Carries a ``SourceProvenance`` so the UI can honestly label whether a
 /// rate came from an indicative prototype API, a sample dataset, or a
 /// verified source — per the evidence hierarchy in `docs/README.md`.
-struct ExchangeRateSnapshot: Sendable {
+struct ExchangeRateSnapshot: Identifiable, Sendable {
+
+    /// One pair is one rate: "CAD-USD".
+    var id: String { "\(baseCurrency.rawValue)-\(targetCurrency.rawValue)" }
+
     let baseCurrency: CurrencyCode
     let targetCurrency: CurrencyCode
     let rate: Double

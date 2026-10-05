@@ -58,6 +58,18 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Coffee Shop UI Test"].waitForExistence(timeout: 8))
     }
 
+    @MainActor
+    func testExchangeRatesOpenFromTools() {
+        let app = makeApp(hasCompletedOnboarding: true)
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
+
+        tapButton(containing: "Exchange Rates", in: app)
+        XCTAssertTrue(app.navigationBars["Exchange Rates"].waitForExistence(timeout: 8))
+    }
+
     /// The keyboard's Done button must survive every focus change, not
     /// just the first — the decimal pad has no other way out.
     @MainActor

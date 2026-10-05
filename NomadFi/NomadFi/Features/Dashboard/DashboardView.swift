@@ -153,14 +153,6 @@ private extension DashboardView {
                     .padding(.horizontal, SpacingTokens.medium)
             }
 
-            TipView(ExchangeRateTip())
-                .tipBackground(ColorTokens.surfaceSecondary)
-                .padding(.horizontal, SpacingTokens.medium)
-
-            exchangeRateTicker
-                .redacted(reason: isFirstLoad ? .placeholder : [])
-                .padding(.horizontal, SpacingTokens.medium)
-
             accountSections
                 .padding(.horizontal, SpacingTokens.medium)
 
@@ -218,13 +210,6 @@ private extension DashboardView {
             }
         )
         .animation(reduceMotion ? nil : AnimationTokens.numericCount, value: accounts.count)
-    }
-
-    var exchangeRateTicker: some View {
-        ExchangeRateTicker(
-            rates: viewModel.exchangeRates,
-            lastUpdated: viewModel.lastUpdated
-        )
     }
 
     var accountSections: some View {
