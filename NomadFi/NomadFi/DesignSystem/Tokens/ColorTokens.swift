@@ -56,6 +56,24 @@ enum ColorTokens {
     /// Tertiary background for nested groupings.
     static let surfaceTertiary = Color(.tertiarySystemBackground)
 
+    // MARK: - Tinted Fills
+
+    /// The fill behind a tinted chip or badge whose foreground carries
+    /// the same tint. Strengthens under Increase Contrast.
+    static func tintedFill(_ color: Color, contrast: ColorSchemeContrast) -> Color {
+        color.opacity(contrast == .increased ? 0.24 : 0.12)
+    }
+
+    /// The quieter fill for a large tinted panel or banner, where a
+    /// chip-strength tint would overpower its content.
+    static func tintedSurface(_ color: Color, contrast: ColorSchemeContrast) -> Color {
+        color.opacity(contrast == .increased ? 0.2 : 0.08)
+    }
+
+    /// The outline drawn around tinted shapes under Increase Contrast,
+    /// so their edges no longer depend on a faint fill.
+    static let increasedContrastOutline = Color.primary.opacity(0.55)
+
     // MARK: - Selection States
 
     /// Selection background for list-like selectable rows.

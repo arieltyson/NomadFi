@@ -42,7 +42,6 @@ struct InvestingLearnView: View {
             }
         }
         .navigationTitle("Investing Learn")
-        .glassToolbar()
         .task(id: jurisdictions.count) {
             viewModel.refresh(from: jurisdictions)
         }

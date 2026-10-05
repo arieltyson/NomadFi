@@ -10,7 +10,7 @@
 // Design rationale (per Apple's HIG):
 //   • Hierarchy + harmony — one prominent CTA per command module,
 //     surrounded by quieter supporting rows.
-//   • Consistent material — uses the existing `GlassCard`
+//   • Consistent material — uses the existing `SurfaceCard`
 //     treatment that the rest of the Decisions tab already relies
 //     on, so the redesign feels native rather than novel.
 //   • Inclusivity — large hit target, dynamic-type friendly,
@@ -35,7 +35,7 @@ struct DecisionAssistantCaptureHero: View {
     let onAppleIntelligenceTapped: () -> Void
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.medium) {
                 eyebrow
                 ctaButton

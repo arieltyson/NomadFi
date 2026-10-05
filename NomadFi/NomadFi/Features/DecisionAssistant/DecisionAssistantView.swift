@@ -154,7 +154,6 @@ struct DecisionAssistantView: View {
             .ignoresSafeArea()
         }
         .navigationTitle("Decisions")
-        .glassToolbar()
         .task { viewModel.bootstrap(modelContext: modelContext) }
         .onChange(of: pendingAIIntakeRaw, initial: true) { _, _ in
             consumePendingAIIntakeIfAvailable()
@@ -564,7 +563,7 @@ private struct DecisionAssistantHistoryList: View {
                 Button {
                     onOpenDecision(identity.id)
                 } label: {
-                    GlassCard {
+                    SurfaceCard {
                         DecisionHistoryRow(
                             identity: identity,
                             ruling: summary.ruling,
@@ -581,7 +580,7 @@ private struct DecisionAssistantHistoryList: View {
 private struct DecisionAssistantHistoryEmptyState: View {
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No previous decisions yet")
                     .font(TypographyTokens.body)
@@ -660,7 +659,7 @@ private struct DecisionAssistantDraftsList: View {
                 Button {
                     onDraftTapped(item.draft)
                 } label: {
-                    GlassCard {
+                    SurfaceCard {
                         DecisionDraftRow(
                             draft: item.draft,
                             readiness: item.readiness
@@ -677,7 +676,7 @@ private struct DecisionAssistantDraftsList: View {
 private struct DecisionAssistantDraftsEmptyState: View {
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No drafts captured yet")
                     .font(TypographyTokens.body)
@@ -718,7 +717,7 @@ private struct DecisionAssistantArchivedDraftsSection: View {
                     Button {
                         onDraftTapped(item.draft)
                     } label: {
-                        GlassCard {
+                        SurfaceCard {
                             DecisionDraftRow(
                                 draft: item.draft,
                                 readiness: item.readiness
@@ -763,9 +762,11 @@ private struct DecisionAssistantShowMoreRow: View {
     let previewLimit: Int
     let noun: String
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(reduceMotion ? nil : AnimationTokens.standard) {
                 expanded.toggle()
             }
         } label: {

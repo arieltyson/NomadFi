@@ -32,12 +32,12 @@ struct AccountTypeMarker: View {
             .font(TypographyTokens.caption.weight(.semibold))
             .foregroundStyle(foregroundColor)
             .padding(.horizontal, SpacingTokens.xxSmall)
-            .padding(.vertical, 2)
+            .padding(.vertical, SpacingTokens.xxxSmall)
             .background(backgroundColor, in: .capsule)
             .overlay {
                 if colorSchemeContrast == .increased {
                     Capsule()
-                        .strokeBorder(Color.primary.opacity(0.6), lineWidth: 1)
+                        .strokeBorder(ColorTokens.increasedContrastOutline, lineWidth: 1)
                 }
             }
             .accessibilityHidden(true)
@@ -58,12 +58,11 @@ struct AccountTypeMarker: View {
     }
 
     private var backgroundColor: Color {
-        let increased = colorSchemeContrast == .increased
         switch accountType {
         case .creditCard:
-            return ColorTokens.brandPrimary.opacity(increased ? 0.26 : 0.14)
+            ColorTokens.tintedFill(ColorTokens.brandPrimary, contrast: colorSchemeContrast)
         default:
-            return Color.secondary.opacity(increased ? 0.26 : 0.14)
+            ColorTokens.tintedFill(.secondary, contrast: colorSchemeContrast)
         }
     }
 }

@@ -37,14 +37,13 @@ struct DownsampledImage: View {
                     .resizable()
                     .aspectRatio(contentMode: contentMode)
             } else if isLoading {
+                // A quiet placeholder rather than a spinner: cached
+                // thumbnails land within a frame, and a list of
+                // spinning thumbnails reads as noise.
                 Rectangle()
                     .fill(ColorTokens.surfaceTertiary)
-                    .overlay {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
             } else {
-                fallbackPlaceholder
+                FallbackPlaceholder()
             }
         }
         .frame(width: size.width, height: size.height)
@@ -73,23 +72,18 @@ private struct FallbackPlaceholder: View {
 
 private extension DownsampledImage {
 
-    var fallbackPlaceholder: some View {
-        FallbackPlaceholder()
-    }
-
     func loadThumbnail() async {
         guard let url else {
             isLoading = false
             return
         }
 
-        // Load on a background thread to avoid blocking the main thread
+        // Decode off the main actor; capture the view's values first so
+        // the detached work never hops back for them.
+        let size = size
+        let scale = displayScale
         let thumbnail = await Task.detached(priority: .utility) {
-            ThumbnailCache.shared.thumbnail(
-                for: url,
-                pointSize: size,
-                scale: await MainActor.run { displayScale }
-            )
+            ThumbnailCache.shared.thumbnail(for: url, pointSize: size, scale: scale)
         }.value
 
         cgImage = thumbnail

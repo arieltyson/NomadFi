@@ -110,6 +110,5 @@ struct AdvancedToolsSettingsView: View {
             }
         }
         .navigationTitle("Advanced Tools")
-        .glassToolbar()
     }
 }

@@ -20,7 +20,7 @@ struct SubscriptionRowView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     serviceInfo

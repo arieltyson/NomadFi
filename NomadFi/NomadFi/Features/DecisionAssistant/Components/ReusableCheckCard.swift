@@ -26,7 +26,7 @@ struct ReusableCheckCard: View {
 
     var body: some View {
         Button(action: action) {
-            GlassCard {
+            SurfaceCard {
                 HStack(spacing: SpacingTokens.small) {
                     iconBadge
 

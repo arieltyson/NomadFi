@@ -35,7 +35,6 @@ struct PrivacySecuritySettingsView: View {
             privacySection
         }
         .navigationTitle("Privacy & Security")
-        .glassToolbar()
         .destructiveDataLossAlert(
             "Delete All Data",
             isPresented: $isShowingDeleteConfirmation,

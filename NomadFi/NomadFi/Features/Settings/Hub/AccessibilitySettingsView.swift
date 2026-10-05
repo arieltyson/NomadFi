@@ -45,6 +45,5 @@ struct AccessibilitySettingsView: View {
             }
         }
         .navigationTitle("Accessibility")
-        .glassToolbar()
     }
 }

@@ -105,7 +105,7 @@ private struct CreditTimingRulingHeader: View {
     let decision: CreditTimingDecision
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
                     Image(systemName: "calendar.badge.clock")
@@ -164,7 +164,7 @@ private struct CreditTimingCardsSection: View {
 
             VStack(spacing: SpacingTokens.xSmall) {
                 ForEach(assessments) { assessment in
-                    GlassCard {
+                    SurfaceCard {
                         CreditTimingCardRow(assessment: assessment)
                     }
                 }
@@ -398,7 +398,7 @@ private struct CreditTimingChecklistSection: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     ForEach(items, id: \.self) { item in
                         Label {
@@ -430,7 +430,7 @@ private struct CreditTimingHardRulesSection: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     ForEach(rules, id: \.self) { rule in
                         Label {
@@ -465,7 +465,7 @@ private struct CreditTimingSourcesSection: View {
             VStack(spacing: SpacingTokens.xSmall) {
                 ForEach(citations) { citation in
                     Link(destination: citation.url) {
-                        GlassCard {
+                        SurfaceCard {
                             CreditTimingSourceRow(citation: citation)
                         }
                     }
@@ -556,7 +556,7 @@ private struct CreditTimingPaymentAllocationSection: View {
     }
 
     private var emptyState: some View {
-        GlassCard {
+        SurfaceCard {
             HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.small) {
                 Image(systemName: "checkmark.circle")
                     .foregroundStyle(ColorTokens.positive)
@@ -572,7 +572,7 @@ private struct CreditTimingPaymentAllocationSection: View {
     private func currencyGroup(
         _ group: CreditPaymentAllocationCurrencyGroup
     ) -> some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(group.currencyCode)
@@ -730,7 +730,7 @@ private struct CreditTimingLimitReadinessSection: View {
                 .accessibilityAddTraits(.isHeader)
 
             if checklist.cardSummaries.isEmpty {
-                GlassCard {
+                SurfaceCard {
                     Text("Add a credit card to see readiness checks. NomadFi does not request limits on your behalf.")
                         .font(TypographyTokens.body)
                         .fixedSize(horizontal: false, vertical: true)
@@ -766,7 +766,7 @@ private struct CreditTimingLimitReadinessSection: View {
     private func summaryCard(
         _ summary: CreditLimitReadinessCardSummary
     ) -> some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
                     VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
@@ -859,7 +859,7 @@ private struct CreditTimingRecentSpendingContextSection: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.small) {
                     header
                     comparisonSentence

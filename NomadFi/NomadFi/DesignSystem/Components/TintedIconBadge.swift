@@ -9,7 +9,7 @@
 // language.
 //
 // Why it lives here:
-// • Coherence with the rest of the design system (`GlassCard`,
+// • Coherence with the rest of the design system (`SurfaceCard`,
 //   `StatusBadge`, `CurrencyText`): every reusable visual idiom has
 //   a single home.
 // • Tokens only: uses `ColorTokens`, `SpacingTokens`, and Apple's
@@ -95,7 +95,7 @@ struct TintedIconBadge: View {
             .overlay {
                 if colorSchemeContrast == .increased {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.55), lineWidth: 1)
+                        .strokeBorder(ColorTokens.increasedContrastOutline, lineWidth: 1)
                 }
             }
             .accessibilityHidden(true)

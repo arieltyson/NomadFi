@@ -53,7 +53,7 @@ struct TaxVaultReviewView: View {
     }
 
     private var scanCard: some View {
-        GlassCard {
+        SurfaceCard {
             HStack(alignment: .top, spacing: SpacingTokens.small) {
                 TintedIconBadge(
                     systemImage: "doc.text.viewfinder",

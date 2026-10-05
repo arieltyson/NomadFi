@@ -2,13 +2,13 @@
 // NomadFi
 //
 // The Decision Assistant's primary surface: a single, premium
-// GlassCard previewing the currently-active decision. Designed to
+// SurfaceCard previewing the currently-active decision. Designed to
 // feel like a high-signal command center — ruling, evidence badges,
 // last-updated timestamp, and a single CTA to open the full brief.
 
 import SwiftUI
 
-/// Premium glass card for the Decision Assistant's active decision.
+/// Card for the Decision Assistant's active decision.
 /// Tapping the card opens the full ``ScenarioDecisionBriefView``.
 struct ActiveDecisionHeroCard: View {
 
@@ -20,7 +20,7 @@ struct ActiveDecisionHeroCard: View {
 
     var body: some View {
         Button(action: action) {
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.small) {
                     ActiveDecisionHeroHeader(identity: identity)
 

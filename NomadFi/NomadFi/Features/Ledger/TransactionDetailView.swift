@@ -35,7 +35,6 @@ struct TransactionDetailView: View {
         }
         .scrollIndicators(.hidden)
         .navigationTitle(transaction.merchantName)
-        .glassToolbar()
     }
 }
 
@@ -182,7 +181,7 @@ private extension TransactionDetailView {
     }
 
     var fxRateSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Exchange Rate", systemImage: "chart.line.uptrend.xyaxis")
                     .font(TypographyTokens.sectionHeader)
@@ -230,7 +229,7 @@ private extension TransactionDetailView {
     }
 
     var detailsSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Details", systemImage: "info.circle")
                     .font(TypographyTokens.sectionHeader)
@@ -275,7 +274,7 @@ private extension TransactionDetailView {
     }
 
     var taxSection: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 Label("Tax", systemImage: "doc.text")
                     .font(TypographyTokens.sectionHeader)

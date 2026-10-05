@@ -47,7 +47,6 @@ struct AboutSettingsView: View {
             }
         }
         .navigationTitle("About NomadFi")
-        .glassToolbar()
     }
 
     private var appVersion: String {

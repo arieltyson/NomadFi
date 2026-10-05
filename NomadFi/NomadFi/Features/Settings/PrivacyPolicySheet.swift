@@ -25,7 +25,6 @@ struct PrivacyPolicySheet: View {
             }
             .navigationTitle("Privacy Policy")
             .navigationBarTitleDisplayMode(.inline)
-            .glassToolbar()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }

@@ -1,8 +1,12 @@
 // AccessibilityModifiers.swift
 // NomadFi
 //
-// Shared accessibility view modifiers for consistent reduce motion,
-// reduce transparency, and Dynamic Type behavior across the app.
+// Shared accessibility primitives for consistent Reduce Motion and
+// Differentiate Without Color behavior across the app.
+//
+// Translucency is deliberately absent: navigation bars, tab bars and
+// sheets get Liquid Glass — and its Reduce Transparency fallback —
+// from the system, and content sits on solid surfaces.
 
 import SwiftUI
 
@@ -17,7 +21,7 @@ import SwiftUI
 ///
 /// ```swift
 /// Text("Balance")
-///     .modifier(ReduceMotionAnimation(value: balance))
+///     .reduceMotionAnimation(AnimationTokens.standard, value: balance)
 /// ```
 struct ReduceMotionAnimation<V: Equatable>: ViewModifier {
 
@@ -33,70 +37,6 @@ struct ReduceMotionAnimation<V: Equatable>: ViewModifier {
 
     func body(content: Content) -> some View {
         content.animation(reduceMotion ? nil : animation, value: value)
-    }
-}
-
-// MARK: - Dynamic Type Layout
-
-/// A container that automatically switches between horizontal and vertical
-/// layout based on available space and Dynamic Type size.
-///
-/// At standard text sizes, content flows horizontally. At larger accessibility
-/// sizes (AX1–AX5), content stacks vertically to prevent truncation.
-///
-/// ```swift
-/// DynamicTypeLayout {
-///     Text("Label")
-///     Text("Value")
-/// }
-/// ```
-struct DynamicTypeLayout<Content: View>: View {
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    let spacing: CGFloat
-    @ViewBuilder let content: Content
-
-    init(
-        spacing: CGFloat = SpacingTokens.xSmall,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.spacing = spacing
-        self.content = content()
-    }
-
-    var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: spacing) {
-                content
-            }
-        } else {
-            HStack(spacing: spacing) {
-                content
-            }
-        }
-    }
-}
-
-// MARK: - Glass Background
-
-/// A view modifier that provides a glass material background with
-/// automatic fallback for Reduce Transparency.
-///
-/// Uses `.ultraThinMaterial` when transparency is allowed, and falls
-/// back to a solid secondary surface when Reduce Transparency is enabled.
-struct GlassBackground: ViewModifier {
-
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    func body(content: Content) -> some View {
-        content.background {
-            if reduceTransparency {
-                ColorTokens.surfaceSecondary
-            } else {
-                Rectangle().fill(.ultraThinMaterial)
-            }
-        }
     }
 }
 
@@ -119,6 +59,9 @@ struct AccessibleStatusIndicator: View {
 
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
+    /// The dot grows with the caption text it sits beside.
+    @ScaledMetric(relativeTo: .caption2) private var dotDiameter: CGFloat = SpacingTokens.xSmall
+
     let color: Color
     let icon: String
     let label: String
@@ -132,64 +75,10 @@ struct AccessibleStatusIndicator: View {
 
             Circle()
                 .fill(color)
-                .frame(width: 8, height: 8)
+                .frame(width: dotDiameter, height: dotDiameter)
         }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
-    }
-}
-
-// MARK: - Glass Toolbar
-
-/// A view modifier that applies glass material styling to the navigation bar,
-/// respecting the Reduce Transparency accessibility preference.
-///
-/// On iOS 26, navigation bars receive Liquid Glass styling automatically.
-/// This modifier ensures the toolbar background visibility adapts correctly
-/// when Reduce Transparency is enabled.
-///
-/// ```swift
-/// NavigationStack {
-///     ContentView()
-///         .glassToolbar()
-/// }
-/// ```
-struct GlassToolbar: ViewModifier {
-
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    func body(content: Content) -> some View {
-        content
-            .toolbarBackgroundVisibility(
-                reduceTransparency ? .visible : .automatic,
-                for: .navigationBar
-            )
-    }
-}
-
-// MARK: - Glass Sheet
-
-/// A view modifier that applies glass material to a sheet's presentation
-/// background, with a solid fallback for Reduce Transparency.
-///
-/// ```swift
-/// .sheet(isPresented: $isShowing) {
-///     MySheetContent()
-///         .glassSheet()
-/// }
-/// ```
-struct GlassSheet: ViewModifier {
-
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    func body(content: Content) -> some View {
-        content
-            .presentationBackground {
-                if reduceTransparency {
-                    ColorTokens.surfacePrimary
-                } else {
-                    Rectangle().fill(.ultraThinMaterial)
-                }
-            }
     }
 }
 
@@ -207,20 +96,5 @@ extension View {
         value: V
     ) -> some View {
         modifier(ReduceMotionAnimation(animation: animation, value: value))
-    }
-
-    /// Applies a glass material background that respects Reduce Transparency.
-    func glassBackground() -> some View {
-        modifier(GlassBackground())
-    }
-
-    /// Applies glass material styling to the navigation bar.
-    func glassToolbar() -> some View {
-        modifier(GlassToolbar())
-    }
-
-    /// Applies glass material to a sheet's presentation background.
-    func glassSheet() -> some View {
-        modifier(GlassSheet())
     }
 }

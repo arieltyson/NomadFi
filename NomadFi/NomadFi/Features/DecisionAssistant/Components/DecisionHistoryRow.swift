@@ -3,7 +3,7 @@
 //
 // Compact row for the Previous Decisions section of the Decision
 // Assistant. Uses list-native layout rather than nesting another
-// GlassCard so we never end up with cards-inside-cards.
+// SurfaceCard so we never end up with cards-inside-cards.
 //
 // History semantics hardening: this row only renders for
 // decisions that have already been reviewed (filtered upstream

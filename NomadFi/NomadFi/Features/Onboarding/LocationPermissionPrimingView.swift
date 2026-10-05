@@ -131,10 +131,10 @@ private struct LocationPermissionPrimingContent: View {
         .padding(isCompact ? SpacingTokens.xSmall : SpacingTokens.small)
         .background(
             ColorTokens.surfaceSecondary.opacity(isCompact ? 0.28 : 0.35),
-            in: .rect(cornerRadius: SpacingTokens.medium)
+            in: .rect(cornerRadius: RadiusTokens.card, style: .continuous)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: SpacingTokens.medium)
+            RoundedRectangle(cornerRadius: RadiusTokens.card, style: .continuous)
                 .strokeBorder(
                     .linearGradient(
                         colors: [
@@ -197,7 +197,7 @@ private struct MockPermissionDialogContent: View {
             }
         }
         .padding(isCompact ? SpacingTokens.small : SpacingTokens.medium)
-        .background(ColorTokens.surfacePrimary, in: .rect(cornerRadius: SpacingTokens.small))
+        .background(ColorTokens.surfacePrimary, in: .rect(cornerRadius: RadiusTokens.medium, style: .continuous))
     }
 
     private var authorizedView: some View {
@@ -244,7 +244,7 @@ private struct MockPermissionDialogContent: View {
         VStack(alignment: .leading, spacing: isCompact ? SpacingTokens.small : SpacingTokens.medium) {
             HStack(spacing: SpacingTokens.small) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: SpacingTokens.small)
+                    RoundedRectangle(cornerRadius: RadiusTokens.medium, style: .continuous)
                         .fill(
                             .linearGradient(
                                 colors: [ColorTokens.actionTint.opacity(0.9), ColorTokens.brandSecondary],
@@ -294,7 +294,7 @@ private struct MockLocationPreviewMap: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: SpacingTokens.medium)
+            RoundedRectangle(cornerRadius: RadiusTokens.card, style: .continuous)
                 .fill(
                     .linearGradient(
                         colors: [
@@ -307,7 +307,7 @@ private struct MockLocationPreviewMap: View {
                 )
 
             MapGridOverlay()
-                .clipShape(.rect(cornerRadius: SpacingTokens.medium))
+                .clipShape(.rect(cornerRadius: RadiusTokens.card, style: .continuous))
                 .allowsHitTesting(false)
 
             Text("Precise: On")
@@ -383,7 +383,7 @@ private struct MockPermissionButton: View {
             .bold()
             .frame(maxWidth: .infinity)
             .padding(.vertical, isCompact ? SpacingTokens.small : SpacingTokens.medium)
-            .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: SpacingTokens.medium))
+            .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: RadiusTokens.card, style: .continuous))
             .foregroundStyle(isPrimary ? .primary : .secondary)
     }
 }

@@ -3,7 +3,7 @@
 //
 // Pins the contract of the `NomadFiTextFieldStyle` design-system
 // primitive plus the source-level guarantee that NomadFi-owned
-// text inputs on custom surfaces (`GlassCard` and similar)
+// text inputs on custom surfaces (`SurfaceCard` and similar)
 // route through `.textFieldStyle(.nomadFi)` rather than the
 // system `.roundedBorder` style.
 //
@@ -11,7 +11,7 @@
 //   The system `.roundedBorder` style collapses to a flat
 //   black-on-black rectangle in dark mode when nested inside the
 //   app's translucent card surfaces. A future contributor who
-//   reaches for `.roundedBorder` on a `GlassCard` surface should
+//   reaches for `.roundedBorder` on a `SurfaceCard` surface should
 //   fail this guardrail rather than ship the regression.
 //
 // SwiftUI views can't be deeply introspected from a unit test, so
@@ -63,7 +63,7 @@ struct NomadFiTextFieldStyleTests {
             """
             ScenarioNumericInputRow must apply \
             `.textFieldStyle(.nomadFi)` so the field renders with \
-            the design-system Material container on every surface. \
+            the design-system container on every surface. \
             See the file header in `NomadFiTextFieldStyle.swift`.
             """
         )
@@ -73,7 +73,7 @@ struct NomadFiTextFieldStyleTests {
             ScenarioNumericInputRow must not use \
             `.textFieldStyle(.roundedBorder)` — that system style \
             collapses to a flat black-on-black rectangle in dark \
-            mode when nested in a `GlassCard`. Use \
+            mode when nested in a `SurfaceCard`. Use \
             `.textFieldStyle(.nomadFi)` instead.
             """
         )
@@ -91,7 +91,7 @@ struct NomadFiTextFieldStyleTests {
             PurchaseDecisionBriefView must apply \
             `.textFieldStyle(.nomadFi)` to every NomadFi-owned \
             `TextField` so the form's inputs share the design \
-            system's Material container.
+            system's container.
             """
         )
         #expect(
@@ -99,7 +99,7 @@ struct NomadFiTextFieldStyleTests {
             """
             PurchaseDecisionBriefView must not use \
             `.textFieldStyle(.roundedBorder)` — system rounded \
-            borders collapse to flat black on `GlassCard` in dark \
+            borders collapse to flat black on `SurfaceCard` in dark \
             mode. Use `.textFieldStyle(.nomadFi)` instead.
             """
         )

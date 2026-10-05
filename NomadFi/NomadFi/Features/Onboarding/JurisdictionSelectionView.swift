@@ -63,9 +63,9 @@ private struct JurisdictionButton: View {
                     ? ColorTokens.selectedRowBackground(for: colorSchemeContrast)
                     : Color.clear
             )
-            .clipShape(.rect(cornerRadius: SpacingTokens.small))
+            .clipShape(.rect(cornerRadius: RadiusTokens.medium, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: SpacingTokens.small)
+                RoundedRectangle(cornerRadius: RadiusTokens.medium, style: .continuous)
                     .strokeBorder(
                         ColorTokens.selectableRowBorder(
                             isSelected: isSelected,

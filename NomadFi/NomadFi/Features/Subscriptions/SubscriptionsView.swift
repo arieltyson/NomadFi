@@ -43,7 +43,6 @@ struct SubscriptionsView: View {
             }
         }
         .navigationTitle("Subscriptions")
-        .glassToolbar()
         .searchable(text: $viewModel.searchText, prompt: "Search subscriptions")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -54,7 +53,6 @@ struct SubscriptionsView: View {
         }
         .sheet(isPresented: $isShowingAddSubscription) {
             AddSubscriptionView()
-                .glassSheet()
         }
         .task {
             viewModel.detectSubscriptions(
@@ -125,7 +123,7 @@ private extension SubscriptionsView {
     // MARK: Savings Summary Card
 
     var savingsSummary: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 Text("Monthly Subscription Cost")
                     .font(TypographyTokens.caption)
@@ -220,7 +218,7 @@ private extension SubscriptionsView {
                 .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, SpacingTokens.medium)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.small) {
                     Text("Comparing prices across jurisdictions...")
                         .font(TypographyTokens.body)

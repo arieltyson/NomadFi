@@ -146,7 +146,7 @@ struct InvestingEducationSection: View {
             Spacer()
         }
         .padding(SpacingTokens.small)
-        .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: SpacingTokens.xSmall))
+        .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: RadiusTokens.small, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Next to review. \(step.title).")
     }

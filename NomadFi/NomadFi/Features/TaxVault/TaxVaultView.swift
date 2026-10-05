@@ -58,7 +58,6 @@ struct TaxVaultView: View {
             surfaceContent
         }
         .navigationTitle("Tax Vault")
-        .glassToolbar()
         .toolbar { toolbarContent }
         .task(id: transactions.count) {
             suggestionReview.refresh(from: transactions)
@@ -71,7 +70,6 @@ struct TaxVaultView: View {
         }
         .sheet(isPresented: $viewModel.showingConfirmation) {
             ReceiptConfirmationView(viewModel: viewModel)
-                .glassSheet()
         }
         .sheet(item: $suggestionReview.selection) { suggestion in
             TaxSuggestionReviewView(
@@ -251,7 +249,7 @@ struct CategorySummaryRow: View {
         }
         .padding(.horizontal, SpacingTokens.xSmall)
         .padding(.vertical, SpacingTokens.xxSmall)
-        .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: SpacingTokens.xSmall))
+        .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: RadiusTokens.small, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(category.displayName): \(total, format: .currency(code: "USD"))")
     }

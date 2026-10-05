@@ -43,7 +43,6 @@ struct FinancialConnectionsSettingsView: View {
             privacySection
         }
         .navigationTitle("Financial Connections")
-        .glassToolbar()
         .task {
             await viewModel.refresh()
         }

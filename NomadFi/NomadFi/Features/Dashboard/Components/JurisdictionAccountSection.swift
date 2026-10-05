@@ -3,7 +3,7 @@ import SwiftUI
 /// A grouped section displaying accounts within a single jurisdiction.
 ///
 /// Shows a flag + country name header with pinned section behavior,
-/// followed by individual account cards using the `GlassCard` component.
+/// followed by individual account cards using the `SurfaceCard` component.
 struct JurisdictionAccountSection: View {
 
     let profile: JurisdictionProfile
@@ -29,7 +29,7 @@ private struct AccountCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     accountInfo

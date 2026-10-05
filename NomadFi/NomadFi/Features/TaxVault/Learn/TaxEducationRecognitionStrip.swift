@@ -61,7 +61,7 @@ struct TaxEducationRecognitionStrip: View {
         .padding(.vertical, SpacingTokens.xSmall)
         .background(
             ColorTokens.surfaceTertiary,
-            in: .rect(cornerRadius: SpacingTokens.xSmall)
+            in: .rect(cornerRadius: RadiusTokens.small, style: .continuous)
         )
         .frame(maxWidth: 260, alignment: .leading)
         .accessibilityElement(children: .combine)

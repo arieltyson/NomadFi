@@ -10,7 +10,7 @@ struct InsightCardView: View {
     let insight: FinancialInsight
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             HStack(alignment: .top, spacing: SpacingTokens.small) {
                 insightIcon
 

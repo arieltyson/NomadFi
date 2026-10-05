@@ -14,7 +14,7 @@ struct ScenarioPaymentOptionRow: View {
     let option: ScenarioPaymentOption
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                 HStack(alignment: .firstTextBaseline, spacing: SpacingTokens.xSmall) {
                     Text(option.title)

@@ -27,7 +27,7 @@ struct SpendingTrendCard: View {
     private let visibleRowLimit: Int = 4
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 header
                 monthHeaderRow

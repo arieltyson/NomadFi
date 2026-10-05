@@ -30,7 +30,6 @@ struct LedgerView: View {
             }
         }
         .navigationTitle("Ledger")
-        .glassToolbar()
         .searchable(text: $viewModel.searchText, prompt: "Search transactions")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -41,7 +40,6 @@ struct LedgerView: View {
         }
         .sheet(isPresented: $isShowingAddTransaction) {
             AddTransactionView()
-                .glassSheet()
         }
         .task {
             viewModel.refreshLocationAuthorizationStatus()

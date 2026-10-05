@@ -61,7 +61,7 @@ private extension TaxDocumentRow {
             url: document.imageURL,
             size: CGSize(width: 44, height: 44)
         )
-        .clipShape(.rect(cornerRadius: SpacingTokens.xSmall))
+        .clipShape(.rect(cornerRadius: RadiusTokens.small, style: .continuous))
         .accessibilityHidden(true)
     }
 
@@ -111,10 +111,12 @@ private extension TaxDocumentRow {
         .font(.caption2)
         .bold()
         .padding(.horizontal, SpacingTokens.xxSmall)
-        .padding(.vertical, 2)
+        .padding(.vertical, SpacingTokens.xxxSmall)
         .background(
-            (document.isVerified ? ColorTokens.positive : ColorTokens.warning)
-                .opacity(increasedContrast ? 0.24 : 0.12)
+            ColorTokens.tintedFill(
+                document.isVerified ? ColorTokens.positive : ColorTokens.warning,
+                contrast: colorSchemeContrast
+            )
         )
         .foregroundStyle(increasedContrast ? .primary : (document.isVerified ? ColorTokens.positive : ColorTokens.warning))
         .overlay {

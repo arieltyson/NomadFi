@@ -13,6 +13,9 @@ import SwiftUI
 /// These values align with Apple's HIG spacing recommendations.
 enum SpacingTokens {
 
+    /// 2pt - Vertical inset of compact capsule chips.
+    static let xxxSmall: CGFloat = 2
+
     /// 4pt - Minimal spacing between tightly related elements.
     static let xxSmall: CGFloat = 4
 

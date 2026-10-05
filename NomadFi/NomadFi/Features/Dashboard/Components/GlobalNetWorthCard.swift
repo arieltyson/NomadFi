@@ -4,14 +4,11 @@ import SwiftUI
 ///
 /// Shows the primary amount with an animated counting transition,
 /// plus secondary amounts in each jurisdiction's local currency.
-/// Uses Liquid Glass material for iOS 26 aesthetic.
 struct GlobalNetWorthCard: View {
 
     let totalNetWorth: Double
     let homeCurrency: CurrencyCode
     let jurisdictionTotals: [(code: String, name: String, amount: Double, currency: CurrencyCode)]
-
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.medium) {
@@ -27,8 +24,10 @@ struct GlobalNetWorthCard: View {
         }
         .padding(SpacingTokens.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(cardBackground)
-        .clipShape(.rect(cornerRadius: SpacingTokens.medium))
+        .background(
+            ColorTokens.surfaceSecondary,
+            in: .rect(cornerRadius: RadiusTokens.card, style: .continuous)
+        )
     }
 }
 
@@ -94,21 +93,10 @@ private extension GlobalNetWorthCard {
             }
         }
     }
-
-    @ViewBuilder
-    var cardBackground: some View {
-        if reduceTransparency {
-            ColorTokens.surfaceSecondary
-        } else {
-            Rectangle().fill(.ultraThinMaterial)
-        }
-    }
 }
 
 #Preview {
-    ZStack {
-        Rectangle().fill(Color.teal.gradient).ignoresSafeArea()
-
+    VStack {
         GlobalNetWorthCard(
             totalNetWorth: 67_215.75,
             homeCurrency: .ttd,

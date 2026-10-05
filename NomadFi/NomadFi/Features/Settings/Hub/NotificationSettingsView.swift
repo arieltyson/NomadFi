@@ -23,7 +23,6 @@ struct NotificationSettingsView: View {
             notificationsSection
         }
         .navigationTitle("Notifications")
-        .glassToolbar()
         .task {
             await notificationManager.refreshAuthorizationStatus()
             await syncCreditCardRemindersIfNeeded()

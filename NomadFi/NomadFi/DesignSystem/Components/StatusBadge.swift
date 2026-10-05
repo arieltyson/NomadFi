@@ -42,7 +42,7 @@ struct StatusBadge: View {
         .foregroundStyle(increasedContrast ? .primary : color)
         .padding(.horizontal, SpacingTokens.xSmall)
         .padding(.vertical, SpacingTokens.xxSmall)
-        .background(color.opacity(increasedContrast ? 0.24 : 0.12))
+        .background(ColorTokens.tintedFill(color, contrast: colorSchemeContrast))
         .overlay {
             if increasedContrast {
                 Capsule()

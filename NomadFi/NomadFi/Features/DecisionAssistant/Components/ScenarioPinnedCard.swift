@@ -29,7 +29,7 @@ struct ScenarioPinnedCard: View {
 
     var body: some View {
         Button(action: action) {
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.small) {
                     eyebrow
                     rulingPreview

@@ -43,7 +43,7 @@ struct ScenarioSourceRow: View {
 
     var body: some View {
         Button(action: action) {
-            GlassCard {
+            SurfaceCard {
                 HStack(alignment: .top, spacing: SpacingTokens.small) {
                     VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                         HStack(spacing: SpacingTokens.xxSmall) {

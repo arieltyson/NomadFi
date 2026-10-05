@@ -19,7 +19,7 @@ struct DetectedSubscriptionCard: View {
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 detectionHeader
 
@@ -65,7 +65,7 @@ extension DetectedSubscriptionCard {
             .padding(.horizontal, SpacingTokens.xSmall)
             .padding(.vertical, SpacingTokens.xxSmall)
             .background(
-                confidenceColor.opacity(increasedContrast ? 0.24 : 0.15)
+                ColorTokens.tintedFill(confidenceColor, contrast: colorSchemeContrast)
             )
             .foregroundStyle(increasedContrast ? .primary : confidenceColor)
             .overlay {

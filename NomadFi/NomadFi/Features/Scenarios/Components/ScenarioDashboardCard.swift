@@ -1,7 +1,7 @@
 // ScenarioDashboardCard.swift
 // NomadFi
 //
-// Dashboard entry point into Scenario 1. A single GlassCard that
+// Dashboard entry point into Scenario 1. A single SurfaceCard that
 // previews the ruling and opens the full Scenario Decision Brief.
 
 import SwiftUI
@@ -15,7 +15,7 @@ struct ScenarioDashboardCard: View {
 
     var body: some View {
         Button(action: action) {
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     HStack(spacing: SpacingTokens.xSmall) {
                         Image(systemName: "cart.fill.badge.plus")

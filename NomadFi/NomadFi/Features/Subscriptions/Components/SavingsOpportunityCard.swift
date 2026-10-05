@@ -17,7 +17,7 @@ struct SavingsOpportunityCard: View {
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
-        GlassCard {
+        SurfaceCard {
             VStack(alignment: .leading, spacing: SpacingTokens.small) {
                 header
 
@@ -54,9 +54,7 @@ extension SavingsOpportunityCard {
                 .padding(.horizontal, SpacingTokens.xSmall)
                 .padding(.vertical, SpacingTokens.xxSmall)
                 .background(
-                    ColorTokens.positive.opacity(
-                        increasedContrast ? 0.24 : 0.15
-                    )
+                    ColorTokens.tintedFill(ColorTokens.positive, contrast: colorSchemeContrast)
                 )
                 .foregroundStyle(
                     increasedContrast ? .primary : ColorTokens.positive
@@ -154,15 +152,15 @@ extension SavingsOpportunityCard {
         .padding(SpacingTokens.xSmall)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            ColorTokens.positive.opacity(increasedContrast ? 0.18 : 0.08)
+            ColorTokens.tintedSurface(ColorTokens.positive, contrast: colorSchemeContrast)
         )
         .overlay {
             if increasedContrast {
-                RoundedRectangle(cornerRadius: SpacingTokens.xSmall)
+                RoundedRectangle(cornerRadius: RadiusTokens.small, style: .continuous)
                     .strokeBorder(ColorTokens.positive, lineWidth: 1)
             }
         }
-        .clipShape(.rect(cornerRadius: SpacingTokens.xSmall))
+        .clipShape(.rect(cornerRadius: RadiusTokens.small, style: .continuous))
     }
 }
 

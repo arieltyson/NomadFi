@@ -32,12 +32,10 @@ struct FinancialSetupSettingsView: View {
             CreditCardCalendarSection(accounts: accounts)
         }
         .navigationTitle("Financial Setup")
-        .glassToolbar()
         .sheet(isPresented: $isShowingAddAccountSheet) {
             SettingsAddAccountSheet(jurisdictions: jurisdictions) { draft in
                 saveAccount(from: draft)
             }
-            .glassSheet()
         }
     }
 }
@@ -181,16 +179,16 @@ struct JurisdictionSettingsRow: View {
                             .font(.caption2)
                             .bold()
                             .padding(.horizontal, SpacingTokens.xxSmall)
-                            .padding(.vertical, 2)
+                            .padding(.vertical, SpacingTokens.xxxSmall)
                             .background(
-                                ColorTokens.actionTint.opacity(increasedContrast ? 0.28 : 0.15)
+                                ColorTokens.tintedFill(ColorTokens.actionTint, contrast: colorSchemeContrast)
                             )
                             .foregroundStyle(ColorTokens.actionTint)
                             .overlay {
                                 if increasedContrast {
                                     Capsule()
                                         .strokeBorder(
-                                            Color.primary.opacity(0.6),
+                                            ColorTokens.increasedContrastOutline,
                                             lineWidth: 1
                                         )
                                 }

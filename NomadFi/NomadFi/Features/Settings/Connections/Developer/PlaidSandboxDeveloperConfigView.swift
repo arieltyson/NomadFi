@@ -39,7 +39,6 @@ struct PlaidSandboxDeveloperConfigView: View {
             resetSection
         }
         .navigationTitle("Plaid Sandbox Harness")
-        .glassToolbar()
         .sheet(item: $sharedExport) { payload in
             ShareSheet(activityItems: payload.activityItems)
                 .presentationDetents([.medium, .large])

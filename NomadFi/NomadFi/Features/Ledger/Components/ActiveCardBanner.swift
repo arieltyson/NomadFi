@@ -15,7 +15,6 @@ struct ActiveCardBanner: View {
     /// verification.
     var feeConfidence: SourceConfidence? = nil
 
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     var body: some View {
@@ -29,19 +28,14 @@ struct ActiveCardBanner: View {
             Spacer()
         }
         .padding(SpacingTokens.small)
-        .background {
-            if reduceTransparency {
-                ColorTokens.actionTint.opacity(increasedContrast ? 0.2 : 0.08)
-            } else {
-                Rectangle().fill(.ultraThinMaterial)
-                    .overlay(ColorTokens.actionTint.opacity(increasedContrast ? 0.14 : 0.05))
-            }
-        }
-        .clipShape(.rect(cornerRadius: SpacingTokens.small))
+        .background(
+            ColorTokens.tintedSurface(ColorTokens.actionTint, contrast: colorSchemeContrast),
+            in: .rect(cornerRadius: RadiusTokens.medium, style: .continuous)
+        )
         .overlay {
             if increasedContrast {
-                RoundedRectangle(cornerRadius: SpacingTokens.small)
-                    .strokeBorder(Color.primary.opacity(0.55), lineWidth: 1)
+                RoundedRectangle(cornerRadius: RadiusTokens.medium, style: .continuous)
+                    .strokeBorder(ColorTokens.increasedContrastOutline, lineWidth: 1)
             }
         }
         .accessibilityElement(children: .combine)

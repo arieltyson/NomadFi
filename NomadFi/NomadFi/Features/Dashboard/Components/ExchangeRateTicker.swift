@@ -28,7 +28,6 @@ struct ExchangeRateTicker: View {
 private struct RateCard: View {
 
     let rate: ExchangeRateSnapshot
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
@@ -43,14 +42,10 @@ private struct RateCard: View {
         }
         .padding(.horizontal, SpacingTokens.small)
         .padding(.vertical, SpacingTokens.xSmall)
-        .background {
-            if reduceTransparency {
-                ColorTokens.surfaceSecondary
-            } else {
-                Rectangle().fill(.thinMaterial)
-            }
-        }
-        .clipShape(.rect(cornerRadius: SpacingTokens.xSmall))
+        .background(
+            ColorTokens.surfaceSecondary,
+            in: .rect(cornerRadius: RadiusTokens.small, style: .continuous)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("1 \(rate.baseCurrency.displayName) equals \(rate.rate.formatted(.number.precision(.fractionLength(2)))) \(rate.targetCurrency.displayName)")
     }

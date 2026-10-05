@@ -323,7 +323,7 @@ struct DecisionDraftDetailView: View {
     // MARK: - Integrity note
 
     private var integrityNote: some View {
-        GlassCard {
+        SurfaceCard {
             Label {
                 Text("NomadFi stored this draft on-device only. Drafts are never auto-analyzed; NomadFi only opens an existing deterministic engine when you tap a handoff button above.")
                     .font(TypographyTokens.caption)
@@ -352,7 +352,7 @@ private struct DraftDetailSection<Content: View>: View {
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            GlassCard {
+            SurfaceCard {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     content
                 }

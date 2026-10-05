@@ -131,8 +131,10 @@ private extension WelcomeView {
             )
         }
         .padding(SpacingTokens.medium)
-        .glassBackground()
-        .clipShape(.rect(cornerRadius: SpacingTokens.small))
+        .background(
+            ColorTokens.surfaceSecondary,
+            in: .rect(cornerRadius: RadiusTokens.medium, style: .continuous)
+        )
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible")

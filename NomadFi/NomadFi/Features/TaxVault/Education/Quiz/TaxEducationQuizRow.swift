@@ -143,10 +143,6 @@ struct TaxEducationQuizRow: View {
     }
 
     private func formattedPercent(_ value: Double) -> String {
-        let rounded = (value * 10).rounded() / 10
-        if rounded == rounded.rounded() {
-            return "\(Int(rounded))%"
-        }
-        return String(format: "%.1f%%", rounded)
+        (value / 100).formatted(.percent.precision(.fractionLength(0...1)))
     }
 }

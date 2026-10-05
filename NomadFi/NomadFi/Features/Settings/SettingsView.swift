@@ -110,7 +110,6 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
-        .glassToolbar()
         .task {
             appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
