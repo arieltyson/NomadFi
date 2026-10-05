@@ -903,9 +903,6 @@
     "Dismisses subscription entry without saving." : {
 
     },
-    "Dismisses the keyboard." : {
-
-    },
     "Dismisses this sheet without saving the scanned receipt." : {
 
     },
@@ -923,6 +920,8 @@
     },
     "Done" : {
 
+    },
+    "Done editing" : {
     },
     "Double tap to apply filter" : {
 
@@ -1293,6 +1292,8 @@
     "Live Exchange Rates" : {
 
     },
+    "Loading account" : {
+    },
     "Location" : {
 
     },
@@ -1483,9 +1484,6 @@
     "No Transactions" : {
 
     },
-    "NomadFi" : {
-
-    },
     "NomadFi already shows a credit-card badge next to this account, so the suffix is redundant." : {
 
     },
@@ -1570,9 +1568,6 @@
     "NomadFi works without manually tracking every transaction. These tools stay here for users who want them." : {
 
     },
-    "NomadFi. Wealth without borders." : {
-
-    },
     "None" : {
 
     },
@@ -1645,9 +1640,6 @@
     "Open Decision Assistant" : {
 
     },
-    "Open Decisions" : {
-
-    },
     "Open NomadFi and start a new on-device Apple Intelligence intake with the scenario you dictated already filled in. NomadFi never analyzes or saves anything until you confirm in the app." : {
 
     },
@@ -1658,6 +1650,9 @@
 
     },
     "Open NomadFi to a blank on-device Apple Intelligence intake. NomadFi never analyzes or saves anything until you confirm in the app." : {
+
+    },
+    "Open NomadFi to a blank typed decision draft. NomadFi never saves anything until you confirm in the app." : {
     },
     "Opens a form to add a new bank account or card." : {
 
@@ -2271,6 +2266,11 @@
 
     },
     "Start Apple Intelligence Intake" : {
+
+    },
+    "Start Draft" : {
+    },
+    "Start Draft Capture" : {
     },
     "Statement balance (optional)" : {
 
@@ -2527,9 +2527,6 @@
 
     },
     "We found these recurring charges in your transactions." : {
-
-    },
-    "Wealth without borders" : {
 
     },
     "Weekly Summary" : {

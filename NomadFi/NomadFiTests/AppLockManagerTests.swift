@@ -6,6 +6,14 @@ import Testing
 @MainActor
 struct AppLockManagerTests {
 
+    /// Without this key iOS refuses Face ID for the app, and
+    /// `.deviceOwnerAuthentication` falls straight to the passcode.
+    @Test("The app declares a Face ID usage description")
+    func appDeclaresFaceIDUsageDescription() {
+        let description = Bundle.main.object(forInfoDictionaryKey: "NSFaceIDUsageDescription") as? String
+        #expect(description?.isEmpty == false)
+    }
+
     @Test("Initial protected activation only locks once until the app truly backgrounds again")
     func initialProtectedActivationOnlyLocksOnce() async {
         let manager = AppLockManager(

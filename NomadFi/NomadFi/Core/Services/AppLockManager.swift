@@ -239,9 +239,12 @@ final class AppLockManager {
         let context = LAContext()
         context.localizedCancelTitle = "Cancel"
 
+        // The system already titles the prompt "Enter iPhone Passcode
+        // for NomadFi", so the reason says only why — never the app's
+        // name or the action again.
         return try await context.evaluatePolicy(
             .deviceOwnerAuthentication,
-            localizedReason: "Unlock NomadFi to access your financial data"
+            localizedReason: "Keeps your financial data private."
         )
     }
 }

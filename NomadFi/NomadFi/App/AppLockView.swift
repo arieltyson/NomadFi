@@ -1,75 +1,68 @@
 // AppLockView.swift
 // NomadFi
 //
-// Full-screen lock overlay requiring biometric authentication
-// before the user can access financial data.
+// Full-screen lock overlay requiring authentication before the user
+// can access financial data.
 
 import LocalAuthentication
 import SwiftUI
 
 /// A full-screen lock overlay displayed when the app requires authentication.
 ///
-/// Shows the NomadFi branding with an unlock button that triggers
-/// Face ID, Touch ID, or device passcode authentication.
-/// Blocks all interaction with the underlying content.
+/// One symbol, one line and one button. The system's own Face ID and
+/// passcode prompts carry the explanation, so this screen does not
+/// repeat it — and does not show its own progress while one of them
+/// is on screen.
+///
+/// The background is solid rather than a material: a blur would still
+/// leave the shape of balances visible behind the lock.
 struct AppLockView: View {
 
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(AppLockManager.self) private var appLockManager
 
     var body: some View {
-        ZStack {
-            if reduceTransparency {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-            } else {
-                Rectangle().fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
-            }
+        VStack(spacing: SpacingTokens.large) {
+            Spacer()
 
-            VStack(spacing: SpacingTokens.large) {
-                Spacer()
+            Image(systemName: "lock.fill")
+                .font(TypographyTokens.amountLarge)
+                .foregroundStyle(ColorTokens.brandPrimary)
+                .accessibilityHidden(true)
 
-                Image(systemName: "lock.shield.fill")
-                    .font(TypographyTokens.amountMedium)
-                    .foregroundStyle(ColorTokens.brandPrimary)
+            Text("NomadFi Locked")
+                .font(TypographyTokens.amountMedium)
+                .bold()
+                .accessibilityAddTraits(.isHeader)
 
-                Text("NomadFi is Locked")
-                    .font(TypographyTokens.amountMedium)
-                    .bold()
+            Spacer()
 
-                Text("Authenticate to access your financial data.")
-                    .font(TypographyTokens.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-
-                if appLockManager.isAuthenticating {
-                    ProgressView()
-                        .controlSize(.regular)
+            NomadFiActionButton(
+                title: unlockTitle,
+                systemImage: biometricIcon,
+                style: .primary,
+                controlSize: .large,
+                action: {
+                    Task { await appLockManager.authenticate() }
                 }
-
-                Spacer()
-
-                NomadFiActionButton(
-                    title: appLockManager.isAuthenticating ? "Authenticating..." : "Unlock NomadFi",
-                    systemImage: biometricIcon,
-                    style: .primary,
-                    controlSize: .large,
-                    accessibilityHint: "Authenticates with \(biometricAccessLabel) or device passcode.",
-                    action: {
-                        Task { await appLockManager.authenticate() }
-                    }
-                )
-                .disabled(appLockManager.isAuthenticating)
-                .accessibilityIdentifier("appLock.unlockButton")
-            }
-            .padding(SpacingTokens.large)
+            )
+            .disabled(appLockManager.isAuthenticating)
+            .accessibilityIdentifier("appLock.unlockButton")
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("NomadFi is locked. Authenticate to access your financial data.")
+        .padding(SpacingTokens.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ColorTokens.surfacePrimary)
         .task {
             guard appLockManager.isLocked else { return }
             await appLockManager.authenticate()
+        }
+    }
+
+    private var unlockTitle: String {
+        switch appLockManager.biometricType {
+        case .faceID: "Unlock with Face ID"
+        case .touchID: "Unlock with Touch ID"
+        case .opticID: "Unlock with Optic ID"
+        default: "Unlock with Passcode"
         }
     }
 
@@ -79,15 +72,6 @@ struct AppLockView: View {
         case .touchID: "touchid"
         case .opticID: "opticid"
         default: "lock.open"
-        }
-    }
-
-    private var biometricAccessLabel: String {
-        switch appLockManager.biometricType {
-        case .faceID: "Face ID"
-        case .touchID: "Touch ID"
-        case .opticID: "Optic ID"
-        default: "biometrics"
         }
     }
 }
