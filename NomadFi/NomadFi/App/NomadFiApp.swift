@@ -47,6 +47,9 @@ struct NomadFiApp: App {
 
         if config.resetAppState, let bundleIdentifier = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: bundleIdentifier)
+            // The selected tab lives in the App Group suite, so each
+            // test also starts on the default tab.
+            AppRoutingDefaults.shared.removeObject(forKey: MainTabSelection.storageKey)
         }
 
         if let hasCompletedOnboarding = config.hasCompletedOnboarding {
@@ -59,6 +62,10 @@ struct NomadFiApp: App {
         // Build the SwiftData container once, here, before any view
         // hierarchy gets a chance to read `@Environment(\.modelContext)`.
         modelContainer = NomadFiModelContainerFactory.makeProduction()
+
+        if config.seedSampleData {
+            SampleDataSeeder.seedIfNeeded(modelContext: modelContainer.mainContext)
+        }
 
         try? Tips.configure([
             .displayFrequency(.weekly)
@@ -162,6 +169,7 @@ private struct UITestLaunchConfiguration {
     let resetAppState: Bool
     let disableAppLock: Bool
     let forceReduceMotion: Bool
+    let seedSampleData: Bool
     let hasCompletedOnboarding: Bool?
 
     init(environment: [String: String] = ProcessInfo.processInfo.environment) {
@@ -183,6 +191,10 @@ private struct UITestLaunchConfiguration {
                 for: "UI_TEST_FORCE_REDUCE_MOTION",
                 in: environment
             )
+            seedSampleData = Self.boolValue(
+                for: "UI_TEST_SEED_SAMPLE_DATA",
+                in: environment
+            )
 
             if let value = environment["UI_TEST_HAS_COMPLETED_ONBOARDING"] {
                 hasCompletedOnboarding = Self.boolValue(from: value)
@@ -193,6 +205,7 @@ private struct UITestLaunchConfiguration {
             resetAppState = false
             disableAppLock = false
             forceReduceMotion = false
+            seedSampleData = false
             hasCompletedOnboarding = nil
         }
     }

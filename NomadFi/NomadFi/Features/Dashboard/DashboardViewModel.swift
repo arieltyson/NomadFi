@@ -185,16 +185,20 @@ final class DashboardViewModel {
         accounts.filter(\.isExcludedFromNetWorth).count
     }
 
-    /// Groups accounts by jurisdiction code.
-    func accountsByJurisdiction(
+    /// One summary per jurisdiction, alphabetical by country name, so
+    /// the Dashboard's country cards keep a stable, predictable order.
+    func jurisdictionSummaries(
         accounts: [Account],
         jurisdictions: [JurisdictionProfile]
-    ) -> [(profile: JurisdictionProfile, accounts: [Account])] {
-        jurisdictions.compactMap { profile in
-            let matching = accounts.filter { $0.jurisdiction == profile.countryCode }
-            guard !matching.isEmpty else { return nil }
-            return (profile: profile, accounts: matching)
-        }
+    ) -> [JurisdictionSummary] {
+        jurisdictions
+            .map { profile in
+                JurisdictionSummary(
+                    profile: profile,
+                    accounts: accounts.filter { $0.jurisdiction == profile.countryCode }
+                )
+            }
+            .sorted { $0.profile.countryName.localizedStandardCompare($1.profile.countryName) == .orderedAscending }
     }
 
     /// Determines the home currency from jurisdiction profiles.

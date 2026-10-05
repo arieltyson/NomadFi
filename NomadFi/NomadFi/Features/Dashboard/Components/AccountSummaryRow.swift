@@ -1,35 +1,15 @@
 import SwiftUI
 
-/// A grouped section displaying accounts within a single jurisdiction.
-///
-/// Shows a flag + country name header with pinned section behavior,
-/// followed by individual account cards using the `SurfaceCard` component.
-struct JurisdictionAccountSection: View {
-
-    let profile: JurisdictionProfile
-    let accounts: [Account]
-
-    var body: some View {
-        Section {
-            ForEach(accounts, id: \.self) { account in
-                AccountCard(account: account)
-            }
-        } header: {
-            sectionHeader
-        }
-    }
-}
-
-// MARK: - Subviews
-
-private struct AccountCard: View {
+/// One account on a country's page: name, institution, and its
+/// balance with freshness.
+struct AccountSummaryRow: View {
 
     let account: Account
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SurfaceCard {
+        Group {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: SpacingTokens.xSmall) {
                     accountInfo
@@ -56,7 +36,6 @@ private struct AccountCard: View {
         Image(systemName: account.accountType?.systemImage ?? "creditcard")
             .font(.title3)
             .foregroundStyle(ColorTokens.brandPrimary)
-            .frame(width: 32)
             .accessibilityHidden(true)
     }
 
@@ -167,72 +146,19 @@ private struct AccountCard: View {
     }
 }
 
-// MARK: - Private Helpers
-
-private extension JurisdictionAccountSection {
-
-    var sectionHeader: some View {
-        HStack(spacing: SpacingTokens.xSmall) {
-            // Map country code to flag emoji
-            Text(String.flagEmoji(for: profile.countryCode))
-                .font(.title3)
-
-            Text(profile.countryName)
-                .font(TypographyTokens.sectionHeader)
-
-            Spacer()
-
-            if let currency = profile.currencyCode {
-                Text(currency.rawValue)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(profile.countryName) accounts")
-        .accessibilityAddTraits(.isHeader)
-    }
-
-}
-
 #Preview {
-    let profile = JurisdictionProfile(
-        countryCode: "US",
-        countryName: "United States",
-        currencyCode: .usd,
-        isHome: false,
-        displayOrder: 0
-    )
-
-    let accounts = [
-        Account(
-            name: "Sample Rewards",
-            institutionName: "Sample Bank",
-            accountType: .creditCard,
-            currencyCode: .usd,
-            jurisdiction: "US",
-            creditLimit: 5_000,
-            currentBalance: 350,
-            availableCredit: 4_650,
-            financialSnapshotUpdatedAt: .now,
-            financialSnapshotSource: .userSnapshot
-        ),
-        Account(
-            name: "Sample Checking",
-            institutionName: "Sample Bank",
-            accountType: .checking,
-            currencyCode: .usd,
-            jurisdiction: "US",
-            currentBalance: 2_875,
-            financialSnapshotUpdatedAt: .now,
-            financialSnapshotSource: .userSnapshot
-        ),
-    ]
-
-    ScrollView {
-        LazyVStack(spacing: SpacingTokens.small, pinnedViews: .sectionHeaders) {
-            JurisdictionAccountSection(profile: profile, accounts: accounts)
-        }
-        .padding()
+    List {
+        AccountSummaryRow(
+            account: Account(
+                name: "Sample Checking",
+                institutionName: "Sample Bank",
+                accountType: .checking,
+                currencyCode: .usd,
+                jurisdiction: "US",
+                currentBalance: 2_875,
+                financialSnapshotUpdatedAt: .now,
+                financialSnapshotSource: .userSnapshot
+            )
+        )
     }
 }

@@ -46,6 +46,9 @@ struct DashboardView: View {
             .ignoresSafeArea()
         }
         .navigationTitle("Dashboard")
+        .navigationDestination(for: JurisdictionProfile.self) { profile in
+            JurisdictionDetailView(profile: profile)
+        }
         .refreshable { await pullToRefresh() }
         .task {
             AddMoreAccountsTip.accountCount = accounts.count
@@ -143,7 +146,7 @@ private extension DashboardView {
     }
 
     var dashboardContent: some View {
-        LazyVStack(spacing: SpacingTokens.large, pinnedViews: .sectionHeaders) {
+        LazyVStack(spacing: SpacingTokens.large) {
             netWorthCard
                 .redacted(reason: isFirstLoad ? .placeholder : [])
                 .padding(.horizontal, SpacingTokens.medium)
@@ -153,8 +156,10 @@ private extension DashboardView {
                     .padding(.horizontal, SpacingTokens.medium)
             }
 
-            accountSections
-                .padding(.horizontal, SpacingTokens.medium)
+            VStack(spacing: SpacingTokens.small) {
+                jurisdictionCards
+            }
+            .padding(.horizontal, SpacingTokens.medium)
 
             TipView(AddMoreAccountsTip())
                 .tipBackground(ColorTokens.surfaceSecondary)
@@ -196,28 +201,19 @@ private extension DashboardView {
     var netWorthCard: some View {
         GlobalNetWorthCard(
             totalNetWorth: viewModel.globalNetWorth(accounts: accounts, homeCurrency: homeCurrency),
-            homeCurrency: homeCurrency,
-            jurisdictionTotals: jurisdictions.map { profile in
-                (
-                    code: profile.countryCode,
-                    name: profile.countryName,
-                    amount: viewModel.jurisdictionNetWorth(
-                        accounts: accounts,
-                        jurisdictionCode: profile.countryCode
-                    ),
-                    currency: profile.currencyCode ?? .usd
-                )
-            }
+            homeCurrency: homeCurrency
         )
         .animation(reduceMotion ? nil : AnimationTokens.numericCount, value: accounts.count)
     }
 
-    var accountSections: some View {
+    var jurisdictionCards: some View {
         ForEach(
-            viewModel.accountsByJurisdiction(accounts: accounts, jurisdictions: jurisdictions),
-            id: \.profile.countryCode
-        ) { group in
-            JurisdictionAccountSection(profile: group.profile, accounts: group.accounts)
+            viewModel.jurisdictionSummaries(accounts: accounts, jurisdictions: jurisdictions)
+        ) { summary in
+            NavigationLink(value: summary.profile) {
+                JurisdictionCard(summary: summary)
+            }
+            .buttonStyle(.plain)
         }
     }
 

@@ -58,6 +58,37 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Coffee Shop UI Test"].waitForExistence(timeout: 8))
     }
 
+    /// Country cards are alphabetical, and each opens its country.
+    @MainActor
+    func testCountryCardsOpenTheirCountry() {
+        let app = makeApp(
+            hasCompletedOnboarding: true,
+            extraEnvironment: ["UI_TEST_SEED_SAMPLE_DATA": "1"]
+        )
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Dashboard"].tap()
+
+        let canada = countryCard(named: "Canada", in: app)
+        let unitedStates = countryCard(named: "United States", in: app)
+        XCTAssertTrue(canada.waitForExistence(timeout: 8))
+        XCTAssertTrue(unitedStates.waitForExistence(timeout: 8))
+        XCTAssertLessThan(canada.frame.minY, unitedStates.frame.minY)
+
+        canada.tap()
+        XCTAssertTrue(
+            app.navigationBars.matching(NSPredicate(format: "identifier CONTAINS %@", "Canada"))
+                .firstMatch
+                .waitForExistence(timeout: 8)
+        )
+
+        let countryPage = XCTAttachment(screenshot: app.screenshot())
+        countryPage.name = "Country page"
+        countryPage.lifetime = .keepAlways
+        add(countryPage)
+    }
+
     @MainActor
     func testExchangeRatesOpenFromTools() {
         let app = makeApp(hasCompletedOnboarding: true)
@@ -211,6 +242,11 @@ private extension NomadFiUITests {
         ]
 
         return app
+    }
+
+    @MainActor
+    func countryCard(named name: String, in app: XCUIApplication) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(name),")).firstMatch
     }
 
     @MainActor
