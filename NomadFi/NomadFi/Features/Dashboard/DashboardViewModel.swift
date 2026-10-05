@@ -27,6 +27,7 @@ final class DashboardViewModel {
     private let widgetSnapshotStore: DashboardWidgetSnapshotStore
     private var cachedRates: [ExchangeRateSnapshot] = []
     private var cachedRatesTimestamp: Date?
+    private var cachedCurrencies: Set<CurrencyCode> = []
 
     /// Maximum age for cached exchange rates before they're considered stale.
     /// After this interval, cached rates are discarded on the next fetch attempt.
@@ -45,8 +46,16 @@ final class DashboardViewModel {
     // MARK: - Data Loading
 
     /// Fetches exchange rates for all currencies the user has across jurisdictions.
-    func fetchRates(for currencies: [CurrencyCode]) async {
+    ///
+    /// Rates younger than ``cacheTimeToLive`` for the same currencies are
+    /// reused, so returning to the tab or the app neither hits the network
+    /// nor swaps the visible rates for placeholders.
+    ///
+    /// - Parameter force: Fetches even when the cache is fresh — for an
+    ///   explicit pull to refresh.
+    func fetchRates(for currencies: [CurrencyCode], force: Bool = false) async {
         guard !currencies.isEmpty else { return }
+        guard force || !hasFreshRates(for: currencies) else { return }
 
         isLoading = true
         defer { isLoading = false }
@@ -58,6 +67,7 @@ final class DashboardViewModel {
             exchangeRates = freshRates
             cachedRates = freshRates
             cachedRatesTimestamp = .now
+            cachedCurrencies = Set(currencies)
             lastUpdated = .now
             errorMessage = nil
             Self.logger.info("Exchange rates updated: \(self.exchangeRates.count) pairs")
@@ -243,7 +253,11 @@ final class DashboardViewModel {
     /// Whether the cached exchange rates have exceeded the time-to-live threshold.
     private var isCacheExpired: Bool {
         guard let timestamp = cachedRatesTimestamp else { return true }
-        return Date.now.timeIntervalSince(timestamp) > 3600 // 1 hour
+        return Date.now.timeIntervalSince(timestamp) > Self.cacheTimeToLive / .seconds(1)
+    }
+
+    private func hasFreshRates(for currencies: [CurrencyCode]) -> Bool {
+        !exchangeRates.isEmpty && !isCacheExpired && cachedCurrencies == Set(currencies)
     }
 
     private func topAccountsForWidget(

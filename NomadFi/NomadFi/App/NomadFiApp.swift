@@ -6,7 +6,6 @@ import TipKit
 struct NomadFiApp: App {
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @State private var isShowingSplash: Bool
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
     @State private var plaidLinkCoordinator = PlaidLinkCoordinator()
@@ -57,8 +56,6 @@ struct NomadFiApp: App {
             )
         }
 
-        _isShowingSplash = State(initialValue: !config.disableSplash)
-
         // Build the SwiftData container once, here, before any view
         // hierarchy gets a chance to read `@Environment(\.modelContext)`.
         modelContainer = NomadFiModelContainerFactory.makeProduction()
@@ -75,12 +72,6 @@ struct NomadFiApp: App {
                     MainTabView()
                 } else {
                     OnboardingFlowView(hasCompletedOnboarding: $hasCompletedOnboarding)
-                }
-
-                if isShowingSplash {
-                    SplashView(isActive: $isShowingSplash)
-                        .transition(.opacity)
-                        .zIndex(1)
                 }
 
                 // Privacy blur for App Switcher — always active when backgrounded
@@ -169,7 +160,6 @@ struct NomadFiApp: App {
 private struct UITestLaunchConfiguration {
 
     let resetAppState: Bool
-    let disableSplash: Bool
     let disableAppLock: Bool
     let forceReduceMotion: Bool
     let hasCompletedOnboarding: Bool?
@@ -183,10 +173,6 @@ private struct UITestLaunchConfiguration {
         if isUITesting {
             resetAppState = Self.boolValue(
                 for: "UI_TEST_RESET_STATE",
-                in: environment
-            )
-            disableSplash = Self.boolValue(
-                for: "UI_TEST_DISABLE_SPLASH",
                 in: environment
             )
             disableAppLock = Self.boolValue(
@@ -205,7 +191,6 @@ private struct UITestLaunchConfiguration {
             }
         } else {
             resetAppState = false
-            disableSplash = false
             disableAppLock = false
             forceReduceMotion = false
             hasCompletedOnboarding = nil

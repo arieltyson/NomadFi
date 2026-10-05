@@ -1,17 +1,17 @@
 // AnimationTokens.swift
 // NomadFi
 //
-// Shared animation curves and durations. All animations
-// respect accessibilityReduceMotion automatically.
+// Shared animation curves and durations.
 
 import SwiftUI
 
 /// Animation tokens for consistent motion throughout NomadFi.
 ///
 /// Every animation in the app should use one of these tokens
-/// rather than defining inline animation parameters. All tokens
-/// are designed to be paired with `withAnimation()` or the
-/// `.animation()` modifier.
+/// rather than defining inline animation parameters. Tokens do not
+/// check Reduce Motion themselves: apply them through
+/// `.reduceMotionAnimation(_:value:)`, or pass `nil` to
+/// `withAnimation` when `accessibilityReduceMotion` is on.
 enum AnimationTokens {
 
     /// Quick response for interactive feedback (button taps, toggles).
@@ -25,12 +25,4 @@ enum AnimationTokens {
 
     /// Counting-up animation for numeric value changes (net worth, balances).
     static let numericCount: Animation = .smooth(duration: 0.6)
-
-    /// Stagger delay for list item animations.
-    /// - Parameter index: The item's position in the list.
-    /// - Returns: A spring animation with a staggered delay.
-    static func stagger(index: Int) -> Animation {
-        .spring(duration: 0.35, bounce: 0.15)
-            .delay(Double(index) * 0.05)
-    }
 }

@@ -18,7 +18,9 @@ struct DashboardView: View {
 
     @State private var viewModel = DashboardViewModel()
     @State private var showError = false
-    @State private var hasContentAppeared = false
+    /// Counts refreshes the person asked for, so only those are confirmed
+    /// with a haptic — never a silent refresh on launch or tab return.
+    @State private var completedPullRefreshes = 0
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -44,8 +46,7 @@ struct DashboardView: View {
             .ignoresSafeArea()
         }
         .navigationTitle("Dashboard")
-        .glassToolbar()
-        .refreshable { await refreshRates() }
+        .refreshable { await pullToRefresh() }
         .task {
             AddMoreAccountsTip.accountCount = accounts.count
             await refreshRates()
@@ -78,7 +79,7 @@ struct DashboardView: View {
                 homeCurrency: homeCurrency
             )
         }
-        .sensoryFeedback(.success, trigger: viewModel.lastUpdated)
+        .sensoryFeedback(.success, trigger: completedPullRefreshes)
     }
 }
 
@@ -228,16 +229,10 @@ private extension DashboardView {
 
     var accountSections: some View {
         ForEach(
-            viewModel.accountsByJurisdiction(accounts: accounts, jurisdictions: jurisdictions).enumerated(),
-            id: \.element.profile.countryCode
-        ) { index, group in
+            viewModel.accountsByJurisdiction(accounts: accounts, jurisdictions: jurisdictions),
+            id: \.profile.countryCode
+        ) { group in
             JurisdictionAccountSection(profile: group.profile, accounts: group.accounts)
-                .opacity(hasContentAppeared ? 1 : 0)
-                .offset(y: hasContentAppeared ? 0 : 12)
-                .animation(
-                    reduceMotion ? nil : AnimationTokens.stagger(index: index),
-                    value: hasContentAppeared
-                )
         }
     }
 
@@ -255,9 +250,19 @@ private extension DashboardView {
             .padding(.horizontal, SpacingTokens.medium)
     }
 
-    func refreshRates() async {
+    func pullToRefresh() async {
+        let previousUpdate = viewModel.lastUpdated
+        await refreshRates(force: true)
+        if viewModel.lastUpdated != previousUpdate {
+            completedPullRefreshes += 1
+        }
+    }
+
+    /// Reuses fresh cached rates unless `force` is set, so returning to
+    /// the tab or the app does no network work.
+    func refreshRates(force: Bool = false) async {
         let currencies = viewModel.currencies(from: jurisdictions)
-        await viewModel.fetchRates(for: currencies)
+        await viewModel.fetchRates(for: currencies, force: force)
         viewModel.generateInsights(
             transactions: transactions,
             accounts: accounts,
@@ -267,11 +272,6 @@ private extension DashboardView {
             transactions: transactions,
             homeCurrency: homeCurrency
         )
-
-        // Trigger stagger entrance animation after first successful load
-        if !hasContentAppeared {
-            hasContentAppeared = true
-        }
 
         viewModel.publishWidgetSnapshot(
             accounts: accounts,

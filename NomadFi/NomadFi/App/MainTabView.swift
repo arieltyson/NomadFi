@@ -32,35 +32,27 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $storedSelection) {
-            Tab(
-                "Dashboard",
-                systemImage: "globe",
-                value: MainTabSelection.dashboard
-            ) {
-                NavigationStack {
-                    DashboardView()
+            ForEach(MainTabSelection.allCases) { tab in
+                Tab(tab.title, systemImage: tab.systemImage, value: tab) {
+                    NavigationStack {
+                        MainTabRoot(tab: tab)
+                    }
                 }
             }
+        }
+    }
+}
 
-            Tab(
-                "Decisions",
-                systemImage: "scale.3d",
-                value: MainTabSelection.decisions
-            ) {
-                NavigationStack {
-                    DecisionAssistantView()
-                }
-            }
+/// The root screen of each tab.
+private struct MainTabRoot: View {
 
-            Tab(
-                "Settings",
-                systemImage: "gearshape",
-                value: MainTabSelection.settings
-            ) {
-                NavigationStack {
-                    SettingsView()
-                }
-            }
+    let tab: MainTabSelection
+
+    var body: some View {
+        switch tab {
+        case .dashboard: DashboardView()
+        case .decisions: DecisionAssistantView()
+        case .settings: SettingsView()
         }
     }
 }

@@ -15,11 +15,31 @@ import Foundation
 /// Intentionally minimal — this type exists so App Intents running
 /// in `.foreground(.immediate)` mode can route a launch straight to
 /// the Decision Assistant without fragile string matching.
-enum MainTabSelection: String, CaseIterable, Sendable, Hashable {
+enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
 
     case dashboard
     case decisions
     case settings
+
+    var id: Self { self }
+
+    /// The tab bar label.
+    var title: String {
+        switch self {
+        case .dashboard: "Dashboard"
+        case .decisions: "Decisions"
+        case .settings: "Settings"
+        }
+    }
+
+    /// The tab bar symbol.
+    var systemImage: String {
+        switch self {
+        case .dashboard: "globe"
+        case .decisions: "scale.3d"
+        case .settings: "gearshape"
+        }
+    }
 
     /// The tab the app should open to at cold start, unless a
     /// pending override has been written by an App Intent.
