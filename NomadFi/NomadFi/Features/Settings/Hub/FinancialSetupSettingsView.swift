@@ -59,7 +59,7 @@ private extension FinancialSetupSettingsView {
         } header: {
             Text("Your Jurisdictions")
         } footer: {
-            Text("Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed.")
+            Text("Removing a jurisdiction never deletes its accounts or transactions.")
         }
         .accessibilityLabel("Jurisdictions section")
     }
@@ -74,8 +74,6 @@ private extension FinancialSetupSettingsView {
             .accessibilityHint("Opens the Financial Connections page where you can see which data sources are available and run an explicit sync.")
         } header: {
             Text("Connections")
-        } footer: {
-            Text("NomadFi supports manual entry, CSV import, and Apple FinanceKit. A Plaid sandbox path is available only in developer builds for Phase 5D validation; no third-party aggregator is active for end users yet.")
         }
     }
 
@@ -105,8 +103,6 @@ private extension FinancialSetupSettingsView {
             .accessibilityHint("Opens a form to add a new bank account or card.")
         } header: {
             Text("Accounts")
-        } footer: {
-            Text("Manage the accounts used for global net worth, FX analysis, and card recommendations.")
         }
     }
 }

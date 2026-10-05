@@ -63,12 +63,7 @@ private extension PrivacySecuritySettingsView {
         @Bindable var appLockManager = appLockManager
 
         return Section {
-            Toggle("App Lock", isOn: $appLockManager.isAppLockEnabled)
-                .accessibilityHint(
-                    appLockManager.isBiometricAvailable
-                        ? "Requires \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") to open NomadFi"
-                        : "Requires your device passcode to open NomadFi"
-                )
+            Toggle(appLockTitle, isOn: $appLockManager.isAppLockEnabled)
 
             if appLockManager.isAppLockEnabled {
                 Picker("Lock After", selection: $appLockManager.lockTimeout) {
@@ -76,36 +71,25 @@ private extension PrivacySecuritySettingsView {
                         Text(timeout.displayName).tag(timeout)
                     }
                 }
-                .accessibilityHint("Choose how long NomadFi waits before locking after you leave the app")
             }
         } header: {
             Text("Security")
-        } footer: {
-            if appLockManager.isBiometricAvailable {
-                Text("When enabled, \(appLockManager.biometricType == .faceID ? "Face ID" : "Touch ID") is required to access your financial data.")
-            } else {
-                Text("When enabled, your device passcode is required to access your financial data.")
-            }
+        }
+    }
+
+    /// Names what the toggle requires, so it needs no footer.
+    var appLockTitle: String {
+        guard appLockManager.isBiometricAvailable else { return "Require Passcode" }
+        return switch appLockManager.biometricType {
+        case .faceID: "Require Face ID"
+        case .touchID: "Require Touch ID"
+        case .opticID: "Require Optic ID"
+        default: "Require Passcode"
         }
     }
 
     var privacySection: some View {
         Section {
-            Label {
-                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text("On-Device Only")
-                        .font(TypographyTokens.body)
-                    Text("Your financial data never leaves your iPhone.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "lock.shield.fill")
-                    .foregroundStyle(ColorTokens.positive)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Privacy: all your financial data stays on your device")
-
             Button("Privacy Policy", systemImage: "doc.text") {
                 isShowingPrivacyPolicy = true
             }
@@ -117,8 +101,6 @@ private extension PrivacySecuritySettingsView {
             .accessibilityHint("Permanently removes all accounts, transactions, receipts, and subscriptions from this device")
         } header: {
             Text("Privacy & Data")
-        } footer: {
-            Text("NomadFi uses zero analytics, zero tracking, and zero third-party SDKs.")
         }
     }
 }

@@ -10,7 +10,7 @@
 
 import Foundation
 
-/// The three primary surfaces on NomadFi's bottom tab bar.
+/// The primary surfaces on NomadFi's bottom tab bar.
 ///
 /// Intentionally minimal — this type exists so App Intents running
 /// in `.foreground(.immediate)` mode can route a launch straight to
@@ -19,6 +19,7 @@ enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
 
     case dashboard
     case decisions
+    case tools
     case settings
 
     var id: Self { self }
@@ -28,6 +29,7 @@ enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
         switch self {
         case .dashboard: "Dashboard"
         case .decisions: "Decisions"
+        case .tools: "Tools"
         case .settings: "Settings"
         }
     }
@@ -37,6 +39,7 @@ enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
         switch self {
         case .dashboard: "globe"
         case .decisions: "scale.3d"
+        case .tools: "wrench.and.screwdriver"
         case .settings: "gearshape"
         }
     }

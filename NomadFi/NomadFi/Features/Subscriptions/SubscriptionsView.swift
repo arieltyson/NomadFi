@@ -30,10 +30,9 @@ struct SubscriptionsView: View {
     @State private var isShowingAddSubscription = false
     @State private var showError = false
 
-    // Subscriptions is now an optional companion under Settings →
-    // Advanced Tools rather than a primary tab, so it relies on the
-    // ambient `NavigationStack` from Settings. Nesting a second stack
-    // here would double up the nav bar.
+    // Pushed from the Tools tab, so it relies on that tab's
+    // `NavigationStack`. Nesting a second stack here would double up
+    // the nav bar.
     var body: some View {
         Group {
             if subscriptions.isEmpty && viewModel.detectedSubscriptions.isEmpty {

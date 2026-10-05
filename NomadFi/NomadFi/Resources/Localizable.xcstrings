@@ -269,12 +269,6 @@
     "A short title helps you recognise this draft in the Gathered intelligence list." : {
 
     },
-    "About NomadFi" : {
-
-    },
-    "Accessibility" : {
-
-    },
     "Account" : {
 
     },
@@ -365,9 +359,6 @@
     "Add your first account to power Dashboard insights and Active Card recommendations." : {
 
     },
-    "Add, remove, or change your home jurisdiction as your life changes. Your accounts, transactions, and budgets are never deleted when a jurisdiction is removed." : {
-
-    },
     "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
 
     },
@@ -375,9 +366,6 @@
 
     },
     "Adds this account to your onboarding list." : {
-
-    },
-    "Advanced Tools" : {
 
     },
     "AI structures input. Deterministic engines decide. NomadFi will mark this draft Needs engine until you tap a handoff button on the detail sheet." : {
@@ -393,9 +381,6 @@
 
     },
     "All Supported Jurisdictions Added" : {
-
-    },
-    "All text scales to your preferred size, including the largest accessibility sizes." : {
 
     },
     "All user-side checks are confirmed." : {
@@ -432,15 +417,6 @@
         }
       }
     },
-    "App Lock" : {
-
-    },
-    "App Lock, privacy policy, and data controls." : {
-
-    },
-    "App version %@" : {
-
-    },
     "Apple FinanceKit" : {
 
     },
@@ -466,9 +442,6 @@
 
     },
     "At 80%, 90%, and 100%" : {
-
-    },
-    "Authenticate to access your financial data." : {
 
     },
     "Authorization required" : {
@@ -538,9 +511,6 @@
     "Budget Alerts" : {
 
     },
-    "Built for International Students" : {
-
-    },
     "CAD — Canadian Dollar" : {
 
     },
@@ -602,9 +572,6 @@
 
     },
     "Choose a Different File" : {
-
-    },
-    "Choose how long NomadFi waits before locking after you leave the app" : {
 
     },
     "Choose photo" : {
@@ -831,9 +798,6 @@
     "Decision" : {
 
     },
-    "Decision Assistant, Not a Ledger" : {
-
-    },
     "Decision kind" : {
 
     },
@@ -922,6 +886,7 @@
 
     },
     "Done editing" : {
+
     },
     "Double tap to apply filter" : {
 
@@ -945,9 +910,6 @@
 
     },
     "Duplicates skipped" : {
-
-    },
-    "Dynamic Type" : {
 
     },
     "Each link opens the official source page in Safari. NomadFi does not fetch or cache these pages — you verify them yourself." : {
@@ -1005,9 +967,6 @@
 
     },
     "Every Saturday morning" : {
-
-    },
-    "Every screen narrates as a coherent financial story." : {
 
     },
     "Evidence and assumptions" : {
@@ -1171,6 +1130,8 @@
     "Import file" : {
 
     },
+    "Import Transactions" : {
+    },
     "Imported" : {
 
     },
@@ -1196,9 +1157,6 @@
 
     },
     "Jurisdictions section" : {
-
-    },
-    "Jurisdictions, accounts, and credit-card calendar." : {
 
     },
     "Keep location to a city or short hint. Don't enter addresses, card numbers, or account details." : {
@@ -1256,9 +1214,6 @@
     "Ledger" : {
 
     },
-    "Ledger and Tax Vault — optional manual workflows." : {
-
-    },
     "Lesson" : {
 
     },
@@ -1293,6 +1248,7 @@
 
     },
     "Loading account" : {
+
     },
     "Location" : {
 
@@ -1331,16 +1287,10 @@
     "Manage jurisdictions, currencies, privacy, and account preferences." : {
 
     },
-    "Manage the accounts used for global net worth, FX analysis, and card recommendations." : {
-
-    },
     "Manual entry" : {
 
     },
     "Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated. NomadFi has a Plaid sandbox path under Phase 5D validation — it is not a production rollout and only runs when a developer has configured the local Plaid sandbox broker." : {
-
-    },
-    "Manual transaction review and entry." : {
 
     },
     "Mark Confirmed Today" : {
@@ -1502,20 +1452,7 @@
     "NomadFi does not provide tax advice. Suggestions are procedural only. Nothing is written to your tax records until you confirm." : {
 
     },
-    "NomadFi helps you pick the right card, protect credit, reduce FX waste, and learn jurisdiction-aware tax concepts — without manual bookkeeping." : {
-
-    },
-    "NomadFi is built specifically for international students managing money across borders" : {
-
-    },
-    "NomadFi is designed so the app is equally usable whether you rely on VoiceOver, larger text, or increased contrast. Adjust your preferences in the iOS Settings app." : {
-
-    },
-    "NomadFi is Locked" : {
-
-    },
-    "NomadFi is locked. Authenticate to access your financial data." : {
-
+    "NomadFi Locked" : {
     },
     "NomadFi only syncs in response to this action. Nothing runs in the background yet." : {
 
@@ -1541,9 +1478,6 @@
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
     },
-    "NomadFi supports manual entry, CSV import, and Apple FinanceKit. A Plaid sandbox path is available only in developer builds for Phase 5D validation; no third-party aggregator is active for end users yet." : {
-
-    },
     "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
     },
@@ -1559,13 +1493,7 @@
     "NomadFi uses your jurisdictions to detect FX fees, optimize card usage, and organize tax documents by country." : {
 
     },
-    "NomadFi uses zero analytics, zero tracking, and zero third-party SDKs." : {
-
-    },
     "NomadFi will surface tax-relevant transactions here when it sees them. Imports and manual entries both feed this queue." : {
-
-    },
-    "NomadFi works without manually tracking every transaction. These tools stay here for users who want them." : {
 
     },
     "None" : {
@@ -1607,9 +1535,6 @@
     "Now it has one home." : {
 
     },
-    "off" : {
-
-    },
     "Off" : {
 
     },
@@ -1622,13 +1547,7 @@
     "OK" : {
 
     },
-    "on" : {
-
-    },
     "On" : {
-
-    },
-    "On-Device Only" : {
 
     },
     "Online shopping" : {
@@ -1653,6 +1572,7 @@
 
     },
     "Open NomadFi to a blank typed decision draft. NomadFi never saves anything until you confirm in the app." : {
+
     },
     "Opens a form to add a new bank account or card." : {
 
@@ -1663,9 +1583,6 @@
     "Opens Plaid Link against the locally-configured sandbox broker." : {
 
     },
-    "Opens short, source-backed investing lessons. Education only — not investment advice." : {
-
-    },
     "Opens the %@ brief. NomadFi runs this engine against your saved data and shows the rationale and sources." : {
 
     },
@@ -1673,9 +1590,6 @@
 
     },
     "Opens the archived draft. Restore or delete from the detail sheet." : {
-
-    },
-    "Opens the CSV import preview flow. No data leaves this device." : {
 
     },
     "Opens the draft details. The detail sheet shows what NomadFi can do with this draft." : {
@@ -1693,9 +1607,6 @@
     "Opens the full lesson detail." : {
 
     },
-    "Opens the manual transaction ledger." : {
-
-    },
     "Opens the official source in Safari" : {
 
     },
@@ -1708,16 +1619,10 @@
     "Opens the provider's authorization prompt." : {
 
     },
-    "Opens the receipts and tax document archive." : {
-
-    },
     "Opens the review sheet for this suggestion." : {
 
     },
     "Opens the statement calendar editor for this card." : {
-
-    },
-    "Opens the subscription tracker and savings comparison." : {
 
     },
     "Opens your photo library so NomadFi can scan a receipt on device." : {
@@ -1736,9 +1641,6 @@
 
     },
     "Optional city or short location hint. Do not enter a full address." : {
-
-    },
-    "Optional companions. NomadFi's primary recommendations come from the Decision Assistant — these tools stay here for users who want deeper manual tracking." : {
 
     },
     "Optional extra notes." : {
@@ -1793,9 +1695,6 @@
 
     },
     "Owed %@" : {
-
-    },
-    "Parse and preview a CSV statement locally before writing anything." : {
 
     },
     "Parsing rows…" : {
@@ -1856,9 +1755,6 @@
 
     },
     "Privacy Policy" : {
-
-    },
-    "Privacy: all your financial data stays on your device" : {
 
     },
     "Profile" : {
@@ -1931,9 +1827,6 @@
     "Receipt Details" : {
 
     },
-    "Receipts and tax documents for later planning." : {
-
-    },
     "Recent spending context" : {
 
     },
@@ -1944,9 +1837,6 @@
 
     },
     "Recommend a Card" : {
-
-    },
-    "Recurring-charge detection and cross-border pricing review." : {
 
     },
     "Region" : {
@@ -1976,6 +1866,8 @@
     "Removes this row from the review queue. NomadFi never resurfaces dismissed suggestions." : {
 
     },
+    "Removing a jurisdiction never deletes its accounts or transactions." : {
+    },
     "Rename to “%@”" : {
 
     },
@@ -1986,12 +1878,6 @@
 
     },
     "Requests permission to send financial alerts and reminders" : {
-
-    },
-    "Requires %@ to open NomadFi" : {
-
-    },
-    "Requires your device passcode to open NomadFi" : {
 
     },
     "Resets this lesson so it shows up again in the next-to-review queue." : {
@@ -2250,9 +2136,6 @@
     "Source URL" : {
 
     },
-    "Source-backed investing literacy starter for your jurisdictions." : {
-
-    },
     "Sources" : {
 
     },
@@ -2269,8 +2152,10 @@
 
     },
     "Start Draft" : {
+
     },
     "Start Draft Capture" : {
+
     },
     "Statement balance (optional)" : {
 
@@ -2285,9 +2170,6 @@
 
     },
     "Subscription Reminders" : {
-
-    },
-    "Subscription, budget, FX, and credit-card reminders." : {
 
     },
     "Subscriptions" : {
@@ -2426,6 +2308,8 @@
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
     },
+    "Tools" : {
+    },
     "Total" : {
 
     },
@@ -2508,19 +2392,7 @@
     "Verified" : {
 
     },
-    "Version" : {
-
-    },
-    "Version and product direction." : {
-
-    },
     "View how NomadFi protects your data" : {
-
-    },
-    "VoiceOver Optimized" : {
-
-    },
-    "VoiceOver, Dynamic Type, and contrast." : {
 
     },
     "Waiting for iOS Permission…" : {
@@ -2542,12 +2414,6 @@
 
     },
     "What to review next" : {
-
-    },
-    "When enabled, %@ is required to access your financial data." : {
-
-    },
-    "When enabled, your device passcode is required to access your financial data." : {
 
     },
     "When not to use these" : {
@@ -2649,9 +2515,6 @@
       }
     },
     "Your cross-border transactions will appear here. Tap + to add one manually." : {
-
-    },
-    "Your financial data never leaves your iPhone." : {
 
     },
     "Your global net worth at a glance. Dashboard implementation starts in Phase 2." : {

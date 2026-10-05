@@ -45,68 +45,29 @@ struct SettingsView: View {
 
     var body: some View {
         List {
-            Section {
-                SettingsNavigationRow(
-                    "Financial Setup",
-                    subtitle: "Jurisdictions, accounts, and credit-card calendar.",
-                    systemImage: "globe.americas.fill",
-                    tint: ColorTokens.brandPrimary
-                ) {
-                    FinancialSetupSettingsView()
-                }
-
-                SettingsNavigationRow(
-                    "Notifications",
-                    subtitle: "Subscription, budget, FX, and credit-card reminders.",
-                    systemImage: "bell.badge.fill",
-                    tint: ColorTokens.warning,
-                    accessory: notificationsAccessory,
-                    accessibilityStatus: notificationsAccessibilityStatus
-                ) {
-                    NotificationSettingsView()
-                }
-
-                SettingsNavigationRow(
-                    "Privacy & Security",
-                    subtitle: "App Lock, privacy policy, and data controls.",
-                    systemImage: "lock.shield.fill",
-                    tint: ColorTokens.positive
-                ) {
-                    PrivacySecuritySettingsView()
-                }
+            HubNavigationRow(
+                "Financial Setup",
+                systemImage: "globe.americas.fill",
+                tint: ColorTokens.brandPrimary
+            ) {
+                FinancialSetupSettingsView()
             }
 
-            Section {
-                SettingsNavigationRow(
-                    "Advanced Tools",
-                    subtitle: "Ledger and Tax Vault — optional manual workflows.",
-                    systemImage: "slider.horizontal.3",
-                    tint: ColorTokens.neutral
-                ) {
-                    AdvancedToolsSettingsView()
-                }
-            } footer: {
-                Text("NomadFi works without manually tracking every transaction. These tools stay here for users who want them.")
+            HubNavigationRow(
+                "Notifications",
+                systemImage: "bell.badge.fill",
+                tint: ColorTokens.warning,
+                value: notificationManager.isAuthorized ? "On" : "Off"
+            ) {
+                NotificationSettingsView()
             }
 
-            Section {
-                SettingsNavigationRow(
-                    "Accessibility",
-                    subtitle: "VoiceOver, Dynamic Type, and contrast.",
-                    systemImage: "accessibility",
-                    tint: ColorTokens.brandSecondary
-                ) {
-                    AccessibilitySettingsView()
-                }
-
-                SettingsNavigationRow(
-                    "About NomadFi",
-                    subtitle: "Version and product direction.",
-                    systemImage: "info.circle.fill",
-                    tint: ColorTokens.neutral
-                ) {
-                    AboutSettingsView()
-                }
+            HubNavigationRow(
+                "Privacy & Security",
+                systemImage: "lock.shield.fill",
+                tint: ColorTokens.positive
+            ) {
+                PrivacySecuritySettingsView()
             }
         }
         .navigationTitle("Settings")
@@ -116,25 +77,6 @@ struct SettingsView: View {
             await syncCreditCardRemindersIfNeeded()
             repairHomeJurisdictionIfNeeded()
         }
-    }
-}
-
-// MARK: - Hub accessories
-
-private extension SettingsView {
-
-    /// Value-accessory shown at the trailing edge of the Notifications
-    /// row — mirrors Apple Settings' "On" / "Off" affordance so the
-    /// user can glance at the hub and know whether reminders are live
-    /// without opening the subpage.
-    var notificationsAccessory: LocalizedStringKey {
-        notificationManager.isAuthorized ? "On" : "Off"
-    }
-
-    /// VoiceOver expansion of the accessory. Apple Settings rows read
-    /// like "Notifications, on" — this matches that phrasing.
-    var notificationsAccessibilityStatus: LocalizedStringKey {
-        notificationManager.isAuthorized ? "on" : "off"
     }
 }
 

@@ -42,7 +42,7 @@ enum DecisionDraftRowReadiness: Sendable, Equatable, Hashable {
     case requiresContext(MissingContextField)
 
     /// Active draft whose closest source-backed surface is one of
-    /// NomadFi's already-shipped Advanced Tools (Tax Vault,
+    /// NomadFi's already-shipped Tools (Tax Vault,
     /// Investing Learn). Reminder-only — never a deep link.
     case routedToAdvancedTool(AdvancedToolDestination)
 

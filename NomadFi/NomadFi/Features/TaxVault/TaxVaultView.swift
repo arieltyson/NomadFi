@@ -2,7 +2,7 @@
 // NomadFi
 //
 // Shell for the Tax Vault destination. Three peer surfaces sit
-// under one `NavigationStack` (Settings' stack), switched via a
+// under one `NavigationStack` (the Tools tab's), switched via a
 // `Picker(.segmented)` so the surface itself feels like one
 // coherent workspace rather than three unrelated screens.
 //
@@ -47,10 +47,9 @@ struct TaxVaultView: View {
     @State private var surface: TaxVaultSurface = .review
     @State private var showScanError = false
 
-    // Tax Vault is now a Settings destination rather than a primary
-    // tab, so it relies on the ambient `NavigationStack` provided by
-    // Settings. Nesting a second stack here would double up the bar
-    // and break `.navigationDestination` routing.
+    // Pushed from the Tools tab, so it relies on that tab's
+    // `NavigationStack`. Nesting a second stack here would double up
+    // the bar and break `.navigationDestination` routing.
     var body: some View {
         VStack(spacing: 0) {
             TaxVaultSurfaceSwitcher(selection: $surface)

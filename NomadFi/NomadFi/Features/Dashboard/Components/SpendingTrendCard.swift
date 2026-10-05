@@ -4,7 +4,7 @@
 // Read-only insight surface on the Dashboard. Shows where recent
 // spending landed by category across a short month window. Never
 // editable, never routed to the Ledger — tapping the card does not
-// open a drilldown (by design: the Ledger is Advanced Tools only).
+// open a drilldown (by design: the Ledger lives in Tools).
 //
 // The card is rendered only when `SpendingTrendComputer` returned a
 // summary that cleared the "meaningful" floor, so presence itself

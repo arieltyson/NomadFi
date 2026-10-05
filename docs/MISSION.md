@@ -190,14 +190,13 @@ The bottom tab bar is exactly three surfaces:
   typed scenarios, Siri / App Intents, and optional Apple Intelligence
   context. Recommendations come from NomadFi's deterministic,
   source-backed engines — never from a generic LLM.
+- **Tools** — the optional manual companions: Subscriptions, Ledger,
+  transaction import, Tax Vault, and Investing Learn. Fully functional,
+  one tap each, and never required for a recommendation.
 - **Settings** — a concise hub for financial setup (jurisdictions,
-  accounts, credit-card calendar), notifications, privacy & security,
-  and the Advanced Tools subpage.
-
-Companion tools such as **Subscriptions**, **Ledger**, and **Tax Vault**
-live under Settings → Advanced Tools. They remain fully functional but
-are not daily-driver tabs until automatic import / sync or stronger
-decision-assistant flows make them central.
+  accounts, credit-card calendar), notifications, and privacy &
+  security. Product description and accessibility statements live on
+  the App Store page, not in the app.
 
 ---
 

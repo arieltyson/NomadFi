@@ -20,8 +20,8 @@ import UniformTypeIdentifiers
 
 /// Top-level view for the CSV transaction import flow.
 ///
-/// Pushed into Settings' ambient `NavigationStack` from
-/// `AdvancedToolsSettingsView`, so the system back chevron handles
+/// Pushed into the Tools tab's `NavigationStack` from
+/// `ToolsView`, so the system back chevron handles
 /// dismissal — no nested stack, no redundant "Close" toolbar
 /// button.
 struct TransactionImportView: View {

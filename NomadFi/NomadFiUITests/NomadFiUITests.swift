@@ -35,10 +35,9 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
 
-        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Ledger", in: app)
 
         let addTransaction = app.navigationBars["Ledger"].buttons["Add Transaction"]
@@ -66,10 +65,9 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
 
-        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Ledger", in: app)
 
         let addTransaction = app.navigationBars["Ledger"].buttons["Add Transaction"]
@@ -100,10 +98,9 @@ final class NomadFiUITests: XCTestCase {
         )
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
 
-        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Tax Vault", in: app)
 
         XCTAssertTrue(app.navigationBars["Confirm Receipt"].waitForExistence(timeout: 8))
@@ -133,10 +130,9 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Settings"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
 
-        tapButton(containing: "Advanced Tools", in: app)
         tapButton(containing: "Subscriptions", in: app)
 
         let addSubscription = app.navigationBars["Subscriptions"].buttons["Add Subscription"]

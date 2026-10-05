@@ -3,16 +3,9 @@ import SwiftUI
 
 /// The app's primary tab bar.
 ///
-/// NomadFi is a cross-border financial decision assistant, so the
-/// bottom tabs surface exactly the three workflows that matter every
-/// day: a Dashboard that grounds the user in their money context, a
-/// Decision Assistant that routes them into source-backed scenario
-/// recommendations, and a Settings hub that hosts financial setup
-/// plus optional companion tools (Subscriptions, Ledger, Tax Vault).
-///
-/// Subscriptions, Ledger, and Tax Vault live under Settings →
-/// Advanced Tools rather than on the tab bar — they're valuable but
-/// secondary to the decision surface.
+/// A Dashboard that grounds the user in their money context, the
+/// Decision Assistant, the optional manual Tools (Subscriptions,
+/// Ledger, Import, Tax Vault, Investing Learn), and Settings.
 ///
 /// Tab selection is persisted via `@AppStorage` so an App Intent
 /// running in `.foreground(.immediate)` mode can write
@@ -52,6 +45,7 @@ private struct MainTabRoot: View {
         switch tab {
         case .dashboard: DashboardView()
         case .decisions: DecisionAssistantView()
+        case .tools: ToolsView()
         case .settings: SettingsView()
         }
     }

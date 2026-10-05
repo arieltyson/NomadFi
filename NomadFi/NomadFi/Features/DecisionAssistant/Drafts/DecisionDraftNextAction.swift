@@ -32,11 +32,11 @@ enum DecisionDraftNextAction: Sendable, Equatable, Hashable, Identifiable {
     case openCreditTimingCheck
 
     /// Calm, non-deep-link reminder that the related source-backed
-    /// surface lives at Settings → Advanced Tools → Tax Vault.
+    /// surface lives at Tools → Tax Vault.
     case reviewInTaxVault
 
     /// Calm, non-deep-link reminder that the related source-backed
-    /// surface lives at Settings → Advanced Tools → Investing Learn.
+    /// surface lives at Tools → Investing Learn.
     case reviewInInvestingLearn
 
     /// Procedural reminder to add a missing structured field
@@ -119,9 +119,9 @@ enum DecisionDraftNextAction: Sendable, Equatable, Hashable, Identifiable {
         case .openCreditTimingCheck:
             "Opens the existing Credit Timing Check brief. NomadFi reads your saved credit cards live."
         case .reviewInTaxVault:
-            "NomadFi does not deep-link Tax Vault from this surface. Open Settings, then Advanced Tools, then Tax Vault."
+            "NomadFi does not deep-link Tax Vault from this surface. Open the Tools tab, then Tax Vault."
         case .reviewInInvestingLearn:
-            "NomadFi does not deep-link Investing Learn from this surface. Open Settings, then Advanced Tools, then Investing Learn."
+            "NomadFi does not deep-link Investing Learn from this surface. Open the Tools tab, then Investing Learn."
         case .addContext(let field):
             field.accessibilityHint
         case .noEngineYet:
