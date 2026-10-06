@@ -33,7 +33,7 @@ struct JurisdictionCard: View {
         .contentShape(.rect)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "\(summary.profile.countryName), \(summary.total.formatted(.currency(code: summary.currency.rawValue)))"
+            "\(summary.profile.countryName), \(MoneyFormatStyle.spokenAmount(summary.total, code: summary.currency.rawValue))"
         )
     }
 }

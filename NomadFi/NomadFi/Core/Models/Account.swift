@@ -452,7 +452,7 @@ extension Account {
             if let owed = currentBalance {
                 return AccountAmountLabel(
                     kind: .currentBalance,
-                    text: "Owed \(owed.formatted(.currency(code: code)))",
+                    text: "Owed \(owed.formatted(.money(code: code)))",
                     rawAmount: owed
                 )
             }
@@ -466,7 +466,7 @@ extension Account {
         if let amount = latestBalanceForDisplay {
             return AccountAmountLabel(
                 kind: .currentBalance,
-                text: amount.formatted(.currency(code: code)),
+                text: amount.formatted(.money(code: code)),
                 rawAmount: amount
             )
         }
@@ -489,7 +489,7 @@ extension Account {
         let code = currencyCodeRawValue
         return AccountAmountLabel(
             kind: .creditLimit,
-            text: "Limit \(limit.formatted(.currency(code: code)))",
+            text: "Limit \(limit.formatted(.money(code: code)))",
             rawAmount: limit
         )
     }

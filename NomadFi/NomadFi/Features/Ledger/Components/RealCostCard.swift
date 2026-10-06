@@ -88,11 +88,11 @@ private extension RealCostCard {
                 .foregroundStyle(deltaColor)
 
             if delta > 0 {
-                Text("You overpaid by \(delta, format: .currency(code: homeCurrency.rawValue))")
+                Text("You overpaid by \(delta, format: .money(code: homeCurrency.rawValue))")
                     .font(TypographyTokens.body)
                     .foregroundStyle(deltaColor)
             } else {
-                Text("You saved \(abs(delta), format: .currency(code: homeCurrency.rawValue))")
+                Text("You saved \(abs(delta), format: .money(code: homeCurrency.rawValue))")
                     .font(TypographyTokens.body)
                     .foregroundStyle(deltaColor)
             }
@@ -104,9 +104,9 @@ private extension RealCostCard {
     }
 
     var accessibilityDescription: String {
-        let fairFormatted = fairCost.formatted(.currency(code: homeCurrency.rawValue))
-        let actualFormatted = actualCost.formatted(.currency(code: homeCurrency.rawValue))
-        let deltaFormatted = abs(delta).formatted(.currency(code: homeCurrency.rawValue))
+        let fairFormatted = fairCost.formatted(.money(code: homeCurrency.rawValue))
+        let actualFormatted = actualCost.formatted(.money(code: homeCurrency.rawValue))
+        let deltaFormatted = abs(delta).formatted(.money(code: homeCurrency.rawValue))
 
         if delta > 0 {
             return "Real cost analysis. Fair cost \(fairFormatted), you paid \(actualFormatted), overpaid by \(deltaFormatted)"

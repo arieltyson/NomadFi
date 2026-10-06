@@ -44,7 +44,7 @@ struct CheckBudgetIntent: AppIntent {
         let remaining = budget.remainingAmount
         let percentage = budget.spentFraction * 100
         let currency = budget.currencyCode ?? .usd
-        let remainingFormatted = remaining.formatted(.currency(code: currency.rawValue))
+        let remainingFormatted = remaining.formatted(.money(code: currency.rawValue))
         let percentFormatted = percentage.formatted(.number.precision(.fractionLength(0)))
 
         if !budget.isOverBudget {
@@ -53,7 +53,7 @@ struct CheckBudgetIntent: AppIntent {
             )
         } else {
             let overBy = (budget.spentAmount - budget.limitAmount)
-                .formatted(.currency(code: currency.rawValue))
+                .formatted(.money(code: currency.rawValue))
             return .result(
                 dialog: "You've exceeded your \(budget.name.isEmpty ? "" : "\(budget.name) ")budget by \(overBy). Consider reviewing your spending."
             )

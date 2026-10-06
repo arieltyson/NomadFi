@@ -257,7 +257,7 @@ private struct AccountRow: View {
     private var primaryLine: some View {
         if draft.accountType.isCreditCard {
             if let owed = draft.currentBalance {
-                Text("Owed \(owed.formatted(.currency(code: draft.currencyCode.rawValue)))")
+                Text("Owed \(owed.formatted(.money(code: draft.currencyCode.rawValue)))")
                     .font(TypographyTokens.amountSmall)
                     .foregroundStyle(ColorTokens.negative)
             } else {
@@ -279,7 +279,7 @@ private struct AccountRow: View {
     @ViewBuilder
     private var secondaryLine: some View {
         if draft.accountType.isCreditCard, let limit = draft.creditLimit {
-            Text("Limit \(limit.formatted(.currency(code: draft.currencyCode.rawValue)))")
+            Text("Limit \(limit.formatted(.money(code: draft.currencyCode.rawValue)))")
                 .font(TypographyTokens.caption)
                 .foregroundStyle(.secondary)
         } else {
@@ -295,15 +295,15 @@ private struct AccountRow: View {
 
         if draft.accountType.isCreditCard {
             if let limit = draft.creditLimit {
-                parts.append("credit limit \(limit.formatted(.currency(code: code)))")
+                parts.append("credit limit \(limit.formatted(.money(code: code)))")
             }
             if let owed = draft.currentBalance {
-                parts.append("current balance \(owed.formatted(.currency(code: code)))")
+                parts.append("current balance \(owed.formatted(.money(code: code)))")
             } else {
                 parts.append("balance not set")
             }
         } else if let balance = draft.currentBalance {
-            parts.append("current balance \(balance.formatted(.currency(code: code)))")
+            parts.append("current balance \(balance.formatted(.money(code: code)))")
         } else {
             parts.append("balance not set")
         }

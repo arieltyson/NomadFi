@@ -96,7 +96,7 @@ private extension TaxDocumentDetailView {
             LabeledContent("Amount") {
                 Text(
                     document.amount,
-                    format: .currency(code: document.currencyCode?.rawValue ?? "USD")
+                    format: .money(code: document.currencyCode?.rawValue ?? "USD")
                 )
                 .bold()
             }

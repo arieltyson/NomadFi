@@ -47,7 +47,7 @@ struct CheckNetWorthIntent: AppIntent {
         let accountCount = accounts.count
         let excludedCount = accounts.filter(\.isExcludedFromNetWorth).count
         let primaryCurrency = accounts.first?.currencyCode ?? .usd
-        let formatted = totalBalance.formatted(.currency(code: primaryCurrency.rawValue))
+        let formatted = totalBalance.formatted(.money(code: primaryCurrency.rawValue))
 
         let caveat: String
         if excludedCount > 0 {

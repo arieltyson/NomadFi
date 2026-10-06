@@ -46,6 +46,6 @@ private struct NomadFiInlineLockScreenView: View {
     let snapshot: DashboardWidgetSnapshot
 
     var body: some View {
-        Text("Net worth \(snapshot.totalNetWorth, format: .currency(code: snapshot.homeCurrencyCode))")
+        Text("Net worth \(snapshot.totalNetWorth, format: .money(code: snapshot.homeCurrencyCode))")
     }
 }

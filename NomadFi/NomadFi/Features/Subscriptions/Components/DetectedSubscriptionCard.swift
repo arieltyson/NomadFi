@@ -193,7 +193,7 @@ extension DetectedSubscriptionCard {
 
     fileprivate var accessibilityDescription: String {
         let amount = detection.amount.formatted(
-            .currency(code: detection.currencyCode.rawValue)
+            .money(code: detection.currencyCode.rawValue)
         )
         return
             "Detected subscription: \(detection.merchantName), \(amount) \(detection.frequency.displayName), \(confidenceLabel) confidence. Double tap to track."

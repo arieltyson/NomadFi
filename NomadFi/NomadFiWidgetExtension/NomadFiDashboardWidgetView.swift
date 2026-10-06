@@ -41,7 +41,7 @@ private struct NomadFiSmallDashboardWidgetView: View {
                 TrendBadge(snapshot: snapshot)
             }
 
-            Text(snapshot.totalNetWorth, format: .currency(code: snapshot.homeCurrencyCode))
+            Text(snapshot.totalNetWorth, format: .money(code: snapshot.homeCurrencyCode))
                 .font(.title3)
                 .bold()
                 .minimumScaleFactor(0.8)
@@ -67,7 +67,7 @@ private struct NomadFiMediumDashboardWidgetView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text(snapshot.totalNetWorth, format: .currency(code: snapshot.homeCurrencyCode))
+                Text(snapshot.totalNetWorth, format: .money(code: snapshot.homeCurrencyCode))
                     .font(.title3)
                     .bold()
                     .lineLimit(1)
@@ -103,7 +103,7 @@ private struct AccountSummaryRow: View {
                 .font(.caption)
                 .lineLimit(1)
 
-            Text(account.balance, format: .currency(code: account.currencyCode))
+            Text(account.balance, format: .money(code: account.currencyCode))
                 .font(.footnote)
                 .bold()
                 .foregroundStyle(.secondary)

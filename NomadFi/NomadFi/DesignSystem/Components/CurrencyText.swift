@@ -6,9 +6,10 @@
 
 import SwiftUI
 
-/// Displays a formatted currency amount with its currency code.
+/// Displays an amount in NomadFi's money format — `$3,250.75 CAD`.
 ///
-/// Uses `Decimal.FormatStyle.Currency` for locale-aware formatting.
+/// Uses ``MoneyFormatStyle`` so every amount carries a symbol and its
+/// currency code, and VoiceOver hears "3,250.75 Canadian dollars".
 /// Supports the numeric text content transition for animated value changes.
 ///
 /// ```swift
@@ -25,17 +26,16 @@ struct CurrencyText: View {
     var body: some View {
         Text(
             amount,
-            format: .currency(code: currencyCode.rawValue)
+            format: .money(code: currencyCode.rawValue)
         )
         .font(font)
         .contentTransition(.numericText())
         .accessibilityLabel(accessibilityDescription)
     }
 
-    /// A human-readable description for VoiceOver.
+    /// The amount as VoiceOver says it: "3,250.75 Canadian dollars".
     private var accessibilityDescription: String {
-        let formatted = amount.formatted(.currency(code: currencyCode.rawValue))
-        return "\(formatted) \(currencyCode.displayName)"
+        MoneyFormatStyle.spokenAmount(amount, code: currencyCode.rawValue)
     }
 }
 

@@ -368,7 +368,7 @@ private struct TransactionImportPreviewRowView: View {
     private var amountText: Text {
         switch row {
         case .new(let parsed), .duplicate(let parsed, _):
-            return Text(parsed.amount.formatted(.currency(code: parsed.currencyCode.rawValue)))
+            return Text(parsed.amount.formatted(.money(code: parsed.currencyCode.rawValue)))
         case .skipped:
             return Text("—")
         }

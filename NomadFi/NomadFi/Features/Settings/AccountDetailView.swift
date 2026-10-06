@@ -162,7 +162,7 @@ private extension AccountDetailView {
 
     func legacyBalanceMigrationSection(viewModel: AccountDetailViewModel) -> some View {
         Section {
-            Button("Move \(account.balance.formatted(.currency(code: account.currencyCodeRawValue))) into credit limit", systemImage: "arrow.turn.up.right") {
+            Button("Move \(account.balance.formatted(.money(code: account.currencyCodeRawValue))) into credit limit", systemImage: "arrow.turn.up.right") {
                 viewModel.moveLegacyBalanceIntoLimit()
             }
             .accessibilityHint("Credit limits are not balances. This moves the value you previously entered into the credit limit field.")

@@ -92,7 +92,7 @@ private extension TaxDocumentRow {
         VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SpacingTokens.xxSmall) {
             Text(
                 document.amount,
-                format: .currency(code: document.currencyCode?.rawValue ?? "USD")
+                format: .money(code: document.currencyCode?.rawValue ?? "USD")
             )
             .font(TypographyTokens.amountSmall)
             .bold()
@@ -134,7 +134,7 @@ private extension TaxDocumentRow {
 
     var accessibilityDescription: String {
         let currency = document.currencyCode?.rawValue ?? "USD"
-        let amount = document.amount.formatted(.currency(code: currency))
+        let amount = document.amount.formatted(.money(code: currency))
         let category = document.taxCategory?.displayName ?? "Other"
         let date = document.documentDate.formatted(date: .abbreviated, time: .omitted)
         let verificationStatus = document.isVerified ? "verified" : "needs review"

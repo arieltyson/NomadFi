@@ -67,7 +67,7 @@ enum SpotlightIndexer {
             let attributes = CSSearchableItemAttributeSet(contentType: .content)
             attributes.title = subscription.serviceName
             let currencyDisplay = subscription.currencyCode?.rawValue ?? "USD"
-            let amount = subscription.amount.formatted(.currency(code: currencyDisplay))
+            let amount = subscription.amount.formatted(.money(code: currencyDisplay))
             let frequency = subscription.frequency?.displayName ?? "recurring"
             attributes.contentDescription = "\(amount) \(frequency)"
             attributes.keywords = [

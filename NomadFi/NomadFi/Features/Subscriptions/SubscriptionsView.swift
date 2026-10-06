@@ -144,7 +144,7 @@ private extension SubscriptionsView {
                         systemImage: "arrow.down.circle.fill"
                     )
 
-                    Text("Save \(viewModel.totalAnnualSavings, format: .currency(code: homeCurrency.rawValue))/year with subscription arbitrage")
+                    Text("Save \(viewModel.totalAnnualSavings, format: .money(code: homeCurrency.rawValue))/year with subscription arbitrage")
                         .font(TypographyTokens.caption)
                         .foregroundStyle(ColorTokens.positive)
                 }

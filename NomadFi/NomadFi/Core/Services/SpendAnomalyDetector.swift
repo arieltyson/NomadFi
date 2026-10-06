@@ -168,7 +168,7 @@ enum SpendAnomalyDetector {
             .dateTime.year().month(.wide).day()
         )
         let baselineString = candidate.representativeAmount.formatted(
-            .currency(code: candidate.currencyCode.rawValue)
+            .money(code: candidate.currencyCode.rawValue)
         )
         let daysLabel = "\(Int(daysOverdue.rounded(.down))) day\(Int(daysOverdue.rounded(.down)) == 1 ? "" : "s")"
         let explanation = "Based on \(matches.count) prior \(candidate.frequency.displayName.lowercased()) \(matches.count == 1 ? "charge" : "charges"), your \(candidate.displayMerchantName) charge near \(displayDate) (\(baselineString)) has not appeared in the last \(daysLabel). Worth reviewing."
@@ -228,10 +228,10 @@ enum SpendAnomalyDetector {
         guard percentOver >= amountSpikePercentThreshold else { return nil }
 
         let observedString = latestMagnitude.formatted(
-            .currency(code: candidate.currencyCode.rawValue)
+            .money(code: candidate.currencyCode.rawValue)
         )
         let baselineString = baseline.formatted(
-            .currency(code: candidate.currencyCode.rawValue)
+            .money(code: candidate.currencyCode.rawValue)
         )
         let displayDate = latest.date.formatted(
             .dateTime.year().month(.wide).day()

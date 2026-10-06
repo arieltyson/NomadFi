@@ -27,6 +27,18 @@
         }
       }
     },
+    "%@ · Needs refresh" : {
+    },
+    "%@ · Updated %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Updated %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -76,9 +88,6 @@
           }
         }
       }
-    },
-    "%@ accounts" : {
-
     },
     "%@ filter" : {
 
@@ -319,6 +328,8 @@
     },
     "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed lessons for supported regions." : {
 
+    },
+    "Add a jurisdiction with another currency in Settings." : {
     },
     "Add a source name or URL before marking as verified." : {
 
@@ -1131,6 +1142,7 @@
 
     },
     "Import Transactions" : {
+
     },
     "Imported" : {
 
@@ -1244,11 +1256,10 @@
     "Linked card" : {
 
     },
-    "Live Exchange Rates" : {
-
-    },
     "Loading account" : {
 
+    },
+    "Loading rates" : {
     },
     "Location" : {
 
@@ -1401,6 +1412,8 @@
     "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
 
     },
+    "No Currency Pairs" : {
+    },
     "No documents yet" : {
 
     },
@@ -1453,6 +1466,7 @@
 
     },
     "NomadFi Locked" : {
+
     },
     "NomadFi only syncs in response to this action. Nothing runs in the background yet." : {
 
@@ -1806,14 +1820,7 @@
     "Rate" : {
 
     },
-    "Rates confidence: %@" : {
-
-    },
-    "Rates confidence: %@. Needs refresh." : {
-
-    },
-    "Rates loading…" : {
-
+    "Rates Unavailable" : {
     },
     "Reading receipt..." : {
 
@@ -1867,6 +1874,7 @@
 
     },
     "Removing a jurisdiction never deletes its accounts or transactions." : {
+
     },
     "Rename to “%@”" : {
 
@@ -2203,9 +2211,6 @@
         }
       }
     },
-    "Tap a rate pair to see a 7-day trend. Pull down to refresh with the latest mid-market rates." : {
-
-    },
     "Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything." : {
 
     },
@@ -2309,11 +2314,9 @@
 
     },
     "Tools" : {
-    },
-    "Total" : {
 
     },
-    "Total net worth" : {
+    "Total" : {
 
     },
     "Tracked spend in %@" : {
@@ -2334,6 +2337,8 @@
     },
     "Transaction Import" : {
 
+    },
+    "Transactions" : {
     },
     "Transit" : {
 

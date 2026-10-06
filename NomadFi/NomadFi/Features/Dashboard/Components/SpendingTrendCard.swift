@@ -166,7 +166,7 @@ private extension SpendingTrendCard {
     }
 
     func currencyString(_ amount: Double) -> String {
-        amount.formatted(.currency(code: summary.currencyCode.rawValue).precision(.fractionLength(0)))
+        amount.formatted(.money(code: summary.currencyCode.rawValue).precision(.fractionLength(0)).codeHidden())
     }
 
     func shortMonthLabel(for month: SpendingTrendMonth) -> String {

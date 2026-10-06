@@ -215,7 +215,7 @@ private struct ReceiptLineItemRow: View {
     private func amountText(_ amount: Double) -> some View {
         Text(
             amount,
-            format: .currency(code: currencyCode.rawValue)
+            format: .money(code: currencyCode.rawValue)
         )
         .font(TypographyTokens.caption)
         .foregroundStyle(.secondary)

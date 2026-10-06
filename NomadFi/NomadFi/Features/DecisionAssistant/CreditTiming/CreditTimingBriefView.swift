@@ -299,7 +299,7 @@ private struct CreditTimingMetricsGrid: View {
                 metricLine(
                     label: "Current balance",
                     value: balance.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -307,7 +307,7 @@ private struct CreditTimingMetricsGrid: View {
                 metricLine(
                     label: "Credit limit",
                     value: limit.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -315,7 +315,7 @@ private struct CreditTimingMetricsGrid: View {
                 metricLine(
                     label: "Paydown for 30% target",
                     value: paydown.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -323,7 +323,7 @@ private struct CreditTimingMetricsGrid: View {
                 metricLine(
                     label: "Paydown for 10% target (optional)",
                     value: paydown.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -713,7 +713,7 @@ private struct CreditTimingPaymentAllocationSection: View {
     }
 
     private func currencyString(_ amount: Double, code: String) -> String {
-        amount.formatted(.currency(code: code))
+        amount.formatted(.money(code: code))
     }
 }
 
@@ -996,7 +996,7 @@ private extension CreditTimingRecentSpendingContextSection {
     }
 
     func currencyString(_ amount: Double) -> String {
-        amount.formatted(.currency(code: context.currencyCode.rawValue).precision(.fractionLength(0)))
+        amount.formatted(.money(code: context.currencyCode.rawValue).precision(.fractionLength(0)))
     }
 }
 

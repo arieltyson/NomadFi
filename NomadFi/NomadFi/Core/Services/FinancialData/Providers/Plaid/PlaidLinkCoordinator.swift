@@ -41,6 +41,7 @@ final class PlaidLinkCoordinator {
     }
 
     private(set) var phase: Phase = .idle
+    private(set) var linkedInstitutionName: String?
 
     private static let logger = Logger(
         subsystem: "com.nomadfi.app",
@@ -120,6 +121,7 @@ final class PlaidLinkCoordinator {
     /// Allows the Settings UI to reset after a failure so the user
     /// can retry without restarting the app.
     func reset() {
+        linkedInstitutionName = nil
         phase = .idle
     }
 
@@ -141,6 +143,7 @@ final class PlaidLinkCoordinator {
                 // `/transactions/sync` gets the full initial diff
                 // for the new item.
                 configuration.setTransactionsCursor(nil)
+                linkedInstitutionName = handle.institutionName
                 phase = .completed(itemID: handle.itemID)
             } catch {
                 Self.logger.error(

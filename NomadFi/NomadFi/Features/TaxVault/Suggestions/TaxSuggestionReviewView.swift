@@ -56,7 +56,7 @@ private extension TaxSuggestionReviewView {
                     .fontWeight(.semibold)
             }
             LabeledContent("Amount") {
-                Text(suggestion.amount, format: .currency(code: suggestion.currencyCode.rawValue))
+                Text(suggestion.amount, format: .money(code: suggestion.currencyCode.rawValue))
                     .monospacedDigit()
             }
             LabeledContent("Date") {

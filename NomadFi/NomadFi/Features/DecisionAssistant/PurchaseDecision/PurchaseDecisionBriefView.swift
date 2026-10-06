@@ -600,13 +600,13 @@ private struct PurchaseCandidateRow: View {
             parts.append("Currency does not match the purchase currency.")
         }
         if let limit = assessment.creditLimit {
-            parts.append("Credit limit \(limit.formatted(.currency(code: assessment.currencyCode))).")
+            parts.append("Credit limit \(limit.formatted(.money(code: assessment.currencyCode))).")
         }
         if let available = assessment.availableCredit {
-            parts.append("Available credit \(available.formatted(.currency(code: assessment.currencyCode))).")
+            parts.append("Available credit \(available.formatted(.money(code: assessment.currencyCode))).")
         }
         if let balance = assessment.currentBalance {
-            parts.append("Current balance \(balance.formatted(.currency(code: assessment.currencyCode))).")
+            parts.append("Current balance \(balance.formatted(.money(code: assessment.currencyCode))).")
         }
         return parts.joined(separator: ", ")
     }
@@ -648,7 +648,7 @@ private struct PurchaseCandidateMetrics: View {
                 metricLine(
                     label: "Credit limit",
                     value: limit.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -656,7 +656,7 @@ private struct PurchaseCandidateMetrics: View {
                 metricLine(
                     label: "Available credit",
                     value: available.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }
@@ -664,7 +664,7 @@ private struct PurchaseCandidateMetrics: View {
                 metricLine(
                     label: "Current balance",
                     value: balance.formatted(
-                        .currency(code: assessment.currencyCode)
+                        .money(code: assessment.currencyCode)
                     )
                 )
             }

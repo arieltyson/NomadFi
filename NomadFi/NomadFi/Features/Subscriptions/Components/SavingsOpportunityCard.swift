@@ -82,7 +82,7 @@ extension SavingsOpportunityCard {
 
             Text(
                 result.currentAmount,
-                format: .currency(code: result.currentCurrency.rawValue)
+                format: .money(code: result.currentCurrency.rawValue)
             )
             .font(TypographyTokens.amountSmall)
             .strikethrough(color: ColorTokens.negative)
@@ -101,7 +101,7 @@ extension SavingsOpportunityCard {
 
             Text(
                 result.cheapestAmount,
-                format: .currency(code: result.cheapestCurrency.rawValue)
+                format: .money(code: result.cheapestCurrency.rawValue)
             )
             .font(TypographyTokens.amountSmall)
             .foregroundStyle(ColorTokens.positive)
@@ -141,7 +141,7 @@ extension SavingsOpportunityCard {
                 .foregroundStyle(ColorTokens.positive)
 
             Text(
-                "Save \(result.annualSavingsInHomeCurrency, format: .currency(code: result.homeCurrency.rawValue))/year"
+                "Save \(result.annualSavingsInHomeCurrency, format: .money(code: result.homeCurrency.rawValue))/year"
             )
             .font(TypographyTokens.caption)
             .foregroundStyle(
@@ -170,13 +170,13 @@ extension SavingsOpportunityCard {
 
     fileprivate var accessibilityDescription: String {
         let current = result.currentAmount.formatted(
-            .currency(code: result.currentCurrency.rawValue)
+            .money(code: result.currentCurrency.rawValue)
         )
         let cheaper = result.cheapestAmount.formatted(
-            .currency(code: result.cheapestCurrency.rawValue)
+            .money(code: result.cheapestCurrency.rawValue)
         )
         let savings = result.annualSavingsInHomeCurrency.formatted(
-            .currency(code: result.homeCurrency.rawValue)
+            .money(code: result.homeCurrency.rawValue)
         )
         return
             "\(result.serviceName): currently \(current) in \(result.currentJurisdiction). Switch to \(result.cheapestJurisdiction) for \(cheaper). Save \(savings) per year."

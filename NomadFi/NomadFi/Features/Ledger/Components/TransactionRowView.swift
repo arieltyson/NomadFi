@@ -95,7 +95,7 @@ private extension TransactionRowView {
 
     var accessibilityDescription: String {
         let currency = transaction.originalCurrency?.rawValue ?? ""
-        let amount = transaction.originalAmount.formatted(.currency(code: currency))
+        let amount = transaction.originalAmount.formatted(.money(code: currency))
         let category = transaction.category?.displayName ?? "Other"
         return "\(transaction.merchantName), \(amount), \(category)"
     }

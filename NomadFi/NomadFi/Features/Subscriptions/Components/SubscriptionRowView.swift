@@ -103,7 +103,7 @@ private extension SubscriptionRowView {
             }
 
             if subscription.monthlySavings > 0 {
-                Text("Save \(subscription.monthlySavings, format: .currency(code: homeCurrency.rawValue))/mo")
+                Text("Save \(subscription.monthlySavings, format: .money(code: homeCurrency.rawValue))/mo")
                     .font(.caption2)
                     .foregroundStyle(ColorTokens.positive)
                     .bold()
@@ -113,12 +113,12 @@ private extension SubscriptionRowView {
 
     var accessibilityDescription: String {
         let currency = subscription.currencyCode?.rawValue ?? "USD"
-        let amount = subscription.amount.formatted(.currency(code: currency))
+        let amount = subscription.amount.formatted(.money(code: currency))
         let frequency = subscription.frequency?.displayName ?? "recurring"
         let renewal = subscription.nextRenewalDate.formatted(date: .abbreviated, time: .omitted)
         var description = "\(subscription.serviceName), \(amount) \(frequency), renews \(renewal)"
         if subscription.monthlySavings > 0 {
-            let savings = subscription.monthlySavings.formatted(.currency(code: homeCurrency.rawValue))
+            let savings = subscription.monthlySavings.formatted(.money(code: homeCurrency.rawValue))
             description += ", save \(savings) per month by switching jurisdictions"
         }
         return description

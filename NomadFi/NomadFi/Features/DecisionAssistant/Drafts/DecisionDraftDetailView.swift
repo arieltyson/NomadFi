@@ -247,7 +247,7 @@ struct DecisionDraftDetailView: View {
     private var amountRow: some View {
         let amount = draft.amount ?? 0
         let formatted = amount.formatted(
-            .currency(code: draft.currencyCode.rawValue)
+            .money(code: draft.currencyCode.rawValue)
         )
         return DraftDetailRow(label: "Amount", value: formatted)
     }

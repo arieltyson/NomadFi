@@ -242,7 +242,7 @@ struct CategorySummaryRow: View {
         return VStack(spacing: SpacingTokens.xxSmall) {
             Image(systemName: category.systemImage)
                 .font(.caption2)
-            Text(total, format: .currency(code: "USD"))
+            Text(total, format: .money(code: "USD"))
                 .font(.caption2)
                 .bold()
         }
@@ -250,7 +250,7 @@ struct CategorySummaryRow: View {
         .padding(.vertical, SpacingTokens.xxSmall)
         .background(ColorTokens.surfaceTertiary, in: .rect(cornerRadius: RadiusTokens.small, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(category.displayName): \(total, format: .currency(code: "USD"))")
+        .accessibilityLabel("\(category.displayName): \(MoneyFormatStyle.spokenAmount(total, code: "USD"))")
     }
 }
 

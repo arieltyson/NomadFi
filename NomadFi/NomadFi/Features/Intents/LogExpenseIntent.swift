@@ -61,7 +61,7 @@ struct LogExpenseIntent: AppIntent {
         context.insert(transaction)
         try context.save()
 
-        let formatted = abs(amount).formatted(.currency(code: resolvedCurrency.rawValue))
+        let formatted = abs(amount).formatted(.money(code: resolvedCurrency.rawValue))
         return .result(
             dialog: "Logged \(formatted) at \(resolvedMerchant)."
         )

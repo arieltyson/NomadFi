@@ -67,9 +67,22 @@ struct PlaidLinkCoordinatorTests {
             Issue.record("Expected completed phase, got \(coordinator.phase)")
         }
         #expect(configuration.itemID == "itm_real_1")
+        #expect(coordinator.linkedInstitutionName == "First Real Bank")
         #expect(configuration.transactionsCursor == nil)
         #expect(stub.exchangeCallCount == 1)
         #expect(presenter.presentCallCount == 1)
+
+        coordinator.reset()
+        #expect(coordinator.linkedInstitutionName == nil)
+        stub.exchangeResponse = PlaidItemHandleResponse(
+            itemID: "itm_real_2",
+            institutionID: nil,
+            institutionName: nil
+        )
+        await coordinator.startRealLinkFlow()
+        await Self.waitForFinalPhase(on: coordinator)
+        #expect(coordinator.phase == .completed(itemID: "itm_real_2"))
+        #expect(coordinator.linkedInstitutionName == nil)
     }
 
     // MARK: - Failure paths

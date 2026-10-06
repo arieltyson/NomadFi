@@ -140,7 +140,7 @@ private extension InsightEngine {
         // Only surface if waste exceeds a meaningful threshold
         guard waste > 0.50 else { return nil }
 
-        let formattedWaste = waste.formatted(.currency(code: homeCurrency.rawValue))
+        let formattedWaste = waste.formatted(.money(code: homeCurrency.rawValue))
         let count = crossBorderTransactionCount(transactions: transactions, since: oneWeekAgo)
 
         return FinancialInsight(

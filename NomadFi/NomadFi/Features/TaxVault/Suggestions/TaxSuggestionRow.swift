@@ -24,7 +24,7 @@ struct TaxSuggestionRow: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: SpacingTokens.xSmall)
-                Text(suggestion.amount, format: .currency(code: suggestion.currencyCode.rawValue))
+                Text(suggestion.amount, format: .money(code: suggestion.currencyCode.rawValue))
                     .font(TypographyTokens.body)
                     .monospacedDigit()
             }
@@ -70,7 +70,7 @@ struct TaxSuggestionRow: View {
 
     private var accessibilitySummary: String {
         let amount = suggestion.amount.formatted(
-            .currency(code: suggestion.currencyCode.rawValue)
+            .money(code: suggestion.currencyCode.rawValue)
         )
         let date = suggestion.transactionDate.formatted(
             .dateTime.year().month(.wide).day()
