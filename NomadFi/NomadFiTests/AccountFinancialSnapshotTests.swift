@@ -435,6 +435,48 @@ struct AccountFinancialSnapshotTests {
 
     // MARK: - SwiftData round-trip
 
+    @Test("Assigning an imported account country fills only unassigned transactions from its provider")
+    func assigningCountryClassifiesUnassignedImports() throws {
+        let context = try makeInMemoryContext()
+        let provider = "external_aggregator.test"
+        let snapshotDate = Self.date(year: 2026, month: 4, day: 20)
+        let account = Account(
+            name: "Imported account", institutionName: "Test Bank", currencyCode: .cad,
+            currentBalance: 100, financialSnapshotUpdatedAt: snapshotDate,
+            financialSnapshotSource: .imported, providerLinkKindRawValue: provider
+        )
+        context.insert(account)
+        let unassigned = Transaction(providerKindRawValue: provider, account: account)
+        let classified = Transaction(jurisdiction: "US", providerKindRawValue: provider, account: account)
+        let manual = Transaction(account: account)
+        let otherProvider = Transaction(providerKindRawValue: "external_aggregator.other", account: account)
+        for transaction in [unassigned, classified, manual, otherProvider] {
+            context.insert(transaction)
+        }
+        try context.save()
+
+        let viewModel = AccountDetailViewModel(account: account)
+        viewModel.jurisdictionCode = "CA"
+        viewModel.save()
+        try context.save()
+
+        #expect(account.jurisdiction == "CA")
+        #expect(unassigned.jurisdiction == "CA")
+        #expect(classified.jurisdiction == "US")
+        #expect(manual.jurisdiction.isEmpty)
+        #expect(otherProvider.jurisdiction.isEmpty)
+        #expect(account.currentBalance == 100)
+        #expect(account.financialSnapshotUpdatedAt == snapshotDate)
+        #expect(account.latestSnapshotSource == .imported)
+
+        viewModel.jurisdictionCode = "US"
+        viewModel.save()
+        #expect(unassigned.jurisdiction == "CA")
+        viewModel.jurisdictionCode = ""
+        viewModel.save()
+        #expect(unassigned.jurisdiction == "CA")
+    }
+
     @Test("Snapshot fields round-trip through SwiftData")
     func snapshotFieldsRoundTrip() throws {
         let context = try makeInMemoryContext()

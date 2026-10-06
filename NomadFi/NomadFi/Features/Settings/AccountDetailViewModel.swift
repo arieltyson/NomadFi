@@ -170,6 +170,13 @@ final class AccountDetailViewModel {
         account.accountTypeRawValue = accountType.rawValue
         account.currencyCodeRawValue = currencyCode.rawValue
         account.jurisdiction = jurisdictionCode
+        if !jurisdictionCode.isEmpty, let provider = account.providerLinkKindRawValue {
+            // Imports made before country assignment inherit the account's first classification.
+            for transaction in account.transactions ?? []
+            where transaction.jurisdiction.isEmpty && transaction.providerKindRawValue == provider {
+                transaction.jurisdiction = jurisdictionCode
+            }
+        }
         account.foreignTransactionFeePercent = max(
             0,
             Double(foreignTransactionFeePercentText.trimmingCharacters(in: .whitespaces)) ?? 0
