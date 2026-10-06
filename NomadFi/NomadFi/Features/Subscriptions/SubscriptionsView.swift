@@ -12,7 +12,7 @@ import TipKit
 /// and savings opportunities.
 ///
 /// Organized into sections: savings summary, tracked subscriptions,
-/// and newly detected candidates. Supports search and swipe-to-delete.
+/// and newly detected candidates. Supports search and confirmed deletion.
 struct SubscriptionsView: View {
 
     @Environment(\.modelContext) private var modelContext
@@ -29,6 +29,8 @@ struct SubscriptionsView: View {
     @State private var viewModel = SubscriptionsViewModel()
     @State private var isShowingAddSubscription = false
     @State private var showError = false
+    @State private var subscriptionPendingDeletion: Subscription?
+    @State private var isConfirmingSubscriptionDeletion = false
 
     // Pushed from the Tools tab, so it relies on that tab's
     // `NavigationStack`. Nesting a second stack here would double up
@@ -52,6 +54,19 @@ struct SubscriptionsView: View {
         }
         .sheet(isPresented: $isShowingAddSubscription) {
             AddSubscriptionView()
+        }
+        .confirmationDialog("Delete tracked subscription?", isPresented: $isConfirmingSubscriptionDeletion, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) {
+                if let subscription = subscriptionPendingDeletion {
+                    viewModel.deleteSubscription(subscription, modelContext: modelContext)
+                }
+                subscriptionPendingDeletion = nil
+            }
+            Button("Cancel", role: .cancel) {
+                subscriptionPendingDeletion = nil
+            }
+        } message: {
+            Text("This permanently removes \(subscriptionPendingDeletion?.serviceName ?? "") from your tracked subscriptions in NomadFi. It does not cancel the service or delete its transactions.")
         }
         .task {
             viewModel.detectSubscriptions(
@@ -247,10 +262,22 @@ private extension SubscriptionsView {
                     .padding(.top, SpacingTokens.xxLarge)
             } else {
                 ForEach(filtered) { subscription in
-                    SubscriptionRowView(
-                        subscription: subscription,
-                        homeCurrency: viewModel.homeCurrency(from: jurisdictions)
-                    )
+                    HStack {
+                        SubscriptionRowView(
+                            subscription: subscription,
+                            homeCurrency: viewModel.homeCurrency(from: jurisdictions)
+                        )
+                        Menu {
+                            Button("Delete", systemImage: "trash", role: .destructive) {
+                                subscriptionPendingDeletion = subscription
+                                isConfirmingSubscriptionDeletion = true
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .frame(minWidth: 44, minHeight: 44)
+                        }
+                        .accessibilityLabel("Actions for \(subscription.serviceName)")
+                    }
                     .padding(.horizontal, SpacingTokens.medium)
                 }
             }

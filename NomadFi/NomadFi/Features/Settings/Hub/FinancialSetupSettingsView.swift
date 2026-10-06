@@ -20,6 +20,8 @@ struct FinancialSetupSettingsView: View {
     @Query private var accounts: [Account]
 
     @State private var isShowingAddAccountSheet = false
+    @State private var accountsPendingDeletion: [Account] = []
+    @State private var isConfirmingAccountDeletion = false
 
     var body: some View {
         List {
@@ -32,6 +34,24 @@ struct FinancialSetupSettingsView: View {
             CreditCardCalendarSection(accounts: accounts)
         }
         .navigationTitle("Financial Setup")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                EditButton()
+            }
+        }
+        .confirmationDialog("Delete accounts?", isPresented: $isConfirmingAccountDeletion, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) {
+                for account in accountsPendingDeletion {
+                    modelContext.delete(account)
+                }
+                accountsPendingDeletion = []
+            }
+            Button("Cancel", role: .cancel) {
+                accountsPendingDeletion = []
+            }
+        } message: {
+            Text("Deleting \(accountsPendingDeletion.map(\.name).joined(separator: ", ")) permanently removes its linked transactions, subscriptions, and transaction documents from NomadFi. This cannot be undone.")
+        }
         .sheet(isPresented: $isShowingAddAccountSheet) {
             SettingsAddAccountSheet(jurisdictions: jurisdictions) { draft in
                 saveAccount(from: draft)
@@ -142,10 +162,8 @@ private extension FinancialSetupSettingsView {
     }
 
     func deleteAccounts(at offsets: IndexSet) {
-        for index in offsets.sorted().reversed() {
-            let account = sortedAccounts[index]
-            modelContext.delete(account)
-        }
+        accountsPendingDeletion = offsets.sorted().map { sortedAccounts[$0] }
+        isConfirmingAccountDeletion = !accountsPendingDeletion.isEmpty
     }
 }
 
