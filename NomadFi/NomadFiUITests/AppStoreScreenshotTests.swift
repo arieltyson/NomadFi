@@ -37,9 +37,11 @@ final class AppStoreScreenshotTests: XCTestCase {
         let tabs = app.tabBars
         XCTAssertTrue(tabs.buttons["Tools"].waitForExistence(timeout: 8))
 
+        tabs.buttons["Tools"].tap()
+        capture("06-tools", app)
+
         // Rates first: once a pair is on screen, the Dashboard's own
         // fetch has landed too, so no card is captured mid-load.
-        tabs.buttons["Tools"].tap()
         open("Exchange Rates", in: app)
         let firstPair = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", " equals ")).firstMatch
         XCTAssertTrue(firstPair.waitForExistence(timeout: 20))

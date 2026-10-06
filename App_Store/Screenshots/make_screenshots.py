@@ -37,6 +37,7 @@ SCREENS = [
     ("03-decisions", "Decide before\nyou spend.", "Card and credit checks before you buy."),
     ("04-exchange-rates", "Rates without\nthe guesswork.", "Every pair between your currencies."),
     ("05-tax-vault", "Receipts ready\nfor tax season.", "Scanned on your iPhone. Nothing uploads."),
+    ("06-tools", "Every tool,\none tap away.", "Rates, receipts, subscriptions and more."),
 ]
 
 # No line may span more than this share of the canvas.

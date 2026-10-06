@@ -235,6 +235,7 @@ All are opaque RGB PNGs. To rebuild them after a UI change:
 | 3 | Decisions | Decide before\nyou spend. | Card and credit checks before you buy. | `#33D4B5` | `#00352D` | `#06110F` |
 | 4 | Tools → Exchange Rates | Rates without\nthe guesswork. | Every pair between your currencies. | `#33D4B5` | `#00352D` | `#06110F` |
 | 5 | Tools → Tax Vault | Receipts ready\nfor tax season. | Scanned on your iPhone. Nothing uploads. | `#33D4B5` | `#00352D` | `#06110F` |
+| 6 | Tools | Every tool,\none tap away. | Rates, receipts, subscriptions and more. | `#33D4B5` | `#00352D` | `#06110F` |
 
 ---
 
