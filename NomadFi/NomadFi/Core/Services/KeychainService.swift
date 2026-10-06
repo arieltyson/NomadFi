@@ -72,6 +72,8 @@ enum KeychainService {
         /// locally-configured value.
         case plaidSandboxBrokerSecret = "com.nomadfi.plaidSandboxBrokerSecret"
         case plaidPendingExchange = "com.nomadfi.plaidPendingExchange"
+        case hostedSession = "com.nomadfi.hostedSession"
+        case hostedPendingExchange = "com.nomadfi.hostedPendingExchange"
     }
 
     // MARK: - String Storage
@@ -212,6 +214,8 @@ enum KeychainService {
             .plaidSandboxTransactionsCursor,
             .plaidSandboxBrokerSecret,
             .plaidPendingExchange,
+            .hostedSession,
+            .hostedPendingExchange,
         ]
         for key in keys {
             delete(key: key)

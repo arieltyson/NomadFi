@@ -418,6 +418,12 @@ fail; duplicate/delayed events and simulated outages recover correctly.
 
 ### H4 — App delivery, reconnect, and disconnect
 
+The Swift 6 hosted client now supports Apple sessions, device-only Keychain
+storage, coalesced refresh, owner-bound pending Link exchange recovery,
+connection lifecycle endpoints, and snapshot/delta delivery contracts. Five
+Simulator tests cover concurrency, sign-out races, credential loss and owner
+separation. SwiftData application, Settings UI, and real OAuth remain open.
+
 - [ ] Add authenticated hosted provider configuration and multi-connection
   identity mapping; remove manual broker URL/secret setup from the normal flow.
 - [ ] Apply updates/removals and persist device checkpoints only after local
