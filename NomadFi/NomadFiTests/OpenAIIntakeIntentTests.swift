@@ -38,7 +38,7 @@ struct OpenAIIntakeIntentTests {
     @Test("OpenAIIntakeIntent surfaces a short, action-first title")
     func titleIsShortAndActionFirst() {
         let title = String(localized: OpenAIIntakeIntent.title)
-        #expect(title == "Capture with Apple Intelligence")
+        #expect(title == "Describe a Decision")
     }
 
     @Test("OpenAIIntakeIntent description is honest about on-device + user-confirmed save")

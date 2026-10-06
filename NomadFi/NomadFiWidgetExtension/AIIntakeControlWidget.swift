@@ -51,13 +51,13 @@ struct AIIntakeControlWidget: ControlWidget {
         ) { _ in
             ControlWidgetButton(action: StartAIIntakeIntent()) {
                 Label(
-                    "Capture with Apple Intelligence",
+                    "AI Intake",
                     systemImage: "apple.intelligence"
                 )
             }
         }
         .displayName("AI Intake")
-        .description("Capture a decision with on-device Apple Intelligence. NomadFi will not analyze or save anything until you confirm in the app.")
+        .description("Describe a decision for on-device AI to structure. NomadFi will not analyze or save anything until you confirm in the app.")
     }
 }
 

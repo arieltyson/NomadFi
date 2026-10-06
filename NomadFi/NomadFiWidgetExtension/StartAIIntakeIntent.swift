@@ -52,10 +52,10 @@ struct StartAIIntakeIntent: AppIntent {
         category: "StartAIIntakeIntent.widget"
     )
 
-    static let title: LocalizedStringResource = "Start Apple Intelligence Intake"
+    static let title: LocalizedStringResource = "Start AI Intake"
 
     static let description: IntentDescription = IntentDescription(
-        "Open NomadFi to a blank on-device Apple Intelligence intake. NomadFi never analyzes or saves anything until you confirm in the app."
+        "Open NomadFi to a blank intake that on-device AI structures for you. NomadFi never analyzes or saves anything until you confirm in the app."
     )
 
     /// Foreground launch — brings the main app forward so its

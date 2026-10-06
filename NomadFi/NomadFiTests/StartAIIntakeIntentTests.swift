@@ -139,7 +139,7 @@ struct StartAIIntakeIntentTests {
             """
         )
         #expect(
-            widgetSource.contains("Start Apple Intelligence Intake"),
+            widgetSource.contains("Start AI Intake"),
             """
             Widget mirror's title must match the main-app copy so \
             the surface label stays consistent.

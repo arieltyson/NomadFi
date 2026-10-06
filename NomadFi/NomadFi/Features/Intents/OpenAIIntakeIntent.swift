@@ -45,10 +45,10 @@ import Foundation
 /// saves — same bounded flow as the in-app entry point.
 struct OpenAIIntakeIntent: AppIntent {
 
-    static let title: LocalizedStringResource = "Capture with Apple Intelligence"
+    static let title: LocalizedStringResource = "Describe a Decision"
 
     static let description: IntentDescription = IntentDescription(
-        "Open NomadFi and start a new on-device Apple Intelligence intake with the scenario you dictated already filled in. NomadFi never analyzes or saves anything until you confirm in the app."
+        "Open NomadFi with the scenario you dictated filled in, ready for on-device AI to structure. NomadFi never analyzes or saves anything until you confirm in the app."
     )
 
     /// Explicit app launch — the user is asking NomadFi to open
