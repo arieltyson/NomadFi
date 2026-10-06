@@ -1289,8 +1289,15 @@ when upstream records disappear.
 Local storage implementation and its real-database tests live in
 [`services/plaid-backend/`](../services/plaid-backend/README.md). Staged deltas,
 atomic cursor publication, job leases/retries, and device acknowledgments are
-implemented. This does not yet provide hosted authentication, encrypted token
-management, live webhook ingestion, or app delivery; H1–H3 remain open.
+implemented. Apple verification, one-use sign-in challenges, owner allowlisting,
+rotating sessions, and context-bound encryption adapters now have local tests.
+The worker now reconciles provider pages into a materialized ledger; signed
+webhooks enqueue atomically and stale sweeps coalesce work. Synthetic tests
+cover pagination mutations, pending replacements, removals, and bank isolation.
+Session-scoped HTTP routes, additive CA/US Link, encrypted exchange recovery
+receipts, update-mode repair, frozen snapshots, and revocation/deletion queues
+also have local tests. Live webhook delivery, deployment key management,
+operational recovery, and app integration remain open; H1–H3 are not complete.
 
 **Multi-bank readiness:** replace the current single Item ID/cursor before
 linking another institution; a new Link currently replaces the active sync

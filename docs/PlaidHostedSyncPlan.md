@@ -347,8 +347,12 @@ publication, and device checkpoints. Real PostgreSQL tests cover rollback,
 concurrency, isolation, and database restart. Verified Apple identities,
 one-use nonce challenges, owner allowlisting, rotating app sessions, daily
 Apple grant validation, and context-bound local/KMS encryption adapters are
-implemented and tested locally. HTTP integration, upstream revocation,
-deployment roles, and the remaining lifecycle are still open; H1 is not complete.
+implemented and tested locally. Session-scoped HTTP routes, additive CA/US
+Link, encrypted exchange receipts, update-mode repair, frozen snapshot delivery,
+and queued upstream revocation/deletion now have local tests. Production
+configuration, Apple notifications, deployment roles, and recovery operations
+are still open; H1 is not complete. An exchange response lost before persistence
+requires explicit recovery and orphan-Item reconciliation, not automatic success.
 
 - [ ] Create deployable service, environment separation, infrastructure
   configuration, secret injection, and local PostgreSQL development commands.

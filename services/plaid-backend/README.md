@@ -115,6 +115,48 @@ The KMS contract is tested with a fake client, not a provisioned cloud key.
 Cloud IAM, TLS, edge abuse controls, revocation notifications, and a deployable
 HTTP boundary remain deployment requirements.
 
+## Connections and HTTP contract
+
+The HTTP factory derives ownership from opaque app sessions, limits request
+sizes and traffic in PostgreSQL, preserves webhook bytes, and returns only
+allowlisted error codes. Diagnostics never include bodies, headers, credentials,
+provider messages, or financial records. Ingress limits use the socket address;
+the service does not trust arbitrary forwarded IP headers. A managed edge must
+enforce its own limits before internet deployment.
+
+Unauthenticated routes: `POST /auth/challenge`, `/auth/apple`, `/auth/refresh`,
+and `/webhooks/plaid`. Authenticated routes: `GET /connections`, `POST /link`,
+`/link/exchange`, `/connections/:id/updated`, `/connections/:id/sync`,
+`/snapshots`, `/acknowledgments`, `/auth/logout`; `GET /snapshots/:id` and
+`/changes`; `DELETE /connections/:id` and `/account`. Mutations require a JSON
+object, including `{}` when no fields are needed. There is no worker trigger
+or administrative endpoint on the public API.
+
+Link requests Transactions for CA/US with a configured HTTPS OAuth return.
+Update mode reuses the existing Item, cursor, and token. A new connection is
+additive. Exchange retries are bound to the authenticated owner, attempt, and
+original public-token digest. An encrypted exchange receipt is committed before
+attachment, so an attachment failure can resume without exchanging twice.
+There is an unavoidable ambiguity if the process loses Plaid's successful
+response before that receipt commits: `LINK_RECOVERY_REQUIRED` requires a fresh
+Link/support reconciliation, never invented success. Such attempts block final
+account purging until an operator verifies/revokes any orphan Item. They must
+not be blindly removed by retention jobs.
+
+Snapshots freeze ledger rows and a delivery revision for one hour. Apply every
+snapshot page locally, then consume `/changes` starting at its checkpoint.
+An expired snapshot returns 410 and must restart. Incremental generations are
+currently retained indefinitely; no expired-cursor pruning is enabled.
+Acknowledge only after saving local records and the checkpoint together.
+
+Disconnect prevents further sync immediately and queues upstream revocation;
+credentials remain encrypted until that succeeds. Existing financial history
+is retained on disconnect. Account deletion disables sessions immediately,
+revokes Plaid and Apple grants through fenced retry jobs, then cascades hosted
+records. Failed/ambiguous revocations retain a visible operator backlog instead
+of falsely reporting erasure. Backup expiry must match the deployed retention
+policy before hosted data is accepted.
+
 References: [Apple identity verification](https://developer.apple.com/documentation/signinwithapple/verifying-a-user),
 [Google Cloud KMS authenticated encryption](https://docs.cloud.google.com/kms/docs/encrypt-decrypt).
 
@@ -148,9 +190,8 @@ materialization, signature/body tampering, receipt rollback, and stale sweeps.
 Provider contracts follow [Plaid sync pagination](https://plaid.com/docs/api/products/transactions/)
 and [webhook verification](https://plaid.com/docs/api/webhooks/webhook-verification/).
 
-Before deployment, complete the Apple revocation lifecycle, Link exchange
-recovery, deployed webhook/worker scheduling, current-snapshot
-bootstrap, expired-checkpoint retention, staged-data cleanup,
-revocation/deletion, restricted runtime roles, and backup/restore procedures.
+Before deployment, complete Apple server notification handling, deployed
+webhook/worker scheduling, expired-checkpoint retention, staged-data cleanup,
+restricted runtime roles, recovery operations, and backup/restore procedures.
 These remain explicit plan milestones; passing storage tests does not mark
 H1–H3 complete or establish live bank connectivity.
