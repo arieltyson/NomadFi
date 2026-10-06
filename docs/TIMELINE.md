@@ -459,6 +459,10 @@ points at the test file that pins the behaviour.
   source of truth for every recommendation.
 - [!] Generic-AI financial recommendations — deferred indefinitely by
   product decision; violates the deterministic source-backed rule.
+- [ ] FiBot (Financial Bot) — planned in [FiBot](./FiBot.md), Phase 9B:
+  proactive affordability and cash-flow guidance using verified financial
+  context, deterministic calculations, and reviewed research. This does not
+  permit unsupported model-generated financial advice.
 - [!] Credit-score prediction — deferred; scoring models are proprietary.
 - [!] Personalized investment advice — deferred; regulatory risk.
 - [!] Guaranteed credit-limit-increase promises — deferred; issuer models
@@ -1260,12 +1264,12 @@ details; this timeline tracks sequencing and status.
 
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |
-| H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, and privacy decisions | Deployment prerequisites recorded before live cloud data transfer |
-| H1 `[ ]` | Cloud Run API, authenticated ownership, encrypted durable connection storage | Restart-safe connection; unauthorized and cross-user access rejected |
-| H2 `[ ]` | Complete reconciliation, staged sync generations, independent device checkpoints | Additions/changes/removals converge; interrupted paging cannot skip data |
+| H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, privacy, CA/US coverage and Chase OAuth eligibility | Deployment prerequisites recorded before live cloud data transfer |
+| H1 `[ ]` | Cloud Run API, authenticated ownership, encrypted durable multi-connection storage | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
+| H2 `[ ]` | Complete reconciliation, staged sync generations, independent checkpoints, CAD/USD and transfer checks | Changes converge; interrupted paging cannot skip data; one bank's failure is isolated |
 | H3 `[ ]` | Verified Plaid webhooks, durable jobs, retries, scheduled catch-up | Backend ingests updates while the phone is closed/offline |
-| H4 `[ ]` | Automatic app refresh, freshness/status UI, reconnect and disconnect | Dashboard catches up; offline use and connection repair work |
-| H5 `[ ]` | Preserve/migrate existing data; owner-only hosted pilot | Mac-off sync, bank comparison, and at least seven days with a real update |
+| H4 `[ ]` | Automatic refresh, per-bank status, CA/US Link, Chase OAuth, card metadata audit | Dashboard catches up; offline use, OAuth return, and connection repair work |
+| H5 `[ ]` | Migrate existing data, then Canadian Amex and U.S. Chase validation; owner-only pilot | Mac-off sync, per-bank evidence over at least seven days, reconciled CAD/USD totals |
 | H6 `[ ]` | Operational and cost review before broader rollout | Explicit release decision after restore, isolation, and lifecycle checks |
 
 Proposed stack: Cloud Run + Firestore + Firebase Authentication + Cloud
@@ -1275,6 +1279,18 @@ devices use separate delivery checkpoints. Handle removed transactions,
 pending-to-posted replacements, and pagination recovery before claiming
 reliable automatic sync. Preserve user annotations and receipt/tax documents
 when upstream records disappear.
+
+**Multi-bank readiness:** replace the current single Item ID/cursor before
+linking another institution; a new Link currently replaces the active sync
+target. Product coverage targets are American Express Canada Cobalt and Chase
+Freedom Unlimited plus savings, with both Chase accounts under one connection
+when available through the same login. These targets are not verified coverage
+claims or a personal account inventory. Preserve the existing Canadian
+connection, isolate bank failures, and verify CAD/USD conversion, card debt,
+and internal-transfer treatment. Assess Liabilities and verified reward
+profiles separately; missing optional card fields must not block Transactions.
+The [multi-bank readiness section](./PlaidHostedSyncPlan.md#multi-bank-and-cross-border-readiness)
+owns access checks, phone OAuth validation, and acceptance details.
 
 No fixed deployment date or cost is asserted before account/plan decisions.
 “Automatic” does not promise instant bank data or permanent consent; periodic
@@ -1714,8 +1730,10 @@ allowed to provide.
 natural-language intake into structured Decision drafts via Apple
 Foundation Models, with explicit user confirmation before save)
 shipped 2026-04-24 — see "Phase 9A — On-device structured intake"
-below. Deterministic engines remain the source of truth for every
-recommendation; the model only structures input.
+below. Phase 9B's FiBot is now planned in [FiBot](./FiBot.md).
+Deterministic engines remain the source of truth for recommendations;
+the shipped model only structures input. FiBot will add researched cash-flow
+and affordability tools with a conversational and proactive explanation layer.
 
 ### Phase 9A — On-device structured intake (shipped)
 
@@ -1744,6 +1762,44 @@ unavailable states for `modelNotReady`,
 `foundationModelsUnavailable`. The typed form remains the
 universal intake on every code path. _Evidence:
 `DecisionAIIntakeTests.swift`._
+
+### Phase 9B — FiBot — proactive financial agent (planned)
+
+**Status:** `[ ]` Plan recorded October 5, 2026; no FiBot implementation shipped.
+The dedicated [FiBot plan](./FiBot.md) owns research, data contracts,
+calculation rules, safeguards, milestones, and acceptance criteria.
+
+**Goal:** FiBot (Financial Bot) answers whether a purchase is affordable and
+what the user can realistically spend, scrutinizing confirmed net salary,
+spending history, dated bills/debt, accessible savings, and personal goals.
+It proactively identifies upcoming shortfalls and meaningful changes, with
+the user's interests ahead of rewards, engagement, or commercial incentives.
+
+Build on the Decision Assistant and existing purchase/credit-timing engines.
+Add the missing cash-flow and affordability layer before offering purchase
+approval: a usable card is not evidence that a purchase fits the budget.
+Research-backed principles, current official terms, personal observations,
+and configurable planning assumptions must stay distinguishable. Research
+does not establish a universal spending limit or prove FiBot's effectiveness.
+
+| Milestone | Deliverable | Exit gate |
+| --- | --- | --- |
+| F0 `[ ]` | Evidence registry, claim limits, decision/input contracts | Supported claims and explicit planning assumptions |
+| F1 `[ ]` | Confirmed income/obligations, coverage and currency-aware context | Transfers, debt, missing data, and earmarks reconcile correctly |
+| F2 `[ ]` | Dated forecasts, stress scenarios, affordability and purchase commitments | Reproducible calculations; unsafe cases cannot receive approval |
+| F3 `[ ]` | FiBot conversation, clarification, decision briefs and corrections | Generated explanations agree with calculations and cited evidence |
+| F4 `[ ]` | Opt-in proactive monitoring and bounded notifications | Fresh evidence, no duplicate alerts, working user controls |
+| F5 `[ ]` | Owner-only pilot and prospective forecast evaluation | Accuracy/safety gates pass; functionality is not presented as proven efficacy |
+| F6 `[ ]` | Independent domain, jurisdiction, privacy and outcome review | Explicit broader-release decision and correction/rollback readiness |
+
+F0–F2 can proceed with synthetic or confirmed local data. Automatic live
+guidance in F4–F5 depends on Phase 5 hosted H1–H5 and verified multi-bank
+coverage/freshness. Model-data processing requires its own privacy decision;
+bank-sync consent does not grant permission to send history to an LLM.
+FiBot initially proposes guidance only: no purchases, transfers, credit
+applications, subscription cancellations, or messages to others. Missing
+material data produces a request for clarification, not invented certainty.
+Keep manual inputs and deterministic briefs usable without the model.
 
 **Goal (overall Phase 9):** Make NomadFi feel intelligent while preserving financial rigor.
 
@@ -1955,14 +2011,20 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-The next provider implementation is durable hosted storage and authenticated
-ownership (H1), followed by reconciliation, automatic jobs, and app delivery
-(H2–H4), under [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md). Resolve H0
+The next provider implementation is durable hosted multi-connection storage
+and authenticated ownership (H1), followed by reconciliation, automatic jobs,
+app delivery, and CA/US Link readiness (H2–H4), under
+[Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md). Preserve the existing sync
+target before adding Canadian Amex or U.S. Chase during H5. Resolve H0
 cloud/billing/privacy decisions before live deployment. The October 5 live
 connection and cleanup remove the earlier connectivity blocker; full
 bank-record acceptance and sustained reliability remain unproven.
 FinanceKit is parked after the regional denial. Decision Assistant, Tax
 Vault, and Investing Learn can continue independently.
+FiBot's new Phase 9B follows [FiBot](./FiBot.md): start with the research/input
+contract and salary/obligation context (F0–F1), then deterministic affordability
+(F2). This can progress with synthetic/local data while hosted sync is built;
+automatic live monitoring waits for its financial-data acceptance gates.
 Phase 9A — on-device
 natural-language intake into structured Decision drafts via
 Apple Foundation Models — shipped on 2026-04-24 and is the first
@@ -2045,9 +2107,12 @@ Highest-leverage remaining work, in order:
   approval. This is not a prerequisite for the Canadian Plaid evaluation.
 - **Phase 5E hosted implementation.** Execute H1–H5 from
   [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md), starting with durable
-  storage and authenticated ownership. Resolve H0 acceptance, actual pricing,
+  multi-connection storage and authenticated ownership. Resolve H0 acceptance,
+  CA/US coverage and Chase OAuth eligibility, actual pricing,
   cloud access, and privacy disclosures before deployment. Keep the pilot
   owner-only; migrate without dropping existing records or creating duplicates.
+  Validate Canadian Amex and U.S. Chase after the existing connection migrates;
+  require independent sync, correct card/savings mapping, and CAD/USD totals.
   A pass supports only the tested institution. Temporary access/cap/provider
   outages are inconclusive evidence of coverage.
 - **Phase 5D / Akoya parallel.** Paused absent an unmet coverage need.
@@ -2058,6 +2123,12 @@ Highest-leverage remaining work, in order:
 - **Phase 5F — hosted hardening and provider scale.** Minimum controls ship
   alongside H1–H5. Broader rollout waits for H6 operational/cost review and
   evidence from the owner-only pilot.
+- **Phase 9B — FiBot planned.** Execute F0–F6 in [FiBot](./FiBot.md):
+  research-backed affordability, strict income/spending scrutiny, traceable
+  decision briefs, and opt-in proactive guidance. Start with evidence and
+  deterministic context/calculations; preserve Phase 9A's shipped intake.
+  Bank access and a conversational interface alone do not establish advice
+  quality or real-world financial benefit.
 - **Phase 8A investing education starter — shipped** (2026-04-23).
   Sibling `InvestingEducation` module under
   `Core/Services/InvestingEducation/`, surface at Settings →

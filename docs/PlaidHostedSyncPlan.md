@@ -15,10 +15,13 @@ hotspot. A hosted service receives Plaid updates and persists changes while
 the phone is offline. The iPhone automatically catches up and feeds the same
 SwiftData accounts, transactions, dashboard, and decision engines used today.
 
-Start with the owner's already-tested Canadian connection and Transactions
-product. Support multiple connections in the data model, but keep onboarding
-restricted to the owner until a separate release decision. Manual entry and
-CSV import continue to work offline. Payments, trading, investment feeds,
+Start by migrating the already-tested Canadian connection, then validate
+Canadian Amex and U.S. Chase through independent connections. Multi-bank
+support is required before linking another live institution. Keep onboarding
+restricted to the owner until a separate release decision. Transactions is
+the initial product; assess Liabilities separately for card-payment details.
+Manual entry and CSV import continue to work offline. Payments, trading,
+investment feeds,
 additional aggregators, and broader institution-coverage claims are outside
 this plan.
 
@@ -43,7 +46,7 @@ external constraints.
 - Explicit account and subscription deletion controls with confirmation are
   committed in `06d5c88`; the signed device build and actual deletion flows
   passed. Both scoped commits passed the staged security scanner.
-- Institution names, personal balances, identifiers, exact live-record counts,
+- Live institution selections, personal balances, identifiers, live-record counts,
   database backups, and validation exports remain in ignored private evidence.
 
 These checks establish session connectivity and cleanup correctness. They do
@@ -57,7 +60,9 @@ validation-artifact review remain release gates.
 | --- | --- | --- |
 | Broker | `tools/plaid-sandbox-broker/server.js` holds tokens in a `Map` | Durable, encrypted per-user connection storage |
 | Authentication | Development shared secret and a fixed evaluation user | Verified user identity and ownership checks on every app endpoint |
-| Sync ownership | iPhone configuration stores the Plaid cursor | Backend owns the Plaid cursor; each device has a separate delivery checkpoint |
+| Connections | Configuration stores one Item ID; a successful new Link replaces it and clears its cursor | Independent connections; adding a bank preserves every existing sync target |
+| Sync ownership | iPhone configuration stores one Plaid cursor | Backend owns a cursor per connection; each device has a separate delivery checkpoint |
+| Country and OAuth | Local live evaluation is Canada-only; OAuth return plumbing has no live Chase validation | CA/US Link configuration, institution/product access checks, and verified Chase return flow |
 | Updates | Explicit Sync Now; no hosted webhook worker | Verified webhooks, durable jobs, retries, and scheduled catch-up |
 | Reconciliation | Adapter collects `removed` IDs but does not deliver them to local reconciliation | Apply removals and pending-to-posted replacements without duplication |
 | Pagination | Adapter caps pages without rejecting an unfinished pass | Never publish an incomplete pass or advance past unapplied data |
@@ -68,6 +73,79 @@ Relevant iOS files are under
 `NomadFi/NomadFi/Core/Services/FinancialData/Providers/Plaid/`, especially
 `PlaidSandboxConfiguration.swift` and `PlaidSandboxFinancialDataProvider.swift`.
 Preserve provider-neutral models and reconciliation boundaries.
+
+## Multi-bank and cross-border readiness
+
+These are product coverage targets, not claims of verified connectivity or
+an inventory of personal holdings. Record actual account selections and
+bank comparisons only in private evidence.
+
+| Target | Account mapping | Readiness gate |
+| --- | --- | --- |
+| Existing Canadian connection | Preserve current account identities, history, and CAD balances | Migration and subsequent sync preserve the baseline |
+| American Express Canada — Cobalt | Canadian credit card, CAD | Verify the Canadian institution's Transactions coverage and actual account selection |
+| Chase — Freedom Unlimited and savings | U.S. credit card and savings, USD | Verify production OAuth access and authorize both accounts in one Item when the same login exposes them |
+
+### Connection ownership and isolation
+
+- Replace the single Item ID/cursor configuration with a connection registry.
+  Each connection owns its provider Item, upstream cursor, account mapping,
+  consent/reconnect state, and last successful sync. Scope durable identities
+  by user, environment, provider, connection, and external record ID.
+- Adding a connection must append to the registry without resetting another
+  connection's cursor or replacing its active sync target. Backfill existing
+  account ownership through a reviewed migration, not display-name matching.
+- Sync and retry each connection independently. One bank's outage, expired
+  consent, or authentication failure must not prevent healthy banks updating.
+  Report partial success and freshness per bank instead of a false global pass.
+- Prefer one Chase Item for accounts exposed by the same login. Use update
+  mode for supported changes; avoid duplicate Link flows for each card/account.
+  Chase account-permission removal requires the Chase Security Center, and
+  creating another Item with different account selections can invalidate the
+  previous one. Validate this lifecycle before offering account management.
+  [Plaid Chase OAuth behavior](https://plaid.com/docs/link/oauth/#chase).
+
+### Institution access and phone authentication
+
+- Enable `CA` and `US` in hosted Link configuration. Check the exact Canadian
+  Amex institution and requested products in the Dashboard/Institutions API;
+  U.S. Amex availability does not establish Canadian coverage. Treat an
+  unsupported institution as an explicit coverage gap with manual/CSV fallback.
+  [Institution coverage](https://plaid.com/docs/institutions/).
+- Check the actual plan and Chase registration status. Plaid currently exempts
+  Trial plans from the Chase security questionnaire required otherwise; do not
+  infer access from a working Canadian connection or production credentials.
+- Verify the allowlisted HTTPS OAuth redirect, associated-domain/AASA setup,
+  and return to the original Link session on a physical iPhone. Exercise
+  successful authorization, cancellation, interrupted return, and recovery.
+  [Plaid OAuth requirements](https://plaid.com/docs/link/oauth/).
+- Do not restart the in-memory local broker merely to change country settings;
+  preserve the current connection until H5's migration path is ready.
+
+### Balances, transfers, and credit-card metadata
+
+- Keep country and native currency as separate account fields. Preserve manual
+  jurisdiction assignments, reward profiles, and other user-owned settings
+  across provider updates. An account currency alone must not assign country.
+- Audit dashboard and decision-engine calculations with mixed CAD/USD data:
+  savings are assets; amounts owed on cards are liabilities; available credit
+  is not an asset. Convert using a documented exchange-rate source and dated
+  rate; show freshness or an unavailable conversion instead of summing raw
+  currencies or silently using a 1:1 rate.
+- Verify card payments and transfers between linked accounts do not inflate
+  income or spending. Preserve both ledger entries, handle pending-to-posted
+  replacement, and allow correction of uncertain transfer classifications.
+- Assess Liabilities coverage, consent, cost, and nullable fields before adding
+  it for statement balances, minimum payments, or due dates. Canadian coverage
+  is limited; Transactions alone must not imply payment-calendar completeness.
+  Keep sourced manual fields where unavailable and distinguish current balance
+  from statement balance. [Plaid Liabilities](https://plaid.com/docs/liabilities/).
+- Verify Cobalt and Freedom Unlimited reward profiles against current official
+  issuer terms, including category restrictions, caps, promotions, foreign-
+  transaction fees, and points versus cash. Audit model support before enabling
+  recommendations; leave unsupported or unverified benefits unknown. Bank-feed
+  success does not establish reward accuracy, and optional Liabilities/rewards
+  work must not block basic transaction syncing.
 
 ## Proposed hosting architecture
 
@@ -193,6 +271,9 @@ calendar dates are assigned after cloud access and plan terms are known.
 - [ ] Verify the actual Plaid plan, Transactions permissions, Item allowance,
   refresh-product access, and applicable charges in the Dashboard. Production
   credentials alone do not establish plan terms or broad coverage.
+- [ ] Record CA/US coverage checks, Canadian Amex product availability, Chase
+  OAuth eligibility, and the intended account-selection flow. Resolve optional
+  Liabilities access/cost separately from the Transactions baseline.
 - [ ] Select cloud project, deployment/database region, billing budget,
   backup retention, and access roles. Document estimated costs and limits.
 - [ ] Update privacy policy, in-app disclosures, and App Store privacy
@@ -208,11 +289,15 @@ open. Cloud deployment/data transfer waits for those choices.
   configuration, secret injection, and local/emulator development commands.
 - [ ] Implement verified sign-in, owner allowlist, user-scoped Link/exchange,
   durable token encryption, ownership checks, and recoverable exchanges.
+- [ ] Implement the connection registry and per-connection cursor/status/account
+  ownership. Additive Link and isolated failures must work before any additional
+  live institution is linked.
 - [ ] Add least-privilege service identities, backups, rate limits, redacted
   diagnostics, and deployment rollback instructions.
 
 **Exit:** staging survives restart/redeploy; unauthorized and cross-user
-requests fail; no Plaid access token reaches the app or logs.
+requests fail; adding a connection preserves existing connections and cursors;
+no Plaid access token reaches the app or logs.
 
 ### H2 — Complete transaction reconciliation
 
@@ -222,6 +307,9 @@ requests fail; no Plaid access token reaches the app or logs.
   snapshot bootstrap; preserve local-only annotations and documents.
 - [ ] Test duplicate jobs, concurrent workers, crashes around cursor commit,
   pagination mutations, deletions, expired checkpoints, and changed balances.
+- [ ] Verify connection-scoped identities, independent sync failures, preserved
+  user metadata, card/deposit balance semantics, transfer classification, and
+  CAD/USD dashboard conversions using synthetic fixtures.
 
 **Exit:** repeated/replayed sync converges to one correct record set; failed
 passes cannot skip changes or expose partial history.
@@ -246,6 +334,10 @@ fail; duplicate/delayed events and simulated outages recover correctly.
   saves; refresh on foreground and best-effort background opportunities.
 - [ ] Add connection-state UI, Link update-mode repair, sign-out isolation,
   disconnect/revocation, and hosted-data deletion behavior.
+- [ ] Enable CA/US Link and verify the Chase OAuth return/recovery flow on a
+  physical device. Present per-bank freshness and partial sync success.
+- [ ] Audit card-payment and reward fields; add verified profiles/manual
+  fallbacks and expose only supported, sourced capabilities.
 
 **Exit:** data updates without Sync Now; offline use remains functional;
 reauthentication resumes the existing connection; disconnect stops jobs.
@@ -264,11 +356,20 @@ reauthentication resumes the existing connection; disconnect stops jobs.
   new connection is verified, with a stated fallback if rollback then needs Link.
 - [ ] Register/update the webhook and bootstrap backend history without
   duplicating or silently dropping existing local records.
+- [ ] After the existing connection passes migration checks, link Canadian
+  Amex and then Chase individually, subject to coverage/access gates. Select
+  both Chase accounts in one authorization when exposed by the same login.
+  After each addition, re-sync earlier connections and compare account types,
+  currency, balances, history coverage, transfers, and duplicates with private
+  bank records. Reconcile the final CAD/USD dashboard totals.
 - [ ] Validate one full sync with the Mac off and hotspot disabled, then
   reopen the app and compare it with the hosted snapshot and bank records.
 - [ ] Observe at least seven days, including backend redeploy/restart,
   phone-offline catch-up, and a real upstream update. Extend observation if
   no update occurs; passing time alone is not evidence of successful sync.
+  Record update evidence per connected institution; success at one bank does
+  not establish reliability at the others. Record any unavailable target as
+  unresolved coverage rather than marking the multi-bank pilot complete.
 
 **Exit:** the owner no longer depends on the local broker, all migration
 checks pass, and private evidence supports automatic operation.
@@ -298,10 +399,18 @@ checks pass, and private evidence supports automatic operation.
 | Disconnect/user deletion | Jobs stop, provider revocation is handled, retention policy is enforced |
 | Bank outage or stale balance | Last known data remains visible with accurate freshness/status |
 | Migration | Real records and classifications preserved; sample data cannot reappear |
+| Add another institution | Existing connection IDs, cursors, history, and subsequent sync remain intact |
+| One bank fails authentication | Healthy connections still update; affected bank retains data and shows reconnect status |
+| Canadian Amex Link | Exact Canadian institution/product coverage and imported card mapping verified |
+| Chase OAuth and account selection | Return/recovery works; card and savings share one Item when exposed by the same login |
+| Mixed CAD/USD dashboard | Native amounts preserved; dated FX conversion produces reconciled totals |
+| Card payments and internal transfers | Both ledger entries retained without duplicated spending or income |
+| Card metadata unavailable | No fabricated statement dates, minimums, or rewards; manual/unknown state remains clear |
 
 ## Cost, privacy, and operating limits
 
-Use minimal Transactions scope for the pilot. Avoid paid refresh loops and
+Use minimal Transactions scope for the pilot; enable Liabilities only after
+its separate coverage, consent, and cost review. Avoid paid refresh loops and
 unbounded polling. Track cloud jobs, storage, egress, secrets/key operations,
 and Plaid Item/product charges separately. Budget alerts are informational;
 use application rate limits and resource caps as additional controls. Exact
@@ -317,5 +426,7 @@ test fixtures remain synthetic. Keep the staged security hooks enabled.
 
 Implementation completion means the acceptance matrix passes, not merely
 that a server URL responds. The next engineering slice is **H1 durable
-storage and authenticated ownership**, with H0 deployment decisions resolved
-before any hosted live-data transfer.
+multi-connection storage and authenticated ownership**, followed by H2–H4
+reconciliation, automatic delivery, and CA/US readiness. Resolve H0 deployment
+decisions before any hosted live-data transfer. Migrate the existing connection
+before adding institutions in H5.
