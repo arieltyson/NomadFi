@@ -521,9 +521,6 @@
     "Capture Decision Draft" : {
 
     },
-    "Capture with Apple Intelligence" : {
-
-    },
     "Captured draft" : {
 
     },
@@ -812,6 +809,9 @@
 
     },
     "Delete tracked subscription?" : {
+
+    },
+    "Describe a Decision" : {
 
     },
     "Describe the decision in your own words — what you're weighing, and any context that matters." : {
@@ -1532,19 +1532,19 @@
     "Open Decision Assistant" : {
 
     },
-    "Open NomadFi and start a new on-device Apple Intelligence intake with the scenario you dictated already filled in. NomadFi never analyzes or saves anything until you confirm in the app." : {
-
-    },
     "Open NomadFi directly on the Decisions tab." : {
 
     },
     "Open NomadFi on the Decisions tab so you can finish your Amazon arrival-order decision." : {
 
     },
-    "Open NomadFi to a blank on-device Apple Intelligence intake. NomadFi never analyzes or saves anything until you confirm in the app." : {
+    "Open NomadFi to a blank intake that on-device AI structures for you. NomadFi never analyzes or saves anything until you confirm in the app." : {
 
     },
     "Open NomadFi to a blank typed decision draft. NomadFi never saves anything until you confirm in the app." : {
+
+    },
+    "Open NomadFi with the scenario you dictated filled in, ready for on-device AI to structure. NomadFi never analyzes or saves anything until you confirm in the app." : {
 
     },
     "Opens Plaid Link against the locally-configured sandbox broker." : {
@@ -2098,7 +2098,7 @@
     "Stamps today's date as the last time you verified this schedule." : {
 
     },
-    "Start Apple Intelligence Intake" : {
+    "Start AI Intake" : {
 
     },
     "Start Draft" : {
