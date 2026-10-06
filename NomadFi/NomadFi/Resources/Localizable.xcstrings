@@ -232,6 +232,16 @@
         }
       }
     },
+    "%lld of %lld reviewed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld reviewed"
+          }
+        }
+      }
+    },
     "%lld other-currency %@ not included — NomadFi does not convert between currencies without a verified rate." : {
       "localizations" : {
         "en" : {
@@ -318,13 +328,10 @@
     "Add %@" : {
 
     },
+    "Add a credit card in Accounts to track its statement dates here." : {
+
+    },
     "Add a credit card to see readiness checks. NomadFi does not request limits on your behalf." : {
-
-    },
-    "Add a credit-card account above to track statement close and payment due dates here." : {
-
-    },
-    "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed investing lessons for supported regions." : {
 
     },
     "Add a jurisdiction in Settings → Jurisdictions. NomadFi ships short, source-backed lessons for supported regions." : {
@@ -334,6 +341,9 @@
 
     },
     "Add a source name or URL before marking as verified." : {
+
+    },
+    "Add a supported jurisdiction in Settings → Financial Setup." : {
 
     },
     "Add Account" : {
@@ -357,9 +367,6 @@
     "Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later." : {
 
     },
-    "Add to Tax Vault" : {
-
-    },
     "Add Transaction" : {
 
     },
@@ -367,9 +374,6 @@
 
     },
     "Add your accounts" : {
-
-    },
-    "Add your first account to power Dashboard insights and Active Card recommendations." : {
 
     },
     "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
@@ -391,6 +395,9 @@
 
     },
     "All data stays on-device" : {
+
+    },
+    "All reviewed" : {
 
     },
     "All Supported Jurisdictions Added" : {
@@ -559,9 +566,6 @@
     "Choose a Different File" : {
 
     },
-    "Choose photo" : {
-
-    },
     "City or context" : {
 
     },
@@ -635,9 +639,6 @@
 
     },
     "Connected" : {
-
-    },
-    "Connections" : {
 
     },
     "Contacting Plaid sandbox broker…" : {
@@ -810,6 +811,9 @@
     "Delete this draft from this device?" : {
 
     },
+    "Delete tracked subscription?" : {
+
+    },
     "Describe the decision in your own words — what you're weighing, and any context that matters." : {
 
     },
@@ -820,6 +824,10 @@
 
     },
     "Describe with Apple Intelligence" : {
+
+    },
+    "Deselect All" : {
+
     },
     "Details" : {
 
@@ -903,6 +911,9 @@
 
     },
     "Education only. Not a substitute for a qualified professional. NomadFi does not file on your behalf." : {
+
+    },
+    "Education only. Not investment advice." : {
 
     },
     "Education only. Not investment advice. Not a substitute for a registered investment professional. NomadFi does not recommend specific funds or accounts." : {
@@ -1075,9 +1086,6 @@
     "Hides the draft from the main list. You can restore it later." : {
 
     },
-    "Home" : {
-
-    },
     "Home currency" : {
 
     },
@@ -1132,7 +1140,7 @@
     "Jurisdiction" : {
 
     },
-    "Jurisdictions section" : {
+    "Jurisdictions" : {
 
     },
     "Keep location to a city or short hint. Don't enter addresses, card numbers, or account details." : {
@@ -1257,13 +1265,11 @@
         }
       }
     },
-    "Manage Jurisdictions" : {
-
-    },
     "Manual entry" : {
 
     },
     "Manual entry and CSV import are always available." : {
+
     },
     "Mark Confirmed Today" : {
 
@@ -1364,7 +1370,7 @@
     "No changes from the last sync." : {
 
     },
-    "No Credit Cards Yet" : {
+    "No Credit Cards" : {
 
     },
     "No credit-card accounts yet. Add one in Settings → Accounts to link it here." : {
@@ -1433,9 +1439,6 @@
     "NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible" : {
 
     },
-    "NomadFi reads the image on device. Nothing uploads." : {
-
-    },
     "NomadFi reads your receipts on device, suggests a category, and waits for you to confirm." : {
 
     },
@@ -1452,6 +1455,7 @@
 
     },
     "NomadFi syncs only when you tap Sync Now." : {
+
     },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
 
@@ -1543,19 +1547,10 @@
     "Open NomadFi to a blank typed decision draft. NomadFi never saves anything until you confirm in the app." : {
 
     },
-    "Opens a form to add a new bank account or card." : {
-
-    },
-    "Opens a screen to add, remove, or change your home jurisdiction." : {
-
-    },
     "Opens Plaid Link against the locally-configured sandbox broker." : {
 
     },
     "Opens the %@ brief. NomadFi runs this engine against your saved data and shows the rationale and sources." : {
-
-    },
-    "Opens the account editor to correct balances, limits, and other details." : {
 
     },
     "Opens the archived draft. Restore or delete from the detail sheet." : {
@@ -1565,9 +1560,6 @@
 
     },
     "Opens the draft in the edit form." : {
-
-    },
-    "Opens the Financial Connections page where you can see which data sources are available and run an explicit sync." : {
 
     },
     "Opens the full decision brief with cost breakdown, payment options, and user checks." : {
@@ -1592,9 +1584,6 @@
 
     },
     "Opens the statement calendar editor for this card." : {
-
-    },
-    "Opens your photo library so NomadFi can scan a receipt on device." : {
 
     },
     "Optional — urgency note in your own words (\"before the trip\")." : {
@@ -1684,9 +1673,6 @@
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
     },
-    "Pick a photo of your receipt. NomadFi reads it on device, suggests a category, and waits for you to confirm." : {
-
-    },
     "Pick an account above to enable file selection." : {
 
     },
@@ -1770,6 +1756,7 @@
 
     },
     "Rates by Exchange Rate API" : {
+
     },
     "Rates Unavailable" : {
 
@@ -1825,9 +1812,6 @@
     "Removes this row from the review queue. NomadFi never resurfaces dismissed suggestions." : {
 
     },
-    "Removing a jurisdiction never deletes its accounts or transactions." : {
-
-    },
     "Rename to “%@”" : {
 
     },
@@ -1850,11 +1834,13 @@
 
     },
     "Retries the broker exchange without another bank login." : {
+
     },
     "Retry" : {
 
     },
     "Retry finishing link" : {
+
     },
     "Returns to the previous onboarding step." : {
 
@@ -1973,12 +1959,6 @@
     "Savings Opportunities" : {
 
     },
-    "Scan a receipt" : {
-
-    },
-    "Scan a receipt from Review to add your first document. Documents appear here grouped by tax year and jurisdiction." : {
-
-    },
     "Scan Error" : {
 
     },
@@ -2016,6 +1996,12 @@
     "Scores your answers and saves the attempt. NomadFi does not file anything on your behalf." : {
 
     },
+    "Search accounts" : {
+
+    },
+    "Search cards" : {
+
+    },
     "Search receipts" : {
 
     },
@@ -2026,6 +2012,9 @@
 
     },
     "Security" : {
+
+    },
+    "Select All" : {
 
     },
     "Select an account" : {
@@ -2164,7 +2153,14 @@
         }
       }
     },
+    "Tap + to add one." : {
+
+    },
     "Tap + to capture a scenario in your own words." : {
+
+    },
+    "Tap + to scan your first receipt." : {
+
     },
     "Tap the button below to add your first account." : {
 
@@ -2229,6 +2225,9 @@
     "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
 
     },
+    "This permanently removes %@ from your tracked subscriptions in NomadFi. It does not cancel the service or delete its transactions." : {
+
+    },
     "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
 
     },
@@ -2272,6 +2271,7 @@
 
     },
     "Touch and hold to describe it with Apple Intelligence." : {
+
     },
     "Tracked spend in %@" : {
 
@@ -2481,9 +2481,6 @@
 
     },
     "Your home jurisdiction is where NomadFi reports your net worth. Data attached to a jurisdiction keeps living on its own records — removing a jurisdiction never deletes your accounts, transactions, budgets, subscriptions, or tax documents." : {
-
-    },
-    "Your Jurisdictions" : {
 
     },
     "Your money lives in three countries." : {

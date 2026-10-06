@@ -132,6 +132,41 @@ final class NomadFiUITests: XCTestCase {
         keepScreenshot(named: "Investing region", of: app)
     }
 
+    /// Accounts live on their own page; Edit selects several, and a
+    /// centred alert confirms deleting them.
+    @MainActor
+    func testDeleteSeveralAccountsWithOneConfirmation() {
+        let app = makeApp(
+            hasCompletedOnboarding: true,
+            extraEnvironment: ["UI_TEST_SEED_SAMPLE_DATA": "1"]
+        )
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Settings"].tap()
+        tapButton(containing: "Financial Setup", in: app)
+        tapButton(containing: "Accounts", in: app)
+        XCTAssertTrue(app.navigationBars["Accounts"].waitForExistence(timeout: 8))
+
+        let rows = app.collectionViews.firstMatch.cells
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 8))
+        let countBefore = rows.count
+        XCTAssertGreaterThanOrEqual(countBefore, 2)
+
+        app.navigationBars["Accounts"].buttons["Edit"].tap()
+        rows.element(boundBy: 0).tap()
+        rows.element(boundBy: 1).tap()
+        keepScreenshot(named: "Accounts selecting", of: app)
+        app.buttons["Delete"].firstMatch.tap()
+
+        let alert = app.alerts["Delete 2 Accounts?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 8))
+        alert.buttons["Delete"].tap()
+
+        XCTAssertTrue(alert.waitForNonExistence(timeout: 8))
+        XCTAssertEqual(rows.count, countBefore - 2)
+    }
+
     @MainActor
     func testExchangeRatesOpenFromTools() {
         let app = makeApp(hasCompletedOnboarding: true)

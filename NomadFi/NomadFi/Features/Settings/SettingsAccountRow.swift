@@ -11,29 +11,41 @@ struct SettingsAccountRow: View {
 
     let account: Account
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: SpacingTokens.small) {
-            Image(systemName: account.accountType?.systemImage ?? "creditcard")
-                .font(.title3)
-                .foregroundStyle(ColorTokens.brandPrimary)
-                .frame(width: 28, alignment: .center)
-                .accessibilityHidden(true)
+        // Side by side normally; at accessibility sizes the amounts
+        // move below the name rather than squeezing it to a sliver.
+        let isStacked = dynamicTypeSize.isAccessibilitySize
+        let layout = isStacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: SpacingTokens.xSmall))
+            : AnyLayout(HStackLayout(spacing: SpacingTokens.small))
 
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                nameRow
+        layout {
+            HStack(spacing: SpacingTokens.small) {
+                Image(systemName: account.accountType?.systemImage ?? "creditcard")
+                    .font(.title3)
+                    .foregroundStyle(ColorTokens.brandPrimary)
+                    .accessibilityHidden(true)
 
-                Text(account.institutionName)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    nameRow
 
-                if shouldShowFreshnessRow {
-                    freshnessRow
+                    Text(account.institutionName)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+
+                    if shouldShowFreshnessRow {
+                        freshnessRow
+                    }
                 }
             }
 
-            Spacer(minLength: 0)
+            if !isStacked {
+                Spacer(minLength: 0)
+            }
 
-            amountColumn
+            amountColumn(alignment: isStacked ? .leading : .trailing)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityDescription)
@@ -71,12 +83,10 @@ private extension SettingsAccountRow {
         }
     }
 
-    var amountColumn: some View {
-        VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
-            Text(account.currencyCodeRawValue)
-                .font(TypographyTokens.caption)
-                .foregroundStyle(.secondary)
-
+    /// Amounts already carry their currency code, so it is not
+    /// repeated above them.
+    func amountColumn(alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: SpacingTokens.xxSmall) {
             primaryAmountView
 
             if let secondary = account.secondaryAmountLabel {

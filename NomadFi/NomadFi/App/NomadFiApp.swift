@@ -63,6 +63,13 @@ struct NomadFiApp: App {
         // hierarchy gets a chance to read `@Environment(\.modelContext)`.
         modelContainer = NomadFiModelContainerFactory.makeProduction()
 
+        // Each UI test starts from an empty store, so one test's
+        // records never shape another's. Deleted model by model:
+        // erasing the store outright would invalidate the container.
+        if config.resetAppState {
+            Self.deleteAllRecords(in: modelContainer.mainContext)
+        }
+
         if config.seedSampleData {
             SampleDataSeeder.seedIfNeeded(modelContext: modelContainer.mainContext)
         }
@@ -166,6 +173,23 @@ struct NomadFiApp: App {
         // and tear down the previous container, destroying every
         // `ModelContext` the running app had captured.
         .modelContainer(modelContainer)
+    }
+}
+
+extension NomadFiApp {
+
+    /// Deletes every record of every model in the schema. UI tests only.
+    @MainActor
+    fileprivate static func deleteAllRecords(in context: ModelContext) {
+        for model in NomadFiSchemaV1.models {
+            deleteAll(model, in: context)
+        }
+        try? context.save()
+    }
+
+    @MainActor
+    private static func deleteAll<Model: PersistentModel>(_ model: Model.Type, in context: ModelContext) {
+        try? context.delete(model: model)
     }
 }
 

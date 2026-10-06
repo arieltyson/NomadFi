@@ -3,7 +3,7 @@
 //
 // Native Settings surface for adding, removing, and re-homing
 // jurisdictions without resetting onboarding or deleting account data.
-// Pushed from Settings → "Manage Jurisdictions".
+// Pushed from Settings → Financial Setup → Jurisdictions.
 
 import OSLog
 import SwiftData
@@ -44,7 +44,7 @@ struct JurisdictionManagementView: View {
 
             availableSection
         }
-        .navigationTitle("Manage Jurisdictions")
+        .navigationTitle("Jurisdictions")
         .toolbarTitleDisplayMode(.inlineLarge)
         .task { await refreshAvailable() }
         .onChange(of: activeProfiles.count) { _, _ in
