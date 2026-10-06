@@ -4,11 +4,17 @@ October 6 implementation: FiBot's shared Swift calculation core and evidence
 registry now pass synthetic tests. The local FiBot workspace includes plan
 editing, briefs, history, reservations and an explicit V3 migration. F0–F3
 foundations exist. F4 now includes consented hosted evaluation and an in-app
-alert feed with isolated workers; automatic bank-to-plan reconciliation and
+alert feed with isolated workers; purchase drafts preserve their currency and
+plans retain their time zone. Automatic bank-to-plan reconciliation and
 remote push remain open. F5–F6 and remaining
 financial-domain acceptance gates are tracked in [FiBot](./FiBot.md). Hosted
 banking engineering is committed on `main`; cloud provisioning and the
-reviewed migration of existing CIBC records are still separate release gates.
+live migration of existing CIBC records are still separate release gates. The
+reviewed same-Item migration code is implemented and tested; changed provider
+identities are rejected rather than matched by name. Verification: 943 unique
+iOS cases, 21 shared Swift tests and 74 backend tests pass. Linux container
+tests also run in GitHub Actions. These checks do not establish live bank
+coverage or financial efficacy.
 
 Phased roadmap for turning NomadFi into a cross-border financial decision
 assistant. This document intentionally accounts only for what NomadFi needs to
@@ -1270,16 +1276,16 @@ details; this timeline tracks sequencing and status.
   (`06d5c88`); signed build and actual device flows passed. Scoped commits
   passed staged security checks and are pushed. Personal evidence stays private.
 
-**Hosted implementation milestones — local storage started; none complete:**
+**Hosted implementation milestones — engineering in progress; live exit gates remain open:**
 
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |
 | H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, privacy, CA/US coverage and Chase OAuth eligibility | Deployment prerequisites recorded before live cloud data transfer |
-| H1 `[~]` | PostgreSQL storage/tests implemented; API, Apple sessions, encryption and deployment roles remain | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
-| H2 `[ ]` | Complete reconciliation, staged sync generations, independent checkpoints, CAD/USD and transfer checks | Changes converge; interrupted paging cannot skip data; one bank's failure is isolated |
-| H3 `[ ]` | Verified Plaid webhooks, durable jobs, retries, scheduled catch-up | Backend ingests updates while the phone is closed/offline |
-| H4 `[ ]` | Automatic refresh, per-bank status, CA/US Link, Chase OAuth, card metadata audit | Dashboard catches up; offline use, OAuth return, and connection repair work |
-| H5 `[ ]` | Migrate existing data, then Canadian Amex and U.S. Chase validation; owner-only pilot | Mac-off sync, per-bank evidence over at least seven days, reconciled CAD/USD totals |
+| H1 `[~]` | PostgreSQL, API, Apple sessions, encryption, ownership and restricted roles implemented/tested; deployment recovery still open | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
+| H2 `[~]` | Atomic generations, complete deltas, independent checkpoints and document-preserving app merge implemented/tested; live reconciliation remains | Changes converge; interrupted paging cannot skip data; one bank's failure is isolated |
+| H3 `[~]` | Verified webhooks, durable jobs, retries and sweep implemented/tested; hosted scheduling and real delivery remain | Backend ingests updates while the phone is closed/offline |
+| H4 `[~]` | Hosted Settings, foreground refresh, CA/US Link, OAuth continuation and repair implemented/tested; physical Apple/Chase validation remains | Dashboard catches up; offline use, OAuth return, and connection repair work |
+| H5 `[~]` | Reviewed same-Item migration implemented/tested; live cutover, Canadian Amex/U.S. Chase validation and owner-only pilot remain | Mac-off sync, per-bank evidence over at least seven days, reconciled CAD/USD totals |
 | H6 `[ ]` | Operational and cost review before broader rollout | Explicit release decision after restore, isolation, and lifecycle checks |
 
 Storage decision: private PostgreSQL behind the backend, built and tested
@@ -1307,7 +1313,7 @@ cover pagination mutations, pending replacements, removals, and bank isolation.
 Session-scoped HTTP routes, additive CA/US Link, encrypted exchange recovery
 receipts, update-mode repair, frozen snapshots, and revocation/deletion queues
 also have local tests. Live webhook delivery, deployment key management,
-operational recovery, and app integration remain open; H1–H3 are not complete.
+operational recovery, and live acceptance remain open; H1–H3 are not complete.
 API/worker/sweep entry points, a non-root container, restricted-role SQL,
 production configuration guards, Apple notification processing, and an
 operations runbook are implemented. No cloud resources have been deployed.
@@ -1315,12 +1321,15 @@ The Swift hosted client and V1-to-V2 SwiftData migration now have Simulator
 coverage. Local bank merges save checkpoints atomically, preserve annotations
 and receipt documents, and reject a silent import over the legacy CIBC setup.
 Hosted Settings and foreground delivery are implemented behind deployment
-configuration. Native Apple/Chase OAuth validation and the reviewed migration
-are still open; see [iOS acceptance](./HostedIOSAcceptance.md).
+configuration. Native Apple/Chase OAuth validation and live migration acceptance
+are still open; see [iOS acceptance](./HostedIOSAcceptance.md). Migration preview
+now verifies owner/Item/account identity and requires backup confirmation before
+the phone rewrites provider identifiers in its atomic merge. Personal data has
+not been moved to the cloud.
 
-**Multi-bank readiness:** replace the current single Item ID/cursor before
-linking another institution; a new Link currently replaces the active sync
-target. Product coverage targets are American Express Canada Cobalt and Chase
+**Multi-bank readiness:** the hosted registry is additive; the installed legacy
+broker path still has a single active Item. Complete hosted migration before
+linking another live institution. Product coverage targets are American Express Canada Cobalt and Chase
 Freedom Unlimited plus savings, with both Chase accounts under one connection
 when available through the same login. These targets are not verified coverage
 claims or a personal account inventory. Preserve the existing Canadian
@@ -1803,7 +1812,9 @@ universal intake on every code path. _Evidence:
 
 ### Phase 9B — FiBot — proactive financial agent (planned)
 
-**Status:** `[ ]` Plan recorded October 5, 2026; no FiBot implementation shipped.
+**Status:** `[~]` Local and hosted foundations implemented October 6, 2026;
+available behind Debug/explicit build and deployment configuration. No live
+hosted FiBot pilot or broader release has shipped.
 The dedicated [FiBot plan](./FiBot.md) owns research, data contracts,
 calculation rules, safeguards, milestones, and acceptance criteria.
 
@@ -1822,11 +1833,11 @@ does not establish a universal spending limit or prove FiBot's effectiveness.
 
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |
-| F0 `[ ]` | Evidence registry, claim limits, decision/input contracts | Supported claims and explicit planning assumptions |
-| F1 `[ ]` | Confirmed income/obligations, coverage and currency-aware context | Transfers, debt, missing data, and earmarks reconcile correctly |
-| F2 `[ ]` | Dated forecasts, stress scenarios, affordability and purchase commitments | Reproducible calculations; unsafe cases cannot receive approval |
-| F3 `[ ]` | FiBot conversation, clarification, decision briefs and corrections | Generated explanations agree with calculations and cited evidence |
-| F4 `[ ]` | Opt-in proactive monitoring and bounded notifications | Fresh evidence, no duplicate alerts, working user controls |
+| F0 `[~]` | Versioned R1–R6 registry, claim limits and contracts implemented; independent review remains | Supported claims and explicit planning assumptions |
+| F1 `[~]` | Confirmed manual income/obligations, coverage and currency-aware context implemented; bank-to-plan reconciliation remains | Transfers, debt, missing data, and earmarks reconcile correctly |
+| F2 `[~]` | Decimal cash forecasts, stress, reserves and commitments implemented/tested; financing, recurring and FX settlement analysis remain | Reproducible calculations; unsafe cases cannot receive approval |
+| F3 `[~]` | Purchase-draft entry, deterministic briefs, corrections, history, export and deletion implemented; full conversational evaluation remains | Generated explanations agree with calculations and cited evidence |
+| F4 `[~]` | Consent, restricted monitoring worker and private alert feed implemented/tested; automatic context reconciliation and APNs remain | Fresh evidence, no duplicate alerts, working user controls |
 | F5 `[ ]` | Owner-only pilot and prospective forecast evaluation | Accuracy/safety gates pass; functionality is not presented as proven efficacy |
 | F6 `[ ]` | Independent domain, jurisdiction, privacy and outcome review | Explicit broader-release decision and correction/rollback readiness |
 

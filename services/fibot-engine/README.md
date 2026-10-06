@@ -27,6 +27,12 @@ gate. Confirmed commitments share capacity and partial scheduled settlement
 does not release the remainder. Optional-goal tradeoffs require changing and
 reevaluating the plan before reserving a purchase.
 
+Plans persist an IANA time zone. Date pickers, evaluation, coverage confirmation
+and reservation expiry use that calendar; pure dated cash-flow arithmetic uses
+civil dates without a device-zone conversion. Legacy plans missing the field
+retain UTC, and invalid zones invalidate coverage. Historical daylight-saving
+and UTC-midnight fixtures cover these boundaries on the shared Swift package.
+
 Release gates remain in `docs/FiBot.md`: private reconciliation, expert review,
 prospective forecast/alert evaluation, and explicit hosted/model processing
 consent. Passing deterministic fixtures does not establish financial efficacy.

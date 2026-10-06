@@ -17,6 +17,8 @@ withdrawal or deleted account prevents a stale evaluation publishing.
 This first monitor consumes an explicitly uploaded manual plan. It **does not**
 infer salary or replace confirmed accessible funds with cached bank balances.
 A new bank revision or evaluation day requires renewed coverage confirmation.
+The evaluation day is computed in the uploaded plan's IANA time zone, matching
+the app even around UTC midnight and daylight-saving transitions.
 Automatic bank-to-plan reconciliation remains a release gate, not an implied
 feature. Results appear in the authenticated in-app alert feed. There is no
 APNs delivery yet. `notification_at` records eligibility, not delivered push.

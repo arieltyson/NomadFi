@@ -1,6 +1,6 @@
 # Plaid Hosted Connection and Automatic Sync Plan
 
-Updated: October 5, 2026. Status: **implementation started locally; no hosted deployment yet**.
+Updated: October 6, 2026. Status: **hosted foundations implemented and tested on main; no hosted deployment yet**.
 
 This is the implementation plan for Phase 5E and the minimum Phase 5F
 hardening needed for an owner-only hosted pilot. The
@@ -54,7 +54,13 @@ not establish complete agreement with bank statements, sustained reliability,
 or readiness for public onboarding. Bank-record comparison and the original
 validation-artifact review remain release gates.
 
-## Current gaps in the code
+## Legacy connection gaps and replacement scope
+
+The table describes the installed local-broker path. The replacement hosted
+backend and iOS client now implement durable ownership, reconciliation,
+authenticated delivery, lifecycle controls and reviewed same-Item migration.
+They remain behind deployment configuration. The existing phone connection
+still uses the legacy path until private migration acceptance is complete.
 
 | Area | Current behavior | Required change |
 | --- | --- | --- |
@@ -355,7 +361,8 @@ are still open; H1 is not complete. An exchange response lost before persistence
 requires explicit recovery and orphan-Item reconciliation, not automatic success.
 API, finite worker, scheduled sweep entry points, a non-root container, role
 provisioning SQL, configuration guards, and a deployment/restore runbook are
-checked in. The container and cloud resources have not been built or deployed.
+checked in. GitHub Actions has built and tested the Swift/Node/PostgreSQL Linux
+container and built its monitoring runtime. No cloud resources are deployed.
 Apple signed server notifications now pause revoked consent and queue account
 deletion, with replay protection and stale-event checks. Database role tests
 confirm that FiBot cannot read credentials and runtime cannot change schema.
@@ -382,8 +389,9 @@ no Plaid access token reaches the app or logs.
 
 Local worker tests now cover pending replacements, modifications/removals,
 account tombstones, mutation restart from the committed cursor, isolated bank
-failures, and atomic current-ledger publication. Device bootstrap, app merge,
-and live bank verification remain open.
+failures, and atomic current-ledger publication. Device bootstrap and atomic app
+merge now pass Simulator tests, including annotation/receipt preservation and
+rollback. Live bank verification remains open.
 
 - [ ] Implement staged sync generations, durable upstream cursors, leases,
   bounded paging, pending-to-posted transitions, and removals.
@@ -431,8 +439,12 @@ explicit migration map before hosted import; name matching is prohibited.
 Settings, native Apple sign-in, additive Link/update/disconnect controls,
 foreground delivery, protected deletion, and persisted OAuth continuation are
 implemented behind deployment configuration. See [iOS acceptance](./HostedIOSAcceptance.md).
-Real Apple/OAuth validation, Release provisioning, and the CIBC identity
-migration remain open; the installed phone has not been migrated.
+Real Apple/OAuth validation, Release provisioning, and live CIBC migration
+acceptance remain open; the installed phone has not been migrated. The private
+stdin migration command verifies owner, Item, environment and exact account IDs
+before persisting encrypted credentials. The iOS review maps unchanged provider
+IDs while preserving local model identities; changed provider IDs are rejected
+instead of guessed. See [migration operations](../services/plaid-backend/ops/LegacyMigration.md).
 
 - [ ] Add authenticated hosted provider configuration and multi-connection
   identity mapping; remove manual broker URL/secret setup from the normal flow.

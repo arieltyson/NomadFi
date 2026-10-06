@@ -6,7 +6,7 @@ live pilot and broader release remain gated**.
 Implementation: `Core/FiBot/Engine` is shared by iOS and the root Swift package.
 It includes decimal CAD/USD cash forecasts, explicit dated net-income and bill
 schedules, baseline/stress checks, shared reservations, missing-data outcomes,
-and a versioned R1–R6 evidence registry. Fifteen synthetic tests pass. The
+and a versioned R1–R6 evidence registry. Twenty-one shared Swift tests pass. The
 current engine blocks cross-currency transfers without reviewed settlement
 support; financing and indefinite recurring-purchase analysis remain pending.
 See [calculation-core scope](../services/fibot-engine/README.md).
@@ -17,9 +17,17 @@ net-income and bill schedules, coverage checks, editable stress assumptions,
 saved briefs, seven-day shared reservations, private export and deletion.
 V3 adds these records through an explicit lightweight migration. Briefs retain
 their actual scenario settings and evidence version; they are marked historical
-when the plan changes. No financial context is sent to an LLM. Natural-language
-interpretation, automatic bank-to-plan reconciliation and financing/recurring
-purchase analysis are not implied by this structured cash-purchase workspace.
+when the plan changes. Existing purchase drafts, including those created by the
+on-device draft interpreter, can open FiBot with their question, amount and
+original currency. The user still confirms the funding account and complete
+cost; mismatched currencies cannot silently become equivalent. No financial
+context is sent to an LLM. Automatic bank-to-plan reconciliation and
+financing/recurring purchase analysis remain open.
+
+New plans retain their creation time zone for balance dates, schedules,
+confirmation, evaluation and reservation expiry. Traveling does not move pay
+dates. Legacy plans without a time-zone field retain their previous UTC
+interpretation. Hosted monitoring uses the same saved plan time zone.
 
 F4 now has an opt-in hosted context, durable triggers after committed bank
 syncs, a separate restricted worker, the shared Swift evaluator, stale-advice
@@ -29,6 +37,13 @@ feed when hosted banking is configured. This first monitor requires renewed
 manual confirmation after a bank revision or date change. Automatic
 bank-to-plan reconciliation and APNs delivery remain open. See the
 [monitoring operations contract](../services/plaid-backend/ops/FiBotMonitoring.md).
+
+October 6 verification: 943 unique iOS test cases passed (948 reported case
+executions), 21 shared-engine tests passed, and all 74 backend tests passed with
+real temporary PostgreSQL and the compiled Swift evaluator. GitHub also
+validates Linux container compatibility. These are engineering checks; private
+bank reconciliation, independent financial review and prospective pilot
+evaluation remain required.
 
 FiBot is NomadFi's proactive financial agent. It helps a person decide whether
 to buy something, how much they can realistically afford, and what to change
