@@ -1,8 +1,10 @@
 import Foundation
 import Testing
+import UIKit
 
 @testable import NomadFi
 
+@MainActor
 struct AccessibilityContrastComplianceTests {
 
     @Test("AccentColor supports WCAG AA with on-action text in light and dark")
@@ -62,19 +64,14 @@ struct AccessibilityContrastComplianceTests {
 
 private extension AccessibilityContrastComplianceTests {
 
-    var assetCatalogURL: URL {
-        URL(filePath: #filePath)
-            .deletingLastPathComponent() // NomadFiTests
-            .deletingLastPathComponent() // project root inside xcodeproj folder
-            .appending(path: "NomadFi")
-            .appending(path: "Resources")
-            .appending(path: "Assets.xcassets")
-    }
-
     func loadColorSet(named name: String) throws -> (light: SRGBColor, dark: SRGBColor) {
-        try AssetCatalogColorLoader.loadColorSet(
-            named: name,
-            fromAssetCatalogAt: assetCatalogURL
-        )
+        let color = try #require(UIColor(named: name, in: .main, compatibleWith: nil))
+        func resolved(_ style: UIUserInterfaceStyle) throws -> SRGBColor {
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            let resolved = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
+            try #require(resolved.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+            return .init(red: Double(red), green: Double(green), blue: Double(blue), alpha: Double(alpha))
+        }
+        return try (resolved(.light), resolved(.dark))
     }
 }
