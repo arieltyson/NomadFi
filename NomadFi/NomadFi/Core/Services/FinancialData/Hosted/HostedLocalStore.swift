@@ -19,10 +19,13 @@ struct HostedLocalStore {
     }
 
     func apply(_ events: [HostedEvent], checkpoint: HostedCheckpoint, ownerID: UUID, endpoint: URL,
-               homeCurrency: CurrencyCode, now: Date = .now) throws -> Position {
+               homeCurrency: CurrencyCode, now: Date = .now, reviewedMigration: HostedLegacyMigration? = nil) throws -> Position {
         let context = ModelContext(container)
         context.autosaveEnabled = false
         do {
+            if let reviewedMigration {
+                try reviewedMigration.applyMappings(in: context, owner: ownerID, service: endpoint, checkpoint: checkpoint, now: now)
+            }
             let saved = try findState(context, ownerID: ownerID, endpoint: endpoint)
             let state = saved ?? HostedLocalState(ownerID: ownerID, endpoint: endpoint)
             guard let revision = UInt64(checkpoint.revision), let current = UInt64(state.revision),

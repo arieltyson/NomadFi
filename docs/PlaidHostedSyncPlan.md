@@ -450,6 +450,12 @@ reauthentication resumes the existing connection; disconnect stops jobs.
 
 ### H5 — Migrate the existing connection and run the pilot
 
+Engineering now includes a guarded Item-import utility and an iOS review for
+unchanged provider IDs, with atomic local mapping/checkpoint persistence and
+rollback tests. See [controlled migration](../services/plaid-backend/ops/LegacyMigration.md).
+No live token transfer or device migration has occurred. Re-issued provider
+IDs still require a separate reviewed map; the checks below remain open.
+
 - [ ] Take a private backup and verify a rollback path before switching URLs
   or connection identifiers. Do not stop the local broker merely to deploy.
 - [ ] Prefer a controlled transfer of the existing Item only if its token

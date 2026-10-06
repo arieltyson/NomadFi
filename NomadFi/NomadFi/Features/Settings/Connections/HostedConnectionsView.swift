@@ -7,9 +7,15 @@ struct HostedConnectionsView: View {
     let banking: HostedBankingController
     @State private var hasConsented = false
     @State private var disconnecting: HostedConnection?
+    @State private var backupVerified = false
 
     var body: some View {
         List {
+            Section("Hosted data") {
+                Text("Hosting region: \(banking.hostingRegion)")
+                Text("Deleted data may remain in restricted backups for up to \(banking.backupRetentionDays) days.").font(.footnote)
+                if let policyURL = banking.privacyPolicyURL { Link("Hosted privacy policy", destination: policyURL) }
+            }
             if banking.userID == nil {
                 Section {
                     Toggle("Allow hosted bank synchronization", isOn: $hasConsented)
@@ -20,7 +26,7 @@ struct HostedConnectionsView: View {
                         Task { await banking.completeAppleSignIn(result) }
                     }
                     .frame(height: 48)
-                    .disabled(!hasConsented || banking.challenge == nil || banking.isWorking)
+                    .disabled(!hasConsented || banking.challenge == nil || banking.isWorking || banking.privacyPolicyURL == nil)
                 } footer: {
                     Text("NomadFi stores your authorized balances and transactions on its hosted service to sync while this iPhone is closed. Plaid handles your bank login. Review the privacy policy before enabling access.")
                 }
@@ -52,6 +58,10 @@ struct HostedConnectionsView: View {
                         Task { await banking.sync(container: modelContext.container) }
                     }
                     Button("Sign out") { Task { await banking.signOut() } }
+                    Button("Review migration of existing bank records") {
+                        backupVerified = false
+                        Task { await banking.prepareLegacyMigration(container: modelContext.container) }
+                    }
                 } footer: {
                     Text("The server checks for bank updates independently. Opening NomadFi downloads completed updates. Bank data can be delayed; signing out keeps this iPhone's local records.")
                 }
@@ -65,6 +75,26 @@ struct HostedConnectionsView: View {
         .disabled(banking.isWorking)
         .task { await banking.prepare() }
         .refreshable { await banking.prepare() }
+        .sheet(item: Binding(get: { banking.migrationReview }, set: { if $0 == nil { banking.cancelLegacyMigration() } })) { review in
+            NavigationStack {
+                Form {
+                    Section("Matching existing records") {
+                        ForEach(review.accounts, id: \.localID) { Text($0.label) }
+                        Text("\(review.transactions.count) imported transactions will be mapped to hosted updates. Notes and receipts are preserved; provider removals use the transaction archive.")
+                        Text("Matches use unchanged bank-provider IDs. Newly issued IDs require a separate reviewed map; account names and balances are not enough.").font(.footnote)
+                    }
+                    Section {
+                        Toggle("I verified a current private device backup", isOn: $backupVerified)
+                        Button("Use hosted updates for these records") {
+                            Task { await banking.confirmLegacyMigration(container: modelContext.container) }
+                        }.disabled(!backupVerified || banking.isWorking)
+                        Text("This switches local record identities and disables the old local Item handle. It does not revoke the original bank connection. If a rollback is needed, restore the verified backup before re-enabling the local broker.").font(.footnote)
+                    }
+                }
+                .navigationTitle("Review migration")
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { banking.cancelLegacyMigration() } } }
+            }
+        }
         .alert("Disconnect this bank?", isPresented: Binding(get: { disconnecting != nil }, set: { if !$0 { disconnecting = nil } })) {
             Button("Cancel", role: .cancel) { disconnecting = nil }
             Button("Disconnect", role: .destructive) {

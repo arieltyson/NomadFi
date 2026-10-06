@@ -8,6 +8,9 @@ import SwiftUI
 final class HostedBankingController {
     let client: HostedAPIClient
     let redirectURI: URL
+    let privacyPolicyURL: URL?
+    let hostingRegion: String
+    let backupRetentionDays: Int
     private let presenter: any PlaidLinkPresenting
     private let syncCoordinator = HostedSyncCoordinator()
     private(set) var challenge: HostedChallenge?
@@ -15,11 +18,16 @@ final class HostedBankingController {
     private(set) var connections: [HostedConnection] = []
     private(set) var isWorking = false
     private(set) var message: String?
+    private(set) var migrationReview: HostedLegacyMigration?
 
-    init(client: HostedAPIClient, redirectURI: URL, presenter: any PlaidLinkPresenting) {
+    init(client: HostedAPIClient, redirectURI: URL, presenter: any PlaidLinkPresenting,
+         privacyPolicyURL: URL? = nil, hostingRegion: String = "Not configured", backupRetentionDays: Int = 0) {
         self.client = client
         self.redirectURI = redirectURI
         self.presenter = presenter
+        self.privacyPolicyURL = privacyPolicyURL
+        self.hostingRegion = hostingRegion
+        self.backupRetentionDays = backupRetentionDays
     }
 
     static func configured(bundle: Bundle = .main) -> HostedBankingController? {
@@ -27,8 +35,14 @@ final class HostedBankingController {
         guard let raw = bundle.object(forInfoDictionaryKey: "NomadFiHostedBackendURL") as? String,
               let endpoint = URL(string: raw), let client = try? HostedAPIClient(endpoint: endpoint),
               let redirect = bundle.object(forInfoDictionaryKey: "NomadFiPlaidRedirectURI") as? String,
-              let uri = URL(string: redirect), uri.scheme == "https", uri.host != nil else { return nil }
-        return HostedBankingController(client: client, redirectURI: uri, presenter: PlaidLinkKitPresenter())
+              let uri = URL(string: redirect), uri.scheme == "https", uri.host != nil,
+              let policy = bundle.object(forInfoDictionaryKey: "NomadFiHostedPrivacyPolicyURL") as? String,
+              let policyURL = URL(string: policy), policyURL.scheme == "https", policyURL.host != nil,
+              let region = bundle.object(forInfoDictionaryKey: "NomadFiHostedRegion") as? String, !region.isEmpty,
+              let days = bundle.object(forInfoDictionaryKey: "NomadFiHostedBackupRetentionDays") as? Int,
+              (0...90).contains(days) else { return nil }
+        return HostedBankingController(client: client, redirectURI: uri, presenter: PlaidLinkKitPresenter(),
+            privacyPolicyURL: policyURL, hostingRegion: region, backupRetentionDays: days)
         #else
         return nil
         #endif
@@ -148,6 +162,43 @@ final class HostedBankingController {
             self.message = "Downloaded bank updates are saved on this iPhone."
         }
     }
+
+    func prepareLegacyMigration(container: ModelContainer) async {
+        await work {
+            guard let session = try await self.client.session() else { throw HostedServiceError.signInRequired }
+            let snapshot = try await self.client.beginSnapshot()
+            var events: [HostedEvent] = [], after = "0", checkpoint = HostedCheckpoint.initial
+            while true {
+                let page = try await self.client.snapshotPage(snapshot.snapshotID, after: after)
+                events += page.records; checkpoint = page.checkpoint
+                guard events.count <= 200_000 else { throw HostedServiceError.invalidResponse }
+                if !page.hasMore { break }
+                guard page.after != after else { throw HostedServiceError.invalidResponse }
+                after = page.after
+            }
+            guard try await self.client.session()?.tokens.userID == session.tokens.userID else { throw HostedServiceError.ownerChanged }
+            self.migrationReview = try HostedLegacyMigration.prepare(events: events, checkpoint: checkpoint,
+                ownerID: session.tokens.userID, endpoint: session.endpoint, container: container)
+        }
+    }
+
+    func confirmLegacyMigration(container: ModelContainer) async {
+        await work {
+            guard let review = self.migrationReview, let session = try await self.client.session(),
+                  session.tokens.userID == review.ownerID, session.endpoint == review.endpoint else { throw HostedServiceError.ownerChanged }
+            let profiles = try container.mainContext.fetch(FetchDescriptor<JurisdictionProfile>())
+            let position = try HostedLocalStore(container: container).apply(review.events, checkpoint: review.checkpoint,
+                ownerID: review.ownerID, endpoint: review.endpoint, homeCurrency: profiles.first(where: \.isHome)?.currencyCode ?? .usd,
+                reviewedMigration: review)
+            self.migrationReview = nil
+            _ = KeychainService.delete(key: .plaidSandboxItemID)
+            _ = KeychainService.delete(key: .plaidSandboxTransactionsCursor)
+            try await self.client.acknowledge(position.checkpoint, deviceID: position.deviceID)
+            self.message = "Existing accounts and history now use hosted updates. The old bank Item has not been revoked."
+        }
+    }
+
+    func cancelLegacyMigration() { migrationReview = nil }
 
     func refreshOnForeground(container: ModelContainer) async {
         guard (try? await client.session()) != nil else { return }

@@ -71,8 +71,10 @@ enum FinancialDataReconciler {
         var result = FinancialDataReconciliationResult()
         var accountsBySnapshotID: [String: Account] = [:]
         var workingAccounts = existingAccounts
+        let hasHostedAccounts = existingAccounts.contains { $0.providerLinkKindRawValue == HostedLocalStore.provider.logKey }
 
         for snapshot in report.accountSnapshots {
+            if hasHostedAccounts && snapshot.providerKind.logKey == HostedLegacyMigration.legacyKind { continue }
             let outcome = reconcileAccount(
                 snapshot: snapshot,
                 into: modelContext,

@@ -7,7 +7,7 @@ foundations exist. F4 now includes consented hosted evaluation and an in-app
 alert feed with isolated workers; automatic bank-to-plan reconciliation and
 remote push remain open. F5–F6 and remaining
 financial-domain acceptance gates are tracked in [FiBot](./FiBot.md). Hosted
-banking engineering is on `codex/fibot-multibank`; cloud provisioning and the
+banking engineering is committed on `main`; cloud provisioning and the
 reviewed migration of existing CIBC records are still separate release gates.
 
 Phased roadmap for turning NomadFi into a cross-border financial decision

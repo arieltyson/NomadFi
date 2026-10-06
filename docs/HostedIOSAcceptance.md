@@ -13,6 +13,9 @@ have not been changed.
 - Set `NomadFiHostedBackendURL` and `NomadFiPlaidRedirectURI` in the app's build
   Info.plist configuration. Both must be HTTPS. The OAuth return must match the
   Plaid Dashboard, associated domain entitlement and published AASA path.
+- Set `NomadFiHostedPrivacyPolicyURL` (HTTPS), `NomadFiHostedRegion` (the actual
+  user-facing storage region) and `NomadFiHostedBackupRetentionDays` (0–90,
+  matching configured retention). Missing disclosures disable hosted setup.
 - For a hosted Release build, include `HOSTED_BANKING` in
   `SWIFT_ACTIVE_COMPILATION_CONDITIONS`. The LinkKit wrapper then compiles and
   the existing Release strip phase preserves its framework. Ordinary Release

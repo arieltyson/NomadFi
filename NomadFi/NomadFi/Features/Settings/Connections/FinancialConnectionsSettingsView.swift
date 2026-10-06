@@ -45,8 +45,10 @@ struct FinancialConnectionsSettingsView: View {
 #if DEBUG
             // The Plaid sandbox is a developer validation path; release
             // builds neither register its provider nor show its controls.
-            plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
-            developerHarnessSection
+            if !accounts.contains(where: { $0.providerLinkKindRawValue == HostedLocalStore.provider.logKey }) {
+                plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
+                developerHarnessSection
+            }
 #endif
         }
         .navigationTitle("Financial Connections")

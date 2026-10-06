@@ -11,9 +11,7 @@ import SwiftData
 /// Enforces NomadFi's data governance rules: cascade cleanup,
 /// orphan detection, and privacy-compliant data deletion.
 ///
-/// NomadFi's privacy promise is absolute — zero analytics, zero tracking,
-/// zero third-party SDKs, and all financial data stays on-device. This
-/// utility ensures that promise extends to data lifecycle management.
+/// Local deletion and disclosures include explicitly enabled hosted features.
 enum DataGovernancePolicy {
 
     private static let logger = Logger(
@@ -140,56 +138,57 @@ enum DataGovernancePolicy {
     static let privacyPolicyText: String = """
     NomadFi Privacy Policy
 
-    Last Updated: March 2026
+    Updated October 6, 2026
 
-    Your Privacy Is Absolute
+    Local records
+    Accounts, transactions, receipts, budgets, notes and decision history are
+    stored on your device. Device backups and any enabled Apple synchronization
+    are governed by your Apple settings. NomadFi does not use advertising or
+    behavioral analytics to monetize your financial activity.
 
-    NomadFi was built with one unbreakable rule: your financial data \
-    never leaves your device. Here is exactly what that means.
+    Optional hosted banking
+    When you explicitly enable hosted banking and authorize a bank through
+    Plaid, NomadFi's service stores your linked balances and transactions,
+    connection status and the credentials required for ongoing synchronization.
+    Sign in with Apple identifies the owner of those records. Plaid handles bank
+    authorization; bank login credentials are not entered into NomadFi's own forms.
+    Hosted Connections shows the configured hosting region, backup retention
+    period and the hosted privacy policy before sign-in. Hosted features stay
+    unavailable in builds without a configured service and those disclosures.
 
-    What We Collect: Nothing.
-    NomadFi uses zero analytics, zero tracking cookies, zero \
-    third-party SDKs, and zero advertising frameworks. We cannot see \
-    your accounts, transactions, receipts, or any other data you enter.
+    FiBot
+    Local FiBot calculations use your confirmed income, bills, accessible cash
+    and reserves. They do not send financial context to a language model. With
+    separate monitoring consent, a copy of your confirmed cash plan and scenario
+    settings is stored on your hosted account for scheduled checks. Monitoring
+    results are available in the app. Stopping monitoring deletes that uploaded
+    context and its derived alerts from the active service. Saved local checks
+    are pruned after 30 days when the FiBot workspace opens, with at most 50 kept.
 
-    Where Your Data Lives: On Your iPhone.
-    All financial data — accounts, transactions, tax documents, \
-    subscriptions, and budgets — is stored locally using Apple's \
-    SwiftData framework. If you enable iCloud sync, your data travels \
-    only between your own Apple devices using end-to-end encryption \
-    managed by Apple.
+    Permissions and external requests
+    Camera access is used for receipt capture. Receipt images remain local unless
+    you choose to export them. Location access supports country-aware payment
+    recommendations; location coordinates are not part of hosted bank or FiBot
+    uploads. Opt-in reminders are scheduled locally using generic financial copy.
+    Exchange-rate requests include currency codes, and the service receiving a
+    network request can see the connection's IP address. The app uses no tracking
+    cookies for these requests.
 
-    Permissions We Request:
-    \u{2022} Camera: Only when you choose to scan a receipt. Images are \
-    saved locally and never uploaded.
-    \u{2022} Location: Only when the Active Card feature needs to detect \
-    your country for payment recommendations. Your coordinates are \
-    never stored or transmitted.
-    \u{2022} Notifications: Only for subscription reminders, budget \
-    alerts, exchange rate movements, and credit-card statement close \
-    and payment due reminders you opt into. All reminders are \
-    scheduled locally on this device; NomadFi never sends push \
-    notifications or includes account names, balances, or card \
-    numbers in reminder text.
+    Exports
+    Financial and FiBot exports are generated on your device. You decide where
+    to share them through Apple's share sheet. Exported files can contain private
+    financial information; their destination controls subsequent storage.
 
-    Exchange Rates:
-    NomadFi fetches currency exchange rates from a public API. These \
-    requests contain no personal information — only currency pair \
-    codes (e.g., USD/CAD). No cookies, tokens, or identifiers are \
-    sent.
+    Deletion
+    Settings lets you request deletion of your hosted account and remove local
+    records and receipt images. Hosted processing stops when deletion is accepted.
+    Bank and Apple authorization revocations retry until confirmed; active service
+    records are purged after those operations finish. Restricted backups expire
+    under the retention period disclosed for the configured service. Signing out
+    alone keeps downloaded records on the device. FiBot also has separate plan,
+    history, and monitoring deletion controls.
 
-    Tax Report Exports:
-    When you export a tax report, the file is generated locally and \
-    shared through Apple's standard share sheet. NomadFi never \
-    receives a copy.
-
-    Deleting Your Data:
-    You can delete all your data at any time from Settings. This \
-    permanently removes every record, receipt image, and cached \
-    value from your device. There is no backup on our servers \
-    because there are no servers.
-
-    Contact:
-    Questions about your privacy? Reach us at arieltyson30190@gmail.com.
+    Contact
+    Privacy questions: arieltyson30190@gmail.com.
     """
 }
