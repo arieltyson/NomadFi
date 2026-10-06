@@ -147,20 +147,41 @@ bank comparisons only in private evidence.
   success does not establish reward accuracy, and optional Liabilities/rewards
   work must not block basic transaction syncing.
 
-## Proposed hosting architecture
+## Storage decision and hosting options
 
-Use one Google Cloud project for the pilot, with a separate sandbox/staging
-environment. Deployment is gated on the owner's cloud account, billing,
-region, and data-processing choices; no paid resources are provisioned by
-this documentation change.
+**Decision: PostgreSQL behind NomadFi's backend; local development first.**
+Use portable SQL migrations and integration tests against a real local
+PostgreSQL instance before choosing a managed host. Keep sandbox and production
+separate. Financial tables are private to backend service identities; the
+iPhone receives owner-scoped results from the API and retains SwiftData.
+Firebase and Firestore are no longer part of the proposed implementation.
+
+Cloud Run plus Cloud SQL for PostgreSQL is the leading deployment option,
+using one cloud account for compute, database, secrets, keys, and scheduling.
+Supabase managed PostgreSQL is an alternative if its operational tradeoffs
+justify another provider; disable direct Data API access to financial tables.
+Compare cost, backups/restore, connection pooling, worker execution, account
+lifecycle, and a non-pausing paid configuration before selecting it. Keep
+host-specific auth and storage APIs out of the financial core.
+
+Prefer a Canadian primary database and co-located compute, with Montréal or
+Toronto evaluated at H0. Region, backup/replica locations, support access,
+subprocessors, billing, and actual residency guarantees remain deployment
+decisions. Canadian hosting alone does not establish privacy compliance or
+keep Plaid/Apple processing in Canada. PIPEDA permits cross-border processing
+with accountability and safeguards; applicable provincial requirements,
+including Quebec, need separate review before that rollout.
+[OPC cross-border processing guidance](https://www.priv.gc.ca/en/privacy-topics/airports-and-borders/gl_dab_090127/),
+[Cloud SQL locations](https://docs.cloud.google.com/sql/docs/postgres/locations).
+No paid infrastructure or live-data transfer is performed by this decision.
 
 | Component | Proposed service | Responsibility |
 | --- | --- | --- |
 | API and webhook receiver | Cloud Run, Node.js | Stable HTTPS API; adapt existing broker logic |
-| Durable state | Firestore, backend access only for financial records | Connections, account snapshots, transactions, jobs, sync generations, deletion markers |
-| App identity | Firebase Authentication, initially Sign in with Apple | Stable user ID; backend verifies tokens and enforces ownership |
+| Durable state | PostgreSQL; Cloud SQL or Supabase host selected at H0 | Private financial tables, transactional cursors, generations, ownership constraints, and device checkpoints |
+| App identity | Native Sign in with Apple; backend verification and sessions | Nonce-bound authentication, stable subject mapping, rotation/revocation, and ownership checks |
 | Secrets | Secret Manager and Cloud KMS | App-level Plaid secret and encryption keys; encrypted bank access tokens in the datastore |
-| Background work | Cloud Tasks and a Cloud Run worker | Durable retryable jobs, bounded concurrency, per-connection serialization |
+| Background work | PostgreSQL job queue and bounded workers | Durable enqueue, short claims, expiring leases, fencing, retries, and dead-letter state |
 | Recovery schedule | Cloud Scheduler | Enqueue catch-up work for stale connections |
 | Device hints | APNs | Content-free “updates available” hints; foreground catch-up remains authoritative |
 
@@ -168,8 +189,35 @@ Cloud Run provides a managed HTTPS endpoint and disposable instances, so
 persistence must be external to its process/filesystem.
 [Cloud Run overview](https://docs.cloud.google.com/run/docs/overview/what-is-cloud-run).
 The backend validates the authenticated user rather than trusting a user ID
-or connection ID supplied by the phone.
-[Firebase token verification](https://firebase.google.com/docs/auth/admin/verify-id-tokens).
+or connection ID supplied by the phone. Direct Apple token verification is
+only part of authentication: implement issuer/audience/signature/expiry checks,
+one-time server challenges bound to the nonce, authorization-code handling,
+short-lived app sessions, hashed rotating refresh credentials, revocation,
+account deletion, and signing-key rotation. Never use an email address as the
+account identity or accept a replayed identity token as a fresh login.
+[Verifying an Apple user](https://developer.apple.com/documentation/signinwithapple/verifying-a-user),
+[Apple account deletion requirements](https://developer.apple.com/help/app-review/guideline-reference/5-1-1-account-deletion).
+Managed authentication remains an H0 alternative if operating this lifecycle
+would outweigh its benefit; Firebase is not required.
+
+Use `FOR UPDATE SKIP LOCKED` only to claim available jobs in a short database
+transaction. Commit the claim before calling Plaid; persist a lease expiry and
+fencing token so an expired worker cannot publish over its replacement. A
+row lock does not survive committing the claim. Webhooks arriving during a run
+must request a subsequent pass instead of being lost during job completion.
+Ensure workers run through explicit invocations/jobs or an appropriately
+configured persistent service; do not rely on background timers after a
+Cloud Run request returns. A separate queue service can follow measured need.
+[PostgreSQL locking clauses](https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE).
+
+An ordinary PostgreSQL sequence is not a safe delivery watermark: numbers
+can be allocated before another transaction commits, allowing a reader to
+skip later-visible rows with a lower number. Serialize publication per user
+with a transactionally updated counter row, assigning a delivery revision in
+the same transaction as the published generation. Use that revision plus an
+event offset for pagination, with a fixed upper revision for each download.
+Test reversed commit order, rollback, and simultaneous connection updates.
+[PostgreSQL sequence semantics](https://www.postgresql.org/docs/current/functions-sequence.html).
 
 ```mermaid
 flowchart LR
@@ -208,10 +256,11 @@ useful; do not expose the harness unchanged to the public internet.
    every page. Retry a mutation-during-pagination error from the cursor at
    the beginning of that pass. Rate-limit and back off transient failures.
 4. **Commit.** Apply additions, modifications, and removal markers by durable
-   provider identity. Stage large passes in bounded writes, then atomically
-   publish a completed generation and its cursor. Do not assume an arbitrary
-   history fits in one Firestore transaction. Crashes or page limits leave
-   the last completed generation readable and replayable.
+   provider identity. Stage large passes in bounded PostgreSQL writes, then
+   atomically publish a completed generation, its upstream cursor, and its
+   user-scoped delivery revision. Keep incomplete generations invisible to
+   app readers. Crashes or page limits leave the last completed generation
+   readable and replayable; SQL does not remove the need for bounded work.
 5. **Deliver.** Expose owner-scoped account snapshots and transaction changes
    using a NomadFi delivery cursor distinct from Plaid's upstream cursor.
    Each device advances its checkpoint only after a successful SwiftData
@@ -275,9 +324,15 @@ calendar dates are assigned after cloud access and plan terms are known.
   OAuth eligibility, and the intended account-selection flow. Resolve optional
   Liabilities access/cost separately from the Transactions baseline.
 - [ ] Select cloud project, deployment/database region, billing budget,
-  backup retention, and access roles. Document estimated costs and limits.
+  backup retention, and access roles. Compare Cloud SQL with Supabase, native
+  Apple session operations with managed auth, and worker execution costs.
+  Document estimated costs, limits, and actual processor/data locations.
 - [ ] Update privacy policy, in-app disclosures, and App Store privacy
   information to describe hosted processing before collecting cloud data.
+  Classify actual collection under Apple's categories, including Other
+  Financial Info, User ID, and Purchase History where applicable; do not
+  assume the single label Financial Info covers every stored field.
+  [App privacy details](https://developer.apple.com/app-store/app-privacy-details/).
 
 **Exit:** owner-only scope, data handling, costs, and acceptance evidence are
 recorded; implementation may proceed locally while external choices remain
@@ -286,7 +341,9 @@ open. Cloud deployment/data transfer waits for those choices.
 ### H1 — Durable backend and authenticated ownership
 
 - [ ] Create deployable service, environment separation, infrastructure
-  configuration, secret injection, and local/emulator development commands.
+  configuration, secret injection, and local PostgreSQL development commands.
+  Establish SQL migrations, private backend access, tenant-scoped relational
+  constraints, and real-database rollback/concurrency tests first.
 - [ ] Implement verified sign-in, owner allowlist, user-scoped Link/exchange,
   durable token encryption, ownership checks, and recoverable exchanges.
 - [ ] Implement the connection registry and per-connection cursor/status/account
@@ -294,6 +351,8 @@ open. Cloud deployment/data transfer waits for those choices.
   live institution is linked.
 - [ ] Add least-privilege service identities, backups, rate limits, redacted
   diagnostics, and deployment rollback instructions.
+- [ ] Complete the Apple sign-in/session/revocation lifecycle; token signature
+  verification alone does not satisfy authenticated ownership.
 
 **Exit:** staging survives restart/redeploy; unauthorized and cross-user
 requests fail; adding a connection preserves existing connections and cursors;
@@ -317,7 +376,8 @@ passes cannot skip changes or expose partial history.
 ### H3 — Automatic jobs and freshness
 
 - [ ] Implement verified webhooks, durable enqueue/acknowledgment, retries,
-  dead-letter handling, and scheduled stale-connection catch-up.
+  dead-letter handling, and scheduled stale-connection catch-up using the
+  PostgreSQL queue before introducing a separate queue provider.
 - [ ] Update cached account snapshots and separate fetch time from balance
   observation time; enforce cost and rate limits.
 - [ ] Measure queue delay, last successful sync, and failure counts without

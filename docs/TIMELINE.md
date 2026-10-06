@@ -1265,16 +1265,22 @@ details; this timeline tracks sequencing and status.
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |
 | H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, privacy, CA/US coverage and Chase OAuth eligibility | Deployment prerequisites recorded before live cloud data transfer |
-| H1 `[ ]` | Cloud Run API, authenticated ownership, encrypted durable multi-connection storage | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
+| H1 `[ ]` | Local PostgreSQL migrations, backend API, Apple authentication/session lifecycle, encrypted multi-connection storage | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
 | H2 `[ ]` | Complete reconciliation, staged sync generations, independent checkpoints, CAD/USD and transfer checks | Changes converge; interrupted paging cannot skip data; one bank's failure is isolated |
 | H3 `[ ]` | Verified Plaid webhooks, durable jobs, retries, scheduled catch-up | Backend ingests updates while the phone is closed/offline |
 | H4 `[ ]` | Automatic refresh, per-bank status, CA/US Link, Chase OAuth, card metadata audit | Dashboard catches up; offline use, OAuth return, and connection repair work |
 | H5 `[ ]` | Migrate existing data, then Canadian Amex and U.S. Chase validation; owner-only pilot | Mac-off sync, per-bank evidence over at least seven days, reconciled CAD/USD totals |
 | H6 `[ ]` | Operational and cost review before broader rollout | Explicit release decision after restore, isolation, and lifecycle checks |
 
-Proposed stack: Cloud Run + Firestore + Firebase Authentication + Cloud
-Tasks/Scheduler + Secret Manager/KMS; APNs supplies best-effort update hints.
-Retain SwiftData as the on-device store. The backend owns the Plaid cursor;
+Storage decision: private PostgreSQL behind the backend, built and tested
+locally first. Cloud Run + Cloud SQL + Secret Manager/KMS + Cloud Scheduler
+is the leading hosting option; compare Supabase and operating costs at H0
+before choosing the host. Native Sign in with Apple requires a complete
+server session/revocation lifecycle. Firebase/Firestore are no longer planned.
+Start with a PostgreSQL job queue using expiring, fenced leases; APNs supplies
+best-effort update hints. Retain SwiftData as the on-device store.
+Serialize delivery revisions with publication; raw SQL sequences cannot
+serve as commit-order watermarks. The backend owns each Plaid cursor;
 devices use separate delivery checkpoints. Handle removed transactions,
 pending-to-posted replacements, and pagination recovery before claiming
 reliable automatic sync. Preserve user annotations and receipt/tax documents
