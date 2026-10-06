@@ -16,11 +16,21 @@ this session, not long-term reliability or complete transaction coverage.
 
 The on-device validation session was marked **inconclusive** for the full
 acceptance checklist: comparison with bank records and review of the
-complete reconciliation artifact remain outstanding. Imported accounts
-have no jurisdiction assigned, so they do not yet appear in a country
-dashboard; prior sandbox accounts remain present. Private observations
-are in the gitignored `PlaidValidationEvidence/` directory, and the
-finalized export remains available in the phone's harness.
+complete reconciliation artifact remain outstanding. Subsequent cleanup
+assigned the imported accounts to their country and removed the identified
+sample accounts, transactions, and tracked subscriptions after confirmation
+and a private backup. Database readback verified preservation of the real
+records; a further explicit sync did not restore sample data. The country
+dashboard and global total now reflect the real imported balances. Private
+observations and before/after backups remain in the gitignored
+`PlaidValidationEvidence/` directory; no personal values belong in this memo.
+
+Country-assignment recovery (`75aa27e`) passed 24 focused tests. Explicit
+account/subscription deletion controls (`06d5c88`) passed a signed device
+build and the actual cleanup flows. Both commits are pushed and passed
+staged security checks. Durable hosting and automatic sync remain planned
+in [Plaid Hosted Sync Plan](../PlaidHostedSyncPlan.md), with milestone status
+in [the timeline](../TIMELINE.md#phase-5--financial-data-access-and-open-finance-strategy).
 
 The interrupted-exchange recovery fix is installed: an unexpired public
 token survives app restart in device-only Keychain storage, retries use

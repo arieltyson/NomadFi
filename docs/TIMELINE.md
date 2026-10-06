@@ -438,15 +438,16 @@ points at the test file that pins the behaviour.
   (snapshot projection, `/transactions/sync` dedupe through the
   existing reconciler, cursor finalization only after commit);
   one is partial (unit-cost paper model from Plaid's public
-  pricing page); one remains unresolved (real Canadian coverage
-  against NomadFi's target-user institutions). _Evidence for the
+  pricing page); real Canadian coverage is partially validated for one
+  institution by the October 5 live run. _Evidence for the
   shipped parts: `PlaidSandboxSnapshotMapperTests.swift`,
   `PlaidSandboxConfigurationTests.swift`,
-  `PlaidSandboxIntegrationTests.swift`._ Phase 5E is blocked on
-  verified Plaid production access and a real Link flow against at least
-  one target Canadian FI. Apple closed the FinanceKit request for regional
-  availability on April 28; its response is no longer pending.
-  Akoya comparison paused until that Link flow runs.
+  `PlaidSandboxIntegrationTests.swift`._ Phase 5E now targets hosted
+  automatic sync under [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md);
+  live connectivity and sample cleanup are complete. Full acceptance,
+  durable hosting, and rollout-cost review remain. Apple closed the
+  FinanceKit request for regional availability on April 28; it stays parked.
+  Akoya comparison remains paused absent an unmet coverage need.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
@@ -895,18 +896,17 @@ aggregators, broad credential access, and unavailable Wallet data.
 
 ## Phase 5 — Financial Data Access and Open-Finance Strategy
 
-**Status:** `[~]` Phase 5A + 5B + the **in-repo** parts of Phase 5C + the
-**in-repo** parts of Phase 5D are shipped. The provider-neutral foundation,
-Settings-side reconciliation, the real FinanceKit query path, and the
-external-provider bakeoff research memo
-([`docs/research/OpenFinanceProviderBakeoff.md`](./research/OpenFinanceProviderBakeoff.md))
-are all in-repo. What remains is **outside the repo**: Apple must provision
-the managed `com.apple.developer.financekit` entitlement for
-`com.arieljtyson.NomadFi`, and a real-device bakeout must run against the
-feasibility test matrix before any FinanceKit-dependent UX becomes central.
-Phase 5E (one concrete external adapter) stays blocked on the bakeoff
-recommendation in 5D. Phase 5F stays blocked on a live upstream + real
-production usage.
+**Status (October 5, 2026):** `[~]` Phase 5A + 5B + the in-code parts of
+5C + 5D are shipped. A Canadian institution's live Plaid Link/MFA, token
+exchange, import, and repeat sync have succeeded. Country assignment and
+sample-data cleanup are complete; the real-data dashboard is verified.
+Phase 5E now advances toward an owner-only hosted connection under the
+[Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md). Hosted storage,
+authentication, automatic sync, and production lifecycle handling are not
+implemented yet. Bank-record acceptance review and actual rollout costs
+remain gates. FinanceKit is parked after Apple's April 28 regional denial
+and is not a dependency for this Plaid work. Minimum Phase 5F hardening is
+required before the hosted pilot; broader provider scale follows pilot evidence.
 
 **Goal:** Reduce manual burden on the core product by letting supported data
 sources feed the same `Account` + `Transaction` store with explicit consent,
@@ -1215,29 +1215,71 @@ updated after the gate-clearance slice):
   from Plaid's public pricing page; no commercial contract
   validation.
 - **Criterion 5 — Canadian coverage for NomadFi's target
-  institutions:** *unresolved*. Cannot be validated from public
-  docs + Plaid's sandbox alone; blocked on a real Link flow under
-  a real production-access conversation.
+  institutions:** *partially validated*. The October 5 live run establishes
+  connectivity for one institution. Full bank-record comparison and review
+  of the private reconciliation artifact remain outstanding; no broader
+  institution coverage or long-term reliability is implied.
 
-Recommendation carried into Phase 5E gating: **do not start a full
-Phase 5E Plaid build yet, and do not open an Akoya comparison yet.**
-Criteria 1–3 passed the April 24 real-device sandbox run. The remaining
-gate is verified Plaid production access followed by a real Canadian-FI
-Link and sync run. Use production credentials, Canada-only coverage, and
-Transactions; OAuth is not required for the Canadian run. Apple closed
-the FinanceKit request for regional availability on April 28.
+**October 5 gating update:** criteria 1–3 passed the April 24 sandbox run;
+production access, live Link, and repeated sync have since succeeded for
+one Canadian institution. Proceed with the bounded hosted implementation
+plan below. Bank-record acceptance, cloud/billing choices, and accurate
+hosted-processing disclosures gate deployment and rollout. Akoya remains
+paused unless a concrete unmet coverage need justifies comparison.
 
 Non-scope (reaffirmed): no full vendor SDK integration, no Akoya /
 MX / Finicity code, no direct FDX client, no FinanceKit background
 extension target, no institution-manager UI. The only vendor code
 added in this slice is contained to
 `Core/Services/FinancialData/Providers/Plaid/` and
-`tools/plaid-sandbox-broker/`, both bounded to Plaid's *sandbox*
-environment.
+`tools/plaid-sandbox-broker/`. The broker now also supports explicitly
+enabled live-data evaluation; it remains a local development harness.
 
-### Phase 5E — First concrete external adapter `[ ]`
+### Phase 5E — First concrete external adapter and hosted sync `[~]`
 
-Only starts after Phase 5D chooses a provider.
+The live developer adapter works for the tested institution. The remaining
+implementation is defined in [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md).
+That document owns architecture, data contracts, migration, and acceptance
+details; this timeline tracks sequencing and status.
+
+**Completed October 5:**
+
+- [x] Interrupted-Link recovery and live-device validation (`93d2804`).
+- [x] Country assignment fills only unassigned imports from the same provider,
+  preserving existing classifications and snapshot provenance (`75aa27e`;
+  24 focused tests passed).
+- [x] Confirmed removal of sample accounts, their transactions, and tracked
+  sample subscriptions after a private backup. Database readback preserved
+  real transaction rows and account identities/balances; a subsequent sync
+  did not restore samples. Real-data dashboard verified on device.
+- [x] Explicit account and subscription deletion controls with confirmation
+  (`06d5c88`); signed build and actual device flows passed. Scoped commits
+  passed staged security checks and are pushed. Personal evidence stays private.
+
+**Hosted implementation milestones — all planned:**
+
+| Milestone | Deliverable | Exit gate |
+| --- | --- | --- |
+| H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, and privacy decisions | Deployment prerequisites recorded before live cloud data transfer |
+| H1 `[ ]` | Cloud Run API, authenticated ownership, encrypted durable connection storage | Restart-safe connection; unauthorized and cross-user access rejected |
+| H2 `[ ]` | Complete reconciliation, staged sync generations, independent device checkpoints | Additions/changes/removals converge; interrupted paging cannot skip data |
+| H3 `[ ]` | Verified Plaid webhooks, durable jobs, retries, scheduled catch-up | Backend ingests updates while the phone is closed/offline |
+| H4 `[ ]` | Automatic app refresh, freshness/status UI, reconnect and disconnect | Dashboard catches up; offline use and connection repair work |
+| H5 `[ ]` | Preserve/migrate existing data; owner-only hosted pilot | Mac-off sync, bank comparison, and at least seven days with a real update |
+| H6 `[ ]` | Operational and cost review before broader rollout | Explicit release decision after restore, isolation, and lifecycle checks |
+
+Proposed stack: Cloud Run + Firestore + Firebase Authentication + Cloud
+Tasks/Scheduler + Secret Manager/KMS; APNs supplies best-effort update hints.
+Retain SwiftData as the on-device store. The backend owns the Plaid cursor;
+devices use separate delivery checkpoints. Handle removed transactions,
+pending-to-posted replacements, and pagination recovery before claiming
+reliable automatic sync. Preserve user annotations and receipt/tax documents
+when upstream records disappear.
+
+No fixed deployment date or cost is asserted before account/plan decisions.
+“Automatic” does not promise instant bank data or permanent consent; periodic
+MFA/reauthorization remains possible. Infrastructure and live-data transfer
+are not performed by this planning update.
 
 Build:
 
@@ -1260,7 +1302,9 @@ Guardrails:
 
 ### Phase 5F — Production hardening for provider scale `[ ]`
 
-Only after at least one real upstream is live.
+Minimum security, recovery, observability, revocation, and privacy work ships
+with H1–H5 before the owner-only hosted pilot. Broader scaling and additional
+users remain gated by H6; hardening is not postponed until after public launch.
 
 Build:
 
@@ -1543,8 +1587,8 @@ tracking and watchlists depend on.
 deep dives shipped (2026-04-24).
 
 **Goal:** Give users a calm, source-backed first investing-learning
-surface while Plaid production access and live Canadian validation
-remain pending. FinanceKit is parked after Apple's regional denial. Then deepen the
+surface independent of hosted bank sync or investment-feed availability.
+FinanceKit is parked after Apple's regional denial. Then deepen the
 registered-account layer (IRA / TFSA / RRSP) without changing the
 education-only contract. No fund picks, no predictions, no
 suitability framing.
@@ -1627,10 +1671,10 @@ suitability framing.
 
 ### Phase 8B — Fund Tracking and Watchlist
 
-**Status:** `[!]` Deferred. Externally blocked on the same data
-sources Phase 5 is waiting for (Plaid production access and live Canadian
-validation; FinanceKit is parked after the regional denial).
-When 5 unblocks, 8B can plan.
+**Status:** `[!]` Deferred. The Phase 5 owner-only Transactions pilot does
+not establish investment-feed access or coverage. Plan this separately after
+hosted sync is reliable and the relevant investment data/product access is
+verified. FinanceKit remains parked after the regional denial.
 
 #### Build (when unblocked)
 
@@ -1886,13 +1930,13 @@ re-debating whether the foundation exists.
     and iOS universal-link support is shipped (associated-domains
     entitlement, `.onOpenURL` handler, AASA +
     `/plaid-oauth` page hosted on `nomadfi-privacy`). Three
-    criteria pass, one partial (unit-cost paper model), one
-    unresolved (real Canadian coverage — now architecture-complete,
-    only operational validation remains).
-    5E blocked on verified Plaid production access + a real Canadian-FI
-    Link and sync run. Canadian validation does not require OAuth.
-    Akoya comparison paused until that real flow runs.
-    5F stays parked on real production use + live upstream.
+    criteria pass, one partial (unit-cost paper model), and real Canadian
+    coverage is partially validated by the October 5 live session.
+    5E ~: live connectivity and sample cleanup complete; H0–H6 hosted
+    implementation planned in [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md).
+    Bank-record acceptance and actual costs still gate rollout. Akoya stays
+    paused absent an unmet coverage need. Minimum 5F hardening accompanies
+    the owner-only pilot; broader scale follows operational evidence.
 16. `[x]` Investing education (Phase 8A starter + Phase 8A
     follow-through) — Settings → Advanced Tools → Investing
     Learn. Starter lessons for US (Investor.gov / SEC + IRS) and
@@ -1911,10 +1955,14 @@ re-debating whether the foundation exists.
 
 ## Current Next Step
 
-The unblocked product surfaces (Decision Assistant, Tax Vault,
-Investing Learn) keep advancing while the externally-blocked
-provider track (Phase 5 / 8B) waits on Plaid production access and
-live Canadian validation. FinanceKit is parked after the regional denial.
+The next provider implementation is durable hosted storage and authenticated
+ownership (H1), followed by reconciliation, automatic jobs, and app delivery
+(H2–H4), under [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md). Resolve H0
+cloud/billing/privacy decisions before live deployment. The October 5 live
+connection and cleanup remove the earlier connectivity blocker; full
+bank-record acceptance and sustained reliability remain unproven.
+FinanceKit is parked after the regional denial. Decision Assistant, Tax
+Vault, and Investing Learn can continue independently.
 Phase 9A — on-device
 natural-language intake into structured Decision drafts via
 Apple Foundation Models — shipped on 2026-04-24 and is the first
@@ -1931,9 +1979,15 @@ imports. Institution labels were verified in Financial Setup. The bank
 name and exact counts remain in private evidence. Full criterion-5 acceptance remains open for
 bank-record comparison and reconciliation-artifact review; the phone's
 session is marked inconclusive for those remaining checks.
-Imported accounts need jurisdiction assignment, and prior sandbox data
-is still present. The recovery fix is installed and validated by 26
-broker tests and 46 focused iOS tests. See the current result in
+Country assignment and sandbox-data cleanup are now complete. Private
+database readback verified that the real records were preserved exactly,
+and a post-cleanup sync did not restore sample records. The dashboard was
+verified against the remaining imported balances. The country fix has 24
+focused passing tests; account/subscription deletion controls passed a signed
+device build and real UI use. Both fixes are committed and pushed. The prior
+recovery fix was validated by 26 broker tests and 46 focused iOS tests.
+The local broker still loses token state on restart and sync is still explicit;
+none of the hosted milestones are shipped yet. See the current result in
 [`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md).
 
 **Provider track implementation history:**
@@ -1943,10 +1997,11 @@ DEBUG-only validation recorder / redacted evidence export +
 **first real-device sandbox plumbing run on April 24, 2026** +
 **Plaid Limited Production preflight / broker live-data mode**) are
 shipped. Phase 5D execution / plumbing is *pass*; criterion 5 (real
-target Canadian FI) remains *partially validated*; Phase 5E awaits
-the remaining acceptance review and rollout decision after the run from
-[`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
-clears. Trial, legacy Limited Production, and paid plans all use the
+target Canadian FI) remains *partially validated*. Phase 5E's bounded hosted
+implementation is now planned; deployment/rollout remains gated by the
+acceptance review and decisions in H0. The live evidence is documented in
+[`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md).
+Trial, legacy Limited Production, and paid plans all use the
 production environment; this evaluation used verified Trial access.
 The FinanceKit capability request was closed by Apple on April 28, 2026
 for regional availability, so it is no longer a pending dependency.
@@ -1988,19 +2043,21 @@ Highest-leverage remaining work, in order:
   on April 28. Resubmit when developer-region availability changes;
   provision the entitlement and run the real-device matrix only after
   approval. This is not a prerequisite for the Canadian Plaid evaluation.
-- **Phase 5E gating decision.** Review the live Canadian artifact and
-  actual pricing before choosing a rollout. A pass supports only the
-  tested institution; production token persistence, transaction removals,
-  reconnection, and multi-user onboarding remain separate work. A run
-  blocked by access, a cap, or a temporarily unavailable institution is
-  inconclusive. Fix implementation errors before judging provider coverage.
-- **Phase 5D / Akoya parallel.** Paused until the real Plaid Link
-  flow has been observed. If Plaid fails *and* an explicit
+- **Phase 5E hosted implementation.** Execute H1–H5 from
+  [Plaid Hosted Sync Plan](./PlaidHostedSyncPlan.md), starting with durable
+  storage and authenticated ownership. Resolve H0 acceptance, actual pricing,
+  cloud access, and privacy disclosures before deployment. Keep the pilot
+  owner-only; migrate without dropping existing records or creating duplicates.
+  A pass supports only the tested institution. Temporary access/cap/provider
+  outages are inconclusive evidence of coverage.
+- **Phase 5D / Akoya parallel.** Paused absent an unmet coverage need.
+  If Plaid fails *and* an explicit
   primary-source reason exists to believe Akoya's Canadian
   coverage differs meaningfully, a sandbox comparison starts —
   otherwise it stays paused.
-- **Phase 5F — production hardening for provider scale.** Parked
-  until at least one real upstream is live in production.
+- **Phase 5F — hosted hardening and provider scale.** Minimum controls ship
+  alongside H1–H5. Broader rollout waits for H6 operational/cost review and
+  evidence from the owner-only pilot.
 - **Phase 8A investing education starter — shipped** (2026-04-23).
   Sibling `InvestingEducation` module under
   `Core/Services/InvestingEducation/`, surface at Settings →
