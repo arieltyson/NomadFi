@@ -103,6 +103,9 @@
         }
       }
     },
+    "%@ low point" : {
+
+    },
     "%@ override rate" : {
 
     },
@@ -222,6 +225,9 @@
     "%lld documents" : {
 
     },
+    "%lld imported transactions will be mapped to hosted updates. Notes and receipts are preserved; provider removals use the transaction archive." : {
+
+    },
     "%lld of %lld correct · %@" : {
       "localizations" : {
         "en" : {
@@ -248,6 +254,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld other-currency %2$@ not included — NomadFi does not convert between currencies without a verified rate."
+          }
+        }
+      }
+    },
+    "%lld scheduled cash flows and %lld existing purchase reservations." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld scheduled cash flows and %2$lld existing purchase reservations."
           }
         }
       }
@@ -289,6 +305,12 @@
     "A short title helps you recognise this draft in the Gathered intelligence list." : {
 
     },
+    "Accessible cash" : {
+
+    },
+    "Accessible cash and protected reserves" : {
+
+    },
     "Account" : {
 
     },
@@ -296,6 +318,9 @@
 
     },
     "Account Details" : {
+
+    },
+    "Account name" : {
 
     },
     "Account Name" : {
@@ -346,6 +371,9 @@
     "Add a supported jurisdiction in Settings → Financial Setup." : {
 
     },
+    "Add accessible cash account" : {
+
+    },
     "Add Account" : {
 
     },
@@ -353,6 +381,9 @@
 
     },
     "Add before saving" : {
+
+    },
+    "Add confirmed income or expense" : {
 
     },
     "Add More Accounts" : {
@@ -385,6 +416,12 @@
     "Adds this account to your onboarding list." : {
 
     },
+    "After a purchase posts, refresh the accessible balance and remove its reservation. Releasing a reservation requires confirming account coverage again." : {
+
+    },
+    "After the purchase and reserve, on %@" : {
+
+    },
     "AI structures input. Deterministic engines decide. NomadFi will mark this draft Needs engine until you tap a handoff button on the detail sheet." : {
 
     },
@@ -394,7 +431,16 @@
     "Airbnb host can receive the package (or delivery timed for the U.S. summer address after arrival)" : {
 
     },
+    "Alert preferences" : {
+
+    },
+    "All cash accounts and access limits are included" : {
+
+    },
     "All data stays on-device" : {
+
+    },
+    "All debt payments are scheduled" : {
 
     },
     "All reviewed" : {
@@ -407,6 +453,9 @@
 
     },
     "Allow “NomadFi” to use your location?" : {
+
+    },
+    "Allow hosted bank synchronization" : {
 
     },
     "Allow Location Access" : {
@@ -422,6 +471,9 @@
 
     },
     "Amount (optional)" : {
+
+    },
+    "Amount and dates are confirmed" : {
 
     },
     "Amount, optional" : {
@@ -485,7 +537,25 @@
     "Back" : {
 
     },
+    "Balance confirmed for %@" : {
+
+    },
     "Balance not set" : {
+
+    },
+    "Balance observed" : {
+
+    },
+    "Bank balances are reference information. Enter only cash you can actually access, after holds and shared ownership limits. Credit limits and investments are excluded." : {
+
+    },
+    "Bank changes invalidate manually confirmed cash until you review and upload the plan again. Alerts appear here when the app connects; remote push delivery is not enabled." : {
+
+    },
+    "Bank data fetched" : {
+
+    },
+    "Banks" : {
 
     },
     "Base earn rate" : {
@@ -503,10 +573,19 @@
     "Billing" : {
 
     },
+    "Bills and irregular costs are included" : {
+
+    },
     "Budget Alerts" : {
 
     },
+    "CAD" : {
+
+    },
     "CAD — Canadian Dollar" : {
+
+    },
+    "Can I afford this?" : {
 
     },
     "Can't Remove Yet" : {
@@ -530,6 +609,12 @@
     "Cart reviewed — shipping and Subscribe & Save" : {
 
     },
+    "Cash account" : {
+
+    },
+    "Cash available after holds and shared ownership" : {
+
+    },
     "Categorization" : {
 
     },
@@ -551,16 +636,25 @@
     "Cheaper (%@)" : {
 
     },
+    "Check affordability with FiBot" : {
+
+    },
     "Check Budget" : {
 
     },
     "Check how much you have left in your budget." : {
 
     },
+    "Check my plan" : {
+
+    },
     "Check Net Worth" : {
 
     },
     "Choose a Different File" : {
+
+    },
+    "Choose an account" : {
 
     },
     "City or context" : {
@@ -596,6 +690,9 @@
     "Clear snapshot" : {
 
     },
+    "Clear snooze" : {
+
+    },
     "Clears your answers so you can review and try again." : {
 
     },
@@ -623,13 +720,25 @@
     "Confirm and add to Tax Vault" : {
 
     },
+    "Confirm coverage" : {
+
+    },
     "Confirm Import" : {
+
+    },
+    "Confirm ongoing net pay and the final employment date. Exclude uncertain overtime, bonuses, gifts, refunds and loans; deduct confirmed self-employment taxes and expenses." : {
 
     },
     "Confirm Receipt" : {
 
     },
     "Confirmation" : {
+
+    },
+    "Confirmation lasts 30 days. Accessible balances must be confirmed within two days. Update your plan whenever pay, spending, bills or employment changes." : {
+
+    },
+    "Connect another bank" : {
 
     },
     "Connect to Location, Securely." : {
@@ -748,6 +857,9 @@
     "Current (%@)" : {
 
     },
+    "Current alerts" : {
+
+    },
     "Current balance" : {
 
     },
@@ -766,6 +878,9 @@
     "Data confidence: %@" : {
 
     },
+    "Data deletion" : {
+
+    },
     "Data Sources" : {
 
     },
@@ -773,6 +888,9 @@
 
     },
     "Decision" : {
+
+    },
+    "Decision history" : {
 
     },
     "Decision kind" : {
@@ -805,10 +923,22 @@
     "Delete Everything" : {
 
     },
+    "Delete FiBot data" : {
+
+    },
+    "Delete FiBot plan and history" : {
+
+    },
     "Delete this draft from this device?" : {
 
     },
     "Delete tracked subscription?" : {
+
+    },
+    "Delete your FiBot plan and all saved checks?" : {
+
+    },
+    "Deleted data may remain in restricted backups for up to %lld days." : {
 
     },
     "Describe a Decision" : {
@@ -839,6 +969,12 @@
 
     },
     "Dining" : {
+
+    },
+    "Disconnect" : {
+
+    },
+    "Disconnect this bank?" : {
 
     },
     "Dismiss" : {
@@ -889,6 +1025,9 @@
     "Double tap to select" : {
 
     },
+    "Download latest updates" : {
+
+    },
     "Duplicate" : {
 
     },
@@ -917,6 +1056,12 @@
 
     },
     "Education only. Not investment advice. Not a substitute for a registered investment professional. NomadFi does not recommend specific funds or accounts." : {
+
+    },
+    "Employer, bill or spending category" : {
+
+    },
+    "Enable monitoring with this plan" : {
 
     },
     "Enable Notifications" : {
@@ -952,10 +1097,23 @@
     "Evaluated %@" : {
 
     },
+    "Evaluated %@ on %@, through %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Evaluated %1$@ on %2$@, through %3$@."
+          }
+        }
+      }
+    },
     "Evaluated as of %@" : {
 
     },
     "Every Saturday morning" : {
+
+    },
+    "Every two weeks" : {
 
     },
     "Evidence and assumptions" : {
@@ -973,10 +1131,25 @@
     "Existing tag" : {
 
     },
+    "Expected variable spending is included" : {
+
+    },
+    "Expense increase (%)" : {
+
+    },
+    "Expires after %@" : {
+
+    },
     "Export %@ Tax Report" : {
 
     },
+    "Export FiBot plan" : {
+
+    },
     "Export for Tax Season" : {
+
+    },
+    "Export this private decision" : {
 
     },
     "External aggregator" : {
@@ -986,6 +1159,24 @@
 
     },
     "Fair Cost" : {
+
+    },
+    "FiBot" : {
+
+    },
+    "FiBot · Can I afford this?" : {
+
+    },
+    "FiBot brief" : {
+
+    },
+    "FiBot checks an immediate cash purchase against your confirmed income, bills and reserves. Review your plan before relying on a result." : {
+
+    },
+    "FiBot evidence" : {
+
+    },
+    "FiBot monitoring" : {
 
     },
     "Financial Connections" : {
@@ -1001,6 +1192,9 @@
         }
       }
     },
+    "Financial plan" : {
+
+    },
     "Financial Setup" : {
 
     },
@@ -1011,6 +1205,9 @@
 
     },
     "Finishing the link" : {
+
+    },
+    "First date" : {
 
     },
     "Fix Mis-Entered Data" : {
@@ -1026,6 +1223,12 @@
 
     },
     "For example, the exact issuer product page title." : {
+
+    },
+    "For financing, subscriptions, future ownership costs or currency conversion, this one-time check cannot establish affordability." : {
+
+    },
+    "Forecast: %lld days" : {
 
     },
     "Frequency" : {
@@ -1095,7 +1298,37 @@
     "Home jurisdiction." : {
 
     },
+    "Hosted bank connections" : {
+
+    },
+    "Hosted Connections" : {
+
+    },
+    "Hosted data" : {
+
+    },
+    "Hosted FiBot checks" : {
+
+    },
+    "Hosted monitoring" : {
+
+    },
+    "Hosted privacy policy" : {
+
+    },
+    "Hosting region: %@" : {
+
+    },
     "How much you expect to pay, in the purchase currency." : {
+
+    },
+    "I consent to uploading this plan for monitoring" : {
+
+    },
+    "I verified a current private device backup" : {
+
+    },
+    "I verified these accessible funds and reserve" : {
 
     },
     "I will pay before statement close" : {
@@ -1122,6 +1355,18 @@
     "Imported rows attach to this account. Cross-currency rows import with an unverified exchange rate until you confirm one manually." : {
 
     },
+    "Include food, irregular costs, cash spending, taxes and card payments. Enter net salary only; a past deposit does not confirm future employment. Never include a loan, refund or transfer as salary." : {
+
+    },
+    "Income arrives after same-day outflows. Cash is checked separately for every account and currency. This result does not guarantee future outcomes." : {
+
+    },
+    "Income or expense" : {
+
+    },
+    "Income reduction (%)" : {
+
+    },
     "Indicates you verified these dates against your issuer app." : {
 
     },
@@ -1146,6 +1391,9 @@
     "Keep location to a city or short hint. Don't enter addresses, card numbers, or account details." : {
 
     },
+    "Keeps up to 50 checks for 30 days. Past decisions describe the inputs available at that time." : {
+
+    },
     "Kind" : {
 
     },
@@ -1166,6 +1414,9 @@
 
     },
     "Last confirmed %@" : {
+
+    },
+    "Last confirmed date" : {
 
     },
     "Last synced %@" : {
@@ -1265,6 +1516,9 @@
         }
       }
     },
+    "Manage access" : {
+
+    },
     "Manual entry" : {
 
     },
@@ -1298,6 +1552,15 @@
     "Matches" : {
 
     },
+    "Matches use unchanged bank-provider IDs. Newly issued IDs require a separate reviewed map; account names and balances are not enough." : {
+
+    },
+    "Matching existing records" : {
+
+    },
+    "Maximum now within this plan" : {
+
+    },
     "Merchant" : {
 
     },
@@ -1317,6 +1580,9 @@
 
     },
     "Missing data" : {
+
+    },
+    "Monthly" : {
 
     },
     "Monthly Subscription Cost" : {
@@ -1343,6 +1609,15 @@
     "Needs Review" : {
 
     },
+    "Net amount after withholding" : {
+
+    },
+    "Net income and pay dates are confirmed" : {
+
+    },
+    "Net pay, bills and expected spending" : {
+
+    },
     "New" : {
 
     },
@@ -1364,6 +1639,9 @@
     "No Accounts Yet" : {
 
     },
+    "No bank accounts are stored on this phone." : {
+
+    },
     "No card currently needs a paydown plan. Keep paying the statement balance in full by the due date." : {
 
     },
@@ -1379,6 +1657,9 @@
     "No Currency Pairs" : {
 
     },
+    "No current alerts. This does not establish that your plan is affordable." : {
+
+    },
     "No documents yet" : {
 
     },
@@ -1386,6 +1667,9 @@
 
     },
     "No jurisdictions on file" : {
+
+    },
+    "No money reserved for proposed purchases." : {
 
     },
     "No new rows to import — choose a different file." : {
@@ -1451,10 +1735,10 @@
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
     },
-    "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
+    "NomadFi stores your authorized balances and transactions on its hosted service to sync while this iPhone is closed. Plaid handles your bank login. Review the privacy policy before enabling access." : {
 
     },
-    "NomadFi syncs only when you tap Sync Now." : {
+    "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
     },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
@@ -1521,6 +1805,9 @@
 
     },
     "On" : {
+
+    },
+    "Once" : {
 
     },
     "Online shopping" : {
@@ -1658,6 +1945,12 @@
     "Paste or type the scenario" : {
 
     },
+    "Pay delay: %lld days" : {
+
+    },
+    "Pay from" : {
+
+    },
     "Paying before statement close can reduce reported utilization, but issuer reporting can vary. Verify dates in your issuer app." : {
 
     },
@@ -1685,7 +1978,16 @@
     "Plaid sandbox Link" : {
 
     },
+    "Plan changed · check again" : {
+
+    },
     "Plan lines cover more than one currency. NomadFi does not convert between currencies without a verified rate, so totals are reported per currency." : {
+
+    },
+    "Plan time zone: %@" : {
+
+    },
+    "Planning assumptions" : {
 
     },
     "Precise: On" : {
@@ -1718,7 +2020,13 @@
     "Program name, base earn rate, category overrides, and source verification." : {
 
     },
+    "Projected cash shortfalls" : {
+
+    },
     "Proposal" : {
+
+    },
+    "Protected reserve" : {
 
     },
     "Purchase" : {
@@ -1750,6 +2058,12 @@
 
     },
     "Quickly log a transaction with an amount and category." : {
+
+    },
+    "Quiet hours end: %lld:00" : {
+
+    },
+    "Quiet hours start: %lld:00" : {
 
     },
     "Rate" : {
@@ -1785,7 +2099,13 @@
     "Recommend a Card" : {
 
     },
+    "Refresh alerts" : {
+
+    },
     "Region" : {
+
+    },
+    "Release reservation" : {
 
     },
     "Reminder" : {
@@ -1818,10 +2138,28 @@
     "Renews %@" : {
 
     },
+    "Repeats" : {
+
+    },
     "Requests location access so NomadFi can recommend the best card for your current country." : {
 
     },
     "Requests permission to send financial alerts and reminders" : {
+
+    },
+    "Research and assumptions" : {
+
+    },
+    "Research informs the planning principles. It does not prove this individual purchase is safe." : {
+
+    },
+    "Research supports" : {
+
+    },
+    "Reservation not saved" : {
+
+    },
+    "Reserve this amount for seven days" : {
 
     },
     "Resets this lesson so it shows up again in the next-to-review queue." : {
@@ -1839,6 +2177,9 @@
     "Retry" : {
 
     },
+    "Retry finishing connection" : {
+
+    },
     "Retry finishing link" : {
 
     },
@@ -1854,6 +2195,12 @@
     "Review Credit Timing" : {
 
     },
+    "Review migration" : {
+
+    },
+    "Review migration of existing bank records" : {
+
+    },
     "Review suggestion" : {
 
     },
@@ -1863,8 +2210,24 @@
     "Review the new rows in the Ledger. You can edit category or merchant on any row after import." : {
 
     },
+    "Review your bank records" : {
+
+    },
+    "Review your cash plan" : {
+
+    },
     "Reviewed" : {
 
+    },
+    "Reviewed %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Reviewed %1$@. %2$@"
+          }
+        }
+      }
     },
     "Reviewed means you read the education content. It does not mean a portfolio decision is made and it is not a recommendation to buy or sell." : {
 
@@ -1885,6 +2248,9 @@
 
     },
     "Rows skipped with errors" : {
+
+    },
+    "Rule version: %@" : {
 
     },
     "Ruling" : {
@@ -1911,7 +2277,22 @@
     "Save a decision you're weighing as a private, on-device draft. NomadFi will not analyze or recommend anything from it until a deterministic engine covers this kind of decision." : {
 
     },
+    "Save account" : {
+
+    },
+    "Save coverage confirmation" : {
+
+    },
     "Save draft" : {
+
+    },
+    "Save preference changes with the upload button. Notification eligibility is capped at one per day and three per week; this version displays an in-app alert feed." : {
+
+    },
+    "Save scenario" : {
+
+    },
+    "Save schedule" : {
 
     },
     "Saved drafts stay on this device and are marked **Needs engine** until a deterministic NomadFi engine covers this kind. NomadFi does not auto-analyze drafts with generic AI." : {
@@ -1978,6 +2359,9 @@
 
     },
     "Scenario description" : {
+
+    },
+    "Schedule payments from the cash account that funds them. Card settlement reduces cash once; do not also enter the same card purchases as cash outflows." : {
 
     },
     "Schedules reminders on your device %lld days before each confirmed statement close date and %lld days before each confirmed payment due date." : {
@@ -2053,6 +2437,9 @@
     "Share Report" : {
 
     },
+    "Shared purchase reservations" : {
+
+    },
     "Shares the most recently exported tax report." : {
 
     },
@@ -2068,10 +2455,16 @@
     "Showing Plaid Link" : {
 
     },
+    "Sign out" : {
+
+    },
     "Skipped" : {
 
     },
     "Snapshots are point-in-time readings. NomadFi timestamps them and flags them as stale over time — it never treats an outdated snapshot as live." : {
+
+    },
+    "Snooze alerts for seven days" : {
 
     },
     "Something Went Wrong" : {
@@ -2090,6 +2483,9 @@
 
     },
     "Sources" : {
+
+    },
+    "Stale or incomplete information" : {
 
     },
     "Stamps today's date as the last time you verified these rewards terms against the issuer." : {
@@ -2111,6 +2507,15 @@
 
     },
     "Statement Calendar" : {
+
+    },
+    "Stop monitoring and delete hosted FiBot data" : {
+
+    },
+    "Stops new syncs and revokes bank access. Downloaded history and your notes remain on this iPhone." : {
+
+    },
+    "Stress scenario" : {
 
     },
     "Submit answers" : {
@@ -2192,6 +2597,9 @@
     "Tax Year %@" : {
 
     },
+    "The calculation assumes" : {
+
+    },
     "The confirmation stamp is informational only. NomadFi does not contact your issuer." : {
 
     },
@@ -2213,10 +2621,19 @@
     "The original receipt image is not available." : {
 
     },
+    "The plan may have changed. Reevaluate it before reserving this purchase." : {
+
+    },
+    "The server checks for bank updates independently. Opening NomadFi downloads completed updates. Bank data can be delayed; signing out keeps this iPhone's local records." : {
+
+    },
     "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
 
     },
     "The verified-today stamp is informational only. NomadFi does not contact your issuer." : {
+
+    },
+    "These local sources sync when you tap Sync Now. Hosted bank connections download separately." : {
 
     },
     "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
@@ -2225,16 +2642,41 @@
     "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
 
     },
+    "This check uses a %@%% income reduction, %@%% expense increase, and %lld-day pay delay. These are planning assumptions, not research-derived safety thresholds or probabilities." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This check uses a %1$@%% income reduction, %2$@%% expense increase, and %3$lld-day pay delay. These are planning assumptions, not research-derived safety thresholds or probabilities."
+          }
+        }
+      }
+    },
+    "This is a historical check. Reevaluate the current plan before reserving money." : {
+
+    },
+    "This is the complete one-time cost" : {
+
+    },
     "This permanently removes %@ from your tracked subscriptions in NomadFi. It does not cancel the service or delete its transactions." : {
 
     },
-    "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone." : {
+    "This permanently removes local accounts, transactions, receipts, subscriptions, and budgets. If hosted banking is enabled, bank access is stopped and hosted account deletion is requested first. This cannot be undone." : {
+
+    },
+    "This records your intention so another check cannot spend the same money. It does not make a purchase or move funds." : {
 
     },
     "This removes every statement calendar date from this card. You can re-enter them at any time." : {
 
     },
     "This removes the program name, rates, and source for this card. You can re-enter them at any time." : {
+
+    },
+    "This saved decision could not be read. Reevaluate your plan." : {
+
+    },
+    "This switches local record identities and disables the old local Item handle. It does not revoke the original bank connection. If a rollback is needed, restore the verified backup before re-enabling the local broker." : {
 
     },
     "This transaction may be tax-relevant. Review before including it in your tax records." : {
@@ -2244,6 +2686,9 @@
 
     },
     "Tidy Account Name" : {
+
+    },
+    "Time zone: %@" : {
 
     },
     "Timing" : {
@@ -2268,6 +2713,9 @@
 
     },
     "Total" : {
+
+    },
+    "Total including tax and fees" : {
 
     },
     "Touch and hold to describe it with Apple Intelligence." : {
@@ -2307,6 +2755,9 @@
     "TTD — Trinidad and Tobago Dollar" : {
 
     },
+    "Type" : {
+
+    },
     "Type & Currency" : {
 
     },
@@ -2319,10 +2770,22 @@
     "Unit determines what the rate means (for example, 1.5% cash back versus 1 point per dollar). NomadFi does not convert between units." : {
 
     },
+    "Update accessible cash" : {
+
+    },
     "Update in Settings → Credit Card Calendar" : {
 
     },
     "Updated %@" : {
+
+    },
+    "Updating connections" : {
+
+    },
+    "Upload reviewed plan and settings" : {
+
+    },
+    "USD" : {
 
     },
     "USD — US Dollar" : {
@@ -2331,10 +2794,19 @@
     "Use %@" : {
 
     },
+    "Use a checking, accessible savings or cash account. Do not include overdraft, credit limits, investments or locked deposits." : {
+
+    },
+    "Use hosted updates for these records" : {
+
+    },
     "Use saved snapshot" : {
 
     },
     "Use your own words — merchant, context, and what you're weighing. This is the only required field." : {
+
+    },
+    "User interests" : {
 
     },
     "Utilities" : {
@@ -2361,7 +2833,13 @@
     "We found these recurring charges in your transactions." : {
 
     },
+    "Weekly" : {
+
+    },
     "Weekly Summary" : {
+
+    },
+    "What are you considering?" : {
 
     },
     "What is your home currency?" : {
@@ -2416,6 +2894,9 @@
 
     },
     "Wise card accepted by Amazon" : {
+
+    },
+    "With your permission, NomadFi stores your confirmed cash plan, scheduled income, bills, reserves and scenario settings on your hosted account. A separate service checks it after bank syncs and scheduled checks. It has no access to bank credentials, and no plan is sent to an AI model." : {
 
     },
     "Writes the new rows to your ledger. Duplicates and skipped rows are not saved." : {
@@ -2474,6 +2955,9 @@
         }
       }
     },
+    "Your checks will appear here." : {
+
+    },
     "Your cross-border transactions will appear here. Tap + to add one manually." : {
 
     },
@@ -2498,6 +2982,12 @@
           }
         }
       }
+    },
+    "Your plan needs an update" : {
+
+    },
+    "Your records show" : {
+
     },
     "Your result" : {
 
