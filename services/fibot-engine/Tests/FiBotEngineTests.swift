@@ -88,6 +88,30 @@ struct FiBotEngineTests {
         #expect(result.optionalGoalsToReview == ["bill"])
     }
 
+    @Test func scheduledSettlementDoesNotReleaseReservedMoneyBeforeItOccurs() {
+        let commitment = FiBotCommitment(id: "reserved", accountID: "cash", money: .init(500, currency: "CAD"), expiresOn: end)
+        var settlement = expense(100, date: "2026-10-20"); settlement.commitmentID = commitment.id
+        let income = FiBotCashFlow(id: "pay", accountID: "cash", date: "2026-10-10", money: .init(1000, currency: "CAD"), kind: .netIncome)
+        let result = FiBotAffordabilityEngine.evaluate(context: context(flows: [income, settlement], commitments: [commitment]), purchase: purchase(401), policy: policy)
+        #expect(result.outcome == .wait)
+        #expect(result.maximumNow?.amount == 400)
+    }
+
+    @Test func maximumRoundsDownAndAnotherAccountShortfallLeavesNoFeasiblePurchase() {
+        var rounded = policy; rounded.expenseIncreasePercent = 1
+        let decimal = FiBotAffordabilityEngine.evaluate(context: context(flows: [expense(Decimal(string: "0.01")!)]), purchase: purchase(), policy: rounded)
+        #expect(decimal.maximumNow?.amount == Decimal(string: "899.98"))
+        let emptyUSD = account("usd", balance: 0, reserve: 1, currency: "USD")
+        let blocked = FiBotAffordabilityEngine.evaluate(context: context(accounts: [account(), emptyUSD]), purchase: purchase(), policy: policy)
+        #expect(blocked.maximumNow?.amount == 0)
+    }
+
+    @Test func monitoringDoesNotInventAPurchaseCost() {
+        let input = context(accounts: [account(balance: 100, reserve: 100)])
+        #expect(FiBotAffordabilityEngine.monitor(context: input, policy: policy).outcome == .affordable)
+        #expect(FiBotAffordabilityEngine.evaluate(context: input, purchase: purchase(0), policy: policy).outcome == .needsMoreInformation)
+    }
+
     @Test func unpairedTransfersAndStaleBalancesCannotApprove() {
         var stale = account(); stale.observedOn = "2026-09-01"
         let transfer = FiBotCashFlow(id: "in", accountID: "cash", date: "2026-10-08", money: .init(1000, currency: "CAD"), kind: .transferIn)

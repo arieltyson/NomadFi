@@ -34,7 +34,8 @@ public enum FiBotAffordabilityEngine {
         guard missing.isEmpty else { return decision(.needsMoreInformation, reasons: missing, policy: policy) }
         let base = forecast(context, purchase, policy, stressed: false, deferGoals: false)
         let stress = forecast(context, purchase, policy, stressed: true, deferGoals: false)
-        let capacity = centsDown(max(0, min(base.capacity, stress.capacity)))
+        let capacity = base.otherAccountShortfall || stress.otherAccountShortfall ? 0
+            : centsDown(max(0, min(base.capacity, stress.capacity)))
         let fits = !base.otherAccountShortfall && !stress.otherAccountShortfall && purchase.allInCost.amount <= capacity
             && base.capacity >= 0 && stress.capacity >= 0
         if fits {
@@ -140,9 +141,10 @@ public enum FiBotAffordabilityEngine {
         let accounts = context.accounts.filter { $0.kind == .cash }
         var balances = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0.available.amount - $0.protectedReserve) })
         let flows = (context.flows + purchase.ownershipCosts).filter { !deferGoals || $0.kind != .optionalGoal }
+        var reserved: [String: Decimal] = [:]
         for commitment in context.commitments where commitment.expiresOn >= context.evaluatedOn {
-            let scheduled = flows.filter { $0.commitmentID == commitment.id }.reduce(Decimal.zero) { $0 + $1.money.amount }
-            balances[commitment.accountID, default: 0] -= max(0, commitment.money.amount - scheduled)
+            reserved[commitment.id] = commitment.money.amount
+            balances[commitment.accountID, default: 0] -= commitment.money.amount
         }
         var adjusted = flows.map { flow -> FiBotCashFlow in
             var result = flow
@@ -165,6 +167,12 @@ public enum FiBotAffordabilityEngine {
             remainingAfterReserve: .init(balances[$0.id, default: 0] - ($0.id == purchase.fundingAccountID ? purchase.allInCost.amount : 0), currency: $0.available.currency)) }
         for flow in adjusted {
             balances[flow.accountID, default: 0] += flow.kind.isInflow ? flow.money.amount : -flow.money.amount
+            if let commitmentID = flow.commitmentID {
+                let original = flows.first(where: { $0.id == flow.id })?.money.amount ?? 0
+                let released = min(reserved[commitmentID, default: 0], original)
+                balances[flow.accountID, default: 0] += released
+                reserved[commitmentID, default: 0] -= released
+            }
             let current = balances[flow.accountID, default: 0]
             if flow.accountID == purchase.fundingAccountID { capacity = min(capacity, current) }
             else if current < 0 { shortfall = true }
