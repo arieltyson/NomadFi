@@ -1,8 +1,8 @@
-# NomadFi PostgreSQL storage
+# NomadFi hosted backend
 
 Local storage implementation for the [hosted sync plan](../../docs/PlaidHostedSyncPlan.md).
 This implements part of H1 and the persistence contracts used by H2/H3. It is
-not a running Plaid API, authenticated service, or deployed financial backend.
+not yet a running Plaid API or deployed financial backend.
 No live credentials or bank records are needed by these commands.
 
 ## Run locally
@@ -44,13 +44,14 @@ managed-database TLS and network configuration through the deployment layer.
 ## Storage contract
 
 - `users`: Apple subject mapping and a transactionally serialized delivery
-  revision. Only a future verified authentication service may call
+  revision. Only the verified authentication service may call
   `createUser`; accepting a client-supplied Apple subject is not authentication.
 - `connections`: owner/environment/provider identity, health, and committed
   upstream cursor. A provider Item cannot be attached to multiple users.
 - `credentials`: separate opaque encrypted-token bytes and key reference.
   The caller must provide authenticated encryption; the store does not encrypt
-  tokens itself. Production key management and encryption are not yet wired.
+  tokens itself. AES-GCM is available for local development; the KMS adapter
+  uses authenticated context binding owner, resource, environment, and purpose.
 - `sync_jobs`: one durable coalesced request per connection, request/completion
   revisions, retry backoff, lease epoch/expiry, and dead-letter state.
 - `sync_generations` and `sync_events`: ordered, immutable published deltas.
@@ -89,6 +90,33 @@ been consumed, including empty generations. Revisions are serialized by the
 owner row held through commit; a plain sequence would not establish commit
 order. Keep revisions as strings/BigInt, never JavaScript floating-point IDs.
 
+## Identity and token security
+
+`AppleIdentity` verifies Apple's signature, issuer, client audience, expiry,
+and recent issuance. `AuthService` binds sign-in to a five-minute, one-use
+server nonce and independently checks the authorization-code exchange identity.
+Only explicitly allowed Apple subjects can enter the owner pilot. The client
+must send the issued nonce in its native Apple authorization request.
+
+App access credentials expire after 15 minutes. Refresh rotates both app
+credentials, expires after 30 idle days, and requires sign-in after 90 days.
+Reusing a spent refresh credential revokes that session family. Clients must
+serialize refresh and request fresh Apple sign-in after a lost refresh response;
+blind retries deliberately fail closed. Apple grants are revalidated when
+refreshing after 24 hours. Sign-out revokes the local app session; account
+deletion must additionally revoke upstream Apple and Plaid grants.
+
+Only hashes of app credentials are persisted. Apple/Plaid credentials use
+separate authenticated contexts. `LocalTokenCipher` takes a random 32-byte key
+from private local configuration; `KMSTokenCipher` uses a configured Google
+Cloud symmetric key and application default credentials. No keys are committed.
+The KMS contract is tested with a fake client, not a provisioned cloud key.
+Cloud IAM, TLS, edge abuse controls, revocation notifications, and a deployable
+HTTP boundary remain deployment requirements.
+
+References: [Apple identity verification](https://developer.apple.com/documentation/signinwithapple/verifying-a-user),
+[Google Cloud KMS authenticated encryption](https://docs.cloud.google.com/kms/docs/encrypt-decrypt).
+
 ## Verified and remaining work
 
 Real PostgreSQL tests cover tenant constraints, additive connections, hidden
@@ -96,8 +124,12 @@ partial generations, atomic rollback, concurrent/delayed publication, stale
 worker fencing, heartbeat expiry, mid-sync requests, retry isolation, bounded
 delivery, independent acknowledgments, and database restart persistence.
 
-Before deployment, implement the Apple sign-in/session lifecycle, encryption
-adapter, Link exchange recovery, provider mapping and sync pagination retry,
+Identity tests additionally cover nonce replay, tenant allowlisting, credential
+rotation/reuse, grant validation, logout, deletion state, JWT validation, and
+encrypted context substitution.
+
+Before deployment, complete the Apple revocation lifecycle, Link exchange
+recovery, provider mapping and sync pagination retry,
 signature-verified webhook receiver, worker scheduling, current-snapshot
 bootstrap/materialization, expired-checkpoint retention, staged-data cleanup,
 revocation/deletion, restricted runtime roles, and backup/restore procedures.

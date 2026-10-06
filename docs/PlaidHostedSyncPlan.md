@@ -344,7 +344,10 @@ Local storage work is implemented under
 [`services/plaid-backend/`](../services/plaid-backend/README.md): migrations,
 connection ownership constraints, staged generations, fenced leases, ordered
 publication, and device checkpoints. Real PostgreSQL tests cover rollback,
-concurrency, isolation, and database restart. Authentication, token encryption,
+concurrency, isolation, and database restart. Verified Apple identities,
+one-use nonce challenges, owner allowlisting, rotating app sessions, daily
+Apple grant validation, and context-bound local/KMS encryption adapters are
+implemented and tested locally. HTTP integration, upstream revocation,
 deployment roles, and the remaining lifecycle are still open; H1 is not complete.
 
 - [ ] Create deployable service, environment separation, infrastructure

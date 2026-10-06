@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "test": "node --test --test-timeout=60000 test/*.test.js",
     "db:local": "node scripts/local-postgres.js",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.js"
   },
-  "dependencies": { "pg": "8.23.1" },
-  "devDependencies": { "embedded-postgres": "18.4.0-beta.17" }
+  "dependencies": {
+    "@google-cloud/kms": "6.2.1",
+    "jose": "6.2.12",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "embedded-postgres": "18.4.0-beta.17"
+  }
 }
