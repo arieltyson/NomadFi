@@ -33,8 +33,8 @@ struct ToolTests {
 
     @Test("Rows keep the order, two to a row, or one at accessibility sizes")
     func rows() {
-        #expect(Tool.rows(columns: 2).flatMap(\.self) == Tool.allCases)
-        #expect(Tool.rows(columns: 2).allSatisfy { $0.count == 2 })
-        #expect(Tool.rows(columns: 1).count == Tool.allCases.count)
+        #expect(TileLayout.rows(Tool.allCases, columns: 2).flatMap(\.self) == Tool.allCases)
+        #expect(TileLayout.rows(Tool.allCases, columns: 2).allSatisfy { $0.count == 2 })
+        #expect(TileLayout.rows(Tool.allCases, columns: 1).count == Tool.allCases.count)
     }
 }

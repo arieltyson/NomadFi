@@ -56,6 +56,9 @@ final class AppStoreScreenshotTests: XCTestCase {
         open("Canada", in: app)
         capture("08-investing-region", app)
 
+        tabs.buttons["Settings"].tap()
+        capture("09-settings", app)
+
         tabs.buttons["Dashboard"].tap()
         capture("01-dashboard", app)
 

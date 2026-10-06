@@ -144,7 +144,7 @@ final class NomadFiUITests: XCTestCase {
 
         XCTAssertTrue(app.tabBars.buttons["Settings"].waitForExistence(timeout: 8))
         app.tabBars.buttons["Settings"].tap()
-        tapButton(containing: "Financial Setup", in: app)
+        keepScreenshot(named: "Settings", of: app)
         tapButton(containing: "Accounts", in: app)
         XCTAssertTrue(app.navigationBars["Accounts"].waitForExistence(timeout: 8))
 

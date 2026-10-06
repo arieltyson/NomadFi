@@ -12,7 +12,7 @@ import SwiftUI
 /// every card is otherwise identical, so the hues read as one family.
 /// System colours keep each one legible in dark mode and with
 /// Increase Contrast, and the title never carries the colour.
-enum Tool: String, CaseIterable, Identifiable, Hashable {
+enum Tool: String, CaseIterable, TileItem {
 
     case exchangeRates
     case subscriptions
@@ -42,13 +42,6 @@ enum Tool: String, CaseIterable, Identifiable, Hashable {
         case .importTransactions: "tablecells.fill"
         case .taxVault: "doc.text.viewfinder"
         case .investingLearn: "books.vertical.fill"
-        }
-    }
-
-    /// The tools laid out in rows of `columns`, in order.
-    static func rows(columns: Int) -> [[Tool]] {
-        stride(from: 0, to: allCases.count, by: max(columns, 1)).map { start in
-            Array(allCases[start..<min(start + max(columns, 1), allCases.count)])
         }
     }
 

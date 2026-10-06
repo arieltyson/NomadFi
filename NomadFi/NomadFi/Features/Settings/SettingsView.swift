@@ -1,10 +1,11 @@
 // SettingsView.swift
 // NomadFi
 //
-// The Settings tab's root hub. Each row pushes a focused detail
-// page — full behaviour, toggles, and copy now live on those pages.
-// The hub itself deliberately stays short and scannable, matching
-// Apple's Settings-app information architecture.
+// The Settings tab's root: Notifications and Privacy & Security as
+// rows, then a Financial Setup section of tiles — Accounts,
+// Jurisdictions, Credit Card Calendar, Financial Connections — drawn
+// like the Tools tab. Each pushes a page of its own, so nothing that
+// grows with the person's data lengthens this screen.
 //
 // Side effects that must happen regardless of which sub-page the
 // user opens (jurisdiction home repair, credit-card reminder re-sync)
@@ -34,6 +35,7 @@ struct SettingsView: View {
     private var jurisdictionProfiles: [JurisdictionProfile]
 
     @State private var notificationManager = NotificationManager()
+    @State private var openSetupItem: FinancialSetupItem?
 
     private static let logger = Logger(
         subsystem: "com.nomadfi.app",
@@ -45,32 +47,37 @@ struct SettingsView: View {
 
     var body: some View {
         List {
-            HubNavigationRow(
-                "Financial Setup",
-                systemImage: "globe.americas.fill",
-                tint: ColorTokens.brandPrimary
-            ) {
-                FinancialSetupSettingsView()
+            Section {
+                HubNavigationRow(
+                    "Notifications",
+                    systemImage: "bell.badge.fill",
+                    tint: ColorTokens.warning,
+                    value: notificationManager.isAuthorized ? "On" : "Off"
+                ) {
+                    NotificationSettingsView()
+                }
+
+                HubNavigationRow(
+                    "Privacy & Security",
+                    systemImage: "lock.shield.fill",
+                    tint: ColorTokens.positive
+                ) {
+                    PrivacySecuritySettingsView()
+                }
             }
 
-            HubNavigationRow(
-                "Notifications",
-                systemImage: "bell.badge.fill",
-                tint: ColorTokens.warning,
-                value: notificationManager.isAuthorized ? "On" : "Off"
-            ) {
-                NotificationSettingsView()
-            }
-
-            HubNavigationRow(
-                "Privacy & Security",
-                systemImage: "lock.shield.fill",
-                tint: ColorTokens.positive
-            ) {
-                PrivacySecuritySettingsView()
+            Section {
+                TileGrid(items: FinancialSetupItem.allCases) { openSetupItem = $0 }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+            } header: {
+                Text("Financial Setup")
             }
         }
         .navigationTitle("Settings")
+        .navigationDestination(item: $openSetupItem) { item in
+            FinancialSetupDestination(item: item)
+        }
         .task {
             appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
