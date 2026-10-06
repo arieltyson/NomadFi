@@ -9,6 +9,7 @@ struct NomadFiApp: App {
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
     @State private var plaidLinkCoordinator = PlaidLinkCoordinator()
+    @State private var hostedBanking = HostedBankingController.configured()
 #if DEBUG
     /// Developer-only Plaid validation recorder. Lives at app root
     /// so the dev harness and the Financial Connections page write
@@ -123,6 +124,9 @@ struct NomadFiApp: App {
                     if !uiTestConfig.disableAppLock {
                         appLockManager.sceneDidBecomeActive()
                     }
+                    if !appLockManager.isLocked {
+                        Task { await hostedBanking?.refreshOnForeground(container: modelContainer) }
+                    }
                 case .inactive:
                     isBlurred = true
                 case .background:
@@ -135,6 +139,7 @@ struct NomadFiApp: App {
                 }
             }
             .onOpenURL { url in
+                if hostedBanking?.handle(url) == true { return }
                 // Plaid OAuth universal links return through the
                 // `applinks:arieltyson.github.io` associated domain.
                 // Forward them straight to the pending Link session;
@@ -153,6 +158,10 @@ struct NomadFiApp: App {
 #endif
             }
             .environment(appLockManager)
+            .environment(\.hostedBanking, hostedBanking)
+            .onChange(of: appLockManager.isLocked) { _, locked in
+                if !locked { Task { await hostedBanking?.refreshOnForeground(container: modelContainer) } }
+            }
             .environment(\.plaidLinkCoordinator, plaidLinkCoordinator)
 #if DEBUG
             .environment(\.plaidValidationRecorder, plaidValidationRecorder)
@@ -181,7 +190,7 @@ extension NomadFiApp {
     /// Deletes every record of every model in the schema. UI tests only.
     @MainActor
     fileprivate static func deleteAllRecords(in context: ModelContext) {
-        for model in NomadFiSchemaV1.models {
+        for model in NomadFiSchemaV2.models {
             deleteAll(model, in: context)
         }
         try? context.save()

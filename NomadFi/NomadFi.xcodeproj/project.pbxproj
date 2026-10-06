@@ -345,7 +345,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Plaid's LinkKit is a developer validation path used in Debug builds only.\n# Release builds dead-strip it from the binary; this drops the embedded copy.\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  rm -rf \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/LinkKit.framework\"\nfi\n";
+			shellScript = "if [ \"$CONFIGURATION\" = \"Release\" ]; then\n  case \" $SWIFT_ACTIVE_COMPILATION_CONDITIONS \" in\n    *\" HOSTED_BANKING \"*) ;;\n    *) rm -rf \"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/LinkKit.framework\" ;;\n  esac\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

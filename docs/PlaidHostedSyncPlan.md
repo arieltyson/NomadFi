@@ -428,7 +428,11 @@ posted spending, and archive annotations while detaching receipts before
 removals. Disk-store migration, replay, rollback, receipt restoration, and
 owner-isolation tests pass. The existing local Plaid connection requires an
 explicit migration map before hosted import; name matching is prohibited.
-Settings UI and real OAuth remain open.
+Settings, native Apple sign-in, additive Link/update/disconnect controls,
+foreground delivery, protected deletion, and persisted OAuth continuation are
+implemented behind deployment configuration. See [iOS acceptance](./HostedIOSAcceptance.md).
+Real Apple/OAuth validation, Release provisioning, and the CIBC identity
+migration remain open; the installed phone has not been migrated.
 
 - [ ] Add authenticated hosted provider configuration and multi-connection
   identity mapping; remove manual broker URL/secret setup from the normal flow.

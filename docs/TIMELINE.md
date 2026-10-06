@@ -1304,7 +1304,9 @@ operations runbook are implemented. No cloud resources have been deployed.
 The Swift hosted client and V1-to-V2 SwiftData migration now have Simulator
 coverage. Local bank merges save checkpoints atomically, preserve annotations
 and receipt documents, and reject a silent import over the legacy CIBC setup.
-Hosted Settings, OAuth validation, and the reviewed migration are still open.
+Hosted Settings and foreground delivery are implemented behind deployment
+configuration. Native Apple/Chase OAuth validation and the reviewed migration
+are still open; see [iOS acceptance](./HostedIOSAcceptance.md).
 
 **Multi-bank readiness:** replace the current single Item ID/cursor before
 linking another institution; a new Link currently replaces the active sync

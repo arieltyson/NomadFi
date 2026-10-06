@@ -24,10 +24,13 @@ struct PrivacySecuritySettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AppLockManager.self) private var appLockManager
+    @Environment(\.hostedBanking) private var hostedBanking
 
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingDeleteConfirmation = false
     @State private var notificationManager = NotificationManager()
+    @State private var deletionMessage: String?
+    @State private var isDeleting = false
 
     var body: some View {
         List {
@@ -39,13 +42,14 @@ struct PrivacySecuritySettingsView: View {
             "Delete All Data",
             isPresented: $isShowingDeleteConfirmation,
             confirmationLabel: "Delete Everything",
-            message: "This permanently removes all accounts, transactions, receipts, subscriptions, and budgets from this device. This cannot be undone."
+            message: "This permanently removes local accounts, transactions, receipts, subscriptions, and budgets. If hosted banking is enabled, bank access is stopped and hosted account deletion is requested first. This cannot be undone."
         ) {
-            DataGovernancePolicy.deleteAllUserData(
-                in: modelContext,
-                notificationManager: notificationManager
-            )
+            Task { await deleteData() }
         }
+        .alert("Data deletion", isPresented: Binding(get: { deletionMessage != nil }, set: { if !$0 { deletionMessage = nil } })) {
+            Button("OK", role: .cancel) { deletionMessage = nil }
+        } message: { Text(deletionMessage ?? "") }
+        .disabled(isDeleting)
         .sheet(isPresented: $isShowingPrivacyPolicy) {
             PrivacyPolicySheet()
         }
@@ -58,6 +62,25 @@ struct PrivacySecuritySettingsView: View {
 // MARK: - Sections
 
 private extension PrivacySecuritySettingsView {
+
+    func deleteData() async {
+        guard !isDeleting else { return }
+        isDeleting = true
+        defer { isDeleting = false }
+        do {
+            let hasHostedData = try modelContext.fetchCount(FetchDescriptor<HostedLocalState>()) > 0
+            if hasHostedData || hostedBanking?.userID != nil {
+                guard let hostedBanking, hostedBanking.userID != nil else {
+                    deletionMessage = "Sign in to your hosted account before deleting all data. Your records have been kept."
+                    return
+                }
+                try await hostedBanking.deleteHostedAccount()
+            }
+            DataGovernancePolicy.deleteAllUserData(in: modelContext, notificationManager: notificationManager)
+        } catch {
+            deletionMessage = "The hosted deletion request could not be confirmed. Your local records and sign-in are kept so you can retry."
+        }
+    }
 
     var securitySection: some View {
         @Bindable var appLockManager = appLockManager

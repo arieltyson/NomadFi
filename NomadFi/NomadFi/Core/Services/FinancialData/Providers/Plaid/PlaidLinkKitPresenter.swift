@@ -27,7 +27,7 @@
 //   to this presenter, which in turn calls LinkKit's
 //   `handler.continue(from:)` so Link resumes the session.
 
-#if DEBUG
+#if DEBUG || HOSTED_BANKING
 
 import Foundation
 import OSLog
@@ -73,7 +73,6 @@ final class PlaidLinkKitPresenter: PlaidLinkPresenting {
         // side `receivedRedirectUri`. The app only needs to forward
         // universal-link returns via `Handler.resumeAfterTermination(from:)`
         // (see `handle(redirectURI:)` below).
-        _ = request.receivedRedirectURI
 
         var config = LinkTokenConfiguration(token: request.linkToken) { [weak self] success in
             self?.deliver(.success(publicToken: success.publicToken))
@@ -90,6 +89,9 @@ final class PlaidLinkKitPresenter: PlaidLinkPresenting {
         switch Plaid.create(config) {
         case .success(let handler):
             pendingHandler = handler
+            if let redirect = request.receivedRedirectURI {
+                handler.resumeAfterTermination(from: redirect)
+            }
             guard let hostController = Self.topViewController() else {
                 Self.logger.error("Plaid Link could not find a host view controller")
                 deliver(.failed(message: "Unable to present Plaid Link — no active window."))

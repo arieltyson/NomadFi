@@ -16,6 +16,7 @@ import SwiftUI
 struct FinancialConnectionsSettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.hostedBanking) private var hostedBanking
     @Environment(\.plaidLinkCoordinator) private var plaidLinkCoordinator
 #if DEBUG
     @Environment(\.plaidValidationRecorder) private var plaidValidationRecorder
@@ -34,6 +35,11 @@ struct FinancialConnectionsSettingsView: View {
 
     var body: some View {
         List {
+            if let hostedBanking {
+                Section {
+                    NavigationLink("Hosted bank connections") { HostedConnectionsView(banking: hostedBanking) }
+                }
+            }
             providersSection(viewModel: viewModel)
             syncSection(viewModel: viewModel)
 #if DEBUG
@@ -197,7 +203,7 @@ private extension FinancialConnectionsSettingsView {
         } header: {
             Text("Sync")
         } footer: {
-            Text("NomadFi syncs only when you tap Sync Now.")
+            Text("These local sources sync when you tap Sync Now. Hosted bank connections download separately.")
         }
     }
 }

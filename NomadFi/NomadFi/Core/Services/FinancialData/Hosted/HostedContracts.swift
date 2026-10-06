@@ -50,7 +50,7 @@ struct HostedConnection: Decodable, Sendable, Identifiable {
     }
 }
 
-struct HostedLink: Decodable, Sendable {
+struct HostedLink: Codable, Sendable {
     let linkToken: String
     let attemptID: UUID?
     let connectionID: UUID?
