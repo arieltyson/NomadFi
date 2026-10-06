@@ -172,6 +172,11 @@ the app does not track (no `NSUserTrackingUsageDescription`).
 
 ### 4b. Accessibility Nutrition Labels
 
+**Accessibility URL** (optional field in App Accessibility):
+https://arieltyson.github.io/nomadfi-accessibility/ — the public statement,
+with [known issues](https://arieltyson.github.io/nomadfi-accessibility/known-issues/)
+and barrier reporting. Keep the declarations below in step with it.
+
 App Store Connect asks which features work for the app's **common tasks**
 (onboarding, viewing net worth and a country, running a check, adding a
 transaction, scanning a receipt). Claim only what you have verified on a

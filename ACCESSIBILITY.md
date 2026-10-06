@@ -26,9 +26,12 @@ service or system screens encountered in the task.
 This statement documents implementation and test scope; it does not claim
 that all assistive-technology task checks have passed.
 
-## Report an accessibility problem
+## Public statement and reporting
 
-[Open an issue](https://github.com/arieltyson/NomadFi/issues/new) describing
-the affected screen, steps to reproduce, expected and actual behaviour,
-and the app version or commit. Include your device, iOS version, and
-relevant assistive technology or accessibility settings.
+The public [accessibility statement](https://arieltyson.github.io/nomadfi-accessibility/)
+and [known issues](https://arieltyson.github.io/nomadfi-accessibility/known-issues/)
+live in [arieltyson/nomadfi-accessibility](https://github.com/arieltyson/nomadfi-accessibility),
+which is where to [report an accessibility barrier](https://github.com/arieltyson/nomadfi-accessibility/issues/new?template=accessibility-barrier.yml).
+Describe the task, what stopped you, your device, the iOS and app
+versions, and any assistive technology or settings involved. Keep that
+statement in step with this file when features or verification change.
