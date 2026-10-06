@@ -141,6 +141,15 @@ struct PlaidSandboxConfiguration: Sendable {
     /// path use to enforce the broker URL shape: must parse, must
     /// be `http(s)`, must carry a host, must not use user-info or
     /// non-empty fragments. Pure and cheap.
+    ///
+    /// Plain `http` works only because Info.plist sets
+    /// `NSAppTransportSecurity` → `NSAllowsLocalNetworking`, which
+    /// permits unencrypted loads solely to loopback, `.local` hostnames
+    /// and link-local / private IP ranges — never arbitrary Internet
+    /// hosts. It is the narrowest exception that lets the DEBUG harness
+    /// reach a developer's broker on the same Wi-Fi. (The rationale
+    /// lives here because Xcode strips comments from Info.plist.)
+    /// <https://developer.apple.com/documentation/security/preventing-insecure-network-connections>
     nonisolated static func normalize(brokerURLCandidate raw: String) -> URL? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }

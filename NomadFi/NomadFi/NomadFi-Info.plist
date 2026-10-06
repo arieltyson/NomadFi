@@ -12,39 +12,29 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>CFBundlePackageType</key>
-	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSFinancialDataUsageDescription</key>
-	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>NomadFi uses Face ID to unlock the app so only you can see your financial data.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>NomadFi uses your local network only to reach a test server in development builds. The App Store version never uses it.</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<!-- Per Apple's Preventing Insecure Network Connections docs, -->
-		<!-- NSAllowsLocalNetworking permits plain-HTTP loads ONLY to -->
-		<!-- loopback, .local hostnames, and link-local / private IPv4 -->
-		<!-- / IPv6 ranges. It does not relax ATS for arbitrary Internet -->
-		<!-- hosts. This is the narrowest Apple-sanctioned permission -->
-		<!-- that lets NomadFi's DEBUG harness reach a developer's -->
-		<!-- locally-hosted Plaid sandbox broker on the same Wi-Fi. -->
-		<!-- Sources: -->
-		<!-- https://developer.apple.com/documentation/security/preventing-insecure-network-connections -->
-		<!-- https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity/nsallowslocalnetworking -->
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>NomadFi uses Face ID to unlock the app so only you can see your financial data.</string>
+	<key>NSFinancialDataUsageDescription</key>
+	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>NomadFi uses your local network only to reach a test server in development builds. The App Store version never uses it.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
