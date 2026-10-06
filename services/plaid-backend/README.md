@@ -42,6 +42,11 @@ separately configured PostgreSQL database, including Docker-managed instances.
 It checks migration digests and refuses modified migration history. Supply
 managed-database TLS and network configuration through the deployment layer.
 
+The API/worker entry points and non-root container are now implemented. See
+[`ops/Runbook.md`](ops/Runbook.md) for required private configuration, role
+provisioning, scheduling, recovery and restore acceptance. No cloud deployment
+or container build has been performed in this environment.
+
 ## Storage contract
 
 - `users`: Apple subject mapping and a transactionally serialized delivery
@@ -112,8 +117,9 @@ separate authenticated contexts. `LocalTokenCipher` takes a random 32-byte key
 from private local configuration; `KMSTokenCipher` uses a configured Google
 Cloud symmetric key and application default credentials. No keys are committed.
 The KMS contract is tested with a fake client, not a provisioned cloud key.
-Cloud IAM, TLS, edge abuse controls, revocation notifications, and a deployable
-HTTP boundary remain deployment requirements.
+Cloud IAM, edge abuse controls and upstream notification registration remain
+deployment requirements. Runtime configuration rejects hosted local-key mode,
+requires explicit production-data acceptance, and verifies managed TCP TLS.
 
 ## Connections and HTTP contract
 
@@ -125,7 +131,7 @@ the service does not trust arbitrary forwarded IP headers. A managed edge must
 enforce its own limits before internet deployment.
 
 Unauthenticated routes: `POST /auth/challenge`, `/auth/apple`, `/auth/refresh`,
-and `/webhooks/plaid`. Authenticated routes: `GET /connections`, `POST /link`,
+`/webhooks/apple`, and `/webhooks/plaid`. Authenticated routes: `GET /connections`, `POST /link`,
 `/link/exchange`, `/connections/:id/updated`, `/connections/:id/sync`,
 `/snapshots`, `/acknowledgments`, `/auth/logout`; `GET /snapshots/:id` and
 `/changes`; `DELETE /connections/:id` and `/account`. Mutations require a JSON
@@ -156,6 +162,13 @@ revokes Plaid and Apple grants through fenced retry jobs, then cascades hosted
 records. Failed/ambiguous revocations retain a visible operator backlog instead
 of falsely reporting erasure. Backup expiry must match the deployed retention
 policy before hosted data is accepted.
+
+Apple server notifications verify Apple's signature, audience, event identity,
+and timestamps before acting. Consent revocation invalidates affected sessions
+and suspends bank work until reauthorization. Apple account deletion queues the
+same durable deletion workflow as the in-app endpoint. Event digests prevent
+replay; older events cannot delete a subsequently recreated account. Email
+forwarding events do not cause email addresses to be stored.
 
 References: [Apple identity verification](https://developer.apple.com/documentation/signinwithapple/verifying-a-user),
 [Google Cloud KMS authenticated encryption](https://docs.cloud.google.com/kms/docs/encrypt-decrypt).
@@ -190,8 +203,9 @@ materialization, signature/body tampering, receipt rollback, and stale sweeps.
 Provider contracts follow [Plaid sync pagination](https://plaid.com/docs/api/products/transactions/)
 and [webhook verification](https://plaid.com/docs/api/webhooks/webhook-verification/).
 
-Before deployment, complete Apple server notification handling, deployed
-webhook/worker scheduling, expired-checkpoint retention, staged-data cleanup,
-restricted runtime roles, recovery operations, and backup/restore procedures.
+Before deployment, verify real Apple/Plaid callbacks, webhook/worker scheduling,
+retention and cleanup policies, deployed runtime roles, recovery operations,
+and backup/restore procedures. Local role tests deny runtime DDL and deny
+FiBot access to identity, session, exchange and provider credential tables.
 These remain explicit plan milestones; passing storage tests does not mark
 H1–H3 complete or establish live bank connectivity.

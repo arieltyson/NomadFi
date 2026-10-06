@@ -19,7 +19,7 @@ function object(raw) {
     return parsed;
   } catch { throw new ServiceError('INVALID_JSON'); }
 }
-export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, rateKey, logger = () => {} }) {
+export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, appleNotifications, rateKey, logger = () => {} }) {
   if (!Buffer.isBuffer(rateKey) || rateKey.length < 32) throw new ServiceError('INVALID_RATE_KEY');
   const rate = async (identity, group, maximum) => {
     const key = createHmac('sha256', rateKey).update(`${group}:${identity}`).digest();
@@ -47,6 +47,9 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       const mutating = method !== 'GET';
       if (mutating && request.headers['content-type']?.split(';')[0] !== 'application/json') throw new ServiceError('JSON_REQUIRED', 415);
       const input = mutating ? object(await body(request)) : {};
+      if (method === 'POST' && path === '/webhooks/apple') {
+        send(200, await appleNotifications.receive(input.payload)); return;
+      }
       if (method === 'POST' && path.startsWith('/auth/')) {
         await rate(request.socket.remoteAddress ?? 'unknown', 'authentication', 20);
         if (path === '/auth/challenge') { send(200, await auth.challenge()); return; }

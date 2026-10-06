@@ -19,8 +19,8 @@ export class RevocationService {
     });
     return { status: 'revoking' };
   }
-  async deleteAccount(userID) {
-    await transaction(this.pool, async client => {
+  async deleteAccount(userID, existingClient = null) {
+    const operation = async client => {
       const user = await client.query("UPDATE nomadfi.users SET state = 'deleting' WHERE id = $1 RETURNING id", [userID]);
       if (!user.rowCount) throw new ServiceError('NOT_FOUND', 404);
       await client.query('UPDATE nomadfi.sessions SET revoked_at = clock_timestamp() WHERE user_id = $1', [userID]);
@@ -30,7 +30,8 @@ export class RevocationService {
         SELECT 'apple', id FROM nomadfi.apple_grants WHERE user_id = $1 AND revoked_at IS NULL`, [userID]);
       for (const row of resources.rows) await client.query(`INSERT INTO nomadfi.revocation_jobs (id, user_id, purpose, resource_id)
         VALUES ($1, $2, $3, $4) ON CONFLICT (purpose, resource_id) DO NOTHING`, [randomUUID(), userID, row.purpose, row.id]);
-    });
+    };
+    if (existingClient) await operation(existingClient); else await transaction(this.pool, operation);
     return { status: 'deleting' };
   }
   async runOne() {

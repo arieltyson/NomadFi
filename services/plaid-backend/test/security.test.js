@@ -59,3 +59,16 @@ test('Apple identity verification checks signatures, audience, issuer, age and s
     await assert.rejects(verifier.verify(token, { fresh: true }), { code: 'APPLE_IDENTITY_INVALID' });
   }
 });
+
+test('Apple notifications verify their nested event and reject forged or future-dated messages', async () => {
+  const { publicKey, privateKey } = await generateKeyPair('RS256');
+  const verifier = new AppleIdentity({ clientID: 'com.example.fixture', keys: publicKey });
+  const now = Math.floor(Date.now() / 1000);
+  const sign = async (extra = {}) => new SignJWT({ iss: 'https://appleid.apple.com', aud: 'com.example.fixture',
+    iat: now, jti: 'fixture-event', events: { type: 'account-deleted', sub: 'fixture-owner', event_time: now }, ...extra })
+    .setProtectedHeader({ alg: 'RS256' }).sign(privateKey);
+  assert.equal((await verifier.verifyNotification(await sign())).type, 'account-deleted');
+  for (const extra of [{ aud: 'other' }, { iat: now + 60 }, { events: { type: 'account-deleted', sub: 'fixture-owner', event_time: now + 60 } }]) {
+    await assert.rejects(verifier.verifyNotification(await sign(extra)), { code: 'APPLE_NOTIFICATION_INVALID' });
+  }
+});

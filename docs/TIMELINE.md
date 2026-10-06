@@ -1298,6 +1298,9 @@ Session-scoped HTTP routes, additive CA/US Link, encrypted exchange recovery
 receipts, update-mode repair, frozen snapshots, and revocation/deletion queues
 also have local tests. Live webhook delivery, deployment key management,
 operational recovery, and app integration remain open; H1–H3 are not complete.
+API/worker/sweep entry points, a non-root container, restricted-role SQL,
+production configuration guards, Apple notification processing, and an
+operations runbook are implemented. No cloud resources have been deployed.
 
 **Multi-bank readiness:** replace the current single Item ID/cursor before
 linking another institution; a new Link currently replaces the active sync

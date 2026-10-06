@@ -350,9 +350,15 @@ Apple grant validation, and context-bound local/KMS encryption adapters are
 implemented and tested locally. Session-scoped HTTP routes, additive CA/US
 Link, encrypted exchange receipts, update-mode repair, frozen snapshot delivery,
 and queued upstream revocation/deletion now have local tests. Production
-configuration, Apple notifications, deployment roles, and recovery operations
+configuration, live notification delivery, deployed roles, and recovery operations
 are still open; H1 is not complete. An exchange response lost before persistence
 requires explicit recovery and orphan-Item reconciliation, not automatic success.
+API, finite worker, scheduled sweep entry points, a non-root container, role
+provisioning SQL, configuration guards, and a deployment/restore runbook are
+checked in. The container and cloud resources have not been built or deployed.
+Apple signed server notifications now pause revoked consent and queue account
+deletion, with replay protection and stale-event checks. Database role tests
+confirm that FiBot cannot read credentials and runtime cannot change schema.
 
 - [ ] Create deployable service, environment separation, infrastructure
   configuration, secret injection, and local PostgreSQL development commands.

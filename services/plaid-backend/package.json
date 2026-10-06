@@ -7,6 +7,9 @@
     "node": ">=22.18.0"
   },
   "scripts": {
+    "start": "node --env-file-if-exists=.env.local src/runtime.js api",
+    "worker": "node --env-file-if-exists=.env.local src/runtime.js worker",
+    "sweep": "node --env-file-if-exists=.env.local src/runtime.js sweep",
     "test": "node --test --test-timeout=60000 test/*.test.js",
     "db:local": "node scripts/local-postgres.js",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.js"

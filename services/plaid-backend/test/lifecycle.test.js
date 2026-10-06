@@ -9,6 +9,7 @@ import { LinkService } from '../src/link-service.js';
 import { DeliveryService } from '../src/delivery-service.js';
 import { RevocationService } from '../src/revocation-service.js';
 import { ServiceError } from '../src/security.js';
+import { AppleNotifications } from '../src/apple-notifications.js';
 
 let database, pool, store, cipher, link, delivery, revocation, userID, otherID, calls, upstreamError, upstreamItem;
 before(async () => { database = await temporaryPostgres(); pool = database.pool; await migrate(pool); store = new SyncStore(pool); });
@@ -125,4 +126,28 @@ test('ambiguous in-flight exchange prevents falsely reporting account data purge
   await assert.rejects(link.exchange(userID, attempt.attempt_id, 'synthetic-public-token'));
   await revocation.deleteAccount(userID); await revocation.purgeCompletedDeletions();
   assert.equal((await pool.query('SELECT state FROM nomadfi.users WHERE id = $1', [userID])).rows[0].state, 'deleting');
+});
+
+test('Apple account deletion disables the account and queues upstream removal exactly once', async () => {
+  await connect();
+  const service = new AppleNotifications({ pool, revocation, apple: { async verifyNotification() {
+    return { id: 'fixture-deletion-event', subject: 'owner', type: 'account-deleted', time: new Date() };
+  } } });
+  await service.receive('verified-fixture'); await service.receive('verified-fixture');
+  assert.equal((await pool.query('SELECT state FROM nomadfi.users WHERE id = $1', [userID])).rows[0].state, 'deleting');
+  assert.equal((await pool.query('SELECT count(*) FROM nomadfi.revocation_jobs')).rows[0].count, '1');
+  await revocation.runOne();
+  assert.equal((await pool.query('SELECT count(*) FROM nomadfi.users WHERE id = $1', [userID])).rows[0].count, '0');
+});
+
+test('consent revocation suspends bank sync and old notifications cannot delete a recreated account', async () => {
+  await connect();
+  let event = { id: 'fixture-consent-event', subject: 'owner', type: 'consent-revoked', time: new Date() };
+  const service = new AppleNotifications({ pool, revocation, apple: { async verifyNotification() { return event; } } });
+  await service.receive('verified-fixture');
+  assert.equal(await store.claim(), null);
+  assert.equal((await store.connections(userID))[0].state, 'reconnect_required');
+  event = { ...event, id: 'fixture-old-deletion', type: 'account-deleted', time: new Date(Date.now() - 60000) };
+  await service.receive('verified-fixture');
+  assert.equal((await pool.query('SELECT state FROM nomadfi.users WHERE id = $1', [userID])).rows[0].state, 'active');
 });

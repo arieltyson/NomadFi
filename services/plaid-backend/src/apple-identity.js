@@ -32,6 +32,21 @@ export class AppleIdentity {
       .setIssuer(this.teamID).setSubject(this.clientID).setAudience(issuer)
       .setIssuedAt(now).setExpirationTime(now + 300).sign(key);
   }
+  async verifyNotification(token) {
+    try {
+      const { payload } = await jwtVerify(requiredString(token), this.keys, {
+        algorithms: ['RS256', 'ES256'], issuer, audience: this.clientID,
+        currentDate: this.clock(), clockTolerance: 5, requiredClaims: ['iat', 'jti', 'events'],
+      });
+      const event = typeof payload.events === 'string' ? JSON.parse(payload.events) : payload.events;
+      const now = Math.floor(this.clock().getTime() / 1000);
+      if (!Number.isSafeInteger(payload.iat) || payload.iat > now + 5 || !event
+          || !Number.isSafeInteger(event.event_time) || event.event_time > now + 5 || event.event_time < 0
+          || !['email-enabled', 'email-disabled', 'consent-revoked', 'account-deleted'].includes(event.type)) throw new Error();
+      return { id: requiredString(payload.jti, 512), subject: requiredString(event.sub, 512),
+        type: event.type, time: new Date(event.event_time * 1000) };
+    } catch { throw new ServiceError('APPLE_NOTIFICATION_INVALID', 401); }
+  }
   async request(path, fields) {
     let response;
     try {
