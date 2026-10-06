@@ -1,7 +1,10 @@
 // PlaidLinkKitPresenter.swift
 // NomadFi
 //
-// The *only* file in NomadFi that imports Plaid's `LinkKit` SDK.
+// The *only* file in NomadFi that imports Plaid's `LinkKit` SDK, and
+// it compiles in DEBUG builds only: release builds neither link nor
+// embed LinkKit (see `UnavailablePlaidLinkPresenter` and the target's
+// Release linker flags and "Remove LinkKit from Release" phase).
 // Everything outside this file talks to the abstract
 // ``PlaidLinkPresenting`` seam, so if LinkKit is unavailable at
 // build time (e.g. the SPM package did not resolve on a CI runner
@@ -23,6 +26,8 @@
 //   ``PlaidLinkCoordinator/handle(universalLink:)`` forwards the URL
 //   to this presenter, which in turn calls LinkKit's
 //   `handler.continue(from:)` so Link resumes the session.
+
+#if DEBUG
 
 import Foundation
 import OSLog
@@ -146,3 +151,5 @@ final class PlaidLinkKitPresenter: PlaidLinkPresenting {
         return top
     }
 }
+
+#endif

@@ -59,12 +59,21 @@ final class PlaidLinkCoordinator {
         return now() < pendingExchange.expiresAt
     }
 
+    /// LinkKit in DEBUG builds; release builds ship without the SDK.
+    static func makeDefaultPresenter() -> any PlaidLinkPresenting {
+        #if DEBUG
+            PlaidLinkKitPresenter()
+        #else
+            UnavailablePlaidLinkPresenter()
+        #endif
+    }
+
     /// Initializer. Defaults wire to the Keychain-backed configuration
     /// and the URLSession-based broker client.
     init(
         configuration: PlaidSandboxConfiguration = PlaidSandboxConfiguration(),
         clientBuilder: (@Sendable (URL) -> any PlaidSandboxClient)? = nil,
-        presenter: any PlaidLinkPresenting = PlaidLinkKitPresenter(),
+        presenter: any PlaidLinkPresenting = PlaidLinkCoordinator.makeDefaultPresenter(),
         now: @escaping @Sendable () -> Date = { Date.now }
     ) {
         self.configuration = configuration
