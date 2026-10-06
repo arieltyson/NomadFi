@@ -1,19 +1,20 @@
 // DecisionAssistantView.swift
 // NomadFi
 //
-// The Decisions tab's root screen. IA/UI redesign: the surface is
-// organised into six sectioned bands so the user immediately sees
-// (1) how to start a decision, (2) which checks are reusable
-// tools, (3) which scenarios are pinned, (4) which decisions they
-// have actually reviewed, (5) where captured drafts live, and
-// (6) which drafts they have archived. Lower-priority sections
-// progressively disclose so the screen never feels infinite.
+// The Decisions tab's root screen. Capturing a decision is the
+// toolbar's + (a long press offers Apple Intelligence); the page
+// itself is organised into sectioned bands so the user immediately
+// sees (1) which checks are reusable tools, (2) which scenarios are
+// pinned, (3) which decisions they have actually reviewed, (4) where
+// captured drafts live, and (5) which drafts they have archived.
+// Lower-priority sections progressively disclose so the screen never
+// feels infinite.
 //
 // Layout follows Apple's HIG layout + scroll-views + accessibility
 // guidance:
 //   • One primary vertical scroll only.
 //   • Strong section headers per region; calm visual hierarchy.
-//   • Capture decision is the dominant first-viewport command.
+//   • Adding lives in the toolbar, where people look to add things.
 //   • Reusable tools, pinned scenarios, history, and drafts each
 //     read as a different kind of thing.
 //   • Drafts and archived drafts cap at a small preview with a
@@ -154,6 +155,14 @@ struct DecisionAssistantView: View {
             .ignoresSafeArea()
         }
         .navigationTitle("Decisions")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                CaptureDecisionButton(
+                    onCapture: { viewModel.presentDraftForm() },
+                    onDescribe: { viewModel.presentAIIntake() }
+                )
+            }
+        }
         .task { viewModel.bootstrap(modelContext: modelContext) }
         .onChange(of: pendingAIIntakeRaw, initial: true) { _, _ in
             consumePendingAIIntakeIfAvailable()
@@ -386,23 +395,20 @@ private struct DecisionAssistantContent: View {
     var body: some View {
         LazyVStack(spacing: SpacingTokens.large) {
 
-            // 1. Capture decision — primary command module.
-            DecisionAssistantCaptureSection(viewModel: viewModel)
-
-            // 2. Reusable checks — evergreen tools.
+            // 1. Reusable checks — evergreen tools.
             DecisionAssistantReusableChecksSection(
                 viewModel: viewModel,
                 onOpenDecision: onOpenDecision
             )
 
-            // 3. Pinned scenario — situational, not a tool.
+            // 2. Pinned scenario — situational, not a tool.
             DecisionAssistantPinnedScenarioSection(
                 viewModel: viewModel,
                 allAccounts: allAccounts,
                 onOpenDecision: onOpenDecision
             )
 
-            // 4. Previous decisions — actually reviewed only.
+            // 3. Previous decisions — actually reviewed only.
             DecisionAssistantHistorySection(
                 viewModel: viewModel,
                 allAccounts: allAccounts,
@@ -410,14 +416,14 @@ private struct DecisionAssistantContent: View {
                 onOpenDecision: onOpenDecision
             )
 
-            // 5. Captured drafts — saved raw context.
+            // 4. Captured drafts — saved raw context.
             DecisionAssistantDraftsSection(
                 items: draftItems,
                 expanded: $draftsExpanded,
                 onDraftTapped: onDraftTapped
             )
 
-            // 6. Archived drafts — only when non-empty.
+            // 5. Archived drafts — only when non-empty.
             if !archivedDraftItems.isEmpty {
                 DecisionAssistantArchivedDraftsSection(
                     items: archivedDraftItems,
@@ -433,21 +439,7 @@ private struct DecisionAssistantContent: View {
     }
 }
 
-// MARK: - 1. Capture decision
-
-private struct DecisionAssistantCaptureSection: View {
-
-    @Bindable var viewModel: DecisionAssistantViewModel
-
-    var body: some View {
-        DecisionAssistantCaptureHero(
-            onCaptureTapped: { viewModel.presentDraftForm() },
-            onAppleIntelligenceTapped: { viewModel.presentAIIntake() }
-        )
-    }
-}
-
-// MARK: - 2. Reusable checks
+// MARK: - 1. Reusable checks
 
 private struct DecisionAssistantReusableChecksSection: View {
 
@@ -475,7 +467,7 @@ private struct DecisionAssistantReusableChecksSection: View {
     }
 }
 
-// MARK: - 3. Pinned scenario
+// MARK: - 2. Pinned scenario
 
 private struct DecisionAssistantPinnedScenarioSection: View {
 
@@ -511,7 +503,7 @@ private struct DecisionAssistantPinnedScenarioSection: View {
     }
 }
 
-// MARK: - 4. Previous decisions
+// MARK: - 3. Previous decisions
 
 private struct DecisionAssistantHistorySection: View {
 
@@ -593,7 +585,7 @@ private struct DecisionAssistantHistoryEmptyState: View {
     }
 }
 
-// MARK: - 5. Captured drafts
+// MARK: - 4. Captured drafts
 
 /// Drafts v3 alignment preserved: each row surfaces evaluator-
 /// derived readiness ("Engine ready", "Add amount first", "Review
@@ -680,7 +672,7 @@ private struct DecisionAssistantDraftsEmptyState: View {
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text("No drafts captured yet")
                     .font(TypographyTokens.body)
-                Text("Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything.")
+                Text("Tap + to capture a scenario in your own words.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -689,7 +681,7 @@ private struct DecisionAssistantDraftsEmptyState: View {
     }
 }
 
-// MARK: - 6. Archived drafts
+// MARK: - 5. Archived drafts
 
 /// Quieter secondary list of archived drafts. Only renders when
 /// the user actually has archived drafts. Same progressive-

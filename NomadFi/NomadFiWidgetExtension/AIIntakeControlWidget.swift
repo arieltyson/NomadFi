@@ -24,9 +24,9 @@
 //     unconfigurable controls when there's a single clear action.)
 //   • `ControlWidgetButton` over `Toggle` — the action *opens an
 //     in-app surface*; it doesn't toggle persistent state.
-//   • `apple.intelligence` SF Symbol — same glyph the in-app
-//     `DecisionAssistantCaptureHero` uses for its Apple
-//     Intelligence row, so the control reads as the same affordance
+//   • `apple.intelligence` SF Symbol — same glyph as the
+//     "Describe with Apple Intelligence" item in the Decisions
+//     tab's + menu, so the control reads as the same affordance
 //     across surfaces.
 //   • `displayName` and `description` are explicit and concise per
 //     HIG ("clear, action-first labelling for controls").

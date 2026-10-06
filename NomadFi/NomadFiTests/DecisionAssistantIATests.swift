@@ -100,11 +100,9 @@ struct DecisionAssistantIATests {
             "Decisions you've reviewed at least once on this device.",
             "Saved raw context. Each row shows what NomadFi can do with it right now.",
             "Hidden from the main list. Tap to restore or delete permanently.",
-            // Empty-state and capture-hero copy:
+            // Empty-state copy:
             "Open a reusable check or the pinned scenario above to start a record NomadFi can reopen later.",
-            "Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything.",
-            "Capture a scenario in your own words. NomadFi keeps it on this device and shows you what it can do with it.",
-            "Drafts stay on this device. NomadFi never analyzes them automatically — you decide when to hand a draft to a deterministic engine.",
+            "Tap + to capture a scenario in your own words.",
         ]
 
         for phrase in prohibited {

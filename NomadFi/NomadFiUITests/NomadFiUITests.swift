@@ -89,6 +89,28 @@ final class NomadFiUITests: XCTestCase {
         add(countryPage)
     }
 
+    /// + captures a decision; touch and hold offers Apple Intelligence.
+    @MainActor
+    func testCaptureDecisionFromToolbar() {
+        let app = makeApp(hasCompletedOnboarding: true)
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Decisions"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Decisions"].tap()
+
+        let capture = app.buttons["decisions.capture"]
+        XCTAssertTrue(capture.waitForExistence(timeout: 8))
+
+        // XCUITest's synthesised press needs longer than a person's
+        // touch-and-hold before the menu replaces the primary action.
+        capture.press(forDuration: 2)
+        XCTAssertTrue(app.buttons["Describe with Apple Intelligence"].waitForExistence(timeout: 8))
+        app.tap()
+
+        capture.tap()
+        XCTAssertTrue(app.navigationBars["Capture decision"].waitForExistence(timeout: 8))
+    }
+
     @MainActor
     func testExchangeRatesOpenFromTools() {
         let app = makeApp(hasCompletedOnboarding: true)

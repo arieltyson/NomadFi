@@ -78,7 +78,7 @@ final class DecisionAssistantViewModel {
 
     /// True when the decision-draft capture sheet is presented.
     /// Owned by the view model so the capture affordance on
-    /// `DecisionAssistantCaptureHero` can be driven through a
+    /// `CaptureDecisionButton` can be driven through a
     /// tested `@Observable` surface instead of scattered `@State`.
     var isDraftFormPresented: Bool = false
 
@@ -210,14 +210,13 @@ final class DecisionAssistantViewModel {
     }
 
     /// Presents the decision-draft capture sheet. Tapped from the
-    /// "Capture decision" button on ``DecisionAssistantCaptureHero``.
+    /// toolbar + (``CaptureDecisionButton``).
     func presentDraftForm() {
         isDraftFormPresented = true
     }
 
     /// Presents the Phase 9A Apple Intelligence intake sheet.
-    /// Tapped from the "Apple Intelligence" supporting row on
-    /// ``DecisionAssistantCaptureHero``.
+    /// Chosen from the long-press menu on ``CaptureDecisionButton``.
     func presentAIIntake() {
         isAIIntakePresented = true
     }

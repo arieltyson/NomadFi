@@ -20,10 +20,9 @@
 //   surface they actually use.
 //
 // Symbol vocabulary (deliberate visual distinction):
-//   • `square.and.pencil` — typed manual capture. Same SF
-//     Symbol the in-app `DecisionAssistantCaptureHero` uses for
-//     its primary "Capture decision" button, so the affordance
-//     reads as the same control across surfaces.
+//   • `square.and.pencil` — typed manual capture. Out of
+//     context in Control Center, a bare + would not say what it
+//     adds; in the app the same action is the Decisions tab's +.
 //   • `apple.intelligence` — AI intake (sibling control). The
 //     two symbols make the path selection unmistakable at a
 //     glance, with no reliance on color alone (HIG inclusivity
