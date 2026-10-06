@@ -16,7 +16,7 @@ function validatePage(page) {
       || typeof page.hasMore !== 'boolean' || !Array.isArray(page.events)
       || page.events.length > 1000) throw new StoreError('INVALID_PAGE');
   for (const event of page.events) {
-    if (!['account', 'transaction', 'removed_transaction'].includes(event.kind)
+    if (!['account', 'removed_account', 'transaction', 'removed_transaction'].includes(event.kind)
         || typeof event.externalID !== 'string' || !event.externalID.length || event.externalID.length > 512
         || !event.payload || Array.isArray(event.payload) || typeof event.payload !== 'object'
         || Buffer.byteLength(JSON.stringify(event.payload)) > 65536) throw new StoreError('INVALID_EVENT');
@@ -155,6 +155,15 @@ export class SyncStore {
       if (connection.upstream_cursor !== generation.base_cursor) throw new StoreError('CURSOR_CONFLICT');
       const revision = requireRow(await client.query(`UPDATE nomadfi.users SET delivery_revision = delivery_revision + 1
         WHERE id = $1 RETURNING delivery_revision`, [claim.user_id])).delivery_revision;
+      await client.query(`INSERT INTO nomadfi.ledger_records
+        (connection_id, user_id, kind, external_id, payload, removed, revision)
+        SELECT DISTINCT ON (replace(kind, 'removed_', ''), external_id)
+          connection_id, user_id, replace(kind, 'removed_', ''), external_id, payload,
+          kind LIKE 'removed_%', $2 FROM nomadfi.sync_events WHERE generation_id = $1
+        ORDER BY replace(kind, 'removed_', ''), external_id, ordinal DESC
+        ON CONFLICT (connection_id, kind, external_id) DO UPDATE SET
+          payload = EXCLUDED.payload, removed = EXCLUDED.removed, revision = EXCLUDED.revision`,
+      [generationID, revision]);
       await client.query(`UPDATE nomadfi.sync_generations SET delivery_revision = $2,
         published_at = clock_timestamp() WHERE id = $1`, [generationID, revision]);
       await client.query(`UPDATE nomadfi.connections SET upstream_cursor = $2,
@@ -174,6 +183,15 @@ export class SyncStore {
       await client.query(`UPDATE nomadfi.sync_jobs SET lease_expires_at = NULL, failure_code = $2,
         available_at = clock_timestamp() + make_interval(secs => $3), dead_letter = attempts >= 8
         WHERE connection_id = $1`, [claim.connection_id, code, retrySeconds]);
+    });
+  }
+
+  async discard(claim, generationID) {
+    return transaction(this.pool, async client => {
+      await this.assertLease(client, claim);
+      await client.query(`DELETE FROM nomadfi.sync_generations WHERE id = $1 AND connection_id = $2
+        AND user_id = $3 AND lease_epoch = $4 AND published_at IS NULL`,
+      [generationID, claim.connection_id, claim.user_id, claim.lease_epoch]);
     });
   }
 

@@ -2,7 +2,8 @@
 
 Local storage implementation for the [hosted sync plan](../../docs/PlaidHostedSyncPlan.md).
 This implements part of H1 and the persistence contracts used by H2/H3. It is
-not yet a running Plaid API or deployed financial backend.
+not yet a deployed financial backend. Provider calls in tests use synthetic
+fixtures; no live bank integration is claimed by passing those tests.
 No live credentials or bank records are needed by these commands.
 
 ## Run locally
@@ -128,10 +129,28 @@ Identity tests additionally cover nonce replay, tenant allowlisting, credential
 rotation/reuse, grant validation, logout, deletion state, JWT validation, and
 encrypted context substitution.
 
+`SyncWorker` now calls the provider through a bounded, redacted HTTP client,
+restarts pagination mutations from the committed cursor, and publishes a
+materialized ledger in the same transaction as delivery events and cursor
+advancement. Amounts are serialized as decimal strings; cached balance fetch
+time is distinct from the provider's balance observation time. Missing
+currencies and observation timestamps remain unknown. Pending replacements,
+modifications, removals, and account tombstones retain connection identity.
+
+`WebhookService` verifies ES256 signatures, bounded token age, and the hash of
+the original request bytes before parsing or enqueuing. Its receipt and job
+update commit together. Duplicate deliveries do not add work. A scheduled
+catch-up helper coalesces requests for stale banks; it does not purchase a
+Transactions Refresh call. Failures use capped backoff and reconnect state is
+isolated per bank. Tests cover mutation recovery, failure after partial paging,
+materialization, signature/body tampering, receipt rollback, and stale sweeps.
+
+Provider contracts follow [Plaid sync pagination](https://plaid.com/docs/api/products/transactions/)
+and [webhook verification](https://plaid.com/docs/api/webhooks/webhook-verification/).
+
 Before deployment, complete the Apple revocation lifecycle, Link exchange
-recovery, provider mapping and sync pagination retry,
-signature-verified webhook receiver, worker scheduling, current-snapshot
-bootstrap/materialization, expired-checkpoint retention, staged-data cleanup,
+recovery, deployed webhook/worker scheduling, current-snapshot
+bootstrap, expired-checkpoint retention, staged-data cleanup,
 revocation/deletion, restricted runtime roles, and backup/restore procedures.
 These remain explicit plan milestones; passing storage tests does not mark
 H1–H3 complete or establish live bank connectivity.

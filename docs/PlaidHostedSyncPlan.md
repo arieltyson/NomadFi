@@ -370,6 +370,11 @@ no Plaid access token reaches the app or logs.
 
 ### H2 — Complete transaction reconciliation
 
+Local worker tests now cover pending replacements, modifications/removals,
+account tombstones, mutation restart from the committed cursor, isolated bank
+failures, and atomic current-ledger publication. Device bootstrap, app merge,
+and live bank verification remain open.
+
 - [ ] Implement staged sync generations, durable upstream cursors, leases,
   bounded paging, pending-to-posted transitions, and removals.
 - [ ] Add the app delivery API with independent device checkpoints and
@@ -384,6 +389,11 @@ no Plaid access token reaches the app or logs.
 passes cannot skip changes or expose partial history.
 
 ### H3 — Automatic jobs and freshness
+
+Raw-body signature verification, transactional receipt deduplication/enqueue,
+bounded worker retries, cached balance timestamps, and a coalescing stale sweep
+are implemented with synthetic provider fixtures and real PostgreSQL tests.
+Hosted scheduling and real sandbox webhook delivery have not been exercised.
 
 - [ ] Implement verified webhooks, durable enqueue/acknowledgment, retries,
   dead-letter handling, and scheduled stale-connection catch-up using the
