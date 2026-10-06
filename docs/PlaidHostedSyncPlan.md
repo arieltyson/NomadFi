@@ -1,6 +1,6 @@
 # Plaid Hosted Connection and Automatic Sync Plan
 
-Updated: October 5, 2026. Status: **planned; no hosted deployment yet**.
+Updated: October 5, 2026. Status: **implementation started locally; no hosted deployment yet**.
 
 This is the implementation plan for Phase 5E and the minimum Phase 5F
 hardening needed for an owner-only hosted pilot. The
@@ -310,7 +310,7 @@ Transactions Refresh access and charges justify forced refresh controls.
 
 ## Milestones and exit criteria
 
-All hosted milestones are planned. Complete them in dependency order;
+Hosted milestones remain open. Complete them in dependency order;
 calendar dates are assigned after cloud access and plan terms are known.
 
 ### H0 — Rollout decisions and acceptance baseline
@@ -339,6 +339,13 @@ recorded; implementation may proceed locally while external choices remain
 open. Cloud deployment/data transfer waits for those choices.
 
 ### H1 — Durable backend and authenticated ownership
+
+Local storage work is implemented under
+[`services/plaid-backend/`](../services/plaid-backend/README.md): migrations,
+connection ownership constraints, staged generations, fenced leases, ordered
+publication, and device checkpoints. Real PostgreSQL tests cover rollback,
+concurrency, isolation, and database restart. Authentication, token encryption,
+deployment roles, and the remaining lifecycle are still open; H1 is not complete.
 
 - [ ] Create deployable service, environment separation, infrastructure
   configuration, secret injection, and local PostgreSQL development commands.

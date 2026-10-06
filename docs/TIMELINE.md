@@ -1260,12 +1260,12 @@ details; this timeline tracks sequencing and status.
   (`06d5c88`); signed build and actual device flows passed. Scoped commits
   passed staged security checks and are pushed. Personal evidence stays private.
 
-**Hosted implementation milestones — all planned:**
+**Hosted implementation milestones — local storage started; none complete:**
 
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |
 | H0 `[ ]` | Private acceptance review; cloud/region, plan, budget, privacy, CA/US coverage and Chase OAuth eligibility | Deployment prerequisites recorded before live cloud data transfer |
-| H1 `[ ]` | Local PostgreSQL migrations, backend API, Apple authentication/session lifecycle, encrypted multi-connection storage | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
+| H1 `[~]` | PostgreSQL storage/tests implemented; API, Apple sessions, encryption and deployment roles remain | Restart-safe connections; additive Link preserves existing cursors; cross-user access rejected |
 | H2 `[ ]` | Complete reconciliation, staged sync generations, independent checkpoints, CAD/USD and transfer checks | Changes converge; interrupted paging cannot skip data; one bank's failure is isolated |
 | H3 `[ ]` | Verified Plaid webhooks, durable jobs, retries, scheduled catch-up | Backend ingests updates while the phone is closed/offline |
 | H4 `[ ]` | Automatic refresh, per-bank status, CA/US Link, Chase OAuth, card metadata audit | Dashboard catches up; offline use, OAuth return, and connection repair work |
@@ -1285,6 +1285,12 @@ devices use separate delivery checkpoints. Handle removed transactions,
 pending-to-posted replacements, and pagination recovery before claiming
 reliable automatic sync. Preserve user annotations and receipt/tax documents
 when upstream records disappear.
+
+Local storage implementation and its real-database tests live in
+[`services/plaid-backend/`](../services/plaid-backend/README.md). Staged deltas,
+atomic cursor publication, job leases/retries, and device acknowledgments are
+implemented. This does not yet provide hosted authentication, encrypted token
+management, live webhook ingestion, or app delivery; H1–H3 remain open.
 
 **Multi-bank readiness:** replace the current single Item ID/cursor before
 linking another institution; a new Link currently replaces the active sync
