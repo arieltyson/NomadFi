@@ -1,5 +1,11 @@
 # NomadFi Product Timeline
 
+October 6 implementation: FiBot's shared Swift calculation core and evidence
+registry now pass synthetic tests. F0–F2 foundations exist; F3–F6 and remaining
+financial-domain acceptance gates are tracked in [FiBot](./FiBot.md). Hosted
+banking engineering is on `codex/fibot-multibank`; cloud provisioning and the
+reviewed migration of existing CIBC records are still separate release gates.
+
 Phased roadmap for turning NomadFi into a cross-border financial decision
 assistant. This document intentionally accounts only for what NomadFi needs to
 help users choose payment methods, protect credit leverage, reduce FX waste,

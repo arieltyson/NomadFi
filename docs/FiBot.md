@@ -1,6 +1,15 @@
 # FiBot — Financial Bot
 
-Updated: October 5, 2026. Status: **planned; no FiBot implementation shipped**.
+Updated: October 6, 2026. Status: **calculation core implemented and tested;
+live pilot and broader release remain gated**.
+
+Implementation: `Core/FiBot/Engine` is shared by iOS and the root Swift package.
+It includes decimal CAD/USD cash forecasts, explicit dated net-income and bill
+schedules, baseline/stress checks, shared reservations, missing-data outcomes,
+and a versioned R1–R6 evidence registry. Fifteen synthetic tests pass. The
+current engine blocks cross-currency transfers without reviewed settlement
+support; financing and indefinite recurring-purchase analysis remain pending.
+See [calculation-core scope](../services/fibot-engine/README.md).
 
 FiBot is NomadFi's proactive financial agent. It helps a person decide whether
 to buy something, how much they can realistically afford, and what to change
@@ -265,7 +274,8 @@ Private financial data and conversations must stay out of Git and telemetry.
 
 ## Delivery milestones
 
-All milestones are planned. The first engineering slice is F0–F1 with synthetic
+F0–F2 foundations are implemented with synthetic or confirmed manual inputs;
+their full acceptance gates remain open. The first engineering slice uses synthetic
 or explicitly confirmed local data; automatic live guidance waits for the
 relevant hosted-sync acceptance gates. No infrastructure/model deployment is
 authorized or performed by writing this plan.
