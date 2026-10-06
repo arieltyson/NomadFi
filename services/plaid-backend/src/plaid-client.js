@@ -4,7 +4,8 @@ const knownErrors = new Set(['ITEM_LOGIN_REQUIRED', 'ITEM_NOT_FOUND', 'INVALID_A
   'TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION', 'PRODUCT_NOT_READY', 'RATE_LIMIT_EXCEEDED',
   'INVALID_PUBLIC_TOKEN']);
 const endpoints = new Set(['/transactions/sync', '/accounts/get', '/item/get', '/item/remove',
-  '/link/token/create', '/item/public_token/exchange', '/webhook_verification_key/get', '/item/webhook/update']);
+  '/link/token/create', '/item/public_token/exchange', '/webhook_verification_key/get', '/item/webhook/update',
+  '/institutions/get_by_id']);
 
 export class PlaidClient {
   constructor({ environment, clientID, secret, fetcher = fetch }) {

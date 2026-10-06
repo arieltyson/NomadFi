@@ -35,6 +35,25 @@ beforeEach(async () => {
 });
 const rows = async () => (await pool.query('SELECT * FROM nomadfi.ledger_records ORDER BY kind, external_id')).rows;
 
+test('bank names come from verified provider metadata and lookup outages do not stop synchronization', async () => {
+  const original = worker.plaid.request;
+  let failName = false;
+  worker.plaid.request = async (path, fields) => {
+    if (path === '/accounts/get') return { accounts, item: { institution_id: 'synthetic-institution' } };
+    if (path === '/institutions/get_by_id') {
+      assert.deepEqual(fields.country_codes, ['CA', 'US']);
+      if (failName) throw new ServiceError('PLAID_UNAVAILABLE');
+      return { institution: { name: 'Synthetic Canadian Bank' } };
+    }
+    return original(path, fields);
+  };
+  pages.push(page([], 'first')); await worker.runOne();
+  assert.equal((await store.connections(userID))[0].institution_name, 'Synthetic Canadian Bank');
+  await pool.query('UPDATE nomadfi.connections SET institution_name = NULL');
+  failName = true; await store.requestSync(userID, connectionID); pages.push(page([], 'second'));
+  assert.equal((await worker.runOne()).status, 'published');
+});
+
 test('worker publishes cached balances and pending-to-posted removal without duplicates', async () => {
   pages.push(page([tx('pending', { pending: true })], 'one'));
   assert.equal((await worker.runOne()).status, 'published');

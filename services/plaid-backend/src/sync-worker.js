@@ -12,7 +12,7 @@ export class SyncWorker {
     if (!claim) return { status: 'idle' };
     let generation;
     try {
-      const connection = (await this.pool.query(`SELECT c.environment, k.key_id, k.encrypted_token
+      const connection = (await this.pool.query(`SELECT c.environment, c.institution_name, k.key_id, k.encrypted_token
         FROM nomadfi.connections c JOIN nomadfi.credentials k ON k.connection_id = c.id
         WHERE c.id = $1 AND c.user_id = $2`, [claim.connection_id, claim.user_id])).rows[0];
       if (!connection || connection.environment !== this.plaid.environment) throw new ServiceError('PROVIDER_INVALID_DATA', 502);
@@ -22,6 +22,22 @@ export class SyncWorker {
         try {
           await this.store.renew(claim);
           const accounts = await this.plaid.request('/accounts/get', { access_token: accessToken });
+          if (!connection.institution_name && typeof accounts.item?.institution_id === 'string') {
+            try {
+              const metadata = await this.plaid.request('/institutions/get_by_id', {
+                institution_id: accounts.item.institution_id, country_codes: ['CA', 'US'],
+              });
+              const name = metadata.institution?.name;
+              if (typeof name === 'string' && name.length > 0 && name.length <= 512) {
+                await transaction(this.pool, async client => {
+                  await client.query("SELECT id FROM nomadfi.users WHERE id = $1 AND state = 'active' FOR UPDATE", [claim.user_id]);
+                  await this.store.assertLease(client, claim);
+                  await client.query('UPDATE nomadfi.connections SET institution_name = $2 WHERE id = $1', [claim.connection_id, name]);
+                });
+                connection.institution_name = name;
+              }
+            } catch (error) { if (error.code === 'LEASE_LOST') throw error; }
+          }
           const accountEvents = mapAccounts(accounts.accounts, this.clock().toISOString());
           const activeIDs = new Set(accountEvents.map(event => event.externalID));
           const oldAccounts = await this.pool.query(`SELECT external_id FROM nomadfi.ledger_records
