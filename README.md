@@ -111,13 +111,18 @@ Contributions are welcome. If you have ideas for features, architecture improvem
 
 ### Git Hook Setup
 
-To keep localization commits clean and avoid noise from Xcode-generated `.xcstrings` comment metadata, run:
+Install Python 3 and Gitleaks 8.30.0 or newer, then enable the local checks:
 
 ```bash
+brew install gitleaks
 bash scripts/install-hooks.sh
 ```
 
-The pre-commit hook normalizes staged `.xcstrings` files by stripping auto-generated comment fields while preserving actual localization keys and values.
+The pre-commit hook blocks detected credentials, likely card numbers, labeled
+sensitive identifiers, and private files in staged changes. It also strips
+generated localization comments without staging unrelated edits. Missing
+scanner dependencies block commits. See [commit security checks](docs/CommitSecurity.md)
+for coverage, limitations, and resolving false positives.
 
 ## License 🪪
 

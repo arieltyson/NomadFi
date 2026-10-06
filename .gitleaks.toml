@@ -1,0 +1,17 @@
+title = "NomadFi credential protection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "nomadfi-plaid-token"
+description = "Plaid access, public, or Link token"
+regex = '''\b(?:access|public|link)-(?:production|sandbox|development)-[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\b'''
+keywords = ["production-", "sandbox-", "development-"]
+
+[[rules]]
+id = "nomadfi-plaid-credential"
+description = "Literal Plaid credential or broker shared secret"
+regex = '''(?i)(?:plaid[_-]?(?:client[_-]?id|secret|broker[_-]?shared[_-]?secret)|client_id|secret)[\s"']{0,3}[:=][\s"']{0,3}([a-f0-9]{24,128})\b'''
+secretGroup = 1
+keywords = ["plaid", "client_id", "secret"]

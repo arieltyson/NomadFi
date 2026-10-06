@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
+python3 scripts/check-staged-security.py --check-dependencies
 chmod +x scripts/normalize-xcstrings.sh .githooks/pre-commit
 git config core.hooksPath .githooks
 
