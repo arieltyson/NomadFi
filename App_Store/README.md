@@ -190,13 +190,36 @@ device. Expected answers once verified:
 
 ---
 
-## 5. Screenshot Mockup Specifications
+## 5. Header, Search Results and Screenshots
 
-Already built. Upload the folder for whichever size App Store Connect asks
-for (it scales them down for smaller iPhones):
+### 5a. Creative assets (Header and Search Results tab)
 
-- [`Screenshots/6.9-inch/`](Screenshots/6.9-inch): 1320 × 2868
-- [`Screenshots/6.5-inch/`](Screenshots/6.5-inch): 1284 × 2778
+Built from Apple's official templates
+([asset best practices](https://developer.apple.com/app-store/asset-best-practices/)),
+with everything that must be seen inside each template's **Art Safe Area**.
+The rest is atmosphere that devices crop and the App Store overlays.
+
+| Slot | File | Size | Art safe area | Content |
+|---|---|---|---|---|
+| Header | [`Creative/header.png`](Creative/header.png) | 3840 × 1646 | x 1097–2743, y 493–1154 | The globe-and-compass mark and "Wealth without borders." on the brand field. No UI, as Apple advises for headers; the App Store adds the name and icon. |
+| Search Results | [`Creative/search-results.png`](Creative/search-results.png) | 3840 × 2560 | x 836–3004, y 765–1795 | "Every country. One net worth." beside the real Dashboard country cards, at their captured resolution. |
+
+Both follow the content rules: no prices, URLs, copyright symbols, awards
+or other platforms, and 4+ throughout. Rebuild with
+`python3 Creative/make_creative_assets.py` after a UI or icon change, and
+check each device crop with **Preview** in App Store Connect before saving.
+
+### 5b. Screenshots (App Previews and Screenshots tab)
+
+Upload each folder to its matching display class:
+
+| Display class | Folder | Size | Required |
+|---|---|---|---|
+| iPhone with Dynamic Island (medium display), 6.1–6.3" | [`Screenshots/iPhone-medium-1206x2622/`](Screenshots/iPhone-medium-1206x2622) | 1206 × 2622 | **Yes** |
+| iPhone with Dynamic Island (large display), 6.7–6.9" | [`Screenshots/iPhone-large-1320x2868/`](Screenshots/iPhone-large-1320x2868) | 1320 × 2868 | No, but keeps the biggest phones sharp |
+
+App Store Connect scales these down for every smaller iPhone class. iPhone
+Duo, iPad and Apple Watch need nothing: NomadFi runs on iPhone only.
 
 All are opaque RGB PNGs. To rebuild them after a UI change:
 
@@ -260,10 +283,10 @@ interface, last 15–30 seconds, and match the screenshot size.
 Only needed for images made outside `make_screenshots.py`, which already
 writes the exact sizes without alpha.
 
-Resize to 6.5" (1284 × 2778):
+Resize to the required medium display (1206 × 2622):
 
 ```bash
-mkdir -p resized && for f in *.png; do sips -z 2778 1284 "$f" --out "resized/$f"; done
+mkdir -p resized && for f in *.png; do sips -z 2622 1206 "$f" --out "resized/$f"; done
 ```
 
 Remove an alpha channel:

@@ -3,10 +3,10 @@
 
 Each raw capture in raw/ (taken by AppStoreScreenshotTests on an iPhone
 17 Pro Max simulator) is placed on the brand gradient under its title and
-subtitle, then written at both iPhone sizes App Store Connect accepts:
+subtitle, then written for App Store Connect's iPhone display classes:
 
-    6.9-inch/  1320 x 2868
-    6.5-inch/  1284 x 2778
+    iPhone-medium-1206x2622/  required ("iPhone with Dynamic Island, medium")
+    iPhone-large-1320x2868/   optional ("iPhone with Dynamic Island, large")
 
 Output is opaque RGB PNG — App Store Connect rejects alpha channels.
 
@@ -43,7 +43,12 @@ SCREENS = [
 # No line may span more than this share of the canvas.
 MAX_TEXT_WIDTH = 0.88
 
-SIZES = {"6.9-inch": (1320, 2868), "6.5-inch": (1284, 2778)}
+# App Store Connect's iPhone display classes. "medium" is required; "large"
+# keeps the biggest phones sharp instead of scaling up.
+SIZES = {
+    "iPhone-medium-1206x2622": (1206, 2622),  # Dynamic Island, 6.1-6.3"
+    "iPhone-large-1320x2868": (1320, 2868),   # Dynamic Island, 6.7-6.9"
+}
 
 
 def font(size: int, weight: str) -> ImageFont.FreeTypeFont:
