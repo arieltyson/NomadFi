@@ -83,10 +83,7 @@ final class NomadFiUITests: XCTestCase {
                 .waitForExistence(timeout: 8)
         )
 
-        let countryPage = XCTAttachment(screenshot: app.screenshot())
-        countryPage.name = "Country page"
-        countryPage.lifetime = .keepAlways
-        add(countryPage)
+        keepScreenshot(named: "Country page", of: app)
     }
 
     /// + captures a decision; touch and hold offers Apple Intelligence.
@@ -109,6 +106,30 @@ final class NomadFiUITests: XCTestCase {
 
         capture.tap()
         XCTAssertTrue(app.navigationBars["Capture decision"].waitForExistence(timeout: 8))
+    }
+
+    /// Investing Learn shows a card per jurisdiction, each opening
+    /// that region's lessons.
+    @MainActor
+    func testInvestingLearnRegionCardsOpenTheirRegion() {
+        let app = makeApp(
+            hasCompletedOnboarding: true,
+            extraEnvironment: ["UI_TEST_SEED_SAMPLE_DATA": "1"]
+        )
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
+        tapButton(containing: "Investing Learn", in: app)
+        keepScreenshot(named: "Investing Learn", of: app)
+
+        tapButton(containing: "Canada", in: app)
+        XCTAssertTrue(
+            app.navigationBars.matching(NSPredicate(format: "identifier CONTAINS %@", "Canada"))
+                .firstMatch
+                .waitForExistence(timeout: 8)
+        )
+        keepScreenshot(named: "Investing region", of: app)
     }
 
     @MainActor
@@ -264,6 +285,15 @@ private extension NomadFiUITests {
         ]
 
         return app
+    }
+
+    /// Keeps a screenshot with the result, for reviewing a layout.
+    @MainActor
+    func keepScreenshot(named name: String, of app: XCUIApplication) {
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = name
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     @MainActor

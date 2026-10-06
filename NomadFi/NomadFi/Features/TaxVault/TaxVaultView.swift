@@ -7,9 +7,9 @@
 // coherent workspace rather than three unrelated screens.
 //
 // Product intent (HIG hierarchy + harmony + ADA social-impact):
-//   • `.review`  — in-content scan / upload CTA + the tax-category
-//     suggestion queue. First-viewport clarity on "what do I need
-//     to act on?".
+//   • `.review`  — the tax-category suggestion queue: "what do I
+//     need to act on?". Adding a receipt is the toolbar's +, the
+//     same on every surface.
 //   • `.learn`   — source-backed education starter, progression,
 //     knowledge-check quizzes, and calm recognition badges. No
 //     scan clutter, no archive noise.
@@ -46,6 +46,8 @@ struct TaxVaultView: View {
     @State private var education = TaxEducationViewModel()
     @State private var surface: TaxVaultSurface = .review
     @State private var showScanError = false
+
+    private let scanTip = ScanReceiptTip()
 
     // Pushed from the Tools tab, so it relies on that tab's
     // `NavigationStack`. Nesting a second stack here would double up
@@ -109,6 +111,7 @@ struct TaxVaultView: View {
             }
         }
         .onChange(of: viewModel.selectedPhotoItem) {
+            scanTip.invalidate(reason: .actionPerformed)
             Task {
                 await viewModel.processSelectedPhoto(modelContext: modelContext)
             }
@@ -167,8 +170,8 @@ struct TaxVaultView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        // Toolbar scan affordance stays for discoverability, but
-        // the in-content CTA in Review is the primary path.
+        // The one way to add a receipt, on every surface. Its tip
+        // explains it once, then retires after the first scan.
         ToolbarItem(placement: .primaryAction) {
             PhotosPicker(
                 selection: $viewModel.selectedPhotoItem,
@@ -177,6 +180,7 @@ struct TaxVaultView: View {
                 Label("Add Receipt", systemImage: "plus")
             }
             .accessibilityHint("Selects a receipt image to scan and add to Tax Vault.")
+            .popoverTip(scanTip)
         }
 
         if surface == .archive, let exportURL = viewModel.exportURL {
@@ -256,9 +260,8 @@ struct CategorySummaryRow: View {
 
 // MARK: - Tips
 
-/// A TipKit tip encouraging users to scan their first receipt.
-/// Now surfaced inline inside the Review surface (near the primary
-/// scan CTA) rather than stacked on top of a monolithic list.
+/// A TipKit tip pointing at the toolbar + until the first receipt
+/// is scanned.
 struct ScanReceiptTip: Tip {
     var title: Text {
         Text("Scan receipts for tax season")

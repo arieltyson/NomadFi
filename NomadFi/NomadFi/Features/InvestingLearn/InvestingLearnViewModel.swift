@@ -36,6 +36,12 @@ final class InvestingLearnViewModel {
         regionBundles = InvestingEducationSelector.regionBundles(for: jurisdictions)
     }
 
+    /// The bundle for `region`, if it is one of the person's
+    /// jurisdictions — the content behind a region's card.
+    func bundle(for region: InvestingEducationRegion) -> InvestingEducationRegionBundle? {
+        regionBundles.first { $0.region == region }
+    }
+
     // MARK: - Selection
 
     func select(_ lesson: InvestingEducationLesson) {

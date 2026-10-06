@@ -50,6 +50,12 @@ final class AppStoreScreenshotTests: XCTestCase {
         open("Tax Vault", in: app, from: tabs.buttons["Tools"])
         capture("05-tax-vault", app)
 
+        // Not listing images; kept for the README.
+        open("Investing Learn", in: app, from: tabs.buttons["Tools"])
+        capture("07-investing-learn", app)
+        open("Canada", in: app)
+        capture("08-investing-region", app)
+
         tabs.buttons["Dashboard"].tap()
         capture("01-dashboard", app)
 

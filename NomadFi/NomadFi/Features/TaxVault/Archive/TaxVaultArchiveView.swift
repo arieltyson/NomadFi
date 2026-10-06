@@ -116,7 +116,7 @@ struct TaxVaultArchiveView: View {
         ContentUnavailableView {
             Label("No documents yet", systemImage: "tray")
         } description: {
-            Text("Scan a receipt from Review to add your first document. Documents appear here grouped by tax year and jurisdiction.")
+            Text("Tap + to scan your first receipt.")
         }
     }
 
