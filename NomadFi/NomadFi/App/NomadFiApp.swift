@@ -190,7 +190,7 @@ extension NomadFiApp {
     /// Deletes every record of every model in the schema. UI tests only.
     @MainActor
     fileprivate static func deleteAllRecords(in context: ModelContext) {
-        for model in NomadFiSchemaV2.models {
+        for model in NomadFiSchemaV3.models {
             deleteAll(model, in: context)
         }
         try? context.save()

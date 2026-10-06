@@ -11,6 +11,16 @@ current engine blocks cross-currency transfers without reviewed settlement
 support; financing and indefinite recurring-purchase analysis remain pending.
 See [calculation-core scope](../services/fibot-engine/README.md).
 
+F3's deterministic local workspace is available in Debug builds, or an explicitly
+enabled `FIBOT` build: Decisions → FiBot. It supports confirmed accessible cash,
+net-income and bill schedules, coverage checks, editable stress assumptions,
+saved briefs, seven-day shared reservations, private export and deletion.
+V3 adds these records through an explicit lightweight migration. Briefs retain
+their actual scenario settings and evidence version; they are marked historical
+when the plan changes. No financial context is sent to an LLM. Natural-language
+interpretation, automatic bank-to-plan reconciliation and financing/recurring
+purchase analysis are not implied by this structured cash-purchase workspace.
+
 FiBot is NomadFi's proactive financial agent. It helps a person decide whether
 to buy something, how much they can realistically afford, and what to change
 to reach their goals. It scrutinizes take-home income, spending, obligations,

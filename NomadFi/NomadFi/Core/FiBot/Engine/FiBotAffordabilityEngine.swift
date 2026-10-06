@@ -15,13 +15,22 @@ public struct FiBotDecision: Codable, Sendable {
     public let baseline: [FiBotForecastPoint]
     public let stress: [FiBotForecastPoint]
     public let policyVersion: String
+    public let assumptions: FiBotPolicy
     public let evidenceIDs: [String]
     public let optionalGoalsToReview: [String]
 }
 
 public enum FiBotAffordabilityEngine {
     public static func evaluate(context: FiBotFinancialContext, purchase: FiBotPurchase, policy: FiBotPolicy = .init()) -> FiBotDecision {
-        let missing = validate(context, purchase, policy)
+        evaluate(context: context, purchase: purchase, policy: policy, monitoring: false)
+    }
+    public static func monitor(context: FiBotFinancialContext, policy: FiBotPolicy = .init()) -> FiBotDecision {
+        let account = context.accounts.first(where: { $0.kind == .cash })
+        return evaluate(context: context, purchase: .init(fundingAccountID: account?.id ?? "",
+            allInCost: .init(0, currency: account?.available.currency ?? "CAD"), costsComplete: true), policy: policy, monitoring: true)
+    }
+    private static func evaluate(context: FiBotFinancialContext, purchase: FiBotPurchase, policy: FiBotPolicy, monitoring: Bool) -> FiBotDecision {
+        let missing = validate(context, purchase, policy, monitoring: monitoring)
         guard missing.isEmpty else { return decision(.needsMoreInformation, reasons: missing, policy: policy) }
         let base = forecast(context, purchase, policy, stressed: false, deferGoals: false)
         let stress = forecast(context, purchase, policy, stressed: true, deferGoals: false)
@@ -48,7 +57,7 @@ public enum FiBotAffordabilityEngine {
                         base: base.points, stress: stress.points, policy: policy)
     }
 
-    private static func validate(_ context: FiBotFinancialContext, _ purchase: FiBotPurchase, _ policy: FiBotPolicy) -> [String] {
+    private static func validate(_ context: FiBotFinancialContext, _ purchase: FiBotPurchase, _ policy: FiBotPolicy, monitoring: Bool) -> [String] {
         var reasons: [String] = []
         guard let today = day(context.evaluatedOn), let end = day(context.horizonEnd), end >= today,
               end.timeIntervalSince(today) >= 90 * 86400,
@@ -68,7 +77,8 @@ public enum FiBotAffordabilityEngine {
         let accounts = context.accounts.filter { $0.kind == .cash }
         if Set(context.accounts.map(\.id)).count != context.accounts.count { reasons.append("duplicate_account_identity") }
         guard let funding = accounts.first(where: { $0.id == purchase.fundingAccountID }) else { return reasons + ["select_accessible_cash_account"] }
-        if !valid(purchase.allInCost) || purchase.allInCost.amount <= 0 || purchase.allInCost.currency != funding.available.currency {
+        if !valid(purchase.allInCost) || purchase.allInCost.amount < 0 || (!monitoring && purchase.allInCost.amount == 0)
+            || purchase.allInCost.currency != funding.available.currency {
             reasons.append("confirm_purchase_currency_and_all_in_amount")
         }
         for account in accounts {
@@ -168,7 +178,7 @@ public enum FiBotAffordabilityEngine {
                                  base: [FiBotForecastPoint] = [], stress: [FiBotForecastPoint] = [],
                                  policy: FiBotPolicy, optionalGoals: [String] = []) -> FiBotDecision {
         .init(outcome: outcome, maximumNow: maximum, reasons: reasons, baseline: base, stress: stress,
-              policyVersion: policy.version, evidenceIDs: ["R3", "R4", "R5"], optionalGoalsToReview: optionalGoals)
+              policyVersion: policy.version, assumptions: policy, evidenceIDs: ["R3", "R4", "R5"], optionalGoalsToReview: optionalGoals)
     }
     private static func valid(_ value: FiBotMoney) -> Bool {
         !value.amount.isNaN && abs(value.amount) <= 1_000_000_000_000

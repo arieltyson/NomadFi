@@ -94,12 +94,12 @@ struct SchemaSnapshotTests {
     func migrationPlanReferencesV1AndV2() {
         let names = NomadFiMigrationPlan.schemas
             .map { String(describing: $0) }
-        #expect(names == ["NomadFiSchemaV1", "NomadFiSchemaV2"])
+        #expect(names == ["NomadFiSchemaV1", "NomadFiSchemaV2", "NomadFiSchemaV3"])
     }
 
     @Test("Hosted-state storage has an explicit migration")
     func migrationPlanHasOneStage() {
-        #expect(NomadFiMigrationPlan.stages.count == 1)
+        #expect(NomadFiMigrationPlan.stages.count == 2)
     }
 
     // MARK: - Production / test parity
@@ -109,7 +109,7 @@ struct SchemaSnapshotTests {
         let testNames = SwiftDataTestContainerFactory.fullAppSchema
             .map { String(describing: $0) }
             .sorted()
-        let productionNames = NomadFiSchemaV2.models
+        let productionNames = NomadFiSchemaV3.models
             .map { String(describing: $0) }
             .sorted()
         #expect(testNames == productionNames)
@@ -124,6 +124,6 @@ struct SchemaSnapshotTests {
         // in CI rather than on a user device.
         let container = try SwiftDataTestContainerFactory
             .makeFullSchemaContainer()
-        #expect(container.schema.entities.count == NomadFiSchemaV2.models.count)
+        #expect(container.schema.entities.count == NomadFiSchemaV3.models.count)
     }
 }

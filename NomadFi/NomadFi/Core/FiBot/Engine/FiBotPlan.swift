@@ -95,7 +95,10 @@ public enum FiBotContextBuilder {
             }
         }
         if !valid { coverage = .init() }
-        return .init(evaluatedOn: date, horizonEnd: end, accounts: plan.accounts.map(\.cash), flows: flows,
+        let accounts = plan.accounts.map { account in
+            var cash = account.cash; cash.displayName = account.name; return cash
+        }
+        return .init(evaluatedOn: date, horizonEnd: end, accounts: accounts, flows: flows,
                      commitments: plan.commitments, coverage: coverage)
     }
 }

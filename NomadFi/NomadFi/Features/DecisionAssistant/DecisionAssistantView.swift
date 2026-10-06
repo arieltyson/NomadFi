@@ -123,6 +123,14 @@ struct DecisionAssistantView: View {
 
     var body: some View {
         ScrollView {
+            #if DEBUG || FIBOT
+            NavigationLink {
+                FiBotWorkspaceView()
+            } label: {
+                Label("FiBot · Can I afford this?", systemImage: "sparkles")
+                    .frame(maxWidth: .infinity, alignment: .leading).padding()
+            }
+            #endif
             DecisionAssistantContent(
                 viewModel: viewModel,
                 allAccounts: accounts,

@@ -97,6 +97,8 @@ enum DataGovernancePolicy {
         //    any remaining non-cascade relationships
         try? modelContext.delete(model: TaxDocument.self)
         try? modelContext.delete(model: HostedLocalState.self)
+        try? modelContext.delete(model: FiBotWorkspace.self)
+        try? modelContext.delete(model: FiBotDecisionRecord.self)
         try? modelContext.delete(model: Transaction.self)
         try? modelContext.delete(model: Subscription.self)
         try? modelContext.delete(model: Budget.self)

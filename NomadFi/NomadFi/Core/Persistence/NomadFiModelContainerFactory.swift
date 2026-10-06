@@ -30,7 +30,7 @@ enum NomadFiModelContainerFactory {
     /// changes have to declare their migration intent.
     static func makeProduction() -> ModelContainer {
         do {
-            let schema = Schema(versionedSchema: NomadFiSchemaV2.self)
+            let schema = Schema(versionedSchema: NomadFiSchemaV3.self)
             return try ModelContainer(
                 for: schema,
                 migrationPlan: NomadFiMigrationPlan.self,

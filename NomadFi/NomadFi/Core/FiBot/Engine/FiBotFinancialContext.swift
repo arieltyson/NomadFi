@@ -27,6 +27,7 @@ public enum FiBotAccountKind: String, Codable, Sendable { case cash, credit, res
 
 public struct FiBotCashAccount: Codable, Sendable {
     public var id: String
+    public var displayName: String?
     public var kind: FiBotAccountKind
     public var available: FiBotMoney
     public var protectedReserve: Decimal

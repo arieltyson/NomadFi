@@ -3,7 +3,7 @@ import Foundation
 
 struct Request: Decodable {
     let context: FiBotFinancialContext
-    let purchase: FiBotPurchase
+    let purchase: FiBotPurchase?
     let policy: FiBotPolicy?
 }
 do {
@@ -13,7 +13,12 @@ do {
         data.append(chunk)
     }
     let request = try JSONDecoder().decode(Request.self, from: data)
-    let decision = FiBotAffordabilityEngine.evaluate(context: request.context, purchase: request.purchase, policy: request.policy ?? .init())
+    let decision: FiBotDecision
+    if let purchase = request.purchase {
+        decision = FiBotAffordabilityEngine.evaluate(context: request.context, purchase: purchase, policy: request.policy ?? .init())
+    } else {
+        decision = FiBotAffordabilityEngine.monitor(context: request.context, policy: request.policy ?? .init())
+    }
     FileHandle.standardOutput.write(try JSONEncoder().encode(decision))
 } catch {
     FileHandle.standardError.write(Data("Invalid FiBot evaluation request.\n".utf8))
