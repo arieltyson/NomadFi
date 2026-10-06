@@ -25,6 +25,10 @@ final class ExchangeRatesViewModel {
     private let service: any ExchangeRateService
     private var loadedCurrencies: Set<CurrencyCode> = []
 
+    /// The rate provider's site, credited wherever rates are shown, as
+    /// its free terms require.
+    static let attributionURL = URL(string: "https://www.exchangerate-api.com")
+
     /// Rates younger than this are reused rather than refetched.
     private static let cacheTimeToLive: Duration = .seconds(3600)
 

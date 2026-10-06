@@ -14,18 +14,16 @@ These are review risks found while preparing this package. None of them
 blocks filling in the listing, but each should be resolved before you press
 **Submit for Review**.
 
-- [ ] **Remove developer-only copy from the Financial Connections page.**
-  *Settings → Financial Setup → Financial Connections* still tells users
-  about a "Plaid sandbox path under Phase 5D validation". Apple rejects apps
-  that show test or beta content (Guideline 2.2). The same phrase is in
-  `NSLocalNetworkUsageDescription`.
-- [ ] **Show the exchange-rate attribution.** Rates come from the free
-  `open.er-api.com` endpoint, whose terms require a visible credit ("Rates
-  By Exchange Rate API" linking to exchangerate-api.com). *Tools → Exchange
-  Rates* is the natural place for it.
-- [ ] **Make sure the support page has a contact method.** Apple requires the
-  Support URL to lead to a way of reaching you (an email address or a form).
-- [ ] **Frame the app as informational in review.** Guideline 5.1.1(ix)
+- [x] **No developer-only copy in release builds** (Guideline 2.2). The
+  Plaid sandbox provider and its controls exist only in Debug builds, the
+  Financial Connections footers are plain, and
+  `NSLocalNetworkUsageDescription` no longer mentions validation phases.
+- [x] **Exchange-rate attribution.** *Tools → Exchange Rates* credits "Rates
+  by Exchange Rate API" with a link, as the free `open.er-api.com` terms
+  require.
+- [x] **Support contact.** The Support URL has a Support section with a
+  tappable email: arieltyson30190@gmail.com.
+- [x] **Frame the app as informational in review.** Guideline 5.1.1(ix)
   requires apps that provide regulated financial services to be submitted by
   the institution itself. NomadFi provides no banking, payments, lending or
   advice; it organises the person's own information. The Notes to Reviewer
@@ -107,7 +105,7 @@ Length: 2,260 / 4,000.
 
 | Field | Value |
 |---|---|
-| **Support URL** | https://arieltyson.github.io/nomadfi-privacy/ (must show a contact method) |
+| **Support URL** | https://arieltyson.github.io/nomadfi-privacy/ (Support section, arieltyson30190@gmail.com) |
 | **Marketing URL** | https://arieltyson.github.io/nomadfi-privacy/ |
 | **Privacy Policy URL** | https://arieltyson.github.io/nomadfi-privacy/privacy/ |
 | **Copyright** | © 2026 Ariel Tyson |
@@ -144,8 +142,8 @@ access). Links open specific official sources, not a general browser.
 **Calculated rating: 4+.**
 
 **Content Rights:** Yes, the app shows third-party content: public exchange
-rates from open.er-api.com, used under its free terms with attribution (see
-*Before you submit*), and links to government and issuer pages. No
+rates from open.er-api.com, used under its free terms with the required
+attribution in *Tools → Exchange Rates*, and links to government and issuer pages. No
 copyrighted media is bundled.
 
 **Encryption:** `ITSAppUsesNonExemptEncryption = NO`. NomadFi uses only

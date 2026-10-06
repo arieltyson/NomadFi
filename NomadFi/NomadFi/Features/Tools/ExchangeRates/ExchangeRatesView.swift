@@ -75,17 +75,24 @@ private struct ExchangeRateList: View {
     }
 }
 
-/// "Indicative · Updated 3:41 PM", and a note when rates are stale.
+/// "Indicative · Updated 3:41 PM" (or a note when rates are stale),
+/// and the credit the rate provider's free terms require.
 private struct ExchangeRateFooter: View {
 
     let viewModel: ExchangeRatesViewModel
 
     var body: some View {
-        if let confidence = viewModel.confidence, let lastUpdated = viewModel.lastUpdated {
-            if viewModel.needsRefresh {
-                Text("\(confidence.displayLabel) · Needs refresh")
-            } else {
-                Text("\(confidence.displayLabel) · Updated \(lastUpdated, format: .dateTime.hour().minute())")
+        VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+            if let confidence = viewModel.confidence, let lastUpdated = viewModel.lastUpdated {
+                if viewModel.needsRefresh {
+                    Text("\(confidence.displayLabel) · Needs refresh")
+                } else {
+                    Text("\(confidence.displayLabel) · Updated \(lastUpdated, format: .dateTime.hour().minute())")
+                }
+            }
+
+            if let attribution = ExchangeRatesViewModel.attributionURL {
+                Link("Rates by Exchange Rate API", destination: attribution)
             }
         }
     }

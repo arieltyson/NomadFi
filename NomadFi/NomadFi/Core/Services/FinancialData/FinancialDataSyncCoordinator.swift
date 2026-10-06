@@ -245,12 +245,17 @@ final class FinancialDataSyncCoordinator: Sendable {
     /// `docs/research/PlaidSandboxProof.md`).
     @MainActor
     static func live() -> FinancialDataSyncCoordinator {
-        FinancialDataSyncCoordinator(providers: [
+        var providers: [any FinancialDataProvider] = [
             ManualFinancialDataProvider(),
             CSVImportFinancialDataProvider(),
             FinanceKitFinancialDataProvider(),
-            PlaidSandboxFinancialDataProvider()
-        ])
+        ]
+        #if DEBUG
+            // A developer validation path against a local sandbox
+            // broker; never registered in builds people install.
+            providers.append(PlaidSandboxFinancialDataProvider())
+        #endif
+        return FinancialDataSyncCoordinator(providers: providers)
     }
 
     /// Preview / Xcode-canvas provider stack. Same shape as the live

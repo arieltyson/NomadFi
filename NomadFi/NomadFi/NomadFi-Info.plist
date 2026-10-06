@@ -29,7 +29,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>NomadFi uses your local network only when a developer enables the Phase 5D Plaid sandbox validation harness on this device. Production users never see a local-network prompt.</string>
+	<string>NomadFi uses your local network only to reach a test server in development builds. The App Store version never uses it.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!-- Per Apple's Preventing Insecure Network Connections docs, -->

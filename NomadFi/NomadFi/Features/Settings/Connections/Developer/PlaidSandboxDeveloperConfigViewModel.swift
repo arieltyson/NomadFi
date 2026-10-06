@@ -3,7 +3,8 @@
 //
 // Backs the developer-only Plaid sandbox diagnostics page under
 // Settings → Financial Setup → Financial Connections. Never visible
-// in production (the enclosing view is gated by `#if DEBUG`).
+// in production: like its view, the whole file is compiled only in
+// DEBUG builds, so release builds carry none of it.
 //
 // Responsibilities:
 //
@@ -21,6 +22,8 @@
 // All copy routed through this VM is factual. It never implies
 // production coverage; every label surfaces that this path is a
 // developer-only validation harness.
+
+#if DEBUG
 
 import Foundation
 import OSLog
@@ -264,3 +267,5 @@ final class PlaidSandboxDeveloperConfigViewModel {
         }
     }
 }
+
+#endif

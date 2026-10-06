@@ -35,12 +35,13 @@ struct FinancialConnectionsSettingsView: View {
     var body: some View {
         List {
             providersSection(viewModel: viewModel)
-            plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
             syncSection(viewModel: viewModel)
 #if DEBUG
+            // The Plaid sandbox is a developer validation path; release
+            // builds neither register its provider nor show its controls.
+            plaidLinkSection(viewModel: viewModel, plaidLink: plaidLinkCoordinator)
             developerHarnessSection
 #endif
-            privacySection
         }
         .navigationTitle("Financial Connections")
         .task {
@@ -125,7 +126,7 @@ private extension FinancialConnectionsSettingsView {
         } header: {
             Text("Data Sources")
         } footer: {
-            Text("Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated. NomadFi has a Plaid sandbox path under Phase 5D validation — it is not a production rollout and only runs when a developer has configured the local Plaid sandbox broker.")
+            Text("Manual entry and CSV import are always available.")
         }
     }
 
@@ -184,15 +185,7 @@ private extension FinancialConnectionsSettingsView {
         } header: {
             Text("Sync")
         } footer: {
-            Text("NomadFi only syncs in response to this action. Nothing runs in the background yet.")
-        }
-    }
-
-    var privacySection: some View {
-        Section {
-            EmptyView()
-        } footer: {
-            Text("FinanceKit data stays on-device and is never seen by Apple. Plaid's LinkKit ships in this build only as a developer validation path — Plaid client_id and secret never leave the local broker on your developer machine.")
+            Text("NomadFi syncs only when you tap Sync Now.")
         }
     }
 }
