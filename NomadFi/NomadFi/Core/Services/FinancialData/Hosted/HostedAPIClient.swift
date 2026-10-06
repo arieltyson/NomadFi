@@ -111,6 +111,13 @@ actor HostedAPIClient {
     }
 
     func beginSnapshot() async throws -> HostedSnapshot { try await send("snapshots", body: [:]) }
+    func fiBotStatus() async throws -> HostedFiBotStatus { try await send("fibot") }
+    func configureFiBot(_ input: HostedFiBotConfiguration) async throws -> HostedFiBotConfigurationResult {
+        try await perform("fibot/configuration", method: "POST", data: JSONEncoder().encode(input))
+    }
+    func dismissFiBotAlert(_ id: UUID) async throws {
+        let _: EmptyResponse = try await send("fibot/alerts/\(id.uuidString)", method: "DELETE", body: [:])
+    }
     func snapshotPage(_ id: UUID, after: String = "0") async throws -> HostedSnapshotPage {
         try await send("snapshots/\(id.uuidString)", query: [.init(name: "after", value: after)])
     }

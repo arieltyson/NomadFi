@@ -3,6 +3,7 @@ import SwiftUI
 
 struct FiBotWorkspaceView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.hostedBanking) private var banking
     @Query private var bankAccounts: [Account]
     @State private var context: ModelContext?
     @State private var plan = FiBotPlan()
@@ -67,6 +68,7 @@ struct FiBotWorkspaceView: View {
             }
             Section {
                 NavigationLink("Research and assumptions") { FiBotEvidenceView() }
+                if banking != nil { NavigationLink("Hosted monitoring") { FiBotMonitoringView() } }
                 ShareLink("Export FiBot plan", item: exportPlan)
                 Button("Delete FiBot plan and history", role: .destructive) { deleting = true }
             }
@@ -83,7 +85,9 @@ struct FiBotWorkspaceView: View {
             }
         }
         .confirmationDialog("Delete your FiBot plan and all saved checks?", isPresented: $deleting, titleVisibility: .visible) {
-            Button("Delete FiBot data", role: .destructive) { perform { try FiBotWorkspaceStore.erase(in: $0) } }
+            Button("Delete FiBot data", role: .destructive) {
+                Task { await eraseFiBotData() }
+            }
         }
     }
 
@@ -161,6 +165,12 @@ struct FiBotWorkspaceView: View {
     }
 
     private var exportPlan: String { (try? JSONEncoder().encode(plan)).flatMap { String(data: $0, encoding: .utf8) } ?? "" }
+    private func eraseFiBotData() async {
+        do {
+            try await HostedFiBotConsent.disableIfNeeded(using: banking)
+            perform { try FiBotWorkspaceStore.erase(in: $0) }
+        } catch { self.error = "Sign in to the hosted account and stop FiBot monitoring before deleting this plan. Your data has been kept." }
+    }
     private func invalidateCoverage() { plan.coverage = .init(); plan.confirmedOn = "" }
     private func money(_ text: String) -> Decimal? { FiBotPresentation.parse(text) }
     private func save() { perform { try FiBotWorkspaceStore.save(plan, in: $0) } }

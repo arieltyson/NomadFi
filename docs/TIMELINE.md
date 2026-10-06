@@ -3,7 +3,9 @@
 October 6 implementation: FiBot's shared Swift calculation core and evidence
 registry now pass synthetic tests. The local FiBot workspace includes plan
 editing, briefs, history, reservations and an explicit V3 migration. F0–F3
-foundations exist; F4–F6 and remaining
+foundations exist. F4 now includes consented hosted evaluation and an in-app
+alert feed with isolated workers; automatic bank-to-plan reconciliation and
+remote push remain open. F5–F6 and remaining
 financial-domain acceptance gates are tracked in [FiBot](./FiBot.md). Hosted
 banking engineering is on `codex/fibot-multibank`; cloud provisioning and the
 reviewed migration of existing CIBC records are still separate release gates.

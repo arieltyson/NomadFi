@@ -75,6 +75,7 @@ enum KeychainService {
         case hostedSession = "com.nomadfi.hostedSession"
         case hostedPendingExchange = "com.nomadfi.hostedPendingExchange"
         case hostedPendingLink = "com.nomadfi.hostedPendingLink"
+        case hostedFiBotConsent = "com.nomadfi.hostedFiBotConsent"
     }
 
     // MARK: - String Storage
@@ -218,6 +219,7 @@ enum KeychainService {
             .hostedSession,
             .hostedPendingExchange,
             .hostedPendingLink,
+            .hostedFiBotConsent,
         ]
         for key in keys {
             delete(key: key)

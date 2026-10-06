@@ -68,10 +68,19 @@ private extension PrivacySecuritySettingsView {
         isDeleting = true
         defer { isDeleting = false }
         do {
-            let hasHostedData = try modelContext.fetchCount(FetchDescriptor<HostedLocalState>()) > 0
-            if hasHostedData || hostedBanking?.userID != nil {
+            let hostedStates = try modelContext.fetch(FetchDescriptor<HostedLocalState>())
+            let hasHostedData = !hostedStates.isEmpty
+            let fiBotConsent = try HostedFiBotConsent.load()
+            let hasHostedFiBot = fiBotConsent != nil
+            if hasHostedData || hasHostedFiBot || hostedBanking?.userID != nil {
                 guard let hostedBanking, hostedBanking.userID != nil else {
                     deletionMessage = "Sign in to your hosted account before deleting all data. Your records have been kept."
+                    return
+                }
+                guard let session = try await hostedBanking.client.session(),
+                      hostedStates.allSatisfy({ $0.ownerID == session.tokens.userID.uuidString && $0.endpoint == session.endpoint.absoluteString }),
+                      fiBotConsent == nil || (fiBotConsent?.userID == session.tokens.userID && fiBotConsent?.endpoint == session.endpoint) else {
+                    deletionMessage = "Sign in to the account that owns this device's hosted data before deleting it. Your records have been kept."
                     return
                 }
                 try await hostedBanking.deleteHostedAccount()

@@ -21,6 +21,15 @@ when the plan changes. No financial context is sent to an LLM. Natural-language
 interpretation, automatic bank-to-plan reconciliation and financing/recurring
 purchase analysis are not implied by this structured cash-purchase workspace.
 
+F4 now has an opt-in hosted context, durable triggers after committed bank
+syncs, a separate restricted worker, the shared Swift evaluator, stale-advice
+invalidation, bounded retries, deduplication, dismissal and alert preferences.
+The iOS workspace exposes consent, upload, stop/delete and the private alert
+feed when hosted banking is configured. This first monitor requires renewed
+manual confirmation after a bank revision or date change. Automatic
+bank-to-plan reconciliation and APNs delivery remain open. See the
+[monitoring operations contract](../services/plaid-backend/ops/FiBotMonitoring.md).
+
 FiBot is NomadFi's proactive financial agent. It helps a person decide whether
 to buy something, how much they can realistically afford, and what to change
 to reach their goals. It scrutinizes take-home income, spending, obligations,
