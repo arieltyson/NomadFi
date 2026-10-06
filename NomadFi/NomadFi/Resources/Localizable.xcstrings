@@ -28,6 +28,7 @@
       }
     },
     "%@ · Needs refresh" : {
+
     },
     "%@ · Updated %@" : {
       "localizations" : {
@@ -330,6 +331,7 @@
 
     },
     "Add a jurisdiction with another currency in Settings." : {
+
     },
     "Add a source name or URL before marking as verified." : {
 
@@ -494,31 +496,6 @@
     "Billing" : {
 
     },
-    "Broker health not yet checked." : {
-
-    },
-    "Broker not reachable from this device." : {
-
-    },
-    "Broker reachable (env=%@, %@, %@)." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Broker reachable (env=%1$@, %2$@, %3$@)."
-          }
-        }
-      }
-    },
-    "Broker URL configured. No Plaid item linked yet." : {
-
-    },
-    "Broker URL not set. Save one first, then run health check." : {
-
-    },
-    "Broker URL saved." : {
-
-    },
     "Budget Alerts" : {
 
     },
@@ -529,9 +506,6 @@
 
     },
     "Cancel" : {
-
-    },
-    "Capture a scenario in your own words. NomadFi keeps it on this device and shows you what it can do with it." : {
 
     },
     "Capture Decision" : {
@@ -619,9 +593,6 @@
 
     },
     "Clear snapshot" : {
-
-    },
-    "Cleared." : {
 
     },
     "Clears your answers so you can review and try again." : {
@@ -754,9 +725,6 @@
     "Cross-border context" : {
 
     },
-    "Cross-border transactions and real-cost insights arrive in Phase 3." : {
-
-    },
     "CSV import" : {
 
     },
@@ -851,6 +819,8 @@
     "Describe the scenario" : {
 
     },
+    "Describe with Apple Intelligence" : {
+    },
     "Details" : {
 
     },
@@ -909,9 +879,6 @@
 
     },
     "Double tap to select" : {
-
-    },
-    "Drafts stay on this device. NomadFi never analyzes them automatically — you decide when to hand a draft to a deterministic engine." : {
 
     },
     "Duplicate" : {
@@ -1008,9 +975,6 @@
 
     },
     "Fair Cost" : {
-
-    },
-    "FinanceKit data stays on-device and is never seen by Apple. Plaid's LinkKit ships in this build only as a developer validation path — Plaid client_id and secret never leave the local broker on your developer machine." : {
 
     },
     "Financial Connections" : {
@@ -1260,6 +1224,7 @@
 
     },
     "Loading rates" : {
+
     },
     "Location" : {
 
@@ -1295,14 +1260,10 @@
     "Manage Jurisdictions" : {
 
     },
-    "Manage jurisdictions, currencies, privacy, and account preferences." : {
-
-    },
     "Manual entry" : {
 
     },
-    "Manual entry and CSV import stay available even when other sources are not. Apple FinanceKit is on-device and entitlement-gated. NomadFi has a Plaid sandbox path under Phase 5D validation — it is not a production rollout and only runs when a developer has configured the local Plaid sandbox broker." : {
-
+    "Manual entry and CSV import are always available." : {
     },
     "Mark Confirmed Today" : {
 
@@ -1397,9 +1358,6 @@
     "No Accounts Yet" : {
 
     },
-    "No broker URL configured. Plaid sandbox is inactive." : {
-
-    },
     "No card currently needs a paydown plan. Keep paying the statement balance in full by the due date." : {
 
     },
@@ -1413,6 +1371,7 @@
 
     },
     "No Currency Pairs" : {
+
     },
     "No documents yet" : {
 
@@ -1468,9 +1427,6 @@
     "NomadFi Locked" : {
 
     },
-    "NomadFi only syncs in response to this action. Nothing runs in the background yet." : {
-
-    },
     "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
 
     },
@@ -1495,6 +1451,8 @@
     "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
     },
+    "NomadFi syncs only when you tap Sync Now." : {
+    },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
 
     },
@@ -1511,9 +1469,6 @@
 
     },
     "None" : {
-
-    },
-    "Not a valid broker URL. Use http or https with a host." : {
 
     },
     "Not available on this device" : {
@@ -1693,9 +1648,6 @@
     "Optional. Your account name is only changed when you tap this row." : {
 
     },
-    "Or another way" : {
-
-    },
     "Organize your records" : {
 
     },
@@ -1742,9 +1694,6 @@
 
     },
     "Pinned scenario" : {
-
-    },
-    "Plaid item linked (handle %@)." : {
 
     },
     "Plaid sandbox Link" : {
@@ -1820,7 +1769,10 @@
     "Rate" : {
 
     },
+    "Rates by Exchange Rate API" : {
+    },
     "Rates Unavailable" : {
+
     },
     "Reading receipt..." : {
 
@@ -1898,13 +1850,11 @@
 
     },
     "Retries the broker exchange without another bank login." : {
-
     },
     "Retry" : {
 
     },
     "Retry finishing link" : {
-
     },
     "Returns to the previous onboarding step." : {
 
@@ -2159,9 +2109,6 @@
     "Stamps today's date as the last time you verified this schedule." : {
 
     },
-    "Start a decision" : {
-
-    },
     "Start Apple Intelligence Intake" : {
 
     },
@@ -2217,8 +2164,7 @@
         }
       }
     },
-    "Tap Capture decision above to save a scenario. NomadFi shows what it can do with each draft on its detail sheet — without auto-analyzing anything." : {
-
+    "Tap + to capture a scenario in your own words." : {
     },
     "Tap the button below to add your first account." : {
 
@@ -2325,6 +2271,8 @@
     "Total" : {
 
     },
+    "Touch and hold to describe it with Apple Intelligence." : {
+    },
     "Tracked spend in %@" : {
 
     },
@@ -2345,6 +2293,7 @@
 
     },
     "Transactions" : {
+
     },
     "Transit" : {
 
@@ -2526,9 +2475,6 @@
       }
     },
     "Your cross-border transactions will appear here. Tap + to add one manually." : {
-
-    },
-    "Your global net worth at a glance. Dashboard implementation starts in Phase 2." : {
 
     },
     "Your global net worth will be displayed in this currency. You can change it later in Settings." : {
