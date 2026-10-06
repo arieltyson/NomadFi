@@ -42,6 +42,9 @@ playground.xcworkspace
 Secrets/
 .env
 .env.*
+!tools/plaid-sandbox-broker/.env.example
+
+docs/research/PlaidValidationEvidence/
 
 # ===========================
 # Private docs (sensitive, not public-safe)

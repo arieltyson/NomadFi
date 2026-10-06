@@ -1897,7 +1897,13 @@
     "Retake" : {
 
     },
+    "Retries the broker exchange without another bank login." : {
+
+    },
     "Retry" : {
+
+    },
+    "Retry finishing link" : {
 
     },
     "Returns to the previous onboarding step." : {

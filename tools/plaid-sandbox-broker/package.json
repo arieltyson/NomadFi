@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node --test config.test.js"
+    "preflight": "node preflight.js",
+    "test": "node --test config.test.js preflight.test.js public-token-exchange.test.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

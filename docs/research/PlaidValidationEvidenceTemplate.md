@@ -124,9 +124,11 @@ The Markdown export follows this skeleton exactly (schema version
 > Generated at 2026-04-24T12:12:31Z
 ```
 
-When pasting back, prefer the whole Markdown — the criterion-5 block
-is enough to decide pass/fail/inconclusive by itself, and the event
-table carries the supporting timeline.
+When pasting back, prefer the whole Markdown — the event table must
+establish `env=production` before this can
+support a live-coverage claim. The summary alone does not identify the
+environment. Apply the [live-data preflight](./PlaidLimitedProductionReadiness.md)
+for Canadian runs; no OAuth return is required for non-OAuth institutions.
 
 ---
 
@@ -180,12 +182,15 @@ Claude (or any reviewer) should consider these signals:
 
 All of:
 
-- `broker_health_checked` with `reachable=true`.
+- `broker_health_checked` with `reachable=true`; live Canadian evidence
+  additionally requires `env=production` and the intended institution
+  name. A sandbox result cannot resolve live coverage.
 - `link_launch_requested` present.
 - `public_token_exchanged` with `success=true`.
 - `item_handle_persisted` present (with a masked handle).
 - `reconciliation_finished` with `created_accounts >= 1` OR
-  `matched_durable >= 1` AND `unresolved_ambiguous_snapshots == 0`.
+  `matched_durable >= 1`, with `unresolved_ambiguous_snapshots == 0`
+  in either case.
 - `universal_link_observed` present **if** the institution required
   OAuth (unknown from the artifact alone; cross-reference the note
   or the developer's `session.note`).

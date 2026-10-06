@@ -443,9 +443,10 @@ points at the test file that pins the behaviour.
   shipped parts: `PlaidSandboxSnapshotMapperTests.swift`,
   `PlaidSandboxConfigurationTests.swift`,
   `PlaidSandboxIntegrationTests.swift`._ Phase 5E is blocked on
-  (a) Apple's FinanceKit response and (b) a real Plaid Link flow
-  against at least one target Canadian FI. Akoya comparison
-  paused until that Link flow runs.
+  verified Plaid production access and a real Link flow against at least
+  one target Canadian FI. Apple closed the FinanceKit request for regional
+  availability on April 28; its response is no longer pending.
+  Akoya comparison paused until that Link flow runs.
 - [!] Apple Pay integration — deferred until NomadFi sells something.
 - [!] Wallet card scraping / unrestricted Wallet access — deferred; Apple
   does not expose this.
@@ -1220,11 +1221,11 @@ updated after the gate-clearance slice):
 
 Recommendation carried into Phase 5E gating: **do not start a full
 Phase 5E Plaid build yet, and do not open an Akoya comparison yet.**
-Criterion 1 is now in-code pass; the remaining gates are
-operational rather than architectural — (a) Apple's FinanceKit
-entitlement response + real-device bakeout, and (b) a real Plaid
-Link flow against at least one target Canadian FI with live
-sandbox credentials + the hosted redirect URI.
+Criteria 1–3 passed the April 24 real-device sandbox run. The remaining
+gate is verified Plaid production access followed by a real Canadian-FI
+Link and sync run. Use production credentials, Canada-only coverage, and
+Transactions; OAuth is not required for the Canadian run. Apple closed
+the FinanceKit request for regional availability on April 28.
 
 Non-scope (reaffirmed): no full vendor SDK integration, no Akoya /
 MX / Finicity code, no direct FDX client, no FinanceKit background
@@ -1542,8 +1543,8 @@ tracking and watchlists depend on.
 deep dives shipped (2026-04-24).
 
 **Goal:** Give users a calm, source-backed first investing-learning
-surface while Plaid Limited Production access and Apple's
-FinanceKit response are externally pending. Then deepen the
+surface while Plaid production access and live Canadian validation
+remain pending. FinanceKit is parked after Apple's regional denial. Then deepen the
 registered-account layer (IRA / TFSA / RRSP) without changing the
 education-only contract. No fund picks, no predictions, no
 suitability framing.
@@ -1627,8 +1628,9 @@ suitability framing.
 ### Phase 8B — Fund Tracking and Watchlist
 
 **Status:** `[!]` Deferred. Externally blocked on the same data
-sources Phase 5 is waiting for (Plaid Limited Production access
-and Apple's FinanceKit response). When 5 unblocks, 8B can plan.
+sources Phase 5 is waiting for (Plaid production access and live Canadian
+validation; FinanceKit is parked after the regional denial).
+When 5 unblocks, 8B can plan.
 
 #### Build (when unblocked)
 
@@ -1868,9 +1870,8 @@ re-debating whether the foundation exists.
     authorized-no-accounts state, static date formatting,
     [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md)).
     The `com.apple.developer.financekit` capability request was
-    **submitted to Apple in April 2026** and is awaiting Apple's
-    response; real-device bakeout is the remaining outside-repo
-    step.
+    **closed by Apple on April 28, 2026 for regional availability**;
+    resubmission and real-device bakeout are parked until that changes.
     5D ✅: bakeoff research memo shipped as
     [`OpenFinanceProviderBakeoff.md`](./research/OpenFinanceProviderBakeoff.md)
     **plus** the bounded Plaid sandbox proof in
@@ -1888,10 +1889,9 @@ re-debating whether the foundation exists.
     criteria pass, one partial (unit-cost paper model), one
     unresolved (real Canadian coverage — now architecture-complete,
     only operational validation remains).
-    5E blocked on Apple's FinanceKit decision + a real Plaid Link
-    flow against at least one target Canadian FI with a deployed
-    redirect URI. Akoya comparison paused until that real flow
-    runs.
+    5E blocked on verified Plaid production access + a real Canadian-FI
+    Link and sync run. Canadian validation does not require OAuth.
+    Akoya comparison paused until that real flow runs.
     5F stays parked on real production use + live upstream.
 16. `[x]` Investing education (Phase 8A starter + Phase 8A
     follow-through) — Settings → Advanced Tools → Investing
@@ -1913,8 +1913,9 @@ re-debating whether the foundation exists.
 
 The unblocked product surfaces (Decision Assistant, Tax Vault,
 Investing Learn) keep advancing while the externally-blocked
-provider track (Phase 5 / 8B) waits on Plaid Limited Production
-approval and Apple's FinanceKit response. Phase 9A — on-device
+provider track (Phase 5 / 8B) waits on Plaid production access and
+live Canadian validation. FinanceKit is parked after the regional denial.
+Phase 9A — on-device
 natural-language intake into structured Decision drafts via
 Apple Foundation Models — shipped on 2026-04-24 and is the first
 concrete AI implementation in the repo. Drafts v1 → v2 → v3 plus
@@ -1922,21 +1923,34 @@ the Decision Assistant history-semantics hardening close out the
 Decisions surface alignment loop. Phase 7E is shipped; Phase 8A
 starter + follow-through deep dives are shipped.
 
-**Externally-blocked provider track (unchanged status):**
+**Provider track — October 5 live Canadian-bank update:**
+Production access and the credential/team match are verified.
+Link/MFA and exchange succeeded on the physical iPhone. The first sync
+imported accounts and transactions; the immediate repeat reported no new
+imports. Institution labels were verified in Financial Setup. The bank
+name and exact counts remain in private evidence. Full criterion-5 acceptance remains open for
+bank-record comparison and reconciliation-artifact review; the phone's
+session is marked inconclusive for those remaining checks.
+Imported accounts need jurisdiction assignment, and prior sandbox data
+is still present. The recovery fix is installed and validated by 26
+broker tests and 46 focused iOS tests. See the current result in
+[`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md).
+
+**Provider track implementation history:**
 Phase 5A + 5B + 5C-in-code + 5D (research + sandbox proof +
 real Plaid Link / OAuth readiness + operational real-device unblock +
 DEBUG-only validation recorder / redacted evidence export +
 **first real-device sandbox plumbing run on April 24, 2026** +
 **Plaid Limited Production preflight / broker live-data mode**) are
 shipped. Phase 5D execution / plumbing is *pass*; criterion 5 (real
-target Canadian FI) remains *unresolved*; Phase 5E remains
-*blocked* on (a) Plaid Limited Production access being granted for
-`com.arieljtyson.NomadFi` and the live-data Canadian-FI run from
+target Canadian FI) remains *partially validated*; Phase 5E awaits
+the remaining acceptance review and rollout decision after the run from
 [`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
-clearing, and (b) Apple's FinanceKit response landing. The
-FinanceKit capability request for
-`com.arieljtyson.NomadFi` was **submitted to Apple in April 2026** and
-is awaiting Apple's response. The public product site
+clears. Trial, legacy Limited Production, and paid plans all use the
+production environment; this evaluation used verified Trial access.
+The FinanceKit capability request was closed by Apple on April 28, 2026
+for regional availability, so it is no longer a pending dependency.
+The public product site
 (`https://arieltyson.github.io/nomadfi-privacy/`) and privacy policy
 (`https://arieltyson.github.io/nomadfi-privacy/privacy/`) are live
 and were referenced in the capability request. The Plaid sandbox
@@ -1944,7 +1958,8 @@ proof under `Core/Services/FinancialData/Providers/Plaid/` +
 `tools/plaid-sandbox-broker/` validates three of five pinned
 criteria (mapping, `/transactions/sync` dedupe, cursor finalization
 under the existing reconciler); one criterion is partial (unit-cost
-paper model); one remains unresolved (real Canadian coverage).
+paper model); real Canadian coverage now has live session evidence,
+with acceptance review still outstanding.
 
 Highest-leverage remaining work, in order:
 
@@ -1954,41 +1969,31 @@ Highest-leverage remaining work, in order:
   `/transactions/sync` → reconciler created 10 accounts + 48
   transactions, 0 unresolved, 0 duplicates. See
   [`PlaidSandboxProof.md`](./research/PlaidSandboxProof.md) §0.1.
-- **Phase 5D criterion 5 — UNRESOLVED.** Sandbox runs use Plaid's
+- **Phase 5D criterion 5 — PARTIALLY VALIDATED (October 5 live run).** Sandbox runs use Plaid's
   pre-defined test institutions and test credentials
   ([plaid.com/docs/sandbox/institutions/](https://plaid.com/docs/sandbox/institutions/),
   [plaid.com/docs/sandbox/test-credentials/](https://plaid.com/docs/sandbox/test-credentials/)
   — both vendor-reported), so the April 24 run cannot prove real
   CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login
-  behaviour. The repo is now Limited Production-ready: the broker
+  behaviour. The repo supports a bounded production evaluation: the broker
   supports `PLAID_ENV=production` + `PLAID_LIVE_DATA_EVALUATION=1`
   with `/sandbox/*` endpoints disabled in that mode, and
   [`PlaidLimitedProductionReadiness.md`](./research/PlaidLimitedProductionReadiness.md)
-  is the preflight checklist. **The next concrete step is** Plaid
-  Dashboard production / Limited Production access for
-  `com.arieljtyson.NomadFi`, followed by the live-data Canadian-FI
-  run in
-  [`PlaidRealDeviceValidation.md`](./research/PlaidRealDeviceValidation.md)
-  §8.3. No more sandbox reruns advance the roadmap.
-- **Phase 5C final step — Apple entitlement landing (parallel).**
-  Wait for Apple's response to the submitted FinanceKit capability
-  request. On approval, add `com.apple.developer.financekit` to
-  `NomadFi/NomadFi.entitlements`, regenerate provisioning profiles,
-  and run the real-device test matrix in
-  [`FinanceKitFeasibility.md`](./research/FinanceKitFeasibility.md).
-  No in-repo code changes are needed to start ingesting live
-  FinanceKit data once the entitlement is provisioned.
-- **Phase 5E gating decision.** Only after the two steps above:
-  - If FinanceKit alone clears the bar for NomadFi's cross-border
-    archetype AND Plaid Canadian coverage is confirmed, Phase 5E
-    becomes a prioritisation call rather than a blocker — defer
-    or go based on cost modelling.
-  - If FinanceKit does not clear the bar AND Plaid passed, start
-    a production-access conversation with Plaid and convert the
-    sandbox scaffolding into Phase 5E.
-  - If neither clears the bar, sit on FinanceKit + manual + CSV
-    and revisit when regulator implementation (CFPB 1033, Canada
-    Consumer-Driven Banking) changes the landscape.
+  records the live result and remaining checks. **The next concrete step
+  is** reviewing the finalized private reconciliation artifact and comparing
+  imported transactions with bank records. Production access, Link,
+  exchange, and two syncs have now succeeded. No more sandbox reruns
+  advance this acceptance review.
+- **Phase 5C — parked after regional denial.** Apple closed the request
+  on April 28. Resubmit when developer-region availability changes;
+  provision the entitlement and run the real-device matrix only after
+  approval. This is not a prerequisite for the Canadian Plaid evaluation.
+- **Phase 5E gating decision.** Review the live Canadian artifact and
+  actual pricing before choosing a rollout. A pass supports only the
+  tested institution; production token persistence, transaction removals,
+  reconnection, and multi-user onboarding remain separate work. A run
+  blocked by access, a cap, or a temporarily unavailable institution is
+  inconclusive. Fix implementation errors before judging provider coverage.
 - **Phase 5D / Akoya parallel.** Paused until the real Plaid Link
   flow has been observed. If Plaid fails *and* an explicit
   primary-source reason exists to believe Akoya's Canadian

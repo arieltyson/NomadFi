@@ -51,13 +51,21 @@ final class PlaidLinkCoordinator {
     private let configuration: PlaidSandboxConfiguration
     private let clientBuilder: @Sendable (URL) -> any PlaidSandboxClient
     private let presenter: any PlaidLinkPresenting
+    private let now: @Sendable () -> Date
+    private var pendingExchange: PlaidPendingExchange? { configuration.pendingExchange }
+
+    var canRetryPublicTokenExchange: Bool {
+        guard case .failed = phase, let pendingExchange else { return false }
+        return now() < pendingExchange.expiresAt
+    }
 
     /// Initializer. Defaults wire to the Keychain-backed configuration
     /// and the URLSession-based broker client.
     init(
         configuration: PlaidSandboxConfiguration = PlaidSandboxConfiguration(),
         clientBuilder: (@Sendable (URL) -> any PlaidSandboxClient)? = nil,
-        presenter: any PlaidLinkPresenting = PlaidLinkKitPresenter()
+        presenter: any PlaidLinkPresenting = PlaidLinkKitPresenter(),
+        now: @escaping @Sendable () -> Date = { Date.now }
     ) {
         self.configuration = configuration
         let capturedConfiguration = configuration
@@ -68,6 +76,12 @@ final class PlaidLinkCoordinator {
             )
         }
         self.presenter = presenter
+        self.now = now
+        if let pending = configuration.pendingExchange, now() < pending.expiresAt {
+            phase = .failed(message: "The bank connection is waiting to finish. Restore the broker connection, then retry finishing link.")
+        } else {
+            configuration.setPendingExchange(nil)
+        }
     }
 
     // MARK: - Public API
@@ -76,7 +90,12 @@ final class PlaidLinkCoordinator {
     /// has no broker URL (the Settings row handles that case with a
     /// calm "configure broker first" label).
     func startRealLinkFlow() async {
-        guard case .idle = phase else { return }
+        guard !phase.isBusy else { return }
+        if canRetryPublicTokenExchange {
+            await retryPublicTokenExchange()
+            return
+        }
+        reset()
         guard let brokerURL = configuration.brokerURL else {
             phase = .failed(message: "Plaid sandbox broker URL is not configured.")
             return
@@ -121,8 +140,19 @@ final class PlaidLinkCoordinator {
     /// Allows the Settings UI to reset after a failure so the user
     /// can retry without restarting the app.
     func reset() {
+        guard !phase.isBusy else { return }
+        configuration.setPendingExchange(nil)
         linkedInstitutionName = nil
         phase = .idle
+    }
+
+    func retryPublicTokenExchange() async {
+        guard canRetryPublicTokenExchange, let pendingExchange else { return }
+        guard configuration.brokerURL == pendingExchange.brokerURL else {
+            phase = .failed(message: "Restore the broker URL used for this bank login before retrying.")
+            return
+        }
+        await exchange(publicToken: pendingExchange.token, brokerURL: pendingExchange.brokerURL)
     }
 
     // MARK: - Private
@@ -134,23 +164,28 @@ final class PlaidLinkCoordinator {
         case .failed(let message):
             phase = .failed(message: message)
         case .success(let publicToken):
-            phase = .exchangingPublicToken
-            let client = clientBuilder(brokerURL)
-            do {
-                let handle = try await client.exchangePublicToken(publicToken)
-                configuration.setItemID(handle.itemID)
-                // Reset any pre-existing cursor so the first
-                // `/transactions/sync` gets the full initial diff
-                // for the new item.
-                configuration.setTransactionsCursor(nil)
-                linkedInstitutionName = handle.institutionName
-                phase = .completed(itemID: handle.itemID)
-            } catch {
-                Self.logger.error(
-                    "Plaid public_token exchange failed: \(error.localizedDescription, privacy: .public)"
-                )
-                phase = .failed(message: "Could not exchange the Plaid public token.")
-            }
+            // Device-only Keychain storage lets an interrupted app resume the exchange.
+            let pending = PlaidPendingExchange(
+                token: publicToken, brokerURL: brokerURL, expiresAt: now().addingTimeInterval(30 * 60)
+            )
+            configuration.setPendingExchange(pending)
+            await exchange(publicToken: publicToken, brokerURL: brokerURL)
+        }
+    }
+
+    private func exchange(publicToken: String, brokerURL: URL) async {
+        phase = .exchangingPublicToken
+        let client = clientBuilder(brokerURL)
+        do {
+            let handle = try await client.exchangePublicToken(publicToken)
+            configuration.setItemID(handle.itemID)
+            configuration.setTransactionsCursor(nil)
+            linkedInstitutionName = handle.institutionName
+            configuration.setPendingExchange(nil)
+            phase = .completed(itemID: handle.itemID)
+        } catch {
+            Self.logger.error("Plaid public_token exchange failed: \(error.localizedDescription, privacy: .public)")
+            phase = .failed(message: "Could not finish the bank connection. Restore the broker connection, then retry finishing link.")
         }
     }
 }

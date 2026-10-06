@@ -42,18 +42,20 @@ The real `access_token` never leaves the broker process.
 2. From this directory:
 
    ```sh
+   # Only if .env does not exist yet:
    cp .env.example .env
    # Paste your Plaid credentials.
    # Sandbox mode (default): only sandbox keys are needed.
    # Live-data mode: see PlaidLimitedProductionReadiness.md first.
-   npm install
+   npm ci
+   npm run preflight
    npm run start
    ```
 
 3. Verify with `curl http://127.0.0.1:8787/health`. Expected:
 
    ```json
-   { "ok": true, "env": "sandbox", "requires_secret": false, "redirect_uri_configured": true }
+   { "ok": true, "env": "sandbox", "requires_secret": false, "redirect_uri_configured": false }
    ```
 
 ## Operating modes
@@ -62,10 +64,10 @@ The real `access_token` never leaves the broker process.
 |---|---|---|
 | `PLAID_ENV` | `sandbox` | `production` |
 | `PLAID_LIVE_DATA_EVALUATION` | unset | `1` (must be set explicitly) |
-| Plaid keys | sandbox keys | production / Limited Production keys |
+| Plaid keys | sandbox secret | production secret (Trial, legacy Limited Production, or paid plan) |
 | Plaid base URL | `https://sandbox.plaid.com` (vendor-reported) | `https://production.plaid.com` (vendor-reported) |
 | `/sandbox/item/create` | available | **disabled (HTTP 410)** |
-| `PLAID_REDIRECT_URI` | optional (sandbox institutions don't run OAuth) | **required** (most Canadian FIs are OAuth-capable) |
+| `PLAID_REDIRECT_URI` | optional; needed for OAuth test institutions | optional for Canada-only; required by this broker for other country selections |
 | Startup banner | quiet | loud LIVE-DATA reminder |
 
 The broker refuses to start when:
@@ -74,11 +76,27 @@ The broker refuses to start when:
 - `PLAID_ENV=production` without `PLAID_LIVE_DATA_EVALUATION=1`
   (deliberate opt-in — a forgotten env edit cannot silently move the
   developer onto live data);
-- `PLAID_ENV=production` without `PLAID_REDIRECT_URI`;
+- `PLAID_ENV=production` with non-Canada-only coverage and no redirect;
+- a configured redirect is not HTTPS or includes credentials/query/fragment;
+- products include `balance`, or product/country lists are empty or invalid;
 - `PLAID_BROKER_BIND_HOST` is anything other than loopback and
   `PLAID_BROKER_SHARED_SECRET` is shorter than 16 characters.
 
 ## Reachability
+
+For the first Canadian run use `PLAID_COUNTRY_CODES=CA`,
+`PLAID_PRODUCTS=transactions`, and an empty `PLAID_REDIRECT_URI`.
+Accounts and cached balances come from `/accounts/get`; Auth is not
+needed. Plaid's [Link API](https://plaid.com/docs/api/link/) does not
+accept `balance` as an initialization product. Canadian institutions
+currently do not use [OAuth](https://plaid.com/docs/link/oauth/).
+
+`npm run preflight` checks local settings without contacting Plaid or
+printing secrets. It does not prove production approval. Confirm the
+team's plan, Canadian Transactions access, and remaining Item allowance
+in the Dashboard before starting the live run. Trial plans have a
+10-Item creation limit that removal does not replenish; see the
+[preflight checklist](../../docs/research/PlaidLimitedProductionReadiness.md).
 
 The broker has two reachability modes (orthogonal to sandbox /
 live-data):
@@ -126,8 +144,25 @@ use the **same harness UI**, distinguished by:
 npm test
 ```
 
-Runs Node's built-in test runner against `config.test.js`, which
-covers the env-vars → typed-config rules.
+Runs configuration, preflight CLI, and token-exchange recovery tests,
+including concurrent exchange requests and replay after a lost response.
+
+## Interrupted Link recovery
+
+If bank login succeeds but the phone loses the broker connection, restore
+the same network and use **Retry finishing link**. NomadFi retains the
+temporary public token, original broker URL, and expiry in device-only
+Keychain storage, allowing an app restart to resume within 30 minutes.
+Successful exchange, expiry at the next launch/retry, or developer reset
+clears the pending token. The prior item and sync cursor remain intact
+until the new exchange succeeds.
+
+The broker shares concurrent exchanges for a token and replays the same
+item handle if the phone retries after losing the response. Only a hash
+of the public token is used as the replay-cache key. Keep the broker
+process alive: its item store and replay cache are still in memory.
+A broker restart or an ambiguous failure between Plaid and the broker
+is not recovered by this cache.
 
 ## Security posture
 
@@ -139,6 +174,9 @@ covers the env-vars → typed-config rules.
 - Item handles are random 12-byte prefixes (`itm_…`) — never Plaid
   access_tokens.
 - In-memory item store. A broker restart drops state.
+- Stopping the broker does not revoke Items or stop subscription billing.
+  Keep one session running through both sync checks and plan Dashboard
+  cleanup before stopping. Persistent token storage is a rollout prerequisite.
 - `.env` and `.state.json` are gitignored at the repo root and in
   this directory.
 

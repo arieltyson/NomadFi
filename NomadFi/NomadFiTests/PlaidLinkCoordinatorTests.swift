@@ -162,6 +162,112 @@ struct PlaidLinkCoordinatorTests {
             Issue.record("Expected failed phase, got \(coordinator.phase)")
         }
         #expect(configuration.itemID == nil)
+        #expect(coordinator.canRetryPublicTokenExchange)
+
+        configuration.setTransactionsCursor("old-cursor")
+        stub.exchangeError = nil
+        await coordinator.startRealLinkFlow()
+        #expect(coordinator.phase == .completed(itemID: "itm_stub"))
+        #expect(stub.exchangedTokens == ["public-sandbox-fail", "public-sandbox-fail"])
+        #expect(presenter.presentCallCount == 1)
+        #expect(configuration.transactionsCursor == nil)
+        #expect(!coordinator.canRetryPublicTokenExchange)
+    }
+
+    @Test("An expired exchange token starts a fresh Link session")
+    func expiredExchangeStartsFreshLink() async {
+        let clock = LinkTestClock()
+        let configuration = PlaidSandboxConfiguration(storage: InMemoryStorage())
+        configuration.setBrokerURL(Self.brokerURL)
+        let stub = StubLinkClient()
+        stub.exchangeError = .refreshFailed
+        let presenter = StubPresenter(outcome: .success(publicToken: "expired-public-token"))
+        let coordinator = PlaidLinkCoordinator(
+            configuration: configuration,
+            clientBuilder: { _ in stub },
+            presenter: presenter,
+            now: { clock.date }
+        )
+        await coordinator.startRealLinkFlow()
+        await Self.waitForFinalPhase(on: coordinator)
+        clock.date = clock.date.addingTimeInterval(30 * 60)
+        #expect(!coordinator.canRetryPublicTokenExchange)
+        presenter.outcome = .cancelled
+        await coordinator.startRealLinkFlow()
+        await Self.waitForFinalPhase(on: coordinator)
+        #expect(presenter.presentCallCount == 2)
+        #expect(stub.exchangeCallCount == 1)
+        #expect(coordinator.phase == .cancelled)
+    }
+
+    @Test("Token creation can be retried after restoring the broker")
+    func retryLinkTokenCreation() async {
+        let configuration = PlaidSandboxConfiguration(storage: InMemoryStorage())
+        configuration.setBrokerURL(Self.brokerURL)
+        let stub = StubLinkClient()
+        stub.createLinkTokenError = .refreshFailed
+        let presenter = StubPresenter(outcome: .cancelled)
+        let coordinator = PlaidLinkCoordinator(
+            configuration: configuration, clientBuilder: { _ in stub }, presenter: presenter
+        )
+        await coordinator.startRealLinkFlow()
+        stub.createLinkTokenError = nil
+        await coordinator.startRealLinkFlow()
+        await Self.waitForFinalPhase(on: coordinator)
+        #expect(coordinator.phase == .cancelled)
+        #expect(presenter.presentCallCount == 1)
+    }
+
+    @Test("An interrupted app resumes its saved exchange against the original broker")
+    func resumeExchangeAfterAppRestart() async {
+        let configuration = PlaidSandboxConfiguration(storage: InMemoryStorage())
+        configuration.setBrokerURL(Self.brokerURL)
+        configuration.setItemID("previous-item")
+        configuration.setTransactionsCursor("previous-cursor")
+        let stub = StubLinkClient()
+        stub.exchangeError = .refreshFailed
+        let first = PlaidLinkCoordinator(
+            configuration: configuration, clientBuilder: { _ in stub },
+            presenter: StubPresenter(outcome: .success(publicToken: "pending-public"))
+        )
+        await first.startRealLinkFlow()
+        await Self.waitForFinalPhase(on: first)
+        #expect(configuration.itemID == "previous-item")
+        #expect(configuration.transactionsCursor == "previous-cursor")
+        configuration.setBrokerURL(URL(string: "http://different-broker.invalid"))
+        stub.exchangeError = nil
+        let presenter = StubPresenter()
+        let resumed = PlaidLinkCoordinator(
+            configuration: configuration,
+            clientBuilder: { url in
+                #expect(url == Self.brokerURL)
+                return stub
+            }, presenter: presenter
+        )
+        #expect(resumed.canRetryPublicTokenExchange)
+        await resumed.retryPublicTokenExchange()
+        #expect(stub.exchangeCallCount == 1)
+        #expect(configuration.pendingExchange != nil)
+        configuration.setBrokerURL(Self.brokerURL)
+        await resumed.retryPublicTokenExchange()
+        #expect(resumed.phase == .completed(itemID: "itm_stub"))
+        #expect(presenter.presentCallCount == 0)
+        #expect(configuration.pendingExchange == nil)
+        #expect(configuration.transactionsCursor == nil)
+    }
+
+    @Test("Clearing developer configuration discards a pending exchange")
+    func clearConfigurationDiscardsPendingExchange() {
+        let configuration = PlaidSandboxConfiguration(storage: InMemoryStorage())
+        configuration.setPendingExchange(PlaidPendingExchange(
+            token: "pending-public", brokerURL: Self.brokerURL,
+            expiresAt: Date.now.addingTimeInterval(60)
+        ))
+        let coordinator = PlaidLinkCoordinator(configuration: configuration, presenter: StubPresenter())
+        #expect(coordinator.canRetryPublicTokenExchange)
+        configuration.clearAll()
+        #expect(!coordinator.canRetryPublicTokenExchange)
+        #expect(configuration.pendingExchange == nil)
     }
 
     // MARK: - Universal-link forwarding
@@ -270,6 +376,7 @@ private final class StubLinkClient: PlaidSandboxClient, @unchecked Sendable {
     )
     var exchangeError: FinancialDataProviderError?
     private(set) var exchangeCallCount = 0
+    private(set) var exchangedTokens: [String] = []
 
     func health() async throws -> PlaidBrokerHealthResponse {
         PlaidBrokerHealthResponse(
@@ -288,6 +395,7 @@ private final class StubLinkClient: PlaidSandboxClient, @unchecked Sendable {
     }
     func exchangePublicToken(_ publicToken: String) async throws -> PlaidItemHandleResponse {
         exchangeCallCount += 1
+        exchangedTokens.append(publicToken)
         if let exchangeError { throw exchangeError }
         return exchangeResponse
     }
@@ -303,6 +411,10 @@ private final class StubLinkClient: PlaidSandboxClient, @unchecked Sendable {
             nextCursor: "", hasMore: false
         )
     }
+}
+
+private final class LinkTestClock: @unchecked Sendable {
+    var date = Date(timeIntervalSince1970: 1_000)
 }
 
 @MainActor

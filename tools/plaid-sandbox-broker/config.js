@@ -18,11 +18,8 @@
 //          Limited Production access for `com.arieljtyson.NomadFi`
 //          via the Plaid Dashboard (Plaid-side permission, not
 //          something this broker enforces);
-//        - PLAID_REDIRECT_URI to be set, because OAuth-capable
-//          institutions (most Canadian FIs per
-//          https://plaid.com/en-ca/) will refuse to launch Link
-//          without a valid HTTPS redirect URI matching the app's
-//          associated-domains entitlement;
+//        - an HTTPS redirect URI for runs that include countries
+//          other than Canada; Canadian-only runs do not use OAuth;
 //        - LAN-mode shared-secret rules still apply.
 //      Intentionally a separate flag from `PLAID_ENV=production`:
 //      a forgotten env-var change should not silently move a
@@ -97,18 +94,47 @@ function parseConfig(env) {
   }
 
   const port = Number(env.PORT) || 8787;
-  const countryCodesRaw = env.PLAID_COUNTRY_CODES || 'US';
-  const productsRaw = env.PLAID_PRODUCTS || 'transactions';
+  const countryCodesRaw = env.PLAID_COUNTRY_CODES ?? 'US';
+  const productsRaw = env.PLAID_PRODUCTS ?? 'transactions';
   const sandboxInstitutionID =
     env.PLAID_SANDBOX_INSTITUTION_ID || 'ins_109508';
   const redirectURI = (env.PLAID_REDIRECT_URI || '').trim() || null;
 
-  if (isLiveDataEvaluation && !redirectURI) {
+  const countryTokens = countryCodesRaw.split(',')
+    .map(value => value.trim().toUpperCase()).filter(Boolean);
+  const canadaOnly = countryTokens.length > 0
+    && countryTokens.every(value => value === 'CA');
+  const productTokens = productsRaw.split(',')
+    .map(value => value.trim().toLowerCase());
+  if (productTokens.includes('balance')) {
+    throw configError(
+      'INVALID_LINK_PRODUCT',
+      'Remove balance from PLAID_PRODUCTS; Balance does not require Link initialization. ' +
+        'Use transactions for the Canadian evaluation.'
+    );
+  }
+
+  if (redirectURI) {
+    let parsed;
+    try {
+      parsed = new URL(redirectURI);
+    } catch {
+      throw configError('INVALID_REDIRECT_URI', 'PLAID_REDIRECT_URI must be an HTTPS URL.');
+    }
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password
+      || parsed.search || parsed.hash) {
+      throw configError(
+        'INVALID_REDIRECT_URI',
+        'PLAID_REDIRECT_URI must be an HTTPS URL without credentials, query, or fragment.'
+      );
+    }
+  }
+
+  if (isLiveDataEvaluation && !canadaOnly && !redirectURI) {
     throw configError(
       'MISSING_REDIRECT_URI_FOR_PRODUCTION',
-      'PLAID_REDIRECT_URI is required in production mode. Plaid Link ' +
-        'requires an HTTPS redirect URI for OAuth-capable institutions; ' +
-        'NomadFi uses https://arieltyson.github.io/nomadfi-privacy/plaid-oauth.'
+      'Production runs outside Canada-only coverage require a verified HTTPS OAuth redirect URI. ' +
+        'For the Canadian evaluation, set PLAID_COUNTRY_CODES=CA and leave PLAID_REDIRECT_URI empty.'
     );
   }
 
@@ -142,25 +168,28 @@ function parseConfig(env) {
 
 /**
  * Resolves a comma-separated env-var into a list of Plaid SDK enum
- * values, accepting any common casing. Unknown tokens are silently
- * dropped — Plaid will reject anything wrong at the API call.
+ * values, rejecting unknown entries before a Link session starts.
  */
 function parsePlaidEnumList(rawValue, enumObject) {
-  return String(rawValue)
+  const tokens = String(rawValue)
     .split(',')
     .map((token) => token.trim())
-    .filter(Boolean)
-    .map((token) => resolvePlaidEnumValue(token, enumObject))
     .filter(Boolean);
+  const values = tokens.map((token) => resolvePlaidEnumValue(token, enumObject));
+  if (values.length === 0 || values.some(value => !value)) {
+    throw configError(
+      'INVALID_PLAID_ENUM_LIST',
+      'Plaid country/product lists must contain supported values and cannot be empty.'
+    );
+  }
+  return [...new Set(values)];
 }
 
 function resolvePlaidEnumValue(token, enumObject) {
-  const exact = enumObject[token];
-  if (exact) return exact;
   const lower = token.toLowerCase();
-  const upper = token.toUpperCase();
-  const pascal = lower.charAt(0).toUpperCase() + lower.slice(1);
-  return enumObject[lower] || enumObject[upper] || enumObject[pascal] || null;
+  return Object.values(enumObject).find(value =>
+    typeof value === 'string' && value.toLowerCase() === lower
+  ) || null;
 }
 
 function configError(code, message) {

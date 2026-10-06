@@ -1,13 +1,13 @@
 // PlaidSandboxConfiguration.swift
 // NomadFi
 //
-// Reads and writes the three Plaid sandbox configuration values the
-// app is allowed to know:
+// Reads and writes the Plaid developer configuration and recovery state:
 //
 // 1. The broker's base URL (e.g. `http://127.0.0.1:8787`).
 // 2. The opaque item handle the broker returns after it has exchanged
 //    Plaid's `public_token` for an `access_token`.
 // 3. The `/transactions/sync` cursor for incremental pulls.
+// 4. The broker shared secret and a short-lived pending public-token exchange.
 //
 // The app never sees, stores, or transmits Plaid `client_id` or
 // `secret`. Those live only inside `tools/plaid-sandbox-broker/.env`,
@@ -18,6 +18,12 @@
 // for the biometric app-lock state.
 
 import Foundation
+
+struct PlaidPendingExchange: Codable, Sendable {
+    let token: String
+    let brokerURL: URL
+    let expiresAt: Date
+}
 
 /// Narrow, value-typed façade over the Keychain keys owned by the
 /// Plaid sandbox proof. Exists to keep call sites tidy and to pin the
@@ -63,6 +69,20 @@ struct PlaidSandboxConfiguration: Sendable {
         storage.loadString(.plaidSandboxBrokerSecret)
     }
 
+    var pendingExchange: PlaidPendingExchange? {
+        guard let raw = storage.loadString(.plaidPendingExchange) else { return nil }
+        return try? JSONDecoder().decode(PlaidPendingExchange.self, from: Data(raw.utf8))
+    }
+
+    func setPendingExchange(_ value: PlaidPendingExchange?) {
+        if let value, let data = try? JSONEncoder().encode(value),
+           let raw = String(data: data, encoding: .utf8) {
+            storage.save(raw, .plaidPendingExchange)
+        } else {
+            storage.delete(.plaidPendingExchange)
+        }
+    }
+
     // MARK: - Writes
 
     func setBrokerURL(_ url: URL?) {
@@ -101,6 +121,7 @@ struct PlaidSandboxConfiguration: Sendable {
     /// without touching the broker URL or shared secret. Used by the
     /// developer config "Clear linked item" action.
     func clearLinkedItem() {
+        setPendingExchange(nil)
         setItemID(nil)
         setTransactionsCursor(nil)
     }

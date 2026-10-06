@@ -48,6 +48,7 @@ const {
   CountryCode,
 } = require('plaid');
 const crypto = require('crypto');
+const { createPublicTokenExchanger } = require('./public-token-exchange');
 require('dotenv').config();
 
 const {
@@ -58,8 +59,12 @@ const {
 // ---- Config ---------------------------------------------------------
 
 let config;
+let countryCodes;
+let products;
 try {
   config = parseConfig(process.env);
+  countryCodes = parsePlaidEnumList(config.countryCodesRaw, CountryCode);
+  products = parsePlaidEnumList(config.productsRaw, Products);
 } catch (err) {
   console.error(
     `[plaid-broker] refusing to start — ${err.code || 'CONFIG_ERROR'}: ${err.message}`
@@ -73,17 +78,12 @@ const {
   isLiveDataEvaluation,
   clientID,
   secret,
-  countryCodesRaw,
-  productsRaw,
   sandboxInstitutionID,
   redirectURI,
   bindHost,
   sharedSecret,
   isLoopbackMode,
 } = config;
-
-const countryCodes = parsePlaidEnumList(countryCodesRaw, CountryCode);
-const products = parsePlaidEnumList(productsRaw, Products);
 
 const plaidBasePath =
   isLiveDataEvaluation
@@ -111,6 +111,7 @@ const plaid = new PlaidApi(
 // scope.
 
 const itemStore = new Map(); // itemHandle -> { accessToken, plaidItemID }
+const exchangePublicToken = createPublicTokenExchanger({ plaid, countryCodes, itemStore });
 
 // ---- App ------------------------------------------------------------
 
@@ -155,12 +156,7 @@ app.post('/link/token/create', async (_req, res) => {
       country_codes: countryCodes,
       language: 'en',
     };
-    // Plaid requires an HTTPS redirect_uri for OAuth-capable
-    // institutions on iOS. The URL must match the app's associated
-    // domains entitlement exactly (NomadFi uses
-    // `applinks:arieltyson.github.io`). Required in production;
-    // optional in sandbox (sandbox institutions do not exercise
-    // OAuth).
+    // Canadian-only evaluation omits OAuth configuration.
     if (redirectURI) {
       payload.redirect_uri = redirectURI;
     }
@@ -178,37 +174,7 @@ app.post('/item/public_token/exchange', async (req, res) => {
     return;
   }
   try {
-    const exchanged = await plaid.itemPublicTokenExchange({
-      public_token: publicToken,
-    });
-    const accessToken = exchanged.data.access_token;
-    const plaidItemID = exchanged.data.item_id;
-    const itemHandle = 'itm_' + crypto.randomBytes(12).toString('hex');
-    itemStore.set(itemHandle, { accessToken, plaidItemID });
-    // Resolving the institution name is best-effort: we don't want a
-    // network blip here to fail the whole link flow, and the app has
-    // a calm fallback label.
-    let institutionID = null;
-    let institutionName = null;
-    try {
-      const item = await plaid.itemGet({ access_token: accessToken });
-      institutionID = item.data.item.institution_id || null;
-      if (institutionID) {
-        const institution = await plaid.institutionsGetById({
-          institution_id: institutionID,
-          country_codes: countryCodes,
-        });
-        institutionName = institution.data.institution.name;
-      }
-    } catch (_) {
-      institutionName = null;
-    }
-    res.json({
-      item_id: itemHandle,
-      institution_id: institutionID,
-      institution_name: institutionName,
-      plaid_item_id: plaidItemID,
-    });
+    res.json(await exchangePublicToken(publicToken));
   } catch (err) {
     sendPlaidError(res, err);
   }

@@ -53,6 +53,9 @@ struct FinancialConnectionsSettingsView: View {
 #if DEBUG
                 plaidValidationRecorder.recordPublicTokenExchanged(success: true)
                 plaidValidationRecorder.recordItemHandlePersisted(rawHandle: itemID)
+                plaidValidationRecorder.recordInstitutionObserved(
+                    displayName: plaidLinkCoordinator.linkedInstitutionName
+                )
 #endif
             }
 #if DEBUG
@@ -63,7 +66,8 @@ struct FinancialConnectionsSettingsView: View {
                 from: Self.label(for: oldPhase),
                 to: Self.label(for: newPhase)
             )
-            if case .failed(let message) = newPhase {
+            if case .exchangingPublicToken = oldPhase,
+               case .failed(let message) = newPhase {
                 plaidValidationRecorder.recordPublicTokenExchanged(
                     success: false,
                     failureReason: message
@@ -147,14 +151,22 @@ private extension FinancialConnectionsSettingsView {
             Section {
                 Button {
 #if DEBUG
-                    plaidValidationRecorder.recordLinkLaunchRequested()
+                    if !plaidLink.canRetryPublicTokenExchange {
+                        plaidValidationRecorder.recordLinkLaunchRequested()
+                    }
 #endif
                     Task { await plaidLink.startRealLinkFlow() }
                 } label: {
-                    Label("Link a sandbox bank with Plaid Link", systemImage: "link")
+                    if plaidLink.canRetryPublicTokenExchange {
+                        Label("Retry finishing link", systemImage: "arrow.clockwise")
+                    } else {
+                        Label("Link a sandbox bank with Plaid Link", systemImage: "link")
+                    }
                 }
                 .disabled(plaidLink.phase.isBusy)
-                .accessibilityHint("Opens Plaid Link against the locally-configured sandbox broker.")
+                .accessibilityHint(plaidLink.canRetryPublicTokenExchange
+                    ? "Retries the broker exchange without another bank login."
+                    : "Opens Plaid Link against the locally-configured sandbox broker.")
 
                 Text(plaidLink.phase.statusLabel)
                     .font(TypographyTokens.caption)

@@ -16,41 +16,29 @@ against the five pinned criteria from the bakeoff memo.
 
 | Criterion | Outcome (after Phase 5D execution decisioning, April 24, 2026) |
 |---|---|
-| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Pass (real-device sandbox)** — the full Link session ran end-to-end on a physical iPhone (April 24, 2026 sandbox run): broker `link_token/create` → LinkKit consent UI → `public_token` → broker `/item/public_token/exchange` → NomadFi persisted item handle. Universal-link return was not exercised because Plaid's sandbox institutions don't trigger an OAuth redirect (vendor-reported behaviour at https://plaid.com/docs/sandbox/institutions/); that path remains a real-OAuth-FI concern. |
+| 1. Plaid Link authorization flow maps onto NomadFi's consent model | **Pass (real-device sandbox)** — the full Link session ran end-to-end on a physical iPhone (April 24, 2026 sandbox run): broker `link_token/create` → LinkKit consent UI → `public_token` → broker `/item/public_token/exchange` → NomadFi persisted item handle. Universal-link return was not exercised because the selected sandbox institution did not trigger an OAuth redirect (vendor-reported behaviour at https://plaid.com/docs/sandbox/institutions/); that path remains a real-OAuth-FI concern. |
 | 2. Accounts / balances / transactions project onto provider-neutral snapshots | **Pass (real-device sandbox)** — `/accounts/get` returned 10 accounts, all mapped through `PlaidSandboxSnapshotMapper`, and the reconciler created 10 accounts under provider-neutral durable identity. |
 | 3. `/transactions/sync` dedupe invariants hold through the existing reconciler | **Pass (real-device sandbox)** — first-pull diff produced 48 transactions; reconciler reported 0 unresolved + 0 duplicates with `degraded_gracefully=true`. |
 | 4. Unit-cost modelling stays inside a pre-revenue budget using public pricing | **Partial (paper)** — unchanged. Sandbox traffic is free; production pricing has not been negotiated. |
 | 5. Canadian coverage against NomadFi's target-user institutions | **Unresolved** — sandbox runs use Plaid's pre-defined test institutions (`ins_109508`-style) and test credentials (vendor-reported at https://plaid.com/docs/sandbox/institutions/ + https://plaid.com/docs/sandbox/test-credentials/). They cannot prove real CIBC / RBC / TD / Scotia / BMO / Tangerine / Simplii login behaviour. Resolving criterion 5 requires a live-data path — Plaid's Limited Production / Trial environment against a real target Canadian FI — not another sandbox rerun. |
 
-Recommendation (after the April 24, 2026 sandbox-on-device run):
-**do not start a full Phase 5E Plaid implementation yet, and do not
-start an Akoya comparison yet.** Criteria 1–3 are now real-device
-sandbox pass; the remaining gates are evidentiary, not architectural:
+Current gate (updated October 5, 2026): criteria 1–3 passed the April
+sandbox run. Apple's FinanceKit request was closed on April 28 for regional
+availability, so an Apple response is no longer a pending prerequisite.
+Criterion 5 still requires approved Plaid production access and one real
+Canadian-bank evaluation. Unit economics remain partial.
 
-1. **Apple FinanceKit entitlement** — request submitted, awaiting
-   Apple's response. Real-device FinanceKit validation depends on
-   it.
-2. **Real-target-FI live-data validation** — the only step that
-   resolves criterion 5. Sandbox cannot prove it; Plaid's docs are
-   explicit that sandbox simulates institution behaviour with
-   pre-defined test institutions and test credentials.
+Follow [live-data preflight](./PlaidLimitedProductionReadiness.md):
+confirm the actual Dashboard plan (Trial, legacy Limited Production, or
+paid Production), enable Canadian Transactions, and use real Link on the
+physical iPhone. The broker supports `PLAID_ENV=production` plus the
+explicit `PLAID_LIVE_DATA_EVALUATION=1` opt-in. Canada-only runs omit the
+OAuth redirect; Canadian institutions currently do not use Plaid OAuth.
 
-Operational next step (when ready): apply for Plaid's Limited
-Production / Trial environment for `com.arieljtyson.NomadFi` so the
-broker can be pointed at a real Canadian FI with real credentials.
-The broker already supports the live-data mode natively
-(`PLAID_ENV=production` + `PLAID_LIVE_DATA_EVALUATION=1`); the
-preflight checklist is documented in
-[`PlaidLimitedProductionReadiness.md`](./PlaidLimitedProductionReadiness.md).
-Document the outcome in a successor artifact, **not** by re-running
-sandbox.
-
-If FinanceKit alone clears the bar for NomadFi's archetype, Phase
-5E stays deferred and the Plaid Link scaffolding remains inactive
-in production builds. If it does not, the proof code and tests are
-strong enough to convert into Phase 5E quickly — the remaining work
-is a production-access conversation with Plaid and the removal of
-`/sandbox/*` bypasses.
+Do not start a rollout or an Akoya comparison from sandbox evidence alone.
+A successful live run supports the provider decision for the tested bank;
+it does not prove persistence, transaction removals, pricing, or multi-user
+readiness. FinanceKit remains parked pending regional availability.
 
 ---
 
@@ -83,10 +71,9 @@ What this run **did not** prove:
 
 - Real CIBC (or any real Canadian FI) login behaviour. The institution
   was a Plaid sandbox test institution with synthetic credentials.
-- OAuth universal-link return. Sandbox institutions don't trigger
+- OAuth universal-link return. The selected sandbox institution did not trigger
   Plaid's OAuth bank-handoff path; the universal-link plumbing
-  shipped in Phase 5D gate-clearance is exercised only when a real
-  OAuth-capable FI is linked under live data.
+  requires a separate OAuth test institution or live OAuth-capable FI.
 - Any per-FI coverage claim under Plaid's marketed Canadian list.
 
 Recorder caveat: the artifact's auto-generated criterion-5 line read
@@ -101,8 +88,11 @@ read accurately. Health-check verification still wins the label
 when an explicit probe has run.
 
 Institution-name caveat: the Markdown reads "Institution observed:
-not recorded in this export" because the developer did not toggle
-**Include institution name in export** in the harness before linking.
+not recorded in this export". The original note attributed this to the
+institution-name toggle being off. The October 5 review also found that
+Link completion never called `recordInstitutionObserved`; that wiring is
+now implemented, preserving the existing opt-in. The April artifact
+cannot retroactively establish an institution name.
 For runs that need institution evidence, flip the toggle on before
 the link launch. The recorder always logs `display_name_included`
 either way so a future reader can tell whether the absence is

@@ -16,7 +16,7 @@ const baselineSandboxEnv = Object.freeze({
   PLAID_SECRET: 'sandbox_secret_value',
   PLAID_ENV: 'sandbox',
   PLAID_COUNTRY_CODES: 'US,CA',
-  PLAID_PRODUCTS: 'transactions,auth,balance',
+  PLAID_PRODUCTS: 'transactions',
   PLAID_BROKER_BIND_HOST: '127.0.0.1',
   PLAID_REDIRECT_URI: 'https://arieltyson.github.io/nomadfi-privacy/plaid-oauth',
 });
@@ -89,7 +89,7 @@ test('production with PLAID_LIVE_DATA_EVALUATION=1 + redirect parses', () => {
 
 // ---- Production redirect URI ---------------------------------------
 
-test('production without PLAID_REDIRECT_URI throws MISSING_REDIRECT_URI_FOR_PRODUCTION', () => {
+test('US/CA production without a redirect throws MISSING_REDIRECT_URI_FOR_PRODUCTION', () => {
   const env = { ...baselineProductionEnv };
   delete env.PLAID_REDIRECT_URI;
   assert.throws(
@@ -174,9 +174,9 @@ test('::1 and localhost are treated as loopback', () => {
 
 // ---- Plaid enum-list parser ----------------------------------------
 
-test('parsePlaidEnumList accepts mixed casing and unknown tokens drop', () => {
+test('parsePlaidEnumList accepts mixed casing', () => {
   const enumObject = { US: 'US', CA: 'CA' };
-  assert.deepEqual(parsePlaidEnumList('us, CA, JP', enumObject), ['US', 'CA']);
+  assert.deepEqual(parsePlaidEnumList('us, CA', enumObject), ['US', 'CA']);
 });
 
 test('parsePlaidEnumList handles whitespace + empty tokens', () => {
@@ -185,4 +185,41 @@ test('parsePlaidEnumList handles whitespace + empty tokens', () => {
     parsePlaidEnumList('  transactions , , auth ', enumObject),
     ['transactions', 'auth']
   );
+});
+
+test('Canadian production evaluation does not require an OAuth redirect', () => {
+  const cfg = parseConfig({ ...baselineProductionEnv, PLAID_COUNTRY_CODES: ' ca ', PLAID_REDIRECT_URI: '' });
+  assert.equal(cfg.isLiveDataEvaluation, true);
+  assert.equal(cfg.redirectURI, null);
+});
+
+test('adding US coverage still requires a production OAuth redirect', () => {
+  assert.throws(
+    () => parseConfig({ ...baselineProductionEnv, PLAID_COUNTRY_CODES: 'CA,US', PLAID_REDIRECT_URI: '' }),
+    { code: 'MISSING_REDIRECT_URI_FOR_PRODUCTION' }
+  );
+});
+
+test('Balance cannot be initialized through Link products', () => {
+  assert.throws(
+    () => parseConfig({ ...baselineSandboxEnv, PLAID_PRODUCTS: 'transactions, Balance' }),
+    { code: 'INVALID_LINK_PRODUCT' }
+  );
+});
+
+test('rejects malformed or unsafe OAuth redirect URLs', () => {
+  for (const redirect of ['not-a-url', 'http://example.com/oauth', 'https://user:password@example.com/oauth', 'https://example.com/oauth?token=x', 'https://example.com/oauth#fragment']) {
+    assert.throws(
+      () => parseConfig({ ...baselineSandboxEnv, PLAID_REDIRECT_URI: redirect }),
+      { code: 'INVALID_REDIRECT_URI' }
+    );
+  }
+});
+
+test('rejects unknown or empty enum lists rather than changing requested coverage', () => {
+  const countries = { US: 'US', CA: 'CA' };
+  for (const raw of ['US,TYPO', 'toString', '__proto__', ' ', ',,']) {
+    assert.throws(() => parsePlaidEnumList(raw, countries), { code: 'INVALID_PLAID_ENUM_LIST' });
+  }
+  assert.deepEqual(parsePlaidEnumList('ca,CA', countries), ['CA']);
 });

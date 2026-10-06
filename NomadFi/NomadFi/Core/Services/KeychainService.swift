@@ -71,6 +71,7 @@ enum KeychainService {
         /// rejects traffic that does not carry the developer's
         /// locally-configured value.
         case plaidSandboxBrokerSecret = "com.nomadfi.plaidSandboxBrokerSecret"
+        case plaidPendingExchange = "com.nomadfi.plaidPendingExchange"
     }
 
     // MARK: - String Storage
@@ -210,6 +211,7 @@ enum KeychainService {
             .plaidSandboxItemID,
             .plaidSandboxTransactionsCursor,
             .plaidSandboxBrokerSecret,
+            .plaidPendingExchange,
         ]
         for key in keys {
             delete(key: key)

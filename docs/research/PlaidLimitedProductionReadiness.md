@@ -1,271 +1,207 @@
-# Plaid Limited Production Readiness — Phase 5E Preflight
+# Plaid Live-Data Preflight — Phase 5E
 
-Operational preflight for the **one** real-target-Canadian-FI run
-that resolves criterion 5 of
-[`OpenFinanceProviderBakeoff.md`](./OpenFinanceProviderBakeoff.md).
-The companion runbook step is
-[`PlaidRealDeviceValidation.md`](./PlaidRealDeviceValidation.md) §8.3.
-The April 24, 2026 sandbox plumbing run already passed
-([`PlaidSandboxProof.md`](./PlaidSandboxProof.md) §0.1); this doc
-covers everything the developer needs to assemble **before** the
-live-data run can fire.
+Updated October 5, 2026. This checklist validates one Canadian institution
+on a physical iPhone. The April 24 sandbox run already proved the plumbing;
+see [the result](./PlaidSandboxProof.md#01-first-real-device-sandbox-run-april-24-2026).
+The filename is retained for existing links.
 
-This is **not** the start of Phase 5E. Phase 5E remains blocked on:
+**October 5 live result:** production credentials and the signed-in team
+were verified. On the physical iPhone, a Canadian institution's Link/MFA
+and public-token exchange succeeded. The first sync imported accounts and
+transactions; the repeat sync created no duplicates according to its
+summary counters. Institution labels were verified in Financial Setup.
+The institution and exact counts are retained only in private evidence.
+This establishes live connectivity and repeat-sync behavior for
+this session, not long-term reliability or complete transaction coverage.
 
-1. a passing run against the runbook here, **and**
-2. Apple's response to the FinanceKit capability request that was
-   submitted in April 2026.
+The on-device validation session was marked **inconclusive** for the full
+acceptance checklist: comparison with bank records and review of the
+complete reconciliation artifact remain outstanding. Imported accounts
+have no jurisdiction assigned, so they do not yet appear in a country
+dashboard; prior sandbox accounts remain present. Private observations
+are in the gitignored `PlaidValidationEvidence/` directory, and the
+finalized export remains available in the phone's harness.
 
----
+The interrupted-exchange recovery fix is installed: an unexpired public
+token survives app restart in device-only Keychain storage, retries use
+the original broker URL, and the running broker replays completed
+exchanges. Validation passed 26 broker tests and 46 focused iOS tests.
+Broker restarts still lose its in-memory access tokens and exchange cache.
 
-## 0. Vocabulary alignment with Plaid's own docs
+Apple's FinanceKit request was closed on April 28 because of
+developer-region availability; it is no longer a pending dependency.
+Production rollout, durable token storage, and sustainable pricing remain
+separate decisions.
 
-Two distinctions matter, both vendor-reported by Plaid:
+## 1. Establish account access
 
-- **Sandbox vs Production.** Per
-  [plaid.com/docs/sandbox/](https://plaid.com/docs/sandbox/) and
-  [plaid.com/docs/api/](https://plaid.com/docs/api/), Plaid runs two
-  environments NomadFi targets here: `sandbox` (free, pre-defined
-  test institutions, test credentials) and `production` (real
-  banks, real users, real Plaid pricing).
-- **Production vs Limited Production.** Within `production`,
-  Plaid's Dashboard onboarding path
-  ([plaid.com/docs/api/](https://plaid.com/docs/api/), vendor-
-  reported) places newly-approved apps in a Limited Production
-  state with caps on connected items / users until commercial
-  approval lifts those caps. Architecturally there is one
-  production environment; "Limited Production" is a Plaid-side
-  permission state on top of it.
+Check the signed-in [Plaid Dashboard](https://dashboard.plaid.com/).
+Record status locally without copying keys or private account details:
 
-The broker treats these as a single setting: `PLAID_ENV=production`
-+ `PLAID_LIVE_DATA_EVALUATION=1`. Plaid's caps + dashboard approval
-gate the actual access NomadFi gets — there is nothing for this
-broker to enforce at the env-var level beyond the opt-in flag.
+- [ ] Correct NomadFi team selected.
+- [ ] Actual plan recorded: Trial, legacy Limited Production, paid
+  Production, or Sandbox only / application pending.
+- [ ] Production access approved; submission alone is not approval.
+- [ ] Transactions and Canada enabled for this team.
+- [ ] Production secret available locally. Sandbox keys do not establish
+  production access.
+- [ ] Remaining Item allowance and applicable charges checked.
+- [ ] One institution chosen by the developer, using their own account.
 
----
+Plaid offers Trial plans for eligible new US/Canadian teams created on or
+after April 15, 2026. Legacy Limited Production and Trial are different
+plans on the same `production` API environment. Check the actual Dashboard
+rather than assuming which plan this team has.
+[Plan documentation](https://plaid.com/docs/account/billing/).
 
-## 1. Manual Plaid Dashboard work (developer responsibility)
+Trial includes Transactions and permits 10 production Items. Removing an
+Item does not restore its slot. Trial application requires accepting an
+agreement; the account owner must review applications, attestations, and
+any paid upgrade. [Trial details](https://support.plaid.com/hc/en-us/articles/39994173227159-What-is-the-Plaid-Trial-plan).
 
-NomadFi cannot move into live-data evaluation until **all** of the
-following are completed in the Plaid Dashboard for
-`com.arieljtyson.NomadFi`'s Plaid account. Each item is a Plaid
-process, vendor-reported:
+Suggested use-case text, if the Dashboard requests it:
 
-- [ ] **Production access request submitted** through the Plaid
-  Dashboard's production access workflow. Plaid currently requires
-  a use-case description, expected volume, and an integration
-  walkthrough.
-- [ ] **Use-case description** consistent with NomadFi's product
-  identity in [`docs/MISSION.md`](../MISSION.md): cross-border
-  financial decision assistant for international students /
-  temporary residents / immigrants, read-only Transactions / Auth /
-  Balance products, no payment initiation.
-- [ ] **Allowed redirect URIs** configured in the Plaid Dashboard's
-  Link Customization settings to include exactly:
-  `https://arieltyson.github.io/nomadfi-privacy/plaid-oauth`.
-  (Per [plaid.com/docs/link/oauth/](https://plaid.com/docs/link/oauth/),
-  vendor-reported, Plaid will reject Link sessions whose
-  `redirect_uri` doesn't match an allowed entry.)
-- [ ] **Products enabled** for live data: Transactions, Auth,
-  Balance. Identity / Investments stay disabled until NomadFi has a
-  product reason to use them.
-- [ ] **Country codes selected** in the Dashboard: at minimum
-  `US`, `CA`. (TT is not in Plaid's coverage; explicitly out of
-  scope.)
-- [ ] **Production keys issued** by the Dashboard. The previous
-  sandbox keys remain valid; the developer keeps both pairs and
-  swaps them in `.env` per run kind.
+> NomadFi is a cross-border financial decision assistant for international
+> students and temporary residents. This developer evaluation reads
+> Canadian account information, cached balances, and transactions to
+> validate account mapping and reconciliation on an iPhone. It does not
+> initiate payments or request account/routing numbers through Auth.
 
-If any item is missing, Plaid will reject the run before it
-reaches a real institution and the broker may either fail the
-`/link/token/create` call (Plaid-side rejection) or surface an
-unrelated error. The runbook accounts for both branches.
+## 2. Use the minimum product scope
 
----
+Use `PLAID_COUNTRY_CODES=CA` and `PLAID_PRODUCTS=transactions`.
+The broker reads accounts and cached balances through `/accounts/get`;
+it does not call `/auth/get` or `/accounts/balance/get`. A cached balance
+is not proof of a real-time Balance refresh.
 
-## 2. Apple side — what stays the same
+Do not list `balance` in Link's products array. Auth is unnecessary for
+this run, and required products restrict which institutions and account
+types Link offers. [Link API](https://plaid.com/docs/api/link/).
 
-The iOS-side OAuth plumbing shipped in Phase 5D gate-clearance is
-not mode-specific:
+Canadian institutions currently do not use Plaid OAuth. Leave
+`PLAID_REDIRECT_URI` empty for this Canada-only run. Follow the
+authentication and MFA flow Link presents. A missing
+`universal_link_observed` event is **not a failure** for this run.
+[OAuth guide](https://plaid.com/docs/link/oauth/).
 
-- `applinks:arieltyson.github.io` associated-domains entitlement
-  is already in `NomadFi/NomadFi.entitlements`.
-- `.well-known/apple-app-site-association` is already deployed at
-  `https://arieltyson.github.io/nomadfi-privacy/`.
-- The redirect page at `/plaid-oauth/` is already deployed.
-- `NSAppTransportSecurity.NSAllowsLocalNetworking=true` and
-  `NSLocalNetworkUsageDescription` are already in
-  `NomadFi-Info.plist` for talking to the local broker on Wi-Fi.
+## 3. Prepare the local broker
 
-What does **not** carry over from sandbox to live-data runs:
+Install locked dependencies with `npm ci` in `tools/plaid-sandbox-broker`.
+Preserve an existing `.env`; copy `.env.example` only when creating one
+for the first time.
 
-- The DEBUG-only `requestAuthorization()` path on
-  `PlaidSandboxFinancialDataProvider` calls the broker's
-  `/sandbox/item/create` shortcut, which the broker now disables in
-  live-data mode (HTTP 410). The harness's "Authorize" button is
-  therefore **sandbox-only**. In live-data mode the developer uses
-  the **"Link a sandbox bank with Plaid Link"** button on the main
-  Financial Connections page (the label is historical — the
-  underlying flow is the real Link flow regardless of mode).
+When production access is confirmed, configure the gitignored `.env`:
 
----
-
-## 3. Broker config for the live-data run
-
-In `tools/plaid-sandbox-broker/.env`:
-
-```
-PLAID_CLIENT_ID=<your production client id>
-PLAID_SECRET=<your production secret>
-
+```dotenv
+PLAID_CLIENT_ID=<existing team client id>
+PLAID_SECRET=<production secret>
 PLAID_ENV=production
 PLAID_LIVE_DATA_EVALUATION=1
-
-PLAID_COUNTRY_CODES=US,CA
-PLAID_PRODUCTS=transactions,auth,balance
-
-PLAID_REDIRECT_URI=https://arieltyson.github.io/nomadfi-privacy/plaid-oauth
-
+PLAID_COUNTRY_CODES=CA
+PLAID_PRODUCTS=transactions
+PLAID_REDIRECT_URI=
 PORT=8787
-PLAID_BROKER_BIND_HOST=<your Mac LAN IP, e.g. 192.168.1.42>
-PLAID_BROKER_SHARED_SECRET=<openssl rand -hex 32>
+PLAID_BROKER_BIND_HOST=<Mac LAN IP>
+PLAID_BROKER_SHARED_SECRET=<shared secret of at least 16 characters>
 ```
 
-`PLAID_SANDBOX_INSTITUTION_ID` is ignored in production mode.
+Run `npm run preflight` to validate local configuration without printing
+credentials or contacting Plaid. This cannot establish account approval.
+Start with `npm start` only for the device session.
 
-The broker will:
+Production requires the explicit opt-in flag. The broker rejects invalid
+product/country lists, `balance` in Link products, and LAN mode without the
+shared secret. `/sandbox/item/create` returns HTTP 410 in production:
+use **Link a sandbox bank with Plaid Link**, not **Authorize**. The label
+is historical; `/health` identifies the actual environment.
 
-- start against `https://production.plaid.com`,
-- print the **LIVE-DATA EVALUATION MODE** banner,
-- disable `POST /sandbox/item/create` (HTTP 410),
-- still enforce `X-NomadFi-Broker-Secret` on every request.
+Access tokens are held in memory. Restarting the broker invalidates the
+app's opaque handle. Keep it running through both sync checks; do not
+repeatedly create Items to work around lost state. Persistent token storage
+and reconnection handling remain rollout prerequisites. Stopping the
+broker or clearing the iOS handle does not revoke the Plaid Item or stop
+paid subscription billing; plan Item removal in the Dashboard before
+finishing an evaluation.
 
-If any required env-var is missing or malformed, the broker exits
-before binding to a port — the `code` in the startup error log
-(`UNSUPPORTED_ENV` / `LIVE_DATA_NOT_OPTED_IN` / `MISSING_PLAID_CREDENTIALS`
-/ `MISSING_REDIRECT_URI_FOR_PRODUCTION` / `LAN_MODE_MISSING_SECRET`)
-maps directly to the §1 + §3 checklist.
+## 4. Run on the iPhone
 
----
+- [ ] Complete §1; do not substitute sandbox success for access approval.
+- [ ] Mac and iPhone on the same trusted network; broker in production
+  evaluation mode with shared-secret protection.
+- [ ] Run NomadFi DEBUG from Xcode. Open Settings → Financial Setup →
+  Financial Connections → Plaid sandbox developer harness.
+- [ ] Save the broker URL and matching shared secret.
+- [ ] **Start validation session**, then enable **Include institution
+  name in export** (the toggle appears during a running session).
+- [ ] Run the health check so the artifact records `env=production`, `reachable=true`, and
+  `requires_secret=true`. `redirect_uri_configured=false` is expected.
+- [ ] Return to Financial Connections and tap **Link a sandbox bank
+  with Plaid Link**. Select the chosen Canadian institution.
+- [ ] The account owner completes credentials, MFA, and consent in Link.
+  Never place bank credentials in chat, the broker, or evidence files.
+- [ ] Confirm Link success and public-token exchange.
+  If exchange is interrupted, restore the original broker/network and
+  use **Retry finishing link** within 30 minutes. The pending exchange
+  survives an iOS app restart in device-only Keychain storage. Keep the
+  broker process alive so completed exchanges can be replayed safely.
+- [ ] Tap **Sync Now** and inspect the account/reconciliation result.
+  Transactions can take time to become available. An empty first diff
+  does not establish that the institution has no transaction history.
+- [ ] Once data is available, run **Sync Now** again in the same broker
+  session. Check that accounts/transactions are not duplicated.
+- [ ] Record `pass`, `fail`, or `inconclusive` based on §5, with the
+  institution and authentication method in the note.
+- [ ] End the session and export Markdown to the gitignored
+  `docs/research/PlaidValidationEvidence/` directory.
+- [ ] Complete planned Item cleanup in the Dashboard, stop the broker,
+  and restore sandbox credentials, `PLAID_ENV=sandbox`, an empty live-data
+  flag, and loopback binding.
 
-## 4. The first live-data run — exact checklist
+## 5. Interpret the evidence
 
-Each step has a checkbox so the developer can mark progress.
+**Pass for this institution:** production mode, successful Link and
+exchange, intended institution name, at least one mapped account, no
+ambiguous reconciliation, and successful sync and repeat-sync checks
+without duplicates. Verify available recent transactions against the
+selected account on-device. If the account has no transactions, state
+that limitation; transaction coverage remains unproven. OAuth return is
+required only for an institution that actually uses OAuth.
 
-- [ ] §1 manual Plaid Dashboard work complete.
-- [ ] iPhone + Mac on the same trusted Wi-Fi (or iPhone hotspot with
-  the Mac on the hotspot).
-- [ ] `tools/plaid-sandbox-broker/.env` updated per §3.
-- [ ] Broker started; confirm console reads
-  `LIVE-DATA EVALUATION MODE`.
-- [ ] `curl http://<lan-ip>:8787/health` from the Mac with the
-  shared-secret header returns `{"ok":true,"env":"production",…}`.
-- [ ] NomadFi DEBUG running on the iPhone via Xcode.
-- [ ] Settings → Financial Setup → Financial Connections → Plaid
-  sandbox developer harness opens.
-- [ ] Save broker URL + shared secret. Run health check. Status
-  reads `Broker reachable (env=production, secret required, redirect configured).`
-- [ ] **Toggle "Include institution name in export" ON.** This is
-  the explicit consent that lets the artifact record which FI was
-  tested.
-- [ ] **Start validation session** in the harness.
-- [ ] Navigate to Financial Connections list. Tap **Link a sandbox
-  bank with Plaid Link** (label is historical; the flow is real
-  Link).
-- [ ] In Plaid Link, search for the chosen target Canadian FI.
-  Vendor-reported coverage at
-  [plaid.com/en-ca/](https://plaid.com/en-ca/): RBC / TD / Scotia /
-  BMO / CIBC / Tangerine / Simplii. Pick **one**.
-- [ ] Complete OAuth in the bank's UI with **real credentials**.
-  iOS should reopen NomadFi via the universal link.
-- [ ] Confirm the harness shows `Plaid item linked (handle itm_…)`.
-- [ ] On Financial Connections, tap **Sync Now**. Confirm the
-  reconciler summary line appears with non-zero counts.
-- [ ] Return to the harness. Pick a result (`pass` / `fail` /
-  `inconclusive`) + a one-line note naming the FI.
-- [ ] **End session.**
-- [ ] Tap **Export as Markdown**. Save the artifact.
-- [ ] Stop the broker (Ctrl-C). Revert `.env` back to sandbox
-  defaults.
+**Fail for this run:** reproducible broker, exchange, mapping, or
+reconciliation errors. Fix implementation/configuration failures before
+concluding that the provider lacks coverage.
 
----
+**Inconclusive:** account approval or product/country permission missing,
+Item cap reached, institution unavailable, authentication unfinished,
+or expected transaction history still pending. Record the exact stage and
+a redacted error code. An unavailable bank is evidence about that
+bank/session, not every Canadian institution. A second bank requires the
+developer's choice and a check of the remaining Item allowance.
 
-## 5. Pass / fail / inconclusive criteria
+Only a completed live run resolves criterion 5. Pricing approval,
+long-term reliability, transaction removals, token persistence, and
+multi-user onboarding are not proven by this checklist.
 
-Same shape as
-[`PlaidValidationEvidenceTemplate.md`](./PlaidValidationEvidenceTemplate.md)
-§5, with two **additional** live-data-only conditions:
+## 6. Separate OAuth readiness issue
 
-- **Pass requires** `universal_link_observed` in the event log.
-  Sandbox institutions don't trigger OAuth handoff; a real
-  Canadian FI usually will. Absence of this event during a live-data
-  run signals an associated-domains / AASA misconfiguration that
-  must be resolved before claiming pass.
-- **Pass requires** `institution_observed` with
-  `display_name_included=true` and a `display_name` matching the
-  FI the developer intended to test. Without this, the artifact
-  cannot support a per-FI claim.
+The Canadian run does not depend on the existing GitHub Pages redirect.
+Before testing an OAuth institution, repair and verify that setup:
 
-A live-data **fail** fires the bakeoff memo's "no provider clears
-the bar yet" branch:
+- `https://arieltyson.github.io/.well-known/apple-app-site-association`
+  returned **404** in the October 5 check.
+- The file under `/nomadfi-privacy/.well-known/` returned **200**, but
+  that project subdirectory is not the domain-root AASA location.
+- Its rules were `/plaid-oauth` and `/plaid-oauth/*`; the configured
+  redirect path is `/nomadfi-privacy/plaid-oauth`.
 
-- NomadFi stays on FinanceKit + manual + CSV.
-- The Plaid scaffolding stays inactive in production builds.
-- Re-evaluation is gated on a regulator/standards shift (CFPB 1033
-  operationalization, Canada's Consumer-Driven Banking regime
-  publishing developer-accessible endpoints) or material FinanceKit
-  Canadian coverage expansion.
-- An Akoya sandbox comparison only starts if there is an explicit
-  primary-source reason to believe Akoya's Canadian coverage or
-  production onboarding differs meaningfully — not "let's try
-  another vendor" by default.
+Serve the AASA at the domain's `/.well-known/` path, include app ID
+`2MPMKAF986.com.arieljtyson.NomadFi`, and match both
+`/nomadfi-privacy/plaid-oauth` and `/nomadfi-privacy/plaid-oauth/*`.
+Register the exact HTTPS redirect in Plaid's allowed redirect settings,
+verify the response and MIME type without redirects, and test on-device.
+A project-site deployment alone does not fix the domain-root location.
+[Apple associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains).
 
-A live-data **inconclusive** result (e.g. the chosen FI was
-unavailable in Plaid Link, or Plaid Limited Production caps blocked
-the connection) doesn't fire the fail branch but doesn't resolve
-criterion 5 either. Document the run, retry against a different FI
-in the Canadian shortlist, and only escalate after a second
-inconclusive.
-
----
-
-## 6. Reminder: one sandbox run is not criterion 5
-
-The sandbox plumbing run on April 24, 2026 proved the iOS + broker
-+ LinkKit + reconciler plumbing on a physical iPhone. It cannot
-prove real Canadian-FI coverage because Plaid Sandbox uses
-pre-defined test institutions and test credentials per
-[plaid.com/docs/sandbox/institutions/](https://plaid.com/docs/sandbox/institutions/)
-+ [plaid.com/docs/sandbox/test-credentials/](https://plaid.com/docs/sandbox/test-credentials/)
-(both vendor-reported). The ONLY way criterion 5 resolves is the
-runbook in §4 above, with §1 fully completed first.
-
----
-
-## 7. What is explicitly out of scope for this preflight
-
-- Production multi-user onboarding (this is a **single-developer
-  evaluation**, not a rollout).
-- Webhooks, scheduled syncs, or background-delivery hardening.
-- Billing / invoicing (sandbox runs are free; live-data runs may
-  incur Plaid Limited Production charges per Plaid's pricing page —
-  vendor-reported, not modelled here).
-- Akoya / MX / Mastercard-Finicity / direct FDX. Out of scope for
-  this slice; the bakeoff memo's "no provider clears the bar yet"
-  branch is the gate to revisit them.
-- Tax / investing education work.
-
----
-
-## 8. Primary sources
-
-- [Plaid API overview](https://plaid.com/docs/api/) (vendor-reported
-  on environments + Production access).
-- [Plaid Sandbox](https://plaid.com/docs/sandbox/) (vendor-reported
-  on sandbox semantics + test institutions).
-- [Plaid Sandbox institutions](https://plaid.com/docs/sandbox/institutions/).
-- [Plaid Link iOS](https://plaid.com/docs/link/ios/).
-- [Plaid Link OAuth](https://plaid.com/docs/link/oauth/).
-- [Plaid in Canada](https://plaid.com/en-ca/) (vendor-reported
-  Canadian coverage).
-- [Apple Universal Links](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
+The broker conservatively requires a redirect for production runs that
+include countries outside Canada. This is a local guardrail, not a claim
+that every institution in those countries uses OAuth.
