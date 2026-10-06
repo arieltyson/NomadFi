@@ -10,6 +10,8 @@ enum HostedServiceError: Error, Equatable, Sendable {
     case requestInProgress
     case unavailable
     case ownerChanged
+    case migrationRequired
+    case obsoleteDelivery
 }
 
 struct HostedChallenge: Decodable, Sendable {

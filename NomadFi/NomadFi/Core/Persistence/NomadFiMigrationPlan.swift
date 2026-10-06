@@ -36,12 +36,12 @@ enum NomadFiMigrationPlan: SchemaMigrationPlan {
     /// Ordered list of schemas the plan knows about. V1 today;
     /// future versions append here.
     static var schemas: [any VersionedSchema.Type] {
-        [NomadFiSchemaV1.self]
+        [NomadFiSchemaV1.self, NomadFiSchemaV2.self]
     }
 
     /// Ordered migration stages. Empty today because V1 has no
     /// predecessor; each future version adds its stage here.
     static var stages: [MigrationStage] {
-        []
+        [.lightweight(fromVersion: NomadFiSchemaV1.self, toVersion: NomadFiSchemaV2.self)]
     }
 }

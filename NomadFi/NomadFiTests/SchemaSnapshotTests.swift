@@ -90,16 +90,16 @@ struct SchemaSnapshotTests {
 
     // MARK: - Migration plan
 
-    @Test("NomadFiMigrationPlan.schemas references exactly NomadFiSchemaV1 today")
-    func migrationPlanReferencesOnlyV1() {
+    @Test("Migration plan preserves V1 and introduces the hosted-state schema")
+    func migrationPlanReferencesV1AndV2() {
         let names = NomadFiMigrationPlan.schemas
             .map { String(describing: $0) }
-        #expect(names == ["NomadFiSchemaV1"])
+        #expect(names == ["NomadFiSchemaV1", "NomadFiSchemaV2"])
     }
 
-    @Test("NomadFiMigrationPlan.stages is empty until a V2 lands — never silently auto-migrate")
-    func migrationPlanHasNoStagesYet() {
-        #expect(NomadFiMigrationPlan.stages.isEmpty)
+    @Test("Hosted-state storage has an explicit migration")
+    func migrationPlanHasOneStage() {
+        #expect(NomadFiMigrationPlan.stages.count == 1)
     }
 
     // MARK: - Production / test parity
@@ -109,7 +109,7 @@ struct SchemaSnapshotTests {
         let testNames = SwiftDataTestContainerFactory.fullAppSchema
             .map { String(describing: $0) }
             .sorted()
-        let productionNames = NomadFiSchemaV1.models
+        let productionNames = NomadFiSchemaV2.models
             .map { String(describing: $0) }
             .sorted()
         #expect(testNames == productionNames)
@@ -124,6 +124,6 @@ struct SchemaSnapshotTests {
         // in CI rather than on a user device.
         let container = try SwiftDataTestContainerFactory
             .makeFullSchemaContainer()
-        #expect(container.schema.entities.count == NomadFiSchemaV1.models.count)
+        #expect(container.schema.entities.count == NomadFiSchemaV2.models.count)
     }
 }

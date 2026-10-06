@@ -96,6 +96,7 @@ enum DataGovernancePolicy {
         // 1. Delete all SwiftData records — leaf nodes first to respect
         //    any remaining non-cascade relationships
         try? modelContext.delete(model: TaxDocument.self)
+        try? modelContext.delete(model: HostedLocalState.self)
         try? modelContext.delete(model: Transaction.self)
         try? modelContext.delete(model: Subscription.self)
         try? modelContext.delete(model: Budget.self)
@@ -107,6 +108,8 @@ enum DataGovernancePolicy {
         try? modelContext.delete(model: DecisionDraftRecord.self)
         try? modelContext.delete(model: PurchaseDecisionRecord.self)
         try? modelContext.delete(model: TaxEducationProgressRecord.self)
+        try? modelContext.delete(model: InvestingEducationProgressRecord.self)
+        try? modelContext.delete(model: DecisionReviewMarker.self)
 
         // 2. Clean up receipt images from disk
         let receiptsDirectory = URL.documentsDirectory.appending(path: "receipts")

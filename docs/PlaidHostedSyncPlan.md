@@ -422,7 +422,13 @@ The Swift 6 hosted client now supports Apple sessions, device-only Keychain
 storage, coalesced refresh, owner-bound pending Link exchange recovery,
 connection lifecycle endpoints, and snapshot/delta delivery contracts. Five
 Simulator tests cover concurrency, sign-out races, credential loss and owner
-separation. SwiftData application, Settings UI, and real OAuth remain open.
+separation. V2 SwiftData migration and hosted merge now save the ledger and
+checkpoint together, update provider rows, keep pending entries separate from
+posted spending, and archive annotations while detaching receipts before
+removals. Disk-store migration, replay, rollback, receipt restoration, and
+owner-isolation tests pass. The existing local Plaid connection requires an
+explicit migration map before hosted import; name matching is prohibited.
+Settings UI and real OAuth remain open.
 
 - [ ] Add authenticated hosted provider configuration and multi-connection
   identity mapping; remove manual broker URL/secret setup from the normal flow.

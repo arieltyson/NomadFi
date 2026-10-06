@@ -309,7 +309,7 @@ extension Account {
     /// sums because it has no honest snapshot. Drives the "balance
     /// unknown" note on the Dashboard.
     var isExcludedFromNetWorth: Bool {
-        isCreditCard && currentBalance == nil
+        (isCreditCard || providerLinkKindRawValue == "external_aggregator.plaid_hosted") && currentBalance == nil
     }
 
     /// Latest deposit-style balance to display in lists, preferring a

@@ -1301,6 +1301,10 @@ operational recovery, and app integration remain open; H1–H3 are not complete.
 API/worker/sweep entry points, a non-root container, restricted-role SQL,
 production configuration guards, Apple notification processing, and an
 operations runbook are implemented. No cloud resources have been deployed.
+The Swift hosted client and V1-to-V2 SwiftData migration now have Simulator
+coverage. Local bank merges save checkpoints atomically, preserve annotations
+and receipt documents, and reject a silent import over the legacy CIBC setup.
+Hosted Settings, OAuth validation, and the reviewed migration are still open.
 
 **Multi-bank readiness:** replace the current single Item ID/cursor before
 linking another institution; a new Link currently replaces the active sync

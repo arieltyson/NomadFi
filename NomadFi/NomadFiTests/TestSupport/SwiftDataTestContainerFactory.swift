@@ -40,7 +40,7 @@ enum SwiftDataTestContainerFactory {
     /// schema bump in production cannot drift from the test
     /// container — both reference the same versioned schema.
     static var fullAppSchema: [any PersistentModel.Type] {
-        NomadFiSchemaV1.models
+        NomadFiSchemaV2.models
     }
 
     /// Builds an in-memory `ModelContainer` with the full app schema
@@ -48,7 +48,7 @@ enum SwiftDataTestContainerFactory {
     /// the same migration path the app does so a broken plan fails
     /// in CI rather than on a user device.
     static func makeFullSchemaContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: NomadFiSchemaV1.self)
+        let schema = Schema(versionedSchema: NomadFiSchemaV2.self)
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: true
