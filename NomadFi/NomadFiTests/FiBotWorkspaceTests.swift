@@ -8,6 +8,7 @@ struct FiBotWorkspaceTests {
     private let today = FiBotCalendar.date("2026-10-06")!
     private func plan() -> FiBotPlan {
         var plan = FiBotPlan()
+        plan.timeZoneIdentifier = "GMT"
         plan.confirmedOn = "2026-10-06"
         plan.accounts = [.init(id: "cash", name: "Synthetic cash", cash: .init(id: "cash", available: .init(1000, currency: "CAD"),
             protectedReserve: 100, observedOn: "2026-10-06", verification: .confirmed))]
@@ -26,6 +27,32 @@ struct FiBotWorkspaceTests {
         let result = try JSONDecoder().decode(FiBotDecision.self, from: second.decisionData)
         #expect(result.outcome == .wait)
         #expect(result.maximumNow?.amount == 300)
+    }
+    @Test func evaluationAndReservationUseTheSavedPlanDay() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let context = ModelContext(container)
+        var plan = plan()
+        plan.timeZoneIdentifier = "America/Vancouver"
+        plan.confirmedOn = "2026-10-05"
+        plan.accounts[0].cash.observedOn = "2026-10-05"
+        try FiBotWorkspaceStore.save(plan, in: context)
+        let record = try FiBotWorkspaceStore.evaluate(question: "Synthetic", purchase: .init(fundingAccountID: "cash",
+            allInCost: .init(10, currency: "CAD"), costsComplete: true), in: context, now: today)
+        let snapshot = try JSONDecoder().decode(FiBotFinancialContext.self, from: record.contextData)
+        #expect(snapshot.evaluatedOn == "2026-10-05")
+        try FiBotWorkspaceStore.reserve(record, in: context, now: today)
+        #expect(try FiBotWorkspaceStore.load(in: context).0.commitments.first?.expiresOn == "2026-10-12")
+    }
+
+    @Test func purchaseCurrencyCannotBeRelabeledAsTheFundingCurrency() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let context = ModelContext(container)
+        try FiBotWorkspaceStore.save(plan(), in: context)
+        let record = try FiBotWorkspaceStore.evaluate(question: "Synthetic USD purchase", purchase: .init(fundingAccountID: "cash",
+            allInCost: .init(10, currency: "USD"), costsComplete: true), in: context, now: today)
+        let decision = try JSONDecoder().decode(FiBotDecision.self, from: record.decisionData)
+        #expect(decision.outcome == .needsMoreInformation)
+        #expect(throws: (any Error).self) { try FiBotWorkspaceStore.reserve(record, in: context, now: today) }
     }
     @Test func expiredDecisionsCannotReserveAndErasureIncludesHistory() throws {
         let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()

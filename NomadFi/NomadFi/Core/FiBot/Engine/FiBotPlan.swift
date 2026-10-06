@@ -29,6 +29,7 @@ public struct FiBotSchedule: Identifiable, Codable, Sendable {
 }
 
 public struct FiBotPlan: Codable, Sendable {
+    public var timeZoneIdentifier: String? = TimeZone.current.identifier
     public var accounts: [FiBotPlanAccount] = []
     public var schedules: [FiBotSchedule] = []
     public var commitments: [FiBotCommitment] = []
@@ -36,6 +37,9 @@ public struct FiBotPlan: Codable, Sendable {
     public var confirmedOn: String = ""
     public var horizonDays: Int = 90
     public var policy = FiBotPolicy()
+    public var timeZone: TimeZone {
+        timeZoneIdentifier.flatMap(TimeZone.init(identifier:)) ?? FiBotCalendar.utc.timeZone
+    }
     public init() {}
 }
 
@@ -51,6 +55,13 @@ public enum FiBotCalendar {
         return date
     }
     public static func string(_ date: Date) -> String { formatter().string(from: date) }
+    public static func localDay(_ date: Date, in timeZone: TimeZone = .current) -> String {
+        let value = formatter(); value.timeZone = timeZone; return value.string(from: date)
+    }
+    public static func localDate(_ day: String, in timeZone: TimeZone = .current) -> Date? {
+        guard date(day) != nil else { return nil }
+        let value = formatter(); value.timeZone = timeZone; return value.date(from: day)
+    }
     public static func adding(_ days: Int, to value: String) -> String? {
         date(value).flatMap { utc.date(byAdding: .day, value: days, to: $0) }.map(string)
     }
@@ -68,6 +79,7 @@ public enum FiBotContextBuilder {
         let end = FiBotCalendar.adding(plan.horizonDays, to: date) ?? date
         var flows: [FiBotCashFlow] = []
         var valid = plan.schedules.count <= 250 && (90...366).contains(plan.horizonDays)
+            && (plan.timeZoneIdentifier == nil || plan.timeZoneIdentifier.flatMap(TimeZone.init(identifier:)) != nil)
         if let confirmed = FiBotCalendar.date(plan.confirmedOn), let today = FiBotCalendar.date(date) {
             valid = valid && confirmed <= today && today.timeIntervalSince(confirmed) <= 30 * 86400
         } else { valid = false }

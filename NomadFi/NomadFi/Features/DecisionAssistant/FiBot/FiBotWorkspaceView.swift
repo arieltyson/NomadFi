@@ -11,11 +11,18 @@ struct FiBotWorkspaceView: View {
     @State private var records: [FiBotDecisionRecord] = []
     @State private var question = ""
     @State private var amount = ""
+    @State private var purchaseCurrency = "CAD"
     @State private var fundingID = ""
     @State private var costsComplete = false
     @State private var selected: FiBotDecisionRecord?
     @State private var error: String?
     @State private var deleting = false
+
+    init(question: String = "", amount: Double? = nil, currency: String = "CAD") {
+        _question = State(initialValue: question)
+        _amount = State(initialValue: amount.map { String($0) } ?? "")
+        _purchaseCurrency = State(initialValue: currency)
+    }
 
     var body: some View {
         Form {
@@ -27,7 +34,11 @@ struct FiBotWorkspaceView: View {
                 TextField("What are you considering?", text: $question, axis: .vertical).lineLimit(1...3)
                 Picker("Pay from", selection: $fundingID) {
                     Text("Choose an account").tag("")
-                    ForEach(plan.accounts) { Text($0.name).tag($0.cash.id) }
+                    ForEach(plan.accounts) { Text("\($0.name) · \($0.cash.available.currency)").tag($0.cash.id) }
+                }
+                Picker("Purchase currency", selection: $purchaseCurrency) {
+                    Text("CAD").tag("CAD"); Text("USD").tag("USD")
+                    if !["CAD", "USD"].contains(purchaseCurrency) { Text(purchaseCurrency).tag(purchaseCurrency) }
                 }
                 TextField("Total including tax and fees", text: $amount).keyboardType(.decimalPad)
                 Toggle("This is the complete one-time cost", isOn: $costsComplete)
@@ -107,7 +118,7 @@ struct FiBotWorkspaceView: View {
             Section("Accessible cash and protected reserves") {
                 ForEach(plan.accounts) { account in
                     NavigationLink(account.name) {
-                        FiBotAccountEditor(existing: account) { value in
+                        FiBotAccountEditor(existing: account, timeZone: plan.timeZone) { value in
                             if let index = plan.accounts.firstIndex(where: { $0.id == value.id }) { plan.accounts[index] = value }
                             invalidateCoverage(); save()
                         }
@@ -117,13 +128,13 @@ struct FiBotWorkspaceView: View {
                     } }
                 }
                 NavigationLink("Add accessible cash account") {
-                    FiBotAccountEditor { plan.accounts.append($0); invalidateCoverage(); save() }
+                    FiBotAccountEditor(timeZone: plan.timeZone) { plan.accounts.append($0); invalidateCoverage(); save() }
                 }
             }
             Section("Net pay, bills and expected spending") {
                 ForEach(plan.schedules) { schedule in
                     NavigationLink {
-                        FiBotScheduleEditor(accounts: plan.accounts, existing: schedule) { value in
+                        FiBotScheduleEditor(accounts: plan.accounts, existing: schedule, timeZone: plan.timeZone) { value in
                             if let index = plan.schedules.firstIndex(where: { $0.id == value.id }) { plan.schedules[index] = value }
                             invalidateCoverage(); save()
                         }
@@ -138,7 +149,7 @@ struct FiBotWorkspaceView: View {
                     } }
                 }
                 NavigationLink("Add confirmed income or expense") {
-                    FiBotScheduleEditor(accounts: plan.accounts) { plan.schedules.append($0); invalidateCoverage(); save() }
+                    FiBotScheduleEditor(accounts: plan.accounts, timeZone: plan.timeZone) { plan.schedules.append($0); invalidateCoverage(); save() }
                 }.disabled(plan.accounts.isEmpty)
                 Text("Include food, irregular costs, cash spending, taxes and card payments. Enter net salary only; a past deposit does not confirm future employment. Never include a loan, refund or transfer as salary.")
                     .font(.footnote).foregroundStyle(.secondary)
@@ -150,7 +161,11 @@ struct FiBotWorkspaceView: View {
                 Toggle("All cash accounts and access limits are included", isOn: $plan.coverage.accountsComplete)
                 Toggle("Expected variable spending is included", isOn: $plan.coverage.spendingIncluded)
                 Toggle("All debt payments are scheduled", isOn: $plan.coverage.debtPaymentsIncluded)
-                Button("Save coverage confirmation") { plan.confirmedOn = FiBotCalendar.string(.now); save() }
+                Text("Plan time zone: \(plan.timeZone.identifier)").font(.caption)
+                Button("Save coverage confirmation") {
+                    let zone = plan.timeZone
+                    plan.confirmedOn = FiBotCalendar.localDay(.now, in: zone); save()
+                }
                 Text("Confirmation lasts 30 days. Accessible balances must be confirmed within two days. Update your plan whenever pay, spending, bills or employment changes.").font(.footnote)
             }
             Section("Stress scenario") {
@@ -176,11 +191,11 @@ struct FiBotWorkspaceView: View {
     private func save() { perform { try FiBotWorkspaceStore.save(plan, in: $0) } }
     private func remove(_ record: FiBotDecisionRecord) { perform { $0.delete(record); try $0.save() } }
     private func evaluate() {
-        guard let account = plan.accounts.first(where: { $0.cash.id == fundingID }), let value = money(amount) else { return }
+        guard plan.accounts.contains(where: { $0.cash.id == fundingID }), let value = money(amount) else { return }
         perform { context in
             try FiBotWorkspaceStore.save(plan, in: context)
             selected = try FiBotWorkspaceStore.evaluate(question: question,
-                purchase: .init(fundingAccountID: fundingID, allInCost: .init(value, currency: account.cash.available.currency),
+                purchase: .init(fundingAccountID: fundingID, allInCost: .init(value, currency: purchaseCurrency),
                                 costsComplete: costsComplete), in: context)
         }
     }

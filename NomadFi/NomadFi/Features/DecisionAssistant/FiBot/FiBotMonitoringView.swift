@@ -75,7 +75,9 @@ struct FiBotMonitoringView: View {
                 throw HostedServiceError.ownerChanged
             }
             let (plan, _) = try FiBotWorkspaceStore.load(in: ModelContext(modelContext.container))
-            let context = FiBotContextBuilder.build(plan: plan, on: FiBotCalendar.string(.now))
+            let zone = plan.timeZone
+            settings.timeZone = zone.identifier
+            let context = FiBotContextBuilder.build(plan: plan, on: FiBotCalendar.localDay(.now, in: zone))
             try HostedFiBotConsent(userID: session.tokens.userID, endpoint: session.endpoint).save()
             _ = try await banking.client.configureFiBot(.init(consent: true, expectedRevision: status.revision,
                 context: context, policy: plan.policy, settings: settings))

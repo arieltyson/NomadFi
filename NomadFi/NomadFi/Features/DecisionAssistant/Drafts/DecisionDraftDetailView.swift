@@ -104,6 +104,13 @@ struct DecisionDraftDetailView: View {
                     }
 
                     nextStepSection
+                    #if DEBUG || FIBOT
+                    if draft.kind == .purchase {
+                        NavigationLink("Check affordability with FiBot") {
+                            FiBotWorkspaceView(question: draft.scenarioText, amount: draft.amount, currency: draft.currencyCodeRawValue)
+                        }
+                    }
+                    #endif
 
                     timestamps
 

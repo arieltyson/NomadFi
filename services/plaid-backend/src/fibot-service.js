@@ -87,7 +87,10 @@ export class FiBotMonitor {
         return row;
       });
       if (!profile) return { status: 'obsolete' };
-      const context = structuredClone(profile.context), today = this.now().toISOString().slice(0, 10);
+      const parts = new Intl.DateTimeFormat('en', { timeZone: profile.settings.timeZone,
+        year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(this.now());
+      const today = ['year', 'month', 'day'].map(type => parts.find(part => part.type === type).value).join('-');
+      const context = structuredClone(profile.context);
       const originalDate = context.evaluatedOn;
       context.evaluatedOn = today;
       context.flows = context.flows.filter(flow => typeof flow.date === 'string' && flow.date >= today);

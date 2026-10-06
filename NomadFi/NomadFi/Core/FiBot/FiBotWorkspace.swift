@@ -52,7 +52,8 @@ enum FiBotWorkspaceStore {
     static func evaluate(question: String, purchase: FiBotPurchase, in context: ModelContext, now: Date = .now) throws -> FiBotDecisionRecord {
         let (plan, revision) = try load(in: context)
         guard let revision else { throw Failure.invalidPlan }
-        let snapshot = FiBotContextBuilder.build(plan: plan, on: FiBotCalendar.string(now))
+        let zone = plan.timeZone
+        let snapshot = FiBotContextBuilder.build(plan: plan, on: FiBotCalendar.localDay(now, in: zone))
         let decision = FiBotAffordabilityEngine.evaluate(context: snapshot, purchase: purchase, policy: plan.policy)
         let encoder = JSONEncoder()
         let row = FiBotDecisionRecord(planRevision: revision, question: String(question.prefix(500)),
@@ -72,12 +73,14 @@ enum FiBotWorkspaceStore {
         guard revision == record.planRevision, now.timeIntervalSince(record.createdAt) >= 0,
               now.timeIntervalSince(record.createdAt) <= 3600 else { throw Failure.staleDecision }
         let purchase = try JSONDecoder().decode(FiBotPurchase.self, from: record.purchaseData)
-        let snapshot = FiBotContextBuilder.build(plan: plan, on: FiBotCalendar.string(now))
+        let zone = plan.timeZone
+        let day = FiBotCalendar.localDay(now, in: zone)
+        let snapshot = FiBotContextBuilder.build(plan: plan, on: day)
         guard FiBotAffordabilityEngine.evaluate(context: snapshot, purchase: purchase, policy: plan.policy).outcome == .affordable,
               purchase.ownershipCosts.isEmpty,
               !plan.commitments.contains(where: { $0.id == record.id.uuidString }) else { throw Failure.cannotReserve }
         plan.commitments.append(.init(id: record.id.uuidString, accountID: purchase.fundingAccountID,
-            money: purchase.allInCost, expiresOn: FiBotCalendar.string(now.addingTimeInterval(7 * 86400))))
+            money: purchase.allInCost, expiresOn: FiBotCalendar.adding(7, to: day) ?? day))
         try save(plan, in: context)
     }
 

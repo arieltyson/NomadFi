@@ -3,6 +3,7 @@ import SwiftUI
 struct FiBotAccountEditor: View {
     @Environment(\.dismiss) private var dismiss
     var existing: FiBotPlanAccount?
+    var timeZone: TimeZone = .current
     let onSave: (FiBotPlanAccount) -> Void
     @State private var name = ""
     @State private var currency = "CAD"
@@ -26,18 +27,19 @@ struct FiBotAccountEditor: View {
                 let id = existing?.id ?? UUID().uuidString
                 onSave(.init(id: id, name: String(name.prefix(120)), cash: .init(id: existing?.cash.id ?? id,
                     available: .init(amount, currency: currency), protectedReserve: reserve,
-                    observedOn: FiBotCalendar.string(observed), verification: .confirmed)))
+                    observedOn: FiBotCalendar.localDay(observed, in: timeZone), verification: .confirmed)))
                 dismiss()
             }.disabled(!confirmed || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                        || FiBotPresentation.parse(balance) == nil || FiBotPresentation.parse(reserve) == nil)
         }
         .navigationTitle(existing == nil ? "Accessible cash" : "Update accessible cash")
+        .environment(\.timeZone, timeZone)
         .onAppear {
             guard let existing else { return }
             name = existing.name; currency = existing.cash.available.currency
             balance = NSDecimalNumber(decimal: existing.cash.available.amount).stringValue
             reserve = NSDecimalNumber(decimal: existing.cash.protectedReserve).stringValue
-            observed = FiBotCalendar.date(existing.cash.observedOn) ?? .now
+            observed = FiBotCalendar.localDate(existing.cash.observedOn, in: timeZone) ?? .now
         }
     }
 }
@@ -46,6 +48,7 @@ struct FiBotScheduleEditor: View {
     @Environment(\.dismiss) private var dismiss
     let accounts: [FiBotPlanAccount]
     var existing: FiBotSchedule?
+    var timeZone: TimeZone = .current
     let onSave: (FiBotSchedule) -> Void
     @State private var label = ""
     @State private var accountID = ""
@@ -81,17 +84,20 @@ struct FiBotScheduleEditor: View {
                 guard let account = accounts.first(where: { $0.cash.id == accountID }), let amount = FiBotPresentation.parse(amount) else { return }
                 onSave(.init(id: existing?.id ?? UUID().uuidString, label: String(label.prefix(120)), accountID: accountID,
                     money: .init(amount, currency: account.cash.available.currency), kind: kind,
-                    firstDate: FiBotCalendar.string(firstDate), lastDate: FiBotCalendar.string(cadence == .once ? firstDate : lastDate),
-                    cadence: cadence, confirmedOn: FiBotCalendar.string(.now)))
+                    firstDate: FiBotCalendar.localDay(firstDate, in: timeZone),
+                    lastDate: FiBotCalendar.localDay(cadence == .once ? firstDate : lastDate, in: timeZone),
+                    cadence: cadence, confirmedOn: FiBotCalendar.localDay(.now, in: timeZone)))
                 dismiss()
             }.disabled(!confirmed || accountID.isEmpty || label.isEmpty || FiBotPresentation.parse(amount) == nil)
         }
         .navigationTitle("Income or expense")
+        .environment(\.timeZone, timeZone)
         .onAppear {
             guard let existing else { return }
             label = existing.label; accountID = existing.accountID; amount = NSDecimalNumber(decimal: existing.money.amount).stringValue
             kind = existing.kind; cadence = existing.cadence
-            firstDate = FiBotCalendar.date(existing.firstDate) ?? .now; lastDate = FiBotCalendar.date(existing.lastDate) ?? .now
+            firstDate = FiBotCalendar.localDate(existing.firstDate, in: timeZone) ?? .now
+            lastDate = FiBotCalendar.localDate(existing.lastDate, in: timeZone) ?? .now
         }
     }
 }

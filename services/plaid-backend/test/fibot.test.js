@@ -20,6 +20,27 @@ const input = () => ({ consent: true, expectedRevision: '0', context: { evaluate
 const shortfall = () => ({ outcome: 'wait', reasons: ['purchase_reduces_protected_cash'], policyVersion: 'cash-flow-v1' });
 const worker = evaluate => new FiBotMonitor({ pool, evaluate: evaluate ?? (async () => shortfall()), now });
 
+test('monitoring evaluates the saved local day across UTC midnight and daylight saving', async () => {
+  for (const [instant, day, timeZone] of [['2026-10-06T01:00:00Z', '2026-10-05', 'America/Vancouver'],
+    ['2026-11-01T05:30:00Z', '2026-11-01', 'America/New_York'],
+    ['2026-11-01T06:30:00Z', '2026-11-01', 'America/New_York']]) {
+    const request = input();
+    request.context.evaluatedOn = day;
+    request.settings.timeZone = timeZone;
+    request.context.flows = [{ date: day }, { date: '2026-10-04' }];
+    request.context.coverage.accountsComplete = true;
+    await service.configure(userID, request);
+    const result = await new FiBotMonitor({ pool, now: () => new Date(instant), evaluate: async ({ context }) => {
+      assert.equal(context.evaluatedOn, day);
+      assert.equal(context.coverage.accountsComplete, true);
+      assert.deepEqual(context.flows, [{ date: day }]);
+      return shortfall();
+    } }).runOne();
+    assert.equal(result.status, 'evaluated');
+    await service.configure(userID, { consent: false });
+  }
+});
+
 test('monitoring requires explicit consent, isolates owners and deletes all uploaded context on opt-out', async () => {
   await assert.rejects(service.configure(userID, { ...input(), consent: undefined }), { code: 'MONITOR_CONSENT_REQUIRED' });
   await service.configure(userID, input()); await worker().runOne();
