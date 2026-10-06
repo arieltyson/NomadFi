@@ -2,17 +2,15 @@
 
 # NomadFi 💷
 
-### Wealth without borders
-
 <kbd>
-    <img src="https://github.com/user-attachments/assets/c5ff4701-e938-4024-9d5c-0ed2d04d484c" width="800" height="500">
+    <img src="docs/assets/banner.png" alt="NomadFi — Wealth without borders." width="1000" height="500">
 </kbd>
 
 ## Project Description 🎨
 
 "NomadFi" is an iOS app built with SwiftUI that acts as a **Personal CFO for international students** managing money across multiple countries. Instead of juggling separate banking apps across jurisdictions, NomadFi unifies fragmented finances into a single dashboard that surfaces hidden costs, optimizes payment decisions, and automates cross-border tax compliance.
 
-The app applies [Ramp's](https://ramp.com) B2B spend-management logic to the personal B2C context — combining Apple's `FinanceKit` for on-device financial data, `VisionKit` for receipt OCR, `App Intents` for Siri automation, and `WidgetKit` Control Widgets for one-tap on-device intake from Control Center, the Lock Screen, and the Action button to eliminate the "financial leakage" (hidden FX fees, poor exchange rates, tax confusion) that costs international students real money every day.
+The app applies [Ramp's](https://ramp.com) B2B spend-management logic to the personal B2C context — combining on-device `Foundation Models` for decision intake, `Vision` for receipt OCR, `App Intents` for Siri automation, and `WidgetKit` Control Widgets for one-tap on-device intake from Control Center, the Lock Screen, and the Action button to eliminate the "financial leakage" (hidden FX fees, poor exchange rates, tax confusion) that costs international students real money every day.
 
 Current personal finance apps are domestic-focused. They break when you add a Trinidadian bank account, a Canadian credit card, and a US J-1 salary. **NomadFi doesn't.**
 
@@ -22,14 +20,14 @@ Current personal finance apps are domestic-focused. They break when you add a Tr
 
 ### The Universal Ledger 🌍
 - **Global Net Worth dashboard** aggregates accounts across jurisdictions (TTD, CAD, USD) using real-time mid-market exchange rates — so you always know exactly how rich you are in your home currency vs. your spending currency.
-- **FinanceKit integration** pulls Apple Card/Cash data on-device with full privacy, while **manual entry** supports any international bank seamlessly.
+- **Manual entry and CSV import** support any international bank today. **FinanceKit** support is built and waits on Apple making the entitlement available in NomadFi's region.
 
 ### Arbitrage Intelligence 💡
 - **"Active Card" engine** uses `CoreLocation` to detect your current country and recommends the optimal payment source — eliminating hidden FX fees before you tap.
 - **"Real Cost" calculator** reveals the true home-currency cost of every transaction, exposing the gap between what you paid and the mid-market fair rate.
 
 ### The Tax Vault 🗄️
-- **Receipt scanner** powered by `VisionKit` (`DataScannerViewController`) and the `Vision` framework extracts merchant names, amounts, and dates from receipts using on-device OCR.
+- **Receipt scanner** powered by the `Vision` framework extracts merchant names, amounts, and dates from a photo of a receipt using on-device text recognition.
 - **Auto-categorization** tags documents by jurisdiction and tax category (Treaty Benefits, Education Expenses, J-1 Wages), then exports organized reports at tax season.
 
 ### Subscription Arbitrage 💰
@@ -49,50 +47,47 @@ Current personal finance apps are domestic-focused. They break when you add a Tr
 
 <div style="display: flex; justify-content: center; align-items: center;">
     <kbd>
-        <img src="" alt="Dashboard" width="200">
+        <img src="docs/assets/screenshot-dashboard.png" alt="Dashboard — one net worth, one card per country" width="200">
     </kbd>
     <kbd>
-        <img src="" alt="Ledger" width="200">
+        <img src="docs/assets/screenshot-country.png" alt="Country — its accounts and transactions" width="200">
     </kbd>
     <kbd>
-        <img src="" alt="Active Card" width="200">
+        <img src="docs/assets/screenshot-decisions.png" alt="Decisions — checks before you spend" width="200">
     </kbd>
 </div>
 
 <div style="display: flex; justify-content: center; align-items: center;">
     <kbd>
-        <img src="" alt="Tax Vault" width="200">
+        <img src="docs/assets/screenshot-tools.png" alt="Tools — every manual tool, one tap away" width="200">
     </kbd>
     <kbd>
-        <img src="" alt="Receipt Scanner" width="200">
+        <img src="docs/assets/screenshot-tax-vault.png" alt="Tax Vault — receipts and tax-relevant transactions" width="200">
     </kbd>
     <kbd>
-        <img src="" alt="Subscriptions" width="200">
+        <img src="docs/assets/screenshot-investing.png" alt="Investing Learn — source-backed lessons per country" width="200">
     </kbd>
 </div>
 
 ## Technologies Used 💻
 
-This project leverages modern Swift, SwiftUI, and Apple platform APIs for a native, privacy-first cross-border finance experience.
+This project uses modern Swift, SwiftUI, and Apple platform frameworks for a native, privacy-first cross-border finance experience.
 
-- [x] Swift 6.2
-- [x] SwiftUI
-- [x] Observation framework
-- [x] Swift Concurrency (`async/await`, actors, strict concurrency)
-- [x] Swift Testing + XCTest UI Testing
+- [x] Swift 6 language mode with complete strict concurrency (`async/await`, actors, `Sendable`)
+- [x] SwiftUI with the Observation framework
 - [x] SwiftData
-- [x] FinanceKit
-- [x] VisionKit (`DataScannerViewController`)
-- [x] Vision (Text Recognition)
-- [x] Core Haptics
-- [x] CoreLocation
-- [x] WidgetKit (Home Screen widgets, Lock Screen widgets, Control Widgets)
-- [x] AppIntents + Shortcuts (Siri Integration)
-- [x] Charts
+- [x] Foundation Models (on-device Apple Intelligence decision intake)
+- [x] App Intents + App Shortcuts (Siri and Spotlight)
+- [x] WidgetKit (Home Screen and Lock Screen widgets, Control Center controls)
+- [x] Vision (on-device receipt text recognition) and PhotosUI
+- [x] CoreLocation and MapKit (current-country detection)
+- [x] LocalAuthentication (Face ID App Lock) and Keychain Services
+- [x] Core Spotlight
 - [x] TipKit
 - [x] UserNotifications
-- [x] StoreKit
-- [x] OSLog (Structured Logging)
+- [x] FinanceKit (built in; awaiting regional availability)
+- [x] OSLog (structured logging)
+- [x] Swift Testing and XCTest UI testing
 
 ## Skills Demonstrated 🥋
 
@@ -100,7 +95,7 @@ This project is designed to showcase distinguished-level iOS engineering practic
 
 - [x] **SYSTEM DESIGN**: Privacy-first, on-device architecture with graceful degradation across FinanceKit availability, network conditions, and jurisdiction coverage.
 - [x] **CROSS-BORDER DATA MODELING**: SwiftData schema that natively represents multi-currency transactions, jurisdiction-aware accounts, and real-time FX rate snapshots.
-- [x] **PLATFORM INTEGRATION**: Deep integration with FinanceKit, VisionKit, App Intents, WidgetKit (including Control Widgets), Foundation Models, and CoreLocation for a system-native experience.
+- [x] **PLATFORM INTEGRATION**: Deep integration with App Intents, WidgetKit (including Control Widgets), Foundation Models, Vision, CoreLocation, and FinanceKit for a system-native experience.
 - [x] **SOCIAL IMPACT**: Purpose-built tooling that addresses a real affordability crisis — making hidden FX fees visible and cross-border tax compliance manageable for a vulnerable population.
 - [x] **ACCESSIBILITY EXCELLENCE**: VoiceOver narratives, Dynamic Type at AX5, Reduce Motion/Transparency support, and WCAG 2.1 AA contrast compliance on every screen.
 - [x] **TESTABILITY**: Protocol-oriented service layer with mock implementations from Day 1, enabling comprehensive unit testing and SwiftUI Previews.
@@ -126,6 +121,6 @@ for coverage, limitations, and resolving false positives.
 
 ## License 🪪
 
-All rights reserved. See [LICENSE](LICENSE) for details.
+Released under the **MIT License** — free to use, copy, modify, merge, publish, distribute, sublicense, and sell, for private or commercial purposes, provided the original copyright notice and permission notice are retained. Offered without warranty of any kind. See [LICENSE](LICENSE) for the full text.
 
 </div>
