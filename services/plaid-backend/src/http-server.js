@@ -19,7 +19,7 @@ function object(raw) {
     return parsed;
   } catch { throw new ServiceError('INVALID_JSON'); }
 }
-export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, appleNotifications, rateKey, logger = () => {} }) {
+export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, appleNotifications, fibot, rateKey, logger = () => {} }) {
   if (!Buffer.isBuffer(rateKey) || rateKey.length < 32) throw new ServiceError('INVALID_RATE_KEY');
   const rate = async (identity, group, maximum) => {
     const key = createHmac('sha256', rateKey).update(`${group}:${identity}`).digest();
@@ -46,7 +46,7 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       if (!['GET', 'POST', 'DELETE'].includes(method)) throw new ServiceError('METHOD_NOT_ALLOWED', 405);
       const mutating = method !== 'GET';
       if (mutating && request.headers['content-type']?.split(';')[0] !== 'application/json') throw new ServiceError('JSON_REQUIRED', 415);
-      const input = mutating ? object(await body(request)) : {};
+      const input = mutating ? object(await body(request, path === '/fibot/configuration' ? 150000 : 32768)) : {};
       if (method === 'POST' && path === '/webhooks/apple') {
         send(200, await appleNotifications.receive(input.payload)); return;
       }
@@ -63,6 +63,12 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       await rate(userID, 'authenticated', 120);
       if (method === 'POST' && path === '/auth/logout') { await auth.logout(session.id, userID); send(200, { status: 'signed_out' }); return; }
       if (method === 'DELETE' && path === '/account') { send(202, await revocation.deleteAccount(userID)); return; }
+      if (fibot && path === '/fibot/configuration' && method === 'POST') {
+        await rate(userID, 'fibot-configuration', 5); send(200, await fibot.configure(userID, input)); return;
+      }
+      if (fibot && path === '/fibot' && method === 'GET') { send(200, await fibot.status(userID)); return; }
+      const alert = /^\/fibot\/alerts\/([^/]+)$/.exec(path);
+      if (fibot && alert && method === 'DELETE') { send(200, await fibot.dismiss(userID, alert[1])); return; }
       if (method === 'GET' && path === '/connections') { send(200, { connections: await store.connections(userID) }); return; }
       if (method === 'POST' && path === '/link') {
         await rate(userID, 'link', 5); send(200, await link.begin(userID, input.connection_id ?? null)); return;

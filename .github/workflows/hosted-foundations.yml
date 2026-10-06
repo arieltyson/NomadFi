@@ -1,0 +1,22 @@
+name: Hosted banking and FiBot
+on:
+  push:
+    branches: [main, codex/fibot-multibank]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: hosted-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test shared Swift engine and PostgreSQL services on Linux
+        run: docker build --target test -f services/fibot-engine/Dockerfile .
+      - name: Verify the isolated monitor runtime builds
+        run: docker build --target runtime -f services/fibot-engine/Dockerfile .

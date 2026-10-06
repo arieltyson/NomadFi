@@ -168,6 +168,10 @@ export class SyncStore {
         published_at = clock_timestamp() WHERE id = $1`, [generationID, revision]);
       await client.query(`UPDATE nomadfi.connections SET upstream_cursor = $2,
         last_synced_at = clock_timestamp() WHERE id = $1`, [claim.connection_id, generation.next_cursor]);
+      await client.query('UPDATE nomadfi.fibot_profiles SET bank_revision = $2 WHERE user_id = $1', [claim.user_id, revision]);
+      await client.query(`UPDATE nomadfi.fibot_jobs SET requested_revision = requested_revision + 1,
+        available_at = clock_timestamp(), attempts = 0, dead_letter = false WHERE user_id = $1`, [claim.user_id]);
+      await client.query('UPDATE nomadfi.fibot_alerts SET superseded = true WHERE user_id = $1', [claim.user_id]);
       await client.query(`UPDATE nomadfi.sync_jobs SET completed_revision = $2, lease_expires_at = NULL,
         attempts = 0, failure_code = NULL, available_at = clock_timestamp() WHERE connection_id = $1`,
       [claim.connection_id, lease.leased_request_revision]);

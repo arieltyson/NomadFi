@@ -12,6 +12,7 @@ import { RevocationService } from './revocation-service.js';
 import { WebhookService, enqueueStaleConnections } from './webhook-service.js';
 import { createAPI } from './http-server.js';
 import { AppleNotifications } from './apple-notifications.js';
+import { FiBotService } from './fibot-service.js';
 
 const log = value => console.log(JSON.stringify(value));
 let pool, server, cipher, stopping = false;
@@ -28,7 +29,7 @@ try {
   process.on('SIGTERM', () => { stopping = true; if (server) server.close(); });
   process.on('SIGINT', () => { stopping = true; if (server) server.close(); });
   if (mode === 'api') {
-    server = createAPI({ pool, auth, store, link, delivery: new DeliveryService(pool), revocation,
+    server = createAPI({ pool, auth, store, link, delivery: new DeliveryService(pool), revocation, fibot: new FiBotService(pool),
       appleNotifications: new AppleNotifications({ pool, apple, revocation }),
       webhooks: new WebhookService({ pool, plaid }), rateKey: config.rateKey, logger: log });
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(config.port, config.host, resolve); });
@@ -42,6 +43,10 @@ try {
       if (revoked.status === 'idle' && sync.status === 'idle') break;
     }
   } else if (mode === 'sweep') {
+    await pool.query(`UPDATE nomadfi.fibot_jobs SET requested_revision = requested_revision + 1,
+      available_at = clock_timestamp() WHERE requested_revision = completed_revision
+        AND available_at < clock_timestamp() - interval '1 day'`);
+    await pool.query("DELETE FROM nomadfi.fibot_alerts WHERE created_at < clock_timestamp() - interval '30 days'");
     log({ event: 'stale_sweep', enqueued: await enqueueStaleConnections(pool) });
     await pool.query('DELETE FROM nomadfi.snapshots WHERE expires_at < clock_timestamp()');
     await pool.query("DELETE FROM nomadfi.auth_challenges WHERE expires_at < clock_timestamp() - interval '1 day'");

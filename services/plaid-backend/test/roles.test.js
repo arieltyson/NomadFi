@@ -15,8 +15,8 @@ test('runtime cannot change schema and FiBot cannot read identity or provider cr
       await client.query('SELECT count(*) FROM nomadfi.connections');
       await assert.rejects(client.query('ALTER TABLE nomadfi.users ADD COLUMN forbidden text'), { code: '42501' });
       await client.query('RESET ROLE'); await client.query('SET ROLE nomadfi_fibot');
-      await client.query('SELECT count(*) FROM nomadfi.ledger_records');
-      for (const table of ['credentials', 'sessions', 'apple_grants', 'link_attempts', 'users']) {
+      await client.query('SELECT count(*) FROM nomadfi.fibot_profiles');
+      for (const table of ['credentials', 'sessions', 'apple_grants', 'link_attempts', 'users', 'ledger_records']) {
         await assert.rejects(client.query(`SELECT * FROM nomadfi.${table}`), { code: '42501' });
       }
       await client.query('RESET ROLE');
