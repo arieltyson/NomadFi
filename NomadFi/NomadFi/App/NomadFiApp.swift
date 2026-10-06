@@ -67,6 +67,11 @@ struct NomadFiApp: App {
             SampleDataSeeder.seedIfNeeded(modelContext: modelContainer.mainContext)
         }
 
+        // Tips would cover what a UI test or a screenshot is looking at.
+        if config.isUITesting {
+            Tips.hideAllTipsForTesting()
+        }
+
         try? Tips.configure([
             .displayFrequency(.weekly)
         ])
@@ -166,6 +171,7 @@ struct NomadFiApp: App {
 
 private struct UITestLaunchConfiguration {
 
+    let isUITesting: Bool
     let resetAppState: Bool
     let disableAppLock: Bool
     let forceReduceMotion: Bool
@@ -177,6 +183,8 @@ private struct UITestLaunchConfiguration {
             for: "UI_TEST_MODE",
             in: environment
         )
+
+        self.isUITesting = isUITesting
 
         if isUITesting {
             resetAppState = Self.boolValue(

@@ -52,7 +52,9 @@ struct AccountSummaryRow: View {
 
     private var balanceColumn: some View {
         VStack(alignment: .trailing, spacing: SpacingTokens.xxSmall) {
+            // The amount never wraps; the account name gives way instead.
             primaryAmountView
+                .fixedSize()
 
             if let secondary = account.secondaryAmountLabel {
                 Text(secondary.text)
