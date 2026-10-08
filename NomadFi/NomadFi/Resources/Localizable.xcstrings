@@ -2404,13 +2404,13 @@
     "Select an account" : {
 
     },
-    "Select at least %lld more" : {
+    "Select at least one country" : {
 
     },
-    "Select at least two countries where you have financial accounts." : {
+    "Select every country where you have financial accounts." : {
 
     },
-    "Select at least two jurisdictions to continue." : {
+    "Select at least one jurisdiction to continue." : {
 
     },
     "Select which saved credit-card account is your Chase Freedom Rise." : {
@@ -2967,7 +2967,7 @@
     "Your home jurisdiction is where NomadFi reports your net worth. Data attached to a jurisdiction keeps living on its own records — removing a jurisdiction never deletes your accounts, transactions, budgets, subscriptions, or tax documents." : {
 
     },
-    "Your money lives in three countries." : {
+    "Your money crosses borders." : {
 
     },
     "Your Money This Week" : {

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Onboarding step where users select the countries where their money lives.
 ///
-/// Requires a minimum of two jurisdictions before proceeding.
+/// Requires at least one jurisdiction before proceeding.
 /// Each selection triggers haptic feedback and is announced via VoiceOver.
 struct JurisdictionSelectionView: View {
 
@@ -95,7 +95,7 @@ private extension JurisdictionSelectionView {
                 .bold()
                 .multilineTextAlignment(.center)
 
-            Text("Select at least two countries where you have financial accounts.")
+            Text("Select every country where you have financial accounts.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -126,7 +126,7 @@ private extension JurisdictionSelectionView {
     var footer: some View {
         VStack(spacing: SpacingTokens.small) {
             if !viewModel.canProceedFromJurisdictions {
-                Text("Select at least \(2 - viewModel.selectedJurisdictions.count) more")
+                Text("Select at least one country")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(.secondary)
             }
@@ -138,7 +138,7 @@ private extension JurisdictionSelectionView {
                 .accessibilityHint(
                     viewModel.canProceedFromJurisdictions
                         ? "Continues to home currency setup."
-                        : "Select at least two jurisdictions to continue."
+                        : "Select at least one jurisdiction to continue."
                 )
         }
     }

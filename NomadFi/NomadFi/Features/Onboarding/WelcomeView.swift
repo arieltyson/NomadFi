@@ -74,7 +74,7 @@ private struct Headline: View {
 
     var body: some View {
         VStack(spacing: SpacingTokens.xSmall) {
-            Text("Your money lives in three countries.")
+            Text("Your money crosses borders.")
                 .font(TypographyTokens.amountMedium)
                 .bold()
                 .multilineTextAlignment(.center)

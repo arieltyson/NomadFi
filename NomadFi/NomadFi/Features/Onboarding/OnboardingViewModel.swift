@@ -22,7 +22,7 @@ final class OnboardingViewModel {
     var selectedJurisdictions: [JurisdictionInfo] = []
 
     var canProceedFromJurisdictions: Bool {
-        selectedJurisdictions.count >= 2
+        !selectedJurisdictions.isEmpty
     }
 
     // MARK: - Currency Configuration
