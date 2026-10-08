@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Continues to the next step." : {
+
+    },
+    "Couldn't Finish Setup" : {
+
+    },
+    "Country" : {
+
+    },
+    "Your setup wasn't saved. Please try again." : {
+
+    },
     "—" : {
 
     },
@@ -769,9 +781,6 @@
 
     },
     "Continues to account setup." : {
-
-    },
-    "Continues to home currency setup." : {
 
     },
     "Converted Amount" : {

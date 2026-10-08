@@ -3,8 +3,9 @@ import SwiftUI
 
 /// The root container for the onboarding flow.
 ///
-/// Manages step transitions with matched geometry animation
-/// and persists data to SwiftData on completion.
+/// Each step is pushed onto a `NavigationStack`, so the system back
+/// button and edge-swipe gesture work throughout. Data is persisted
+/// to SwiftData on completion.
 struct OnboardingFlowView: View {
 
     @Binding var hasCompletedOnboarding: Bool
@@ -13,39 +14,25 @@ struct OnboardingFlowView: View {
     @State private var viewModel = OnboardingViewModel()
 
     var body: some View {
-        Group {
-            switch viewModel.currentStep {
-            case .welcome:
-                WelcomeView(onGetStarted: viewModel.advance)
-                    .transition(.push(from: .trailing))
-
-            case .jurisdictions:
-                JurisdictionSelectionView(viewModel: viewModel)
-                    .transition(.push(from: .trailing))
-
-            case .currency:
-                CurrencyConfigurationView(viewModel: viewModel)
-                    .transition(.push(from: .trailing))
-
-            case .accounts:
-                AccountConnectionView(viewModel: viewModel, onComplete: finishOnboarding)
-                    .transition(.push(from: .trailing))
-            }
-        }
-        .reduceMotionAnimation(AnimationTokens.standard, value: viewModel.currentStep)
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                if viewModel.currentStep != .welcome {
-                    Button("Back", systemImage: "chevron.left", action: viewModel.goBack)
-                        .accessibilityHint("Returns to the previous onboarding step.")
+        NavigationStack(path: $viewModel.path) {
+            WelcomeView(onGetStarted: viewModel.advance)
+                .toolbarVisibility(.hidden, for: .navigationBar)
+                .navigationDestination(for: OnboardingViewModel.Step.self) { step in
+                    OnboardingStepView(step: step, viewModel: viewModel, onComplete: finishOnboarding)
+                        .navigationBarTitleDisplayMode(.inline)
                 }
-            }
+        }
+        .alert("Couldn't Finish Setup", isPresented: $viewModel.isShowingSaveFailure) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Your setup wasn't saved. Please try again.")
         }
     }
 
     private func finishOnboarding() {
-        viewModel.completeOnboarding(modelContext: modelContext)
-        hasCompletedOnboarding = true
+        if viewModel.completeOnboarding(modelContext: modelContext) {
+            hasCompletedOnboarding = true
+        }
     }
 }
 

@@ -31,6 +31,31 @@ final class NomadFiUITests: XCTestCase {
     }
 
     @MainActor
+    func testSingleCountryOnboardingSkipsCurrencyAndSupportsBack() {
+        let app = makeApp(hasCompletedOnboarding: false)
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Get Started"].waitForExistence(timeout: 8))
+        app.buttons["Get Started"].tap()
+
+        tapButton(containing: "India", in: app)
+
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
+        app.buttons["Continue"].tap()
+
+        XCTAssertTrue(app.buttons["Finish Setup"].waitForExistence(timeout: 8))
+        app.navigationBars.buttons.firstMatch.tap()
+
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
+        app.buttons["Continue"].tap()
+
+        XCTAssertTrue(app.buttons["Finish Setup"].waitForExistence(timeout: 8))
+        app.buttons["Finish Setup"].tap()
+
+        XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
+    }
+
+    @MainActor
     func testAddTransactionFlow() {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()

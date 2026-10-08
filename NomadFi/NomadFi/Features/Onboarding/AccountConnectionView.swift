@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The final onboarding step where users add their financial accounts.
 ///
-/// Supports manual account entry with name, institution, type, currency,
+/// Supports manual account entry with name, institution, type, country,
 /// and optional snapshot amounts. Credit cards ask for a credit limit
 /// plus optional current balance and available credit — all other types
 /// ask for an optional current balance. Balances are always optional at
@@ -97,10 +97,12 @@ private struct AddAccountSheet: View {
                         }
                     }
 
-                    Picker("Currency", selection: $viewModel.accountCurrency) {
-                        ForEach(viewModel.availableCurrencies) { currency in
-                            Text("\(currency.symbol) \(currency.displayName)")
-                                .tag(currency)
+                    if viewModel.showsAccountJurisdictionPicker {
+                        Picker("Country", selection: $viewModel.accountJurisdictionID) {
+                            ForEach(viewModel.selectedJurisdictions) { jurisdiction in
+                                Text("\(jurisdiction.flag) \(jurisdiction.name)")
+                                    .tag(jurisdiction.id)
+                            }
                         }
                     }
                 }

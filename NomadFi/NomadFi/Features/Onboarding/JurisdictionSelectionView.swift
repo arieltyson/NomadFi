@@ -137,7 +137,7 @@ private extension JurisdictionSelectionView {
                 .disabled(!viewModel.canProceedFromJurisdictions)
                 .accessibilityHint(
                     viewModel.canProceedFromJurisdictions
-                        ? "Continues to home currency setup."
+                        ? "Continues to the next step."
                         : "Select at least one jurisdiction to continue."
                 )
         }
