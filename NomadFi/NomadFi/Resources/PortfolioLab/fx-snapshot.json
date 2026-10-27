@@ -1,0 +1,511 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-27T17:32:40+00:00",
+  "source": {
+    "name": "Bank of Canada",
+    "series": "FXUSDCAD",
+    "url": "https://www.bankofcanada.ca/rates/exchange/",
+    "terms": "https://www.bankofcanada.ca/terms/",
+    "attribution": "Exchange rates: Bank of Canada (FXUSDCAD). NomadFi reduced the daily rates to the last business day of each month. This data is available free of charge at bankofcanada.ca."
+  },
+  "fx": {
+    "base": "USD",
+    "quote": "CAD",
+    "points": [
+      {
+        "month": "2017-01",
+        "close": 1.303
+      },
+      {
+        "month": "2017-02",
+        "close": 1.3249
+      },
+      {
+        "month": "2017-03",
+        "close": 1.331
+      },
+      {
+        "month": "2017-04",
+        "close": 1.3662
+      },
+      {
+        "month": "2017-05",
+        "close": 1.35
+      },
+      {
+        "month": "2017-06",
+        "close": 1.2977
+      },
+      {
+        "month": "2017-07",
+        "close": 1.2485
+      },
+      {
+        "month": "2017-08",
+        "close": 1.2536
+      },
+      {
+        "month": "2017-09",
+        "close": 1.248
+      },
+      {
+        "month": "2017-10",
+        "close": 1.2893
+      },
+      {
+        "month": "2017-11",
+        "close": 1.2888
+      },
+      {
+        "month": "2017-12",
+        "close": 1.2545
+      },
+      {
+        "month": "2018-01",
+        "close": 1.2293
+      },
+      {
+        "month": "2018-02",
+        "close": 1.2809
+      },
+      {
+        "month": "2018-03",
+        "close": 1.2894
+      },
+      {
+        "month": "2018-04",
+        "close": 1.2836
+      },
+      {
+        "month": "2018-05",
+        "close": 1.2948
+      },
+      {
+        "month": "2018-06",
+        "close": 1.3168
+      },
+      {
+        "month": "2018-07",
+        "close": 1.3017
+      },
+      {
+        "month": "2018-08",
+        "close": 1.3055
+      },
+      {
+        "month": "2018-09",
+        "close": 1.2945
+      },
+      {
+        "month": "2018-10",
+        "close": 1.3142
+      },
+      {
+        "month": "2018-11",
+        "close": 1.3301
+      },
+      {
+        "month": "2018-12",
+        "close": 1.3642
+      },
+      {
+        "month": "2019-01",
+        "close": 1.3144
+      },
+      {
+        "month": "2019-02",
+        "close": 1.3169
+      },
+      {
+        "month": "2019-03",
+        "close": 1.3363
+      },
+      {
+        "month": "2019-04",
+        "close": 1.3423
+      },
+      {
+        "month": "2019-05",
+        "close": 1.3527
+      },
+      {
+        "month": "2019-06",
+        "close": 1.3087
+      },
+      {
+        "month": "2019-07",
+        "close": 1.3148
+      },
+      {
+        "month": "2019-08",
+        "close": 1.3295
+      },
+      {
+        "month": "2019-09",
+        "close": 1.3243
+      },
+      {
+        "month": "2019-10",
+        "close": 1.316
+      },
+      {
+        "month": "2019-11",
+        "close": 1.3289
+      },
+      {
+        "month": "2019-12",
+        "close": 1.2988
+      },
+      {
+        "month": "2020-01",
+        "close": 1.3233
+      },
+      {
+        "month": "2020-02",
+        "close": 1.3429
+      },
+      {
+        "month": "2020-03",
+        "close": 1.4187
+      },
+      {
+        "month": "2020-04",
+        "close": 1.391
+      },
+      {
+        "month": "2020-05",
+        "close": 1.3787
+      },
+      {
+        "month": "2020-06",
+        "close": 1.3628
+      },
+      {
+        "month": "2020-07",
+        "close": 1.3404
+      },
+      {
+        "month": "2020-08",
+        "close": 1.3042
+      },
+      {
+        "month": "2020-09",
+        "close": 1.3339
+      },
+      {
+        "month": "2020-10",
+        "close": 1.3318
+      },
+      {
+        "month": "2020-11",
+        "close": 1.2965
+      },
+      {
+        "month": "2020-12",
+        "close": 1.2732
+      },
+      {
+        "month": "2021-01",
+        "close": 1.278
+      },
+      {
+        "month": "2021-02",
+        "close": 1.2685
+      },
+      {
+        "month": "2021-03",
+        "close": 1.2575
+      },
+      {
+        "month": "2021-04",
+        "close": 1.2285
+      },
+      {
+        "month": "2021-05",
+        "close": 1.2072
+      },
+      {
+        "month": "2021-06",
+        "close": 1.2394
+      },
+      {
+        "month": "2021-07",
+        "close": 1.2462
+      },
+      {
+        "month": "2021-08",
+        "close": 1.2617
+      },
+      {
+        "month": "2021-09",
+        "close": 1.2741
+      },
+      {
+        "month": "2021-10",
+        "close": 1.2384
+      },
+      {
+        "month": "2021-11",
+        "close": 1.2792
+      },
+      {
+        "month": "2021-12",
+        "close": 1.2678
+      },
+      {
+        "month": "2022-01",
+        "close": 1.2719
+      },
+      {
+        "month": "2022-02",
+        "close": 1.2698
+      },
+      {
+        "month": "2022-03",
+        "close": 1.2496
+      },
+      {
+        "month": "2022-04",
+        "close": 1.2792
+      },
+      {
+        "month": "2022-05",
+        "close": 1.2648
+      },
+      {
+        "month": "2022-06",
+        "close": 1.2886
+      },
+      {
+        "month": "2022-07",
+        "close": 1.2824
+      },
+      {
+        "month": "2022-08",
+        "close": 1.3111
+      },
+      {
+        "month": "2022-09",
+        "close": 1.3707
+      },
+      {
+        "month": "2022-10",
+        "close": 1.3649
+      },
+      {
+        "month": "2022-11",
+        "close": 1.3508
+      },
+      {
+        "month": "2022-12",
+        "close": 1.3544
+      },
+      {
+        "month": "2023-01",
+        "close": 1.335
+      },
+      {
+        "month": "2023-02",
+        "close": 1.3609
+      },
+      {
+        "month": "2023-03",
+        "close": 1.3533
+      },
+      {
+        "month": "2023-04",
+        "close": 1.3578
+      },
+      {
+        "month": "2023-05",
+        "close": 1.3603
+      },
+      {
+        "month": "2023-06",
+        "close": 1.324
+      },
+      {
+        "month": "2023-07",
+        "close": 1.3177
+      },
+      {
+        "month": "2023-08",
+        "close": 1.3531
+      },
+      {
+        "month": "2023-09",
+        "close": 1.352
+      },
+      {
+        "month": "2023-10",
+        "close": 1.3871
+      },
+      {
+        "month": "2023-11",
+        "close": 1.3582
+      },
+      {
+        "month": "2023-12",
+        "close": 1.3226
+      },
+      {
+        "month": "2024-01",
+        "close": 1.3397
+      },
+      {
+        "month": "2024-02",
+        "close": 1.357
+      },
+      {
+        "month": "2024-03",
+        "close": 1.355
+      },
+      {
+        "month": "2024-04",
+        "close": 1.3746
+      },
+      {
+        "month": "2024-05",
+        "close": 1.3637
+      },
+      {
+        "month": "2024-06",
+        "close": 1.3687
+      },
+      {
+        "month": "2024-07",
+        "close": 1.3809
+      },
+      {
+        "month": "2024-08",
+        "close": 1.3491
+      },
+      {
+        "month": "2024-09",
+        "close": 1.3499
+      },
+      {
+        "month": "2024-10",
+        "close": 1.3916
+      },
+      {
+        "month": "2024-11",
+        "close": 1.401
+      },
+      {
+        "month": "2024-12",
+        "close": 1.4389
+      },
+      {
+        "month": "2025-01",
+        "close": 1.4484
+      },
+      {
+        "month": "2025-02",
+        "close": 1.4438
+      },
+      {
+        "month": "2025-03",
+        "close": 1.4376
+      },
+      {
+        "month": "2025-04",
+        "close": 1.3812
+      },
+      {
+        "month": "2025-05",
+        "close": 1.3758
+      },
+      {
+        "month": "2025-06",
+        "close": 1.3643
+      },
+      {
+        "month": "2025-07",
+        "close": 1.3844
+      },
+      {
+        "month": "2025-08",
+        "close": 1.3742
+      },
+      {
+        "month": "2025-09",
+        "close": 1.3921
+      },
+      {
+        "month": "2025-10",
+        "close": 1.4018
+      },
+      {
+        "month": "2025-11",
+        "close": 1.3979
+      },
+      {
+        "month": "2025-12",
+        "close": 1.3706
+      },
+      {
+        "month": "2026-01",
+        "close": 1.3562
+      },
+      {
+        "month": "2026-02",
+        "close": 1.3642
+      },
+      {
+        "month": "2026-03",
+        "close": 1.3939
+      },
+      {
+        "month": "2026-04",
+        "close": 1.3624
+      },
+      {
+        "month": "2026-05",
+        "close": 1.3798
+      },
+      {
+        "month": "2026-06",
+        "close": 1.421
+      },
+      {
+        "month": "2026-07",
+        "close": 1.4029
+      },
+      {
+        "month": "2026-08",
+        "close": 1.3866
+      },
+      {
+        "month": "2026-09",
+        "close": 1.4188
+      }
+    ]
+  },
+  "rejectedObservations": [],
+  "conversionMethods": [
+    {
+      "id": "bank",
+      "name": "Bank conversion",
+      "spreadPercent": 2.5,
+      "flatFee": 0.0
+    },
+    {
+      "id": "brokerage",
+      "name": "Brokerage auto-conversion",
+      "spreadPercent": 1.5,
+      "flatFee": 0.0
+    },
+    {
+      "id": "norbertsGambit",
+      "name": "Norbert's Gambit",
+      "spreadPercent": 0.1,
+      "flatFee": 20.0
+    }
+  ],
+  "model": {
+    "covarianceShrinkage": 0.5,
+    "meanShrinkage": 0.5,
+    "minimumMonths": 24
+  }
+}
