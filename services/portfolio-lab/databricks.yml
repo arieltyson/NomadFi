@@ -1,0 +1,50 @@
+# Databricks Asset Bundle for the Portfolio Lab FX pipeline.
+#
+#   databricks bundle validate
+#   databricks bundle deploy
+#   databricks bundle run portfolio_lab_fx
+#
+# Targets serverless compute, which is what Databricks Free Edition offers.
+# Free Edition is for non-commercial use and restricts outbound internet, so
+# the job reads a saved Bank of Canada response from a Unity Catalog volume
+# (upload it with `databricks fs cp`) instead of calling the API.
+bundle:
+  name: nomadfi-portfolio-lab
+
+variables:
+  volume:
+    description: Unity Catalog volume holding inputs and outputs
+    default: /Volumes/workspace/default/portfolio_lab
+
+resources:
+  jobs:
+    portfolio_lab_fx:
+      name: portfolio-lab-fx
+      schedule:
+        quartz_cron_expression: "0 17 13 3 * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: fx_month_end
+          environment_key: research
+          spark_python_task:
+            python_file: ./pipeline/fx_pipeline.py
+            parameters:
+              - --input
+              - ${var.volume}/valet-fxusdcad.json
+              - --parquet
+              - ${var.volume}/fx_month_end
+              - --snapshot
+              - ${var.volume}/fx-snapshot.json
+      environments:
+        - environment_key: research
+          spec:
+            client: "2"
+            dependencies:
+              - numpy>=2.1
+              - scipy>=1.14
+
+targets:
+  free:
+    mode: development
+    default: true

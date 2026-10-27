@@ -23,7 +23,10 @@ from pathlib import Path
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as F
 
-from portfolio_lab.model import CONVERSION_METHODS, COVARIANCE_SHRINKAGE, MEAN_SHRINKAGE, MINIMUM_MONTHS
+# A Databricks spark_python_task runs this file directly, so make the package importable.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from portfolio_lab.model import CONVERSION_METHODS, COVARIANCE_SHRINKAGE, MEAN_SHRINKAGE, MINIMUM_MONTHS  # noqa: E402
 
 SERIES = "FXUSDCAD"
 VALET_URL = f"https://www.bankofcanada.ca/valet/observations/{SERIES}/json?start_date=2017-01-01"
@@ -109,19 +112,24 @@ def main() -> None:
     options = parser.parse_args()
 
     payload = json.loads(Path(options.input).read_text()) if options.input else fetch_valet()
-    # Workers must run the same interpreter as the driver, or PySpark refuses to start.
-    os.environ.setdefault("PYSPARK_PYTHON", sys.executable)
-    spark = (SparkSession.builder.appName("portfolio-lab-fx").master("local[*]")
-             .config("spark.sql.session.timeZone", "UTC").config("spark.ui.enabled", "false").getOrCreate())
-    spark.sparkContext.setLogLevel("ERROR")
+    if "DATABRICKS_RUNTIME_VERSION" in os.environ:
+        # Databricks (including serverless Free Edition) provides the session.
+        spark = SparkSession.builder.getOrCreate()
+    else:
+        # Workers must run the same interpreter as the driver, or PySpark refuses to start.
+        os.environ.setdefault("PYSPARK_PYTHON", sys.executable)
+        spark = (SparkSession.builder.appName("portfolio-lab-fx").master("local[*]")
+                 .config("spark.sql.session.timeZone", "UTC").config("spark.ui.enabled", "false").getOrCreate())
+        spark.sparkContext.setLogLevel("ERROR")
     generated = datetime.now(UTC).replace(microsecond=0).isoformat()
     result = run(spark, payload, options.parquet, generated)
     Path(options.snapshot).parent.mkdir(parents=True, exist_ok=True)
     Path(options.snapshot).write_text(json.dumps(result, indent=2) + "\n")
     points = result["fx"]["points"]
+    if "DATABRICKS_RUNTIME_VERSION" not in os.environ:
+        spark.stop()
     print(f"{len(points)} month-end rates ({points[0]['month']} to {points[-1]['month']}), "
           f"{len(result['rejectedObservations'])} observations rejected -> {options.snapshot}")
-    spark.stop()
 
 
 if __name__ == "__main__":
