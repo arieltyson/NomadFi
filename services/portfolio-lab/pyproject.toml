@@ -1,0 +1,25 @@
+[project]
+name = "portfolio-lab"
+version = "0.1.0"
+description = "Research reference, FX pipeline and parity fixtures for NomadFi Portfolio Lab"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.1",
+    "scipy>=1.14",
+]
+
+[project.optional-dependencies]
+pipeline = ["pyspark==3.5.6"]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["portfolio_lab", "pipeline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
