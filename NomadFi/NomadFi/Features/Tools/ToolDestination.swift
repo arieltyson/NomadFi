@@ -18,6 +18,7 @@ struct ToolDestination: View {
         case .importTransactions: TransactionImportView()
         case .taxVault: TaxVaultView()
         case .investingLearn: InvestingLearnView()
+        case .portfolioLab: PortfolioLabView()
         }
     }
 }

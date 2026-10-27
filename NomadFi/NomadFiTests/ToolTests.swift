@@ -14,7 +14,7 @@ struct ToolTests {
     @Test("Tools appear in a stable order")
     func order() {
         #expect(Tool.allCases == [
-            .exchangeRates, .subscriptions, .ledger, .importTransactions, .taxVault, .investingLearn,
+            .exchangeRates, .subscriptions, .ledger, .importTransactions, .taxVault, .investingLearn, .portfolioLab,
         ])
     }
 
@@ -31,10 +31,12 @@ struct ToolTests {
         }
     }
 
-    @Test("Rows keep the order, two to a row, or one at accessibility sizes")
+    @Test("Rows keep the order, two to a row with any odd tool last, or one at accessibility sizes")
     func rows() {
-        #expect(TileLayout.rows(Tool.allCases, columns: 2).flatMap(\.self) == Tool.allCases)
-        #expect(TileLayout.rows(Tool.allCases, columns: 2).allSatisfy { $0.count == 2 })
+        let pairs = TileLayout.rows(Tool.allCases, columns: 2)
+        #expect(pairs.flatMap(\.self) == Tool.allCases)
+        #expect(pairs.dropLast().allSatisfy { $0.count == 2 })
+        #expect(pairs.last?.count == 2 - Tool.allCases.count % 2)
         #expect(TileLayout.rows(Tool.allCases, columns: 1).count == Tool.allCases.count)
     }
 }

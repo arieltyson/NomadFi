@@ -20,6 +20,7 @@ enum Tool: String, CaseIterable, TileItem {
     case importTransactions
     case taxVault
     case investingLearn
+    case portfolioLab
 
     var id: Self { self }
 
@@ -31,6 +32,7 @@ enum Tool: String, CaseIterable, TileItem {
         case .importTransactions: "Import Transactions"
         case .taxVault: "Tax Vault"
         case .investingLearn: "Investing Learn"
+        case .portfolioLab: "Portfolio Lab"
         }
     }
 
@@ -42,6 +44,7 @@ enum Tool: String, CaseIterable, TileItem {
         case .importTransactions: "tablecells.fill"
         case .taxVault: "doc.text.viewfinder"
         case .investingLearn: "books.vertical.fill"
+        case .portfolioLab: "chart.pie.fill"
         }
     }
 
@@ -53,6 +56,7 @@ enum Tool: String, CaseIterable, TileItem {
         case .importTransactions: .orange
         case .taxVault: .green
         case .investingLearn: .indigo
+        case .portfolioLab: .teal
         }
     }
 }
