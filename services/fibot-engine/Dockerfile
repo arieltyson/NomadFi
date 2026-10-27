@@ -8,6 +8,8 @@ COPY services/fibot-engine/Sources ./services/fibot-engine/Sources
 COPY services/fibot-engine/Tests ./services/fibot-engine/Tests
 COPY NomadFi/NomadFi/Core/PortfolioLab/Engine ./NomadFi/NomadFi/Core/PortfolioLab/Engine
 COPY services/portfolio-lab/SwiftTests ./services/portfolio-lab/SwiftTests
+COPY services/portfolio-lab/fixtures ./services/portfolio-lab/fixtures
+COPY NomadFi/NomadFi/Resources/PortfolioLab ./NomadFi/NomadFi/Resources/PortfolioLab
 RUN swift build -c release && swift test
 COPY services/plaid-backend/package.json services/plaid-backend/package-lock.json ./services/plaid-backend/
 RUN npm ci --prefix services/plaid-backend --no-audit --no-fund
