@@ -1,0 +1,51 @@
+name: Portfolio Lab
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/portfolio-lab/**"
+      - "NomadFi/NomadFi/Core/PortfolioLab/**"
+      - "NomadFi/NomadFi/Resources/PortfolioLab/**"
+      - ".github/workflows/portfolio-lab*.yml"
+  pull_request:
+    paths:
+      - "services/portfolio-lab/**"
+      - "NomadFi/NomadFi/Core/PortfolioLab/**"
+      - "NomadFi/NomadFi/Resources/PortfolioLab/**"
+permissions:
+  contents: read
+concurrency:
+  group: portfolio-lab-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/portfolio-lab
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - name: Install the research reference and the PySpark pipeline
+        run: uv sync --locked --extra pipeline
+      - name: Test the model and the Spark transforms
+        run: uv run pytest -q
+      - name: Sample data and parity fixtures match the reference
+        run: uv run python -m portfolio_lab.parity --check
+  swift-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: swift:6.3.3-noble
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Swift engine reproduces the Python reference on Linux
+        run: swift test --filter PortfolioLab

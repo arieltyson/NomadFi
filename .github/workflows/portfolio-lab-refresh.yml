@@ -1,0 +1,43 @@
+name: Portfolio Lab FX refresh
+on:
+  schedule:
+    # The 3rd of each month, after the previous month's last Bank of Canada rate is published.
+    - cron: "17 13 3 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: portfolio-lab-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - name: Run the Bank of Canada pipeline and regenerate dependent data
+        working-directory: services/portfolio-lab
+        run: |
+          uv sync --locked --extra pipeline
+          uv run python -m pipeline.fx_pipeline --snapshot ../../NomadFi/NomadFi/Resources/PortfolioLab/fx-snapshot.json
+          uv run python -m portfolio_lab.parity
+          uv run pytest -q
+      - name: Swift engine still matches the refreshed fixtures
+        run: docker run --rm -v "$PWD:/work" -w /work swift:6.3.3-noble swift test --filter PortfolioLab
+      - name: Commit only when the published months changed
+        run: |
+          snapshot=NomadFi/NomadFi/Resources/PortfolioLab/fx-snapshot.json
+          if git diff --quiet -- services/portfolio-lab/fixtures NomadFi/NomadFi/Resources/PortfolioLab/sample-market.json \
+             && [ "$(git show HEAD:$snapshot | jq -c .fx)" = "$(jq -c .fx $snapshot)" ]; then
+            echo "No new month-end rates."; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$snapshot" services/portfolio-lab/fixtures NomadFi/NomadFi/Resources/PortfolioLab/sample-market.json
+          git commit -m "chore(portfolio-lab): Refresh Bank of Canada month-end FX snapshot"
+          git push origin HEAD:main
