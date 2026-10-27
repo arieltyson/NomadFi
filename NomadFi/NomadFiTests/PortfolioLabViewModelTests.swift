@@ -50,12 +50,27 @@ struct PortfolioLabViewModelTests {
         #expect(model.errorMessage == nil)
     }
 
-    @Test("A home currency without published FX history is explained, not computed")
+    @Test("With no CAD or USD jurisdiction, Portfolio Lab explains instead of computing")
     func unsupportedHomeCurrency() async {
         let model = viewModel(home: .ttd)
         await model.run()
-        #expect(!model.isHomeCurrencySupported)
+        #expect(model.lacksSupportedCurrency)
         #expect(model.result == nil)
+    }
+
+    @Test("A Trinidad and Tobago home with a Canadian jurisdiction invests from CAD")
+    func fallsBackToAnotherJurisdiction() async throws {
+        let model = PortfolioLabViewModel(priceService: MockPortfolioLabPriceService(), tokenStore: store(TokenBox()))
+        model.setJurisdictions([
+            JurisdictionProfile(countryCode: "TT", currencyCode: .ttd, isHome: true),
+            JurisdictionProfile(countryCode: "US", currencyCode: .usd, displayOrder: 2),
+            JurisdictionProfile(countryCode: "CA", currencyCode: .cad, displayOrder: 1),
+        ])
+        #expect(model.investableCurrencies == [.usd, .cad])
+        #expect(model.homeCurrency == .usd && !model.lacksSupportedCurrency)
+        model.homeCurrency = .cad
+        await model.run()
+        #expect(try #require(model.result).selected.foreignShare >= 0)
     }
 
     @Test("Live mode asks for a token before fetching anything")

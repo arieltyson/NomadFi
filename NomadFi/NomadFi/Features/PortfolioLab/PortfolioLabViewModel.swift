@@ -35,7 +35,12 @@ final class PortfolioLabViewModel {
     private(set) var result: PortfolioLabResult?
     private(set) var isRunning = false
     private(set) var errorMessage: String?
-    private(set) var homeCurrency: CurrencyCode?
+    /// The currency the person invests from; see ``setJurisdictions(_:)``.
+    var homeCurrency: CurrencyCode?
+    /// The person's currencies that Portfolio Lab can invest from, home first.
+    private(set) var investableCurrencies: [CurrencyCode] = []
+    /// Whether any jurisdictions have been loaded yet.
+    private(set) var hasJurisdictions = false
     private(set) var hasToken: Bool
 
     let snapshot: PortfolioLabFXSnapshot?
@@ -95,6 +100,11 @@ final class PortfolioLabViewModel {
         homeCurrency.map(Self.supportedCurrencies.contains) ?? false
     }
 
+    /// True once jurisdictions are known and none of them uses CAD or USD.
+    var lacksSupportedCurrency: Bool {
+        hasJurisdictions && investableCurrencies.isEmpty
+    }
+
     /// The cheapest way to convert, compared with the chosen one, after the backtest.
     var cheapestComparison: PortfolioLabScenario? {
         result?.comparisons.max { $0.backtest.endingValue < $1.backtest.endingValue }
@@ -102,9 +112,19 @@ final class PortfolioLabViewModel {
 
     // MARK: - Running
 
-    /// Uses the home jurisdiction's currency, or the first one when none is marked home.
+    /// Invests from the home currency when the FX history covers it, otherwise from
+    /// the first covered currency among the person's other jurisdictions, so someone
+    /// whose home is Trinidad and Tobago but who studies in Canada invests in CAD.
     func setJurisdictions(_ jurisdictions: [JurisdictionProfile]) {
-        homeCurrency = (jurisdictions.first(where: \.isHome) ?? jurisdictions.first)?.currencyCode
+        let ordered = jurisdictions.filter(\.isHome) + jurisdictions.filter { !$0.isHome }
+        var seen = Set<CurrencyCode>()
+        investableCurrencies = ordered.compactMap(\.currencyCode).filter {
+            Self.supportedCurrencies.contains($0) && seen.insert($0).inserted
+        }
+        hasJurisdictions = !jurisdictions.isEmpty
+        if homeCurrency.map(investableCurrencies.contains) != true {
+            homeCurrency = investableCurrencies.first
+        }
     }
 
     /// Recomputes the result for the current choices.

@@ -31,11 +31,11 @@ struct PortfolioLabView: View {
 
     var body: some View {
         Group {
-            if viewModel.homeCurrency != nil, !viewModel.isHomeCurrencySupported {
+            if viewModel.lacksSupportedCurrency {
                 ContentUnavailableView(
                     "Portfolio Lab Needs CAD or USD",
                     systemImage: "chart.pie",
-                    description: Text("The published exchange-rate history covers Canadian and US dollars. Set one of them as your home currency in Settings.")
+                    description: Text("The published exchange-rate history covers Canadian and US dollars. Add a jurisdiction that uses one of them in Settings.")
                 )
             } else {
                 PortfolioLabForm(viewModel: viewModel, showsTokenSheet: $showsTokenSheet)
@@ -70,6 +70,13 @@ private struct PortfolioLabForm: View {
     var body: some View {
         Form {
             Section {
+                if viewModel.investableCurrencies.count > 1 {
+                    Picker("Invest from", selection: $viewModel.homeCurrency) {
+                        ForEach(viewModel.investableCurrencies) { code in
+                            Text(code.displayName).tag(Optional(code))
+                        }
+                    }
+                }
                 TextField("Amount", value: $viewModel.amount, format: .currency(code: currency))
                     .keyboardType(.decimalPad)
                 Picker("Convert with", selection: $viewModel.conversionID) {
