@@ -76,6 +76,11 @@ enum KeychainService {
         case hostedPendingExchange = "com.nomadfi.hostedPendingExchange"
         case hostedPendingLink = "com.nomadfi.hostedPendingLink"
         case hostedFiBotConsent = "com.nomadfi.hostedFiBotConsent"
+
+        /// The person's own Tiingo API token for Portfolio Lab. Tiingo's
+        /// developer program lets an app fetch prices only with each
+        /// user's own token, so NomadFi never ships or proxies price data.
+        case tiingoAPIToken = "com.nomadfi.tiingoAPIToken"
     }
 
     // MARK: - String Storage
@@ -220,6 +225,7 @@ enum KeychainService {
             .hostedPendingExchange,
             .hostedPendingLink,
             .hostedFiBotConsent,
+            .tiingoAPIToken,
         ]
         for key in keys {
             delete(key: key)
