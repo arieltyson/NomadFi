@@ -1,7 +1,7 @@
 name: Hosted banking and FiBot
 on:
   push:
-    branches: [main, codex/fibot-multibank]
+    branches: [main]
   pull_request:
 permissions:
   contents: read
