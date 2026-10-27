@@ -204,6 +204,33 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Exchange Rates"].waitForExistence(timeout: 8))
     }
 
+    /// Portfolio Lab opens from Tools with bundled data and no account,
+    /// investing from Canada when home is Trinidad and Tobago.
+    @MainActor
+    func testPortfolioLabOptimizesWithSampleData() {
+        let app = makeApp(
+            hasCompletedOnboarding: true,
+            extraEnvironment: ["UI_TEST_SEED_SAMPLE_DATA": "1"]
+        )
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
+        tapButton(containing: "Portfolio Lab", in: app)
+        XCTAssertTrue(app.navigationBars["Portfolio Lab"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["Invest from, Canadian Dollar"].waitForExistence(timeout: 8))
+        keepScreenshot(named: "Portfolio Lab inputs", of: app)
+
+        // At accessibility text sizes the results start below the fold, and
+        // the form only builds rows as they scroll into view.
+        for heading in ["Optimized Mix", "Ways to Convert"] {
+            let text = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", heading)).firstMatch
+            for _ in 0..<12 where !text.exists { app.swipeUp() }
+            XCTAssertTrue(text.waitForExistence(timeout: 5), "\(heading) never appeared")
+            keepScreenshot(named: "Portfolio Lab \(heading)", of: app)
+        }
+    }
+
     /// The keyboard's Done button must survive every focus change, not
     /// just the first — the decimal pad has no other way out.
     @MainActor
