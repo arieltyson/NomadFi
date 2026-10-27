@@ -33,6 +33,10 @@ Current personal finance apps are domestic-focused. They break when you add a Tr
 ### Subscription Arbitrage 💰
 - **Cross-border price comparison** detects recurring subscriptions and checks pricing across the user's jurisdictions — surfacing savings like "Keep your Canadian Netflix; it's 20% cheaper than switching to US pricing."
 
+### Portfolio Lab 📈
+- **FX-aware portfolio optimizer** treats the cost of converting money (bank spread, brokerage auto-conversion, Norbert's Gambit) as a trading cost, so you can see how an expensive conversion changes the best mix of funds and what it would have cost over time.
+- **Research-to-production pipeline**: a PySpark job (runnable locally, on Databricks or with S3) publishes Bank of Canada month-end FX rates, and the on-device Swift engine is checked against an independent Python reference with parity tests. Real fund prices come from Tiingo using your own token, so licensed data never passes through NomadFi. See [Portfolio Lab](docs/PortfolioLab.md).
+
 ### Siri & System Integration 🗣️
 - **App Intents** enable voice-first interactions: *"Hey Siri, I just spent $15 USD on lunch"* logs a transaction; *"Which card should I use?"* returns a location-aware recommendation.
 - **WidgetKit** brings global net worth to the Home Screen and a one-tap **Control Widget** that puts NomadFi's on-device Apple Intelligence intake on Control Center, the Lock Screen, and the Action button.
@@ -87,6 +91,9 @@ This project uses modern Swift, SwiftUI, and Apple platform frameworks for a nat
 - [x] UserNotifications
 - [x] FinanceKit (built in; awaiting regional availability)
 - [x] OSLog (structured logging)
+- [x] Swift Charts (Portfolio Lab history, with a month-by-month table for VoiceOver)
+- [x] Python, NumPy and SciPy (Portfolio Lab research reference and parity fixtures)
+- [x] Apache Spark (PySpark) with a Databricks asset bundle (Bank of Canada FX pipeline)
 - [x] Swift Testing and XCTest UI testing
 
 ## Skills Demonstrated 🥋
