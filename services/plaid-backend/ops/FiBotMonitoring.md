@@ -45,8 +45,8 @@ rejects database roles with access to credentials/identities or full plan UPDATE
 Deploy `services/fibot-engine/Dockerfile` from the repository root. The `test`
 target validates the Swift/Node/PostgreSQL integration as a non-root user. The
 runtime intentionally retains official Swift runtime dependencies; image size
-can be reduced after Linux compatibility is verified. GitHub Actions builds
-and tests both targets without production credentials.
+can be reduced after Linux compatibility is verified. The manually triggered GitHub
+Actions workflow builds and tests both targets without production credentials.
 
 Hosted costs, region, backup retention, consent disclosures, daily scheduling,
 private forecast reconciliation, financial-domain review and the prospective

@@ -13,7 +13,7 @@ live migration of existing CIBC records are still separate release gates. The
 reviewed same-Item migration code is implemented and tested; changed provider
 identities are rejected rather than matched by name. Verification: 943 unique
 iOS cases, 21 shared Swift tests and 74 backend tests pass. Linux container
-tests also run in GitHub Actions. These checks do not establish live bank
+tests also run in GitHub Actions on manual trigger. These checks do not establish live bank
 coverage or financial efficacy.
 
 Phased roadmap for turning NomadFi into a cross-border financial decision
