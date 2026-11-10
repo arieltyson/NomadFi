@@ -1,0 +1,15 @@
+# Cloud Build uploads only what the image needs, never local
+# configuration, databases or dependencies. Mirrors .dockerignore.
+*
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!src/
+!src/**
+!scripts/
+scripts/*
+!scripts/migrate.js
+!scripts/import-legacy-item.js
+!migrations/
+!migrations/*.sql
