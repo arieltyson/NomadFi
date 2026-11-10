@@ -19,6 +19,11 @@ final class HostedBankingController {
     private(set) var isWorking = false
     private(set) var message: String?
     private(set) var migrationReview: HostedLegacyMigration?
+    /// Debug builds only: the Apple user identifier the server just
+    /// refused, so the owner can add it to `APPLE_ALLOWED_SUBJECTS`.
+    /// The server never reveals it; it comes from this device's own
+    /// Apple credential.
+    private(set) var refusedAppleSubject: String?
 
     init(client: HostedAPIClient, redirectURI: URL, presenter: any PlaidLinkPresenting,
          privacyPolicyURL: URL? = nil, hostingRegion: String = "Not configured", backupRetentionDays: Int = 0) {
@@ -82,8 +87,16 @@ final class HostedBankingController {
                   let code = identity.authorizationCode.flatMap({ String(data: $0, encoding: .utf8) }) else {
                 throw HostedServiceError.signInRequired
             }
-            userID = try await client.signIn(challenge: challenge, identityToken: token,
-                                             authorizationCode: code, appleSubject: identity.user)
+            do {
+                userID = try await client.signIn(challenge: challenge, identityToken: token,
+                                                 authorizationCode: code, appleSubject: identity.user)
+            } catch HostedServiceError.pilotAccessRequired {
+                #if DEBUG
+                refusedAppleSubject = identity.user
+                #endif
+                throw HostedServiceError.pilotAccessRequired
+            }
+            refusedAppleSubject = nil
             self.challenge = nil
             connections = try await client.connections()
             message = nil
@@ -251,6 +264,8 @@ final class HostedBankingController {
         case .recoveryRequired:
             message = "The connection could not be recovered automatically. Its Plaid authorization must be checked before linking again."
         case .requestInProgress: message = "The connection is still finishing. Retry shortly."
+        case .pilotAccessRequired:
+            message = "This Apple Account isn't on NomadFi's hosted pilot yet."
         default: message = "The hosted service is unavailable. Saved local records are still available."
         }
     }

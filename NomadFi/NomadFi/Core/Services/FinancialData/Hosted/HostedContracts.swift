@@ -12,6 +12,9 @@ enum HostedServiceError: Error, Equatable, Sendable {
     case ownerChanged
     case migrationRequired
     case obsoleteDelivery
+    /// Apple sign-in succeeded but this Apple Account is not on the
+    /// owner-only pilot allowlist.
+    case pilotAccessRequired
 }
 
 struct HostedChallenge: Decodable, Sendable {

@@ -596,6 +596,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "NomadFi/NomadFi-Info.plist";
+				NOMADFI_HOSTED_BACKEND_URL = "https://nomadfi-api-903585938180.northamerica-northeast1.run.app";
+				NOMADFI_PLAID_REDIRECT_URI = "https://nomadfi-api-903585938180.northamerica-northeast1.run.app/plaid/oauth";
+				NOMADFI_HOSTED_PRIVACY_POLICY_URL = "https://arieltyson.github.io/nomadfi-privacy/privacy/";
+				NOMADFI_HOSTED_REGION = "Canada (Montréal)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -626,6 +630,10 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "NomadFi/NomadFi-Info.plist";
+				NOMADFI_HOSTED_BACKEND_URL = "";
+				NOMADFI_PLAID_REDIRECT_URI = "";
+				NOMADFI_HOSTED_PRIVACY_POLICY_URL = "";
+				NOMADFI_HOSTED_REGION = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

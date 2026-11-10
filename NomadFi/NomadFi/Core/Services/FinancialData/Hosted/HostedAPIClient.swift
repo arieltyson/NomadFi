@@ -195,6 +195,7 @@ actor HostedAPIClient {
             let code = (try? JSONDecoder().decode(ErrorResponse.self, from: result))?.error
             if response.statusCode == 401 { throw HostedServiceError.signInRequired }
             if response.statusCode == 410 { throw HostedServiceError.snapshotExpired }
+            if code == "PILOT_ACCESS_REQUIRED" { throw HostedServiceError.pilotAccessRequired }
             if code == "LINK_RECOVERY_REQUIRED" { throw HostedServiceError.recoveryRequired }
             if code == "EXCHANGE_IN_PROGRESS" { throw HostedServiceError.requestInProgress }
             throw HostedServiceError.unavailable

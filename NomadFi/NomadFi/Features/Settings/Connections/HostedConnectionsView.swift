@@ -66,6 +66,20 @@ struct HostedConnectionsView: View {
                     Text("The server checks for bank updates independently. Opening NomadFi downloads completed updates. Bank data can be delayed; signing out keeps this iPhone's local records.")
                 }
             }
+            #if DEBUG
+            if let subject = banking.refusedAppleSubject {
+                Section {
+                    Text(subject)
+                        .font(.footnote.monospaced())
+                        .textSelection(.enabled)
+                    ShareLink("Share Apple ID", item: subject)
+                } header: {
+                    Text("Pilot access (Debug)")
+                } footer: {
+                    Text("Add this identifier to the server's APPLE_ALLOWED_SUBJECTS, then sign in again.")
+                }
+            }
+            #endif
             if let message = banking.message {
                 Section { Text(message).foregroundStyle(.secondary).accessibilityAddTraits(.updatesFrequently) }
             }
