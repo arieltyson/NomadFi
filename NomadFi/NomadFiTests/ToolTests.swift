@@ -14,7 +14,7 @@ struct ToolTests {
     @Test("Tools appear in a stable order")
     func order() {
         #expect(Tool.allCases == [
-            .exchangeRates, .subscriptions, .ledger, .importTransactions, .taxVault, .investingLearn, .portfolioLab,
+            .decisions, .exchangeRates, .subscriptions, .ledger, .importTransactions, .taxVault, .investingLearn, .portfolioLab,
         ])
     }
 

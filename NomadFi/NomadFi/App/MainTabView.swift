@@ -43,7 +43,7 @@ private struct MainTabRoot: View {
     var body: some View {
         switch tab {
         case .dashboard: NavigationStack { DashboardView() }
-        case .fiBot: NavigationStack { FiBotWorkspaceView() }
+        case .fiBot: NavigationStack { AskFiBotView() }
         case .tools: ToolsView()
         case .settings: NavigationStack { SettingsView() }
         }

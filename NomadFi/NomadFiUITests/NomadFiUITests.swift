@@ -136,6 +136,25 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Capture decision"].waitForExistence(timeout: 8))
     }
 
+    /// The FiBot tab invites a question and keeps the purchase check
+    /// one menu away.
+    @MainActor
+    func testAskFiBotInvitesAQuestion() {
+        let app = makeApp(hasCompletedOnboarding: true)
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["FiBot"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["FiBot"].tap()
+
+        XCTAssertTrue(app.staticTexts["Ask FiBot"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.textFields["Ask FiBot"].exists || app.textViews["Ask FiBot"].exists)
+
+        app.buttons["More"].tap()
+        XCTAssertTrue(app.buttons["Check a Purchase"].waitForExistence(timeout: 8))
+        app.buttons["Check a Purchase"].tap()
+        XCTAssertTrue(app.navigationBars["Check a Purchase"].waitForExistence(timeout: 8))
+    }
+
     /// Investing Learn shows a card per jurisdiction, each opening
     /// that region's lessons.
     @MainActor

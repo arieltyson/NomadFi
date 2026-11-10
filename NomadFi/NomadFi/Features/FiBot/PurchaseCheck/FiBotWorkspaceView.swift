@@ -85,7 +85,7 @@ struct FiBotWorkspaceView: View {
             }
             if let error { Section { Text(error).foregroundStyle(.red) } }
         }
-        .navigationTitle("FiBot")
+        .navigationTitle("Check a Purchase")
         .task { context = ModelContext(modelContext.container); context?.autosaveEnabled = false; reload() }
         .sheet(item: $selected) { record in
             NavigationStack {
