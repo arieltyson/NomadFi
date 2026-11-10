@@ -67,6 +67,28 @@ References: [Cloud Run/Cloud SQL](https://docs.cloud.google.com/sql/docs/postgre
 [scheduled Cloud Run jobs](https://docs.cloud.google.com/run/docs/execute/jobs-on-schedule),
 [Node release support](https://nodejs.org/en/about/previous-releases).
 
+## Supabase PostgreSQL (low-cost alternative to Cloud SQL)
+
+The sandbox database runs on Supabase's free plan in `ca-central-1`; Cloud Run
+still hosts the API and jobs. Notes learned while provisioning it:
+
+- Connect through the **session pooler** (`aws-N-<region>.pooler.supabase.com:5432`,
+  user `<role>.<project-ref>`). The direct `db.<ref>.supabase.co` host is IPv6-only,
+  which Cloud Run egress cannot reach. Do not use the transaction pooler (6543):
+  workers rely on session-level transactions and row locks.
+- Verify TLS fully: set `DATABASE_CA` to `ops/supabase-root-2021-ca.crt`
+  (Supabase Root 2021 CA, SHA-256 `80:70:25:AD:…:CA:FA`, expires 2031-04-26).
+- Run migrations and `roles.sql` as the project `postgres` user, then create
+  login roles that inherit `nomadfi_runtime` / `nomadfi_fibot`. On PostgreSQL 16+
+  a membership granted while a role is `NOINHERIT` keeps `INHERIT FALSE`; grant
+  with `GRANT nomadfi_runtime TO <login> WITH INHERIT TRUE`.
+- The `nomadfi` schema is never exposed through Supabase's Data API: it is not in
+  the exposed schemas and `anon`, `authenticated` and `service_role` hold no
+  privileges on it. Re-check both after any Supabase project setting change.
+- The free plan has no automatic backups and pauses after a week without
+  activity; the hourly sweep keeps it active. Move to a paid plan with backups
+  before any user other than the owner connects a bank.
+
 ## Failure and recovery
 
 - **Failed bank sync:** inspect state/counts, not payloads. Workers retain the
