@@ -14,6 +14,7 @@ import SwiftUI
 /// Increase Contrast, and the title never carries the colour.
 enum Tool: String, CaseIterable, TileItem {
 
+    case decisions
     case exchangeRates
     case subscriptions
     case ledger
@@ -26,6 +27,7 @@ enum Tool: String, CaseIterable, TileItem {
 
     var title: LocalizedStringKey {
         switch self {
+        case .decisions: "Decisions"
         case .exchangeRates: "Exchange Rates"
         case .subscriptions: "Subscriptions"
         case .ledger: "Ledger"
@@ -38,6 +40,7 @@ enum Tool: String, CaseIterable, TileItem {
 
     var systemImage: String {
         switch self {
+        case .decisions: "scale.3d"
         case .exchangeRates: "dollarsign.arrow.circlepath"
         case .subscriptions: "arrow.triangle.2.circlepath.circle.fill"
         case .ledger: "list.bullet.rectangle.portrait.fill"
@@ -50,6 +53,7 @@ enum Tool: String, CaseIterable, TileItem {
 
     var tint: Color {
         switch self {
+        case .decisions: .purple
         case .exchangeRates: ColorTokens.brandPrimary
         case .subscriptions: .pink
         case .ledger: .blue
@@ -59,4 +63,8 @@ enum Tool: String, CaseIterable, TileItem {
         case .portfolioLab: .teal
         }
     }
+
+    /// App Group key a launch route writes a tool's raw value to so
+    /// the Tools stack opens it. See ``DecisionsRoute``.
+    static let pendingStorageKey = "nomadfi.tools.pendingTool"
 }

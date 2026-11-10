@@ -113,7 +113,7 @@ struct DecisionAssistantIntentDialogTests {
             brief: Self.brief(state: Self.blankState)
         )
         #expect(dialog.contains("doesn't have your inputs yet"))
-        #expect(dialog.contains("Decisions tab"))
+        #expect(dialog.contains("Decisions in"))
     }
 
     @Test("whichCardAnswer with populated Chase state echoes the engine ruling")
@@ -169,7 +169,7 @@ struct DecisionAssistantIntentDialogTests {
         let dialog = DecisionAssistantIntentDialog.amazonArrivalReview(brief: brief)
 
         #expect(brief.decision.primaryPath == .awaitingUserInput)
-        #expect(dialog.contains("Open NomadFi's Decisions tab to finish the brief before NomadFi picks a card."))
+        #expect(dialog.contains("Open Decisions in NomadFi's Tools to finish the brief before NomadFi picks a card."))
     }
 
     // MARK: - Continue path
@@ -231,7 +231,9 @@ struct DecisionAssistantIntentDialogTests {
     @Test("MainTabSelection raw values are stable so App Intent UserDefaults writes persist")
     func tabSelectionRawValuesAreStable() {
         #expect(MainTabSelection.dashboard.rawValue == "dashboard")
-        #expect(MainTabSelection.decisions.rawValue == "decisions")
+        #expect(MainTabSelection.fiBot.rawValue == "fiBot")
+        #expect(MainTabSelection.tools.rawValue == "tools")
+        #expect(Tool.decisions.rawValue == "decisions")
         #expect(MainTabSelection.settings.rawValue == "settings")
         #expect(MainTabSelection.default == .dashboard)
     }

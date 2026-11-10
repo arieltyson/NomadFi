@@ -43,7 +43,7 @@ struct StartDraftCaptureIntent: AppIntent {
     )
 
     /// Foreground launch — brings the main app forward so its
-    /// `perform()` body sees a fully-mounted Decisions tab and
+    /// `perform()` body sees a fully-mounted Decision Assistant and
     /// the existing one-shot routing consumer can present the
     /// typed draft form.
     static let supportedModes: IntentModes = .foreground(.immediate)
@@ -53,9 +53,13 @@ struct StartDraftCaptureIntent: AppIntent {
         // Mirror of `MainTabSelection.storageKey` — pinned by
         // `StartDraftCaptureIntentTests.widgetCopyMatchesMainAppKeys`.
         let tabSelectionKey = "nomadfi.mainTab.selection"
-        // Mirror of `MainTabSelection.decisions.rawValue` — pinned
-        // by the same test.
-        let decisionsTabRawValue = "decisions"
+        // Mirror of `MainTabSelection.tools.rawValue` and of
+        // `Tool.pendingStorageKey` / `Tool.decisions.rawValue`, which
+        // together open the Decision Assistant on the Tools tab —
+        // pinned by the same test.
+        let toolsTabRawValue = "tools"
+        let pendingToolKey = "nomadfi.tools.pendingTool"
+        let decisionsToolRawValue = "decisions"
         // Mirror of `PendingDraftCaptureFlag.storageKey` — pinned
         // by the same test.
         let pendingDraftKey = "nomadfi.draftCapture.pendingRequest"
@@ -76,7 +80,8 @@ struct StartDraftCaptureIntent: AppIntent {
             return .result()
         }
 
-        defaults.set(decisionsTabRawValue, forKey: tabSelectionKey)
+        defaults.set(toolsTabRawValue, forKey: tabSelectionKey)
+        defaults.set(decisionsToolRawValue, forKey: pendingToolKey)
         defaults.set(true, forKey: pendingDraftKey)
 
         return .result()

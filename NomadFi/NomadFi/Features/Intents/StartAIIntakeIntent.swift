@@ -5,7 +5,7 @@
 // designed for one-tap system surfaces — Control Center,
 // Lock Screen, and the Action button (via the
 // `AIIntakeControlWidget` `ControlWidgetButton`). Routes the
-// launch to the Decisions tab and asks the in-app
+// launch to the Decision Assistant and asks the in-app
 // `DecisionAIIntakeSheet` to present *blank*; the user starts
 // typing their scenario directly into the on-device AI intake
 // flow, then proceeds through the existing bounded clarification
@@ -25,7 +25,7 @@
 //   — read clarifying questions, edit fields, decide what to
 //   save. `.foreground(.immediate)` is the iOS 18+ replacement
 //   for `openAppWhenRun = true` and the only mode that lets the
-//   Decisions tab mount before `perform()` returns, so the AI
+//   Decision Assistant mount before `perform()` returns, so the AI
 //   sheet appears the moment the app comes forward.
 //
 // Why this file is duplicated in the widget extension:
@@ -49,7 +49,7 @@
 import AppIntents
 import Foundation
 
-/// Opens NomadFi on the Decisions tab and presents the on-device
+/// Opens NomadFi on the Decision Assistant and presents the on-device
 /// AI intake sheet with an empty scenario field. Built for
 /// one-tap launch from Control Center, the Lock Screen, and the
 /// Action button via the `AIIntakeControlWidget`
@@ -64,22 +64,19 @@ struct StartAIIntakeIntent: AppIntent {
 
     /// Foreground launch — same mode `OpenAIIntakeIntent` uses for
     /// the Siri / Shortcut path. Brings the app to the foreground
-    /// before `perform()` runs so the Decisions tab can mount and
+    /// before `perform()` runs so the Decision Assistant can mount and
     /// observe the routing slot.
     static let supportedModes: IntentModes = .foreground(.immediate)
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        // Route the launch to the Decisions tab so the AI intake
+        // Route the launch to the Decision Assistant so the AI intake
         // sheet's host view actually mounts. Routes through the
         // App Group shared suite — the widget process and the
         // main-app process see the same write, which the
         // foreground-immediate happy path used to depend on by
         // luck.
-        AppRoutingDefaults.shared.set(
-            MainTabSelection.decisions.rawValue,
-            forKey: MainTabSelection.storageKey
-        )
+        DecisionsRoute.request()
 
         // Hand a blank-launch payload across via the value-typed
         // pending-request slot. `DecisionAssistantView` reads from

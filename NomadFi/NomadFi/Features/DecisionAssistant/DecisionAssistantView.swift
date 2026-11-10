@@ -1,7 +1,7 @@
 // DecisionAssistantView.swift
 // NomadFi
 //
-// The Decisions tab's root screen. Capturing a decision is the
+// The Decision Assistant's root screen. Capturing a decision is the
 // toolbar's + (a long press offers Apple Intelligence); the page
 // itself is organised into sectioned bands so the user immediately
 // sees (1) which checks are reusable tools, (2) which scenarios are
@@ -26,7 +26,7 @@
 import SwiftData
 import SwiftUI
 
-/// The root of the Decisions tab. Uses `@Query` for reactive
+/// The root of the Decision Assistant. Uses `@Query` for reactive
 /// account context (needed by the Scenario brief) and drives
 /// everything else through ``DecisionAssistantViewModel``.
 struct DecisionAssistantView: View {
@@ -123,14 +123,6 @@ struct DecisionAssistantView: View {
 
     var body: some View {
         ScrollView {
-            #if DEBUG || FIBOT
-            NavigationLink {
-                FiBotWorkspaceView()
-            } label: {
-                Label("FiBot · Can I afford this?", systemImage: "sparkles")
-                    .frame(maxWidth: .infinity, alignment: .leading).padding()
-            }
-            #endif
             DecisionAssistantContent(
                 viewModel: viewModel,
                 allAccounts: accounts,

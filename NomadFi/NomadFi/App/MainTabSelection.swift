@@ -3,8 +3,7 @@
 //
 // Stable, persistable identifier for each bottom-tab surface. The
 // raw value is what App Intents write to `UserDefaults` when they
-// need the app to open straight to a specific tab (the Decision
-// Assistant today). Keeping it as a tiny, Sendable enum lets both
+// need the app to open straight to a specific tab. Keeping it as a tiny, Sendable enum lets both
 // `MainTabView` and intent code agree on valid values without
 // stringly-typed drift.
 
@@ -13,12 +12,13 @@ import Foundation
 /// The primary surfaces on NomadFi's bottom tab bar.
 ///
 /// Intentionally minimal — this type exists so App Intents running
-/// in `.foreground(.immediate)` mode can route a launch straight to
-/// the Decision Assistant without fragile string matching.
+/// in `.foreground(.immediate)` mode can route a launch to a tab
+/// without fragile string matching. The Decision Assistant is a
+/// tool, reached through ``DecisionsRoute``.
 enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
 
     case dashboard
-    case decisions
+    case fiBot
     case tools
     case settings
 
@@ -28,7 +28,7 @@ enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
     var title: String {
         switch self {
         case .dashboard: "Dashboard"
-        case .decisions: "Decisions"
+        case .fiBot: "FiBot"
         case .tools: "Tools"
         case .settings: "Settings"
         }
@@ -38,7 +38,7 @@ enum MainTabSelection: String, CaseIterable, Identifiable, Sendable, Hashable {
     var systemImage: String {
         switch self {
         case .dashboard: "globe"
-        case .decisions: "scale.3d"
+        case .fiBot: "sparkles"
         case .tools: "wrench.and.screwdriver"
         case .settings: "gearshape"
         }

@@ -5,7 +5,7 @@
 // intake one tap away in Control Center, on the Lock Screen, and
 // on the Action button. The control fires
 // `StartAIIntakeIntent`, which foregrounds NomadFi, switches to
-// the Decisions tab, and presents `DecisionAIIntakeSheet` with an
+// the Decision Assistant, and presents `DecisionAIIntakeSheet` with an
 // empty scenario field — the user starts typing immediately and
 // then proceeds through the existing bounded clarification +
 // review + explicit-save flow.

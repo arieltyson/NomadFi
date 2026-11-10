@@ -59,7 +59,7 @@ struct StartAIIntakeIntent: AppIntent {
     )
 
     /// Foreground launch — brings the main app forward so its
-    /// `perform()` body sees a fully-mounted Decisions tab and
+    /// `perform()` body sees a fully-mounted Decision Assistant and
     /// the existing one-shot routing consumer can present the
     /// AI intake sheet.
     static let supportedModes: IntentModes = .foreground(.immediate)
@@ -69,9 +69,13 @@ struct StartAIIntakeIntent: AppIntent {
         // Mirror of `MainTabSelection.storageKey` — pinned by
         // `StartAIIntakeIntentTests.widgetCopyMatchesMainAppKeys`.
         let tabSelectionKey = "nomadfi.mainTab.selection"
-        // Mirror of `MainTabSelection.decisions.rawValue` — pinned
-        // by the same test.
-        let decisionsTabRawValue = "decisions"
+        // Mirror of `MainTabSelection.tools.rawValue` and of
+        // `Tool.pendingStorageKey` / `Tool.decisions.rawValue`, which
+        // together open the Decision Assistant on the Tools tab —
+        // pinned by the same test.
+        let toolsTabRawValue = "tools"
+        let pendingToolKey = "nomadfi.tools.pendingTool"
+        let decisionsToolRawValue = "decisions"
         // Mirror of `PendingAIIntakeRequest.storageKey` — pinned
         // by the same test.
         let pendingAIIntakeKey = "nomadfi.aiIntake.pendingRequest"
@@ -95,7 +99,8 @@ struct StartAIIntakeIntent: AppIntent {
             return .result()
         }
 
-        defaults.set(decisionsTabRawValue, forKey: tabSelectionKey)
+        defaults.set(toolsTabRawValue, forKey: tabSelectionKey)
+        defaults.set(decisionsToolRawValue, forKey: pendingToolKey)
         defaults.set(blankLaunchPayload, forKey: pendingAIIntakeKey)
 
         return .result()

@@ -1,7 +1,7 @@
 // DecisionAssistantSectionHeader.swift
 // NomadFi
 //
-// Shared section-header treatment for the Decisions tab. Extracted
+// Shared section-header treatment for the Decision Assistant. Extracted
 // from `DecisionAssistantView` so the IA/UI redesign reuses one
 // header style across every section without re-declaring it inline.
 // Per Apple's HIG layout guidance: clear hierarchy, consistent

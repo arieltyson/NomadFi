@@ -12,7 +12,7 @@
 //   read clarifying questions, edit fields, decide what to save.
 //   `.foreground(.immediate)` is the iOS 18+ replacement for
 //   `openAppWhenRun = true` and the only mode that lets the
-//   Decisions tab mount before this intent's dialog is spoken,
+//   Decision Assistant mount before this intent's dialog is spoken,
 //   so the user sees the AI sheet appear right after the spoken
 //   acknowledgement.
 //
@@ -39,7 +39,7 @@
 import AppIntents
 import Foundation
 
-/// Opens NomadFi on the Decisions tab and pre-seeds the on-device
+/// Opens NomadFi on the Decision Assistant and pre-seeds the on-device
 /// AI intake sheet with a scenario string. The user reviews
 /// clarifying questions, edits the extracted fields, and explicitly
 /// saves — same bounded flow as the in-app entry point.
@@ -79,16 +79,13 @@ struct OpenAIIntakeIntent: AppIntent {
             return .result(dialog: "\(dialog)")
         }
 
-        // Route the launch to the Decisions tab so the AI intake
+        // Route the launch to the Decision Assistant so the AI intake
         // sheet's host view actually mounts. Routes through the
         // App Group shared suite so the write is observable across
         // app + extension processes — same chokepoint
         // `OpenDecisionAssistantIntent` and `StartAIIntakeIntent`
         // use.
-        AppRoutingDefaults.shared.set(
-            MainTabSelection.decisions.rawValue,
-            forKey: MainTabSelection.storageKey
-        )
+        DecisionsRoute.request()
 
         // Hand the pre-seeded scenario across via the value-typed
         // pending-request slot. `DecisionAssistantView` reads from

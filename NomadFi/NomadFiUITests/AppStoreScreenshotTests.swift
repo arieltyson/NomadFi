@@ -68,7 +68,7 @@ final class AppStoreScreenshotTests: XCTestCase {
         XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: 8))
         capture("02-country", app)
 
-        tabs.buttons["Decisions"].tap()
+        open("Decisions", in: app, from: tabs.buttons["Tools"])
         capture("03-decisions", app)
     }
 

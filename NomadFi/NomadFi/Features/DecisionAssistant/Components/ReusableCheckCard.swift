@@ -1,7 +1,7 @@
 // ReusableCheckCard.swift
 // NomadFi
 //
-// IA/UI redesign — compact action card for the Decisions tab's
+// IA/UI redesign — compact action card for the Decision Assistant's
 // `Reusable checks` section. Reads as an evergreen tool the user
 // can invoke any time, not as a piece of history. Visually
 // distinct from `DecisionHistoryRow` (which is historical /

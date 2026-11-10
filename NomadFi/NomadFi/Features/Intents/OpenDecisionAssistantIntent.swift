@@ -2,13 +2,13 @@
 // NomadFi
 //
 // Siri / App Shortcut: "Open the Decision Assistant in NomadFi."
-// Routes a voice or Shortcuts launch straight to the Decisions tab
+// Routes a voice or Shortcuts launch straight to the Decision Assistant
 // without claiming NomadFi can answer a specific question yet.
 
 import AppIntents
 import Foundation
 
-/// Opens NomadFi directly on the Decisions tab.
+/// Opens NomadFi directly on the Decision Assistant.
 ///
 /// Keeps the voice surface honest: this intent never invents a
 /// recommendation. It only performs navigation — the app's Decision
@@ -29,7 +29,7 @@ struct OpenDecisionAssistantIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Decision Assistant"
 
     static let description: IntentDescription = IntentDescription(
-        "Open NomadFi directly on the Decisions tab."
+        "Open NomadFi directly on the Decision Assistant."
     )
 
     /// Explicit app launch — the user is asking NomadFi to navigate.
@@ -41,10 +41,7 @@ struct OpenDecisionAssistantIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        AppRoutingDefaults.shared.set(
-            MainTabSelection.decisions.rawValue,
-            forKey: MainTabSelection.storageKey
-        )
+        DecisionsRoute.request()
         let dialog = DecisionAssistantIntentDialog.openDecisionAssistant
         return .result(dialog: "\(dialog)")
     }

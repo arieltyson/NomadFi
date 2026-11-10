@@ -51,13 +51,14 @@ struct StartDraftCaptureIntentTests {
         )
     }
 
-    @Test("StartDraftCaptureIntent perform() writes the Decisions tab routing slot + the typed-form launch flag through AppRoutingDefaults.shared, never UserDefaults.standard")
+    @Test("StartDraftCaptureIntent perform() writes the Decisions route + the typed-form launch flag through AppRoutingDefaults.shared, never UserDefaults.standard")
     func performWritesRoutingSlotAndDraftFlagToSharedSuite() async throws {
         let shared = AppRoutingDefaults.shared
 
         // Defensive — clear the slots in BOTH stores so the test
         // starts from a known empty state.
         shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: Tool.pendingStorageKey)
         PendingDraftCaptureFlag.clear(in: shared)
         UserDefaults.standard.removeObject(forKey: MainTabSelection.storageKey)
         PendingDraftCaptureFlag.clear(in: UserDefaults.standard)
@@ -66,7 +67,8 @@ struct StartDraftCaptureIntentTests {
 
         // Shared suite must carry both routing payloads.
         let sharedTab = shared.string(forKey: MainTabSelection.storageKey)
-        #expect(sharedTab == MainTabSelection.decisions.rawValue)
+        #expect(sharedTab == MainTabSelection.tools.rawValue)
+        #expect(shared.string(forKey: Tool.pendingStorageKey) == Tool.decisions.rawValue)
         #expect(PendingDraftCaptureFlag.read(from: shared) == true)
 
         // `.standard` must NOT carry the routing payloads.
@@ -75,6 +77,7 @@ struct StartDraftCaptureIntentTests {
 
         // Cleanup.
         shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: Tool.pendingStorageKey)
         PendingDraftCaptureFlag.clear(in: shared)
     }
 
@@ -147,13 +150,12 @@ struct StartDraftCaptureIntentTests {
             `MainTabSelection.storageKey` (\(MainTabSelection.storageKey)).
             """
         )
-        #expect(
-            widgetSource.contains("\"\(MainTabSelection.decisions.rawValue)\""),
-            """
-            Widget mirror must hardcode the literal value of \
-            `MainTabSelection.decisions.rawValue` (\(MainTabSelection.decisions.rawValue)).
-            """
-        )
+        for literal in [MainTabSelection.tools.rawValue, Tool.pendingStorageKey, Tool.decisions.rawValue] {
+            #expect(
+                widgetSource.contains("\"\(literal)\""),
+                "Widget mirror must hardcode the routing literal \(literal) that opens Decisions on the Tools tab."
+            )
+        }
         #expect(
             widgetSource.contains("\"\(PendingDraftCaptureFlag.storageKey)\""),
             """

@@ -5,7 +5,7 @@
 // one tap away in Control Center, on the Lock Screen, and on the
 // Action button — sibling to `AIIntakeControlWidget`. The control
 // fires `StartDraftCaptureIntent`, which foregrounds NomadFi,
-// switches to the Decisions tab, and presents the typed draft
+// switches to the Decision Assistant, and presents the typed draft
 // form ready for the user to fill in by hand.
 //
 // Why two control widgets, not one:
@@ -22,7 +22,7 @@
 // Symbol vocabulary (deliberate visual distinction):
 //   • `square.and.pencil` — typed manual capture. Out of
 //     context in Control Center, a bare + would not say what it
-//     adds; in the app the same action is the Decisions tab's +.
+//     adds; in the app the same action is the Decision Assistant's +.
 //   • `apple.intelligence` — AI intake (sibling control). The
 //     two symbols make the path selection unmistakable at a
 //     glance, with no reliance on color alone (HIG inclusivity

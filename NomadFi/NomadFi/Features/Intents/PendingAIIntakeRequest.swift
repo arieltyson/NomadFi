@@ -16,7 +16,7 @@
 //   value-layer boundary.
 //
 // Why one slot for two launch shapes:
-//   The Decisions tab already consumes this single slot via
+//   The Decision Assistant already consumes this single slot via
 //   `@AppStorage` on `PendingAIIntakeRequest.storageKey`. Reusing
 //   the same slot for the blank-launch path keeps the routing
 //   surface narrow — the consumer's behaviour is identical

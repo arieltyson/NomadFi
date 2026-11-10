@@ -21,7 +21,7 @@
 //   The user's purpose is to *use* the typed form inside
 //   NomadFi. `.foreground(.immediate)` is the iOS 18+
 //   replacement for `openAppWhenRun = true` and the only mode
-//   that lets the Decisions tab mount before `perform()`
+//   that lets the Decision Assistant mount before `perform()`
 //   returns, so the form sheet appears the moment the app comes
 //   forward.
 //
@@ -46,7 +46,7 @@
 import AppIntents
 import Foundation
 
-/// Opens NomadFi on the Decisions tab and presents the typed
+/// Opens NomadFi on the Decision Assistant and presents the typed
 /// `DecisionDraftFormView`. Sibling to `StartAIIntakeIntent` —
 /// same one-shot routing, different in-app destination.
 struct StartDraftCaptureIntent: AppIntent {
@@ -63,14 +63,11 @@ struct StartDraftCaptureIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        // Route the launch to the Decisions tab so the typed
+        // Route the launch to the Decision Assistant so the typed
         // draft form's host view actually mounts. Routes through
         // the App Group shared suite — same `AppRoutingDefaults`
         // chokepoint every other foreground routing intent uses.
-        AppRoutingDefaults.shared.set(
-            MainTabSelection.decisions.rawValue,
-            forKey: MainTabSelection.storageKey
-        )
+        DecisionsRoute.request()
 
         // Hand the typed-form launch request across via the
         // value-typed pending-draft-capture flag.

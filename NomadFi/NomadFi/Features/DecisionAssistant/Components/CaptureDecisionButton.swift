@@ -1,7 +1,7 @@
 // CaptureDecisionButton.swift
 // NomadFi
 //
-// The Decisions tab's add button.
+// The Decision Assistant's add button.
 
 import SwiftUI
 

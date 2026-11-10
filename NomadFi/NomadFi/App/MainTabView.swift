@@ -3,9 +3,9 @@ import SwiftUI
 
 /// The app's primary tab bar.
 ///
-/// A Dashboard that grounds the user in their money context, the
-/// Decision Assistant, the optional manual Tools (Subscriptions,
-/// Ledger, Import, Tax Vault, Investing Learn), and Settings.
+/// A Dashboard that grounds the user in their money context, Ask
+/// FiBot for private questions about it, the Tools (Decisions and
+/// the optional manual workflows), and Settings.
 ///
 /// Tab selection is persisted via `@AppStorage` so an App Intent
 /// running in `.foreground(.immediate)` mode can write
@@ -27,26 +27,25 @@ struct MainTabView: View {
         TabView(selection: $storedSelection) {
             ForEach(MainTabSelection.allCases) { tab in
                 Tab(tab.title, systemImage: tab.systemImage, value: tab) {
-                    NavigationStack {
-                        MainTabRoot(tab: tab)
-                    }
+                    MainTabRoot(tab: tab)
                 }
             }
         }
     }
 }
 
-/// The root screen of each tab.
+/// The root screen of each tab, each in its own navigation stack.
+/// Tools owns its stack so a launch route can push a tool onto it.
 private struct MainTabRoot: View {
 
     let tab: MainTabSelection
 
     var body: some View {
         switch tab {
-        case .dashboard: DashboardView()
-        case .decisions: DecisionAssistantView()
+        case .dashboard: NavigationStack { DashboardView() }
+        case .fiBot: NavigationStack { FiBotWorkspaceView() }
         case .tools: ToolsView()
-        case .settings: SettingsView()
+        case .settings: NavigationStack { SettingsView() }
         }
     }
 }

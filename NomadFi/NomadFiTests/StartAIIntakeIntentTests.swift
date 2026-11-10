@@ -64,7 +64,7 @@ struct StartAIIntakeIntentTests {
         )
     }
 
-    @Test("StartAIIntakeIntent perform() writes the Decisions tab routing slot + a blank-launch payload to the App Group shared suite, never to UserDefaults.standard — cross-process routing must observe from either process")
+    @Test("StartAIIntakeIntent perform() writes the Decisions route + a blank-launch payload to the App Group shared suite, never to UserDefaults.standard — cross-process routing must observe from either process")
     func performWritesRoutingSlotAndBlankPayloadToSharedSuite() async throws {
         let shared = AppRoutingDefaults.shared
 
@@ -72,6 +72,7 @@ struct StartAIIntakeIntentTests {
         // the test starts from a known empty state regardless of
         // prior runs.
         shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: Tool.pendingStorageKey)
         shared.removeObject(forKey: PendingAIIntakeRequest.storageKey)
         UserDefaults.standard.removeObject(forKey: MainTabSelection.storageKey)
         UserDefaults.standard.removeObject(forKey: PendingAIIntakeRequest.storageKey)
@@ -81,7 +82,8 @@ struct StartAIIntakeIntentTests {
         // The shared suite must carry the routing payloads — that
         // is the cross-process channel the consumer reads.
         let sharedTab = shared.string(forKey: MainTabSelection.storageKey)
-        #expect(sharedTab == MainTabSelection.decisions.rawValue)
+        #expect(sharedTab == MainTabSelection.tools.rawValue)
+        #expect(shared.string(forKey: Tool.pendingStorageKey) == Tool.decisions.rawValue)
 
         let sharedPendingRaw = shared.string(forKey: PendingAIIntakeRequest.storageKey)
         let sharedPending = sharedPendingRaw.flatMap(PendingAIIntakeRequest.init(rawValue:))
@@ -97,6 +99,7 @@ struct StartAIIntakeIntentTests {
         // Cleanup so the test never leaves the shared suite or the
         // developer's standard defaults in an inconsistent state.
         shared.removeObject(forKey: MainTabSelection.storageKey)
+        shared.removeObject(forKey: Tool.pendingStorageKey)
         shared.removeObject(forKey: PendingAIIntakeRequest.storageKey)
     }
 
@@ -162,13 +165,12 @@ struct StartAIIntakeIntentTests {
             widget tap to the wrong tab.
             """
         )
-        #expect(
-            widgetSource.contains("\"\(MainTabSelection.decisions.rawValue)\""),
-            """
-            Widget mirror must hardcode the literal value of \
-            `MainTabSelection.decisions.rawValue` (\(MainTabSelection.decisions.rawValue)).
-            """
-        )
+        for literal in [MainTabSelection.tools.rawValue, Tool.pendingStorageKey, Tool.decisions.rawValue] {
+            #expect(
+                widgetSource.contains("\"\(literal)\""),
+                "Widget mirror must hardcode the routing literal \(literal) that opens Decisions on the Tools tab."
+            )
+        }
         #expect(
             widgetSource.contains("\"\(PendingAIIntakeRequest.storageKey)\""),
             """

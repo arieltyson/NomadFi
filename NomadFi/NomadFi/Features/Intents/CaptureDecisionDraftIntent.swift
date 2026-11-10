@@ -10,7 +10,7 @@
 // Intentionally conservative:
 //   - `supportedModes = .background` — the intent never opens the
 //     app on capture. Users can open NomadFi later to review their
-//     captured drafts in the Decisions tab.
+//     captured drafts in the Decision Assistant.
 //   - No analysis, no scoring, no recommendation. The dialog says so
 //     explicitly via `DecisionAssistantIntentDialog.draftCaptureSuccess`.
 //   - Amount and currency are deliberately omitted. Voice dictation

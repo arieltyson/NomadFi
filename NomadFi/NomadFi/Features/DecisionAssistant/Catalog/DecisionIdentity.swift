@@ -66,7 +66,7 @@ extension DecisionIdentity {
 
 // MARK: - Surface category (Decisions IA)
 
-/// How a decision should surface on the Decisions tab. The IA
+/// How a decision should surface on the Decision Assistant. The IA
 /// redesign separates evergreen tools the user can invoke any time
 /// from scenario-specific decisions tied to a particular real-world
 /// situation, so the screen reads honestly at first glance.
@@ -87,7 +87,7 @@ enum DecisionSurfaceCategory: Sendable, Equatable, Hashable {
 
 extension DecisionIdentity {
 
-    /// How this identity should surface on the Decisions tab.
+    /// How this identity should surface on the Decision Assistant.
     /// Decided per-`DecisionID` so the catalog stays the single
     /// source of truth and the view never branches on string
     /// matches.

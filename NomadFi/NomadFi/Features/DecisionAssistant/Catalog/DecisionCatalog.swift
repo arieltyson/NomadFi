@@ -97,7 +97,7 @@ enum DecisionCatalog {
 
     /// Reusable checks the user can invoke any time — evergreen
     /// tools that don't belong to a specific scenario. Surfaced in
-    /// the Decisions tab's `Reusable checks` section. The order
+    /// the Decision Assistant's `Reusable checks` section. The order
     /// here is the catalog order (purchase, then credit timing).
     static var reusableChecks: [DecisionIdentity] {
         all.filter { $0.surfaceCategory == .reusableCheck }
@@ -106,7 +106,7 @@ enum DecisionCatalog {
     /// Scenario-specific decisions that stay pinned to the user's
     /// surface because they are tied to a particular real-world
     /// situation (rather than a tool the user invokes in general).
-    /// Surfaced in the Decisions tab's `Pinned scenario` section.
+    /// Surfaced in the Decision Assistant's `Pinned scenario` section.
     static var pinnedScenarios: [DecisionIdentity] {
         all.filter { $0.surfaceCategory == .pinnedScenario }
     }

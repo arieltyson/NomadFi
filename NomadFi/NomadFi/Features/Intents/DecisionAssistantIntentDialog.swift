@@ -183,10 +183,10 @@ enum DecisionAssistantIntentDialog {
 
         case .missingCardData:
             let checks = formattedCheckCount(decision.outstandingCheckCount)
-            return "NomadFi needs more account data before it can pick an option for this purchase. \(checks) remain — open the Decisions tab for details."
+            return "NomadFi needs more account data before it can pick an option for this purchase. \(checks) remain — open Decisions in Tools for details."
 
         case .allAccountsBlocked:
-            return "None of your saved accounts clear the guardrails for this purchase. Open NomadFi's Decisions tab to see the caveats."
+            return "None of your saved accounts clear the guardrails for this purchase. Open Decisions in NomadFi's Tools to see the caveats."
 
         case .ready:
             return recommendCardReadySentence(decision: decision)
@@ -224,7 +224,7 @@ enum DecisionAssistantIntentDialog {
 
         case .missingData:
             let checks = formattedCheckCount(decision.outstandingCheckCount)
-            return "NomadFi needs more data before it can give a full credit-timing ruling. \(checks) remain — open the Decisions tab to review what's missing."
+            return "NomadFi needs more data before it can give a full credit-timing ruling. \(checks) remain — open Decisions in Tools to review what's missing."
 
         case .allCardsReady:
             return "All your saved credit cards look ready. Continue paying the statement balance in full by the due date. NomadFi does not predict credit-score outcomes."
@@ -242,7 +242,7 @@ enum DecisionAssistantIntentDialog {
     ) -> String {
         guard brief.hasInteractedWithInputs else {
             return "Your Amazon arrival-order record doesn't have your inputs yet. "
-                + "Open NomadFi's Decisions tab to enter your cart, Chase, and Wise details so the engine can recommend a payment path."
+                + "Open Decisions in NomadFi's Tools to enter your cart, Chase, and Wise details so the engine can recommend a payment path."
         }
 
         let outstanding = brief.decision.outstandingChecks.count
@@ -259,9 +259,9 @@ enum DecisionAssistantIntentDialog {
         let tail: String
         switch brief.decision.primaryPath {
         case .awaitingUserInput, .reviewCartFirst:
-            tail = "Open NomadFi's Decisions tab to finish the brief before NomadFi picks a card."
+            tail = "Open Decisions in NomadFi's Tools to finish the brief before NomadFi picks a card."
         case .chaseFreedomRiseUSD, .wiseUSD:
-            tail = "Open NomadFi's Decisions tab for the full rationale and sources."
+            tail = "Open Decisions in NomadFi's Tools for the full rationale and sources."
         }
 
         return "\(ruling) \(checksClause) \(tail)"
@@ -283,7 +283,7 @@ enum DecisionAssistantIntentDialog {
             // Defence in depth: `.ready` implies a recommendation, but
             // if the engine ever ships without one we must not invent
             // an account name on the user's behalf.
-            return "NomadFi couldn't finalise a recommended option for this purchase. Open the Decisions tab to review your saved accounts."
+            return "NomadFi couldn't finalise a recommended option for this purchase. Open Decisions in Tools to review your saved accounts."
         }
 
         var parts: [String] = []
@@ -328,7 +328,7 @@ enum DecisionAssistantIntentDialog {
 
         if decision.outstandingCheckCount > 0 {
             let checks = formattedCheckCount(decision.outstandingCheckCount)
-            parts.append("\(checks) still need your input — open the Decisions tab for the list.")
+            parts.append("\(checks) still need your input — open Decisions in Tools for the list.")
         }
 
         if rec.isCreditCard {
@@ -352,7 +352,7 @@ enum DecisionAssistantIntentDialog {
         case .high:
             return "NomadFi's confidence in this pick is high — same currency, no outstanding checks, no travel signal."
         case .moderate:
-            return "NomadFi's confidence in this pick is moderate — at least one soft caveat applies. Open the Decisions tab for the rationale."
+            return "NomadFi's confidence in this pick is moderate — at least one soft caveat applies. Open Decisions in Tools for the rationale."
         case .lowOrUnverified:
             return "NomadFi's confidence in this pick is low or unverified — verify the inputs the brief lists before committing."
         }
@@ -420,6 +420,6 @@ enum DecisionAssistantIntentDialog {
     ) -> String {
         guard decision.outstandingCheckCount > 0 else { return "" }
         let checks = formattedCheckCount(decision.outstandingCheckCount)
-        return " \(checks) still need your input — open the Decisions tab for details."
+        return " \(checks) still need your input — open Decisions in Tools for details."
     }
 }

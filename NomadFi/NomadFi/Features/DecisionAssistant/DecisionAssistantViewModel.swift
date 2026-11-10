@@ -43,7 +43,7 @@ final class DecisionAssistantViewModel {
     let historicalDecisions: [DecisionIdentity]
 
     /// Reusable checks the user can invoke any time. Rendered in
-    /// the Decisions tab's `Reusable checks` section after the IA
+    /// the Decision Assistant's `Reusable checks` section after the IA
     /// redesign so evergreen tools stay visually distinct from the
     /// pinned scenario surface.
     let reusableChecks: [DecisionIdentity]
@@ -280,7 +280,7 @@ final class DecisionAssistantViewModel {
 
     /// One-line summary for the hero row corresponding to `id`.
     /// The view passes the current `[Account]` so the Credit Timing
-    /// summary stays in lockstep with the Decisions tab's live query.
+    /// summary stays in lockstep with the Decision Assistant's live query.
     func summary(
         for id: DecisionID,
         accounts: [Account],

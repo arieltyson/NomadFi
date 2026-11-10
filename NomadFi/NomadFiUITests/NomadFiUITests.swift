@@ -117,8 +117,11 @@ final class NomadFiUITests: XCTestCase {
         let app = makeApp(hasCompletedOnboarding: true)
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Decisions"].waitForExistence(timeout: 8))
-        app.tabBars.buttons["Decisions"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Tools"].waitForExistence(timeout: 8))
+        app.tabBars.buttons["Tools"].tap()
+        let decisions = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Decisions")).firstMatch
+        XCTAssertTrue(decisions.waitForExistence(timeout: 8))
+        decisions.tap()
 
         let capture = app.buttons["decisions.capture"]
         XCTAssertTrue(capture.waitForExistence(timeout: 8))

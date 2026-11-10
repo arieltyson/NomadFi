@@ -12,6 +12,7 @@ struct ToolDestination: View {
 
     var body: some View {
         switch tool {
+        case .decisions: DecisionAssistantView()
         case .exchangeRates: ExchangeRatesView()
         case .subscriptions: SubscriptionsView()
         case .ledger: LedgerView()
