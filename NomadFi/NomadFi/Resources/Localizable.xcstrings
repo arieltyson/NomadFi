@@ -1,18 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Continues to the next step." : {
-
-    },
-    "Couldn't Finish Setup" : {
-
-    },
-    "Country" : {
-
-    },
-    "Your setup wasn't saved. Please try again." : {
-
-    },
     "—" : {
 
     },
@@ -127,6 +115,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@, in %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, in %3$@"
           }
         }
       }
@@ -410,6 +408,9 @@
     "Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later." : {
 
     },
+    "Add Tiingo Token" : {
+
+    },
     "Add Transaction" : {
 
     },
@@ -417,6 +418,9 @@
 
     },
     "Add your accounts" : {
+
+    },
+    "Add your Tiingo API token to use real prices." : {
 
     },
     "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
@@ -467,6 +471,9 @@
     "Allow “NomadFi” to use your location?" : {
 
     },
+    "Allow cash at 2%" : {
+
+    },
     "Allow hosted bank synchronization" : {
 
     },
@@ -500,6 +507,9 @@
           }
         }
       }
+    },
+    "API token" : {
+
     },
     "Apple FinanceKit" : {
 
@@ -546,9 +556,6 @@
     "Available on supported devices" : {
 
     },
-    "Back" : {
-
-    },
     "Balance confirmed for %@" : {
 
     },
@@ -558,6 +565,9 @@
     "Balance observed" : {
 
     },
+    "Balanced" : {
+
+    },
     "Bank balances are reference information. Enter only cash you can actually access, after holds and shared ownership limits. Credit limits and investments are excluded." : {
 
     },
@@ -565,6 +575,9 @@
 
     },
     "Bank data fetched" : {
+
+    },
+    "Bank of Canada exchange rates" : {
 
     },
     "Banks" : {
@@ -580,6 +593,9 @@
 
     },
     "Begins setting up your NomadFi profile" : {
+
+    },
+    "Best" : {
 
     },
     "Billing" : {
@@ -634,6 +650,9 @@
 
     },
     "Category overrides" : {
+
+    },
+    "Cautious" : {
 
     },
     "Chase Freedom Rise" : {
@@ -783,13 +802,44 @@
     "Continues to account setup." : {
 
     },
+    "Continues to the next step." : {
+
+    },
+    "Convert with" : {
+
+    },
     "Converted Amount" : {
 
+    },
+    "Converted out of %@" : {
+
+    },
+    "Converts %@ · costs %@ up front" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Converts %1$@ · costs %2$@ up front"
+          }
+        }
+      }
     },
     "Copies the available credit and current balance you saved on this card into the fields below." : {
 
     },
     "Cost breakdown" : {
+
+    },
+    "Costs paid, including rebalancing" : {
+
+    },
+    "Couldn't Finish Setup" : {
+
+    },
+    "Country" : {
+
+    },
+    "Create a free Tiingo account, then copy the token from its API page. It's stored in this iPhone's Keychain and sent only to Tiingo." : {
 
     },
     "Creates a linked tax document with the selected category. NomadFi does not mark the expense deductible automatically." : {
@@ -884,10 +934,16 @@
     "Dashboard" : {
 
     },
+    "Data Checks" : {
+
+    },
     "Data confidence: %@" : {
 
     },
     "Data deletion" : {
+
+    },
+    "Data sourced by Tiingo" : {
 
     },
     "Data Sources" : {
@@ -1040,13 +1096,22 @@
     "Duplicate" : {
 
     },
+    "Duplicate month" : {
+
+    },
     "Duplicate rows match an existing transaction by external ID or by merchant + amount + date within a few days. Skipped rows show the reason below." : {
 
     },
     "Duplicates skipped" : {
 
     },
+    "Each fund's past average, pulled halfway toward the average of all funds so no single good run dominates." : {
+
+    },
     "Each link opens the official source page in Safari. NomadFi does not fetch or cache these pages — you verify them yourself." : {
+
+    },
+    "Each row is optimized separately, because the cost of converting changes which mix is best. Rates are typical published retail costs, not quotes: check your own bank and brokerage." : {
 
     },
     "Edit" : {
@@ -1119,6 +1184,9 @@
     "Evaluated as of %@" : {
 
     },
+    "Every fund is assumed to earn the same, so the mix only balances risk against conversion costs." : {
+
+    },
     "Every Saturday morning" : {
 
     },
@@ -1138,6 +1206,12 @@
 
     },
     "Existing tag" : {
+
+    },
+    "Expected return · risk" : {
+
+    },
+    "Expected returns" : {
 
     },
     "Expected variable spending is included" : {
@@ -1225,6 +1299,9 @@
     "Fix the highlighted date conflict before saving." : {
 
     },
+    "Flagged months are left out of the calculation rather than guessed." : {
+
+    },
     "For confirmed statement close and payment due dates" : {
 
     },
@@ -1253,6 +1330,9 @@
         }
       }
     },
+    "From history" : {
+
+    },
     "From your numbers" : {
 
     },
@@ -1268,6 +1348,9 @@
     "General purchase" : {
 
     },
+    "Get a Free Token" : {
+
+    },
     "Get NomadFi's current saved Amazon arrival-order recommendation from the Decision Assistant." : {
 
     },
@@ -1281,6 +1364,9 @@
 
     },
     "Groceries" : {
+
+    },
+    "Growth" : {
 
     },
     "Hard rules" : {
@@ -1343,6 +1429,9 @@
     "I will pay before statement close" : {
 
     },
+    "Illustrative History" : {
+
+    },
     "Import a CSV statement" : {
 
     },
@@ -1383,6 +1472,12 @@
 
     },
     "Institution" : {
+
+    },
+    "Invest from" : {
+
+    },
+    "Invested once at the start and rebalanced yearly. Past results, real or illustrative, don't predict future returns." : {
 
     },
     "Investing & learning" : {
@@ -1528,6 +1623,9 @@
     "Manage access" : {
 
     },
+    "Manage Tiingo Token" : {
+
+    },
     "Manual entry" : {
 
     },
@@ -1589,6 +1687,12 @@
 
     },
     "Missing data" : {
+
+    },
+    "Missing month" : {
+
+    },
+    "Month" : {
 
     },
     "Monthly" : {
@@ -1822,16 +1926,19 @@
     "Online shopping" : {
 
     },
+    "Only %lld months of overlapping prices are available. Portfolio Lab needs at least two years." : {
+
+    },
     "Open a reusable check or the pinned scenario above to start a record NomadFi can reopen later." : {
 
     },
     "Open Decision Assistant" : {
 
     },
-    "Open NomadFi directly on the Decisions tab." : {
+    "Open NomadFi directly on the Decision Assistant." : {
 
     },
-    "Open NomadFi on the Decisions tab so you can finish your Amazon arrival-order decision." : {
+    "Open NomadFi on the Decision Assistant so you can finish your Amazon arrival-order decision." : {
 
     },
     "Open NomadFi to a blank intake that on-device AI structures for you. NomadFi never analyzes or saves anything until you confirm in the app." : {
@@ -1880,6 +1987,12 @@
 
     },
     "Opens the statement calendar editor for this card." : {
+
+    },
+    "Optimized Mix with %@" : {
+
+    },
+    "Optimizing" : {
 
     },
     "Optional — urgency note in your own words (\"before the trip\")." : {
@@ -1951,6 +2064,9 @@
     "Parsing rows…" : {
 
     },
+    "Past Performance" : {
+
+    },
     "Paste or type the scenario" : {
 
     },
@@ -1999,10 +2115,31 @@
     "Planning assumptions" : {
 
     },
+    "Portfolio Lab" : {
+
+    },
+    "Portfolio Lab couldn't run with this data." : {
+
+    },
+    "Portfolio Lab is for learning how costs and risk interact. It isn't investment advice or a recommendation to buy any fund." : {
+
+    },
+    "Portfolio Lab Needs CAD or USD" : {
+
+    },
     "Precise: On" : {
 
     },
     "Preview" : {
+
+    },
+    "Price stopped updating" : {
+
+    },
+    "Prices" : {
+
+    },
+    "Prices couldn't be loaded. Check your connection." : {
 
     },
     "Priority number %lld." : {
@@ -2090,7 +2227,16 @@
     "Ready to link a sandbox bank" : {
 
     },
+    "Real (Tiingo)" : {
+
+    },
     "Real Cost Analysis" : {
+
+    },
+    "Real month-end prices for US-listed funds, fetched on this iPhone with your own free Tiingo token. Your amounts never leave the device." : {
+
+    },
+    "Real Prices" : {
 
     },
     "Receipt Details" : {
@@ -2124,6 +2270,9 @@
 
     },
     "Remove" : {
+
+    },
+    "Remove Token" : {
 
     },
     "Removes every statement calendar date from this card." : {
@@ -2192,9 +2341,6 @@
     "Retry finishing link" : {
 
     },
-    "Returns to the previous onboarding step." : {
-
-    },
     "Review Amazon Arrival Decision" : {
 
     },
@@ -2253,6 +2399,9 @@
     "Rewards Terms" : {
 
     },
+    "Risk" : {
+
+    },
     "Rows" : {
 
     },
@@ -2266,6 +2415,12 @@
 
     },
     "Runs a sync across every available provider and reconciles the result into your accounts." : {
+
+    },
+    "Same for all" : {
+
+    },
+    "Sample" : {
 
     },
     "Sandbox bank linked" : {
@@ -2416,10 +2571,10 @@
     "Select at least one country" : {
 
     },
-    "Select every country where you have financial accounts." : {
+    "Select at least one jurisdiction to continue." : {
 
     },
-    "Select at least one jurisdiction to continue." : {
+    "Select every country where you have financial accounts." : {
 
     },
     "Select which saved credit-card account is your Chase Freedom Rise." : {
@@ -2606,6 +2761,9 @@
     "Tax Year %@" : {
 
     },
+    "That doesn't look like a Tiingo token." : {
+
+    },
     "The calculation assumes" : {
 
     },
@@ -2627,10 +2785,16 @@
     "The more accounts you connect, the better NomadFi can optimize your cross-border finances and detect hidden fees." : {
 
     },
+    "The optimizer weighs each fund's expected return against its risk and the cost of getting into it. Converting currency is a cost, so expensive conversion keeps more money at home." : {
+
+    },
     "The original receipt image is not available." : {
 
     },
     "The plan may have changed. Reevaluate it before reserving this purchase." : {
+
+    },
+    "The published exchange-rate history covers Canadian and US dollars. Add a jurisdiction that uses one of them in Settings." : {
 
     },
     "The server checks for bank updates independently. Opening NomadFi downloads completed updates. Bank data can be delayed; signing out keeps this iPhone's local records." : {
@@ -2695,6 +2859,18 @@
 
     },
     "Tidy Account Name" : {
+
+    },
+    "Tiingo didn't accept this token. Check it and try again." : {
+
+    },
+    "Tiingo returned unreadable prices for %@." : {
+
+    },
+    "Tiingo Token" : {
+
+    },
+    "Tiingo's free limit was reached. Try again later." : {
 
     },
     "Time zone: %@" : {
@@ -2779,6 +2955,15 @@
     "Unit determines what the rate means (for example, 1.5% cash back versus 1 point per dollar). NomadFi does not convert between units." : {
 
     },
+    "Unreadable date" : {
+
+    },
+    "Unusable price" : {
+
+    },
+    "Unusual jump" : {
+
+    },
     "Update accessible cash" : {
 
     },
@@ -2824,6 +3009,12 @@
     "Validation issue: %@" : {
 
     },
+    "Value" : {
+
+    },
+    "Values by Month" : {
+
+    },
     "Verification" : {
 
     },
@@ -2837,6 +3028,9 @@
 
     },
     "Waiting for iOS Permission…" : {
+
+    },
+    "Ways to Convert" : {
 
     },
     "We found these recurring charges in your transactions." : {
@@ -2908,7 +3102,23 @@
     "With your permission, NomadFi stores your confirmed cash plan, scheduled income, bills, reserves and scenario settings on your hosted account. A separate service checks it after bank syncs and scheduled checks. It has no access to bank credentials, and no plan is sent to an AI model." : {
 
     },
+    "Worst drop" : {
+
+    },
+    "Would be %@ after %lld years, all costs paid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Would be %1$@ after %2$lld years, all costs paid"
+          }
+        }
+      }
+    },
     "Writes the new rows to your ledger. Duplicates and skipped rows are not saved." : {
+
+    },
+    "Yearly return" : {
 
     },
     "You can add accounts later from the dashboard" : {
@@ -3004,7 +3214,13 @@
     "Your review" : {
 
     },
+    "Your setup wasn't saved. Please try again." : {
+
+    },
     "Your Subscriptions" : {
+
+    },
+    "Your What-If" : {
 
     }
   },
