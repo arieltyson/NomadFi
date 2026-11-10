@@ -64,3 +64,6 @@ docs/financekit-application.md
 
 # Localization catalogs are source files and should stay version controlled.
 !**/*.xcstrings
+
+# Supabase CLI local state (project link cache)
+supabase/.temp/
