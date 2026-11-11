@@ -41,6 +41,15 @@ enum SpendAnomalyKind: String, Sendable, Equatable, CaseIterable {
         }
     }
 
+    /// The card title, naming the merchant so each card says something
+    /// different at a glance.
+    func insightTitle(merchant: String) -> String {
+        switch self {
+        case .missingRecurringCharge: "\(merchant) hasn't charged"
+        case .amountSpike: "\(merchant) cost more than usual"
+        }
+    }
+
     /// VoiceOver phrasing.
     var accessibilityLabel: String {
         switch self {

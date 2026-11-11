@@ -81,10 +81,10 @@ enum InsightEngine {
         )
         return anomalies.map { anomaly in
             FinancialInsight(
-                title: anomaly.kind.displayTitle,
+                title: anomaly.kind.insightTitle(merchant: anomaly.displayMerchantName),
                 message: anomaly.explanation,
                 category: .anomaly,
-                // Derived from the user's own transaction history —
+                // Derived from the user's own transaction history,
                 // never a verified external source.
                 confidence: .userProvided
             )

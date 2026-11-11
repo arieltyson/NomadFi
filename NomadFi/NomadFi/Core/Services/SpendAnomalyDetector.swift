@@ -113,7 +113,12 @@ enum SpendAnomalyDetector {
             }
         }
 
-        let sorted = anomalies.sorted { $0.lastChargeDate > $1.lastChargeDate }
+        // One anomaly per merchant and currency: the one with the longest
+        // history behind it, so a merchant is never listed twice.
+        let strongest = Dictionary(grouping: anomalies) { "\($0.normalizedMerchantKey)|\($0.currencyCode.rawValue)" }
+            .values
+            .compactMap { $0.max { $0.historyCount < $1.historyCount } }
+        let sorted = strongest.sorted { $0.lastChargeDate > $1.lastChargeDate }
         logger.info("Detected \(sorted.count) spend anomalies from \(transactions.count) transactions")
         return sorted
     }
@@ -165,13 +170,13 @@ enum SpendAnomalyDetector {
 
         let expectedDateString = isoDateString(for: expected)
         let displayDate = expected.formatted(
-            .dateTime.year().month(.wide).day()
+            .dateTime.month(.abbreviated).day()
         )
         let baselineString = candidate.representativeAmount.formatted(
             .money(code: candidate.currencyCode.rawValue)
         )
         let daysLabel = "\(Int(daysOverdue.rounded(.down))) day\(Int(daysOverdue.rounded(.down)) == 1 ? "" : "s")"
-        let explanation = "Based on \(matches.count) prior \(candidate.frequency.displayName.lowercased()) \(matches.count == 1 ? "charge" : "charges"), your \(candidate.displayMerchantName) charge near \(displayDate) (\(baselineString)) has not appeared in the last \(daysLabel). Worth reviewing."
+        let explanation = "Usually \(baselineString) around \(displayDate). Nothing has appeared for \(daysLabel)."
 
         return SpendAnomaly(
             id: "spend-anomaly-\(candidate.id)-\(SpendAnomalyKind.missingRecurringCharge.rawValue)-\(expectedDateString)",
@@ -234,9 +239,9 @@ enum SpendAnomalyDetector {
             .money(code: candidate.currencyCode.rawValue)
         )
         let displayDate = latest.date.formatted(
-            .dateTime.year().month(.wide).day()
+            .dateTime.month(.abbreviated).day()
         )
-        let explanation = "Based on \(priors.count) prior \(candidate.frequency.displayName.lowercased()) \(priors.count == 1 ? "charge" : "charges") (baseline \(baselineString)), the \(displayDate) \(candidate.displayMerchantName) charge was \(observedString). Worth reviewing."
+        let explanation = "\(observedString) on \(displayDate). Usually about \(baselineString)."
 
         let isoDate = isoDateString(for: latest.date)
         return SpendAnomaly(

@@ -79,7 +79,8 @@ enum RecurringChargeDetector {
             // Sub-bucket by amount magnitude within the ±5 % window.
             let amountBuckets = groupByAmount(group)
             for bucket in amountBuckets where bucket.count >= 2 {
-                if let candidate = buildCandidate(from: bucket, now: now) {
+                if let candidate = buildCandidate(from: bucket, now: now),
+                   !isUsageBased(merchantCharges: group, bucket: bucket, frequency: candidate.frequency) {
                     candidates.append(candidate)
                 }
             }
@@ -94,6 +95,28 @@ enum RecurringChargeDetector {
 
         logger.info("Detected \(sorted.count) recurring candidates from \(transactions.count) transactions")
         return sorted
+    }
+
+    // MARK: - Usage-based merchants
+
+    /// How many times more often than a bucket's cadence a merchant may
+    /// charge before it is treated as usage-based rather than recurring.
+    static let usageDensityLimit: Double = 2
+
+    /// Whether the merchant charges far more often than this bucket's
+    /// cadence implies.
+    ///
+    /// Car share, food delivery and shops charge many times a month in
+    /// varying amounts. Some of those amounts cluster, and a cluster can
+    /// look like a monthly charge, but a subscription charges about once
+    /// per period. Counting every charge from the merchant over the
+    /// bucket's span separates the two without knowing the merchant.
+    static func isUsageBased(merchantCharges: [Transaction], bucket: [Transaction], frequency: BillingFrequency) -> Bool {
+        guard let first = bucket.map(\.date).min(), let last = bucket.map(\.date).max() else { return false }
+        let periodDays = 365.25 / frequency.annualizedMultiplier
+        let expectedCharges = last.timeIntervalSince(first) / 86_400 / periodDays + 1
+        let observedCharges = merchantCharges.count { $0.date >= first && $0.date <= last }
+        return Double(observedCharges) > expectedCharges * usageDensityLimit
     }
 
     // MARK: - Eligibility

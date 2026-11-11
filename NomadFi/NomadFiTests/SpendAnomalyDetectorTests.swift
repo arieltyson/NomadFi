@@ -308,4 +308,37 @@ struct SpendAnomalyDetectorTests {
             }
         }
     }
+
+    // MARK: - Usage-based merchants
+
+    @Test("A merchant charged many times a month in varying amounts is not a recurring charge, so it never produces an anomaly")
+    func usageBasedMerchantProducesNoAnomalies() {
+        // A car share: several trips a month. Some fares repeat, which
+        // forms an amount cluster that looks monthly on its own.
+        var txs: [Transaction] = []
+        for month in 1...10 {
+            for (day, fare) in [(2, -8.10), (6, -13.00), (9, -22.40), (13, -8.05), (17, -31.75), (21, -12.90), (26, -17.20)] {
+                txs.append(Self.transaction(merchant: "City Car Share", amount: fare, category: .transport,
+                                            date: Self.date(year: 2026, month: month, day: day)))
+            }
+        }
+        txs.append(Self.transaction(merchant: "City Car Share", amount: -20.73, category: .transport,
+                                    date: Self.date(year: 2026, month: 11, day: 8)))
+
+        let anomalies = SpendAnomalyDetector.detect(from: txs, now: Self.date(year: 2026, month: 11, day: 10))
+        #expect(anomalies.isEmpty)
+        #expect(RecurringChargeDetector.detect(from: txs, now: Self.date(year: 2026, month: 11, day: 10)).isEmpty)
+    }
+
+    @Test("A merchant is reported at most once")
+    func oneAnomalyPerMerchant() {
+        let txs = [
+            Self.transaction(amount: -20, date: Self.date(year: 2026, month: 2, day: 1)),
+            Self.transaction(amount: -20, date: Self.date(year: 2026, month: 3, day: 1)),
+            Self.transaction(amount: -20, date: Self.date(year: 2026, month: 4, day: 1)),
+            Self.transaction(amount: -45, date: Self.date(year: 2026, month: 5, day: 1)),
+        ]
+        let anomalies = SpendAnomalyDetector.detect(from: txs, now: Self.date(year: 2026, month: 5, day: 2))
+        #expect(Set(anomalies.map(\.normalizedMerchantKey)).count == anomalies.count)
+    }
 }

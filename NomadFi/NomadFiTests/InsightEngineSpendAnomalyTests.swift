@@ -68,9 +68,9 @@ struct InsightEngineSpendAnomalyTests {
         let insight = try #require(insights.first)
         #expect(insight.category == .anomaly)
         #expect(insight.confidence == .userProvided)
-        #expect(insight.title == SpendAnomalyKind.amountSpike.displayTitle)
-        #expect(insight.message.localizedStandardContains("Streaming Plus"))
-        #expect(insight.message.localizedStandardContains("worth reviewing"))
+        #expect(insight.title == "Streaming Plus cost more than usual")
+        #expect(insight.message.localizedStandardContains("Usually about"))
+        #expect(!insight.message.localizedStandardContains("Based on"), "The card states the fact, not the method")
     }
 
     // MARK: - Missing → insight
@@ -90,8 +90,8 @@ struct InsightEngineSpendAnomalyTests {
         )
         let insight = try #require(insights.first)
         #expect(insight.category == .anomaly)
-        #expect(insight.title == SpendAnomalyKind.missingRecurringCharge.displayTitle)
-        #expect(insight.message.localizedStandardContains("has not appeared"))
+        #expect(insight.title == "Streaming Plus hasn't charged")
+        #expect(insight.message.localizedStandardContains("Nothing has appeared"))
     }
 
     // MARK: - Empty input
