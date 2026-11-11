@@ -29,7 +29,9 @@ struct DashboardView: View {
     var body: some View {
         Group {
             if accounts.isEmpty {
-                centeredEmptyState
+                DashboardEmptyStateView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, SpacingTokens.medium)
             } else {
                 ScrollView {
                     dashboardContent
@@ -215,20 +217,6 @@ private extension DashboardView {
             }
             .buttonStyle(.plain)
         }
-    }
-
-    var emptyState: some View {
-        ContentUnavailableView {
-            Label("No Accounts", systemImage: "creditcard")
-        } description: {
-            Text("Add accounts from Settings > Accounts to see your global net worth.")
-        }
-    }
-
-    var centeredEmptyState: some View {
-        emptyState
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .padding(.horizontal, SpacingTokens.medium)
     }
 
     func pullToRefresh() async {

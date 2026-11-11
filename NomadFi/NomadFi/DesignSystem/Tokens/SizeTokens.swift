@@ -15,4 +15,11 @@ enum SizeTokens {
 
     /// The smallest comfortable tap target (Apple HIG: 44 × 44 pt).
     static let minimumTapTarget: CGFloat = 44
+
+    /// The height of an empty state's illustrative chart.
+    static let emptyStateChartHeight: CGFloat = 96
+
+    /// The widest an empty state's illustration grows, so it stays a
+    /// hint rather than a screen-filling graphic on large displays.
+    static let emptyStateIllustrationMaxWidth: CGFloat = 320
 }

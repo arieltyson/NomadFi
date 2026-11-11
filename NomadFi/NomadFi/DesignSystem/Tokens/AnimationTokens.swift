@@ -25,4 +25,7 @@ enum AnimationTokens {
 
     /// Counting-up animation for numeric value changes (net worth, balances).
     static let numericCount: Animation = .smooth(duration: 0.6)
+
+    /// Delay between items that enter one after another.
+    static let staggerStep: Double = 0.05
 }
