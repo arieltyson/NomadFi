@@ -43,7 +43,8 @@ enum FiBotFigureVerifier {
         let figures = figures(in: draft.text)
         guard !figures.isEmpty else { return (.noFigures, sources) }
 
-        let known = (sources.map(\.statement) + [question])
+        // Topics count too: an account's name can carry its card ending.
+        let known = (sources.map(\.statement) + sources.map(\.topic) + [question])
             .flatMap { self.figures(in: $0) }
             .map(\.value)
         let candidates = derivedValues(from: known)

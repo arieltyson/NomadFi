@@ -28,6 +28,9 @@ struct FiBotFactSheetBuilder {
     /// Categories and merchants listed per currency.
     static let rankingLimit = 3
 
+    /// Merchants listed inside each top category.
+    static let merchantsPerCategory = 4
+
     let now: Date
     let calendar: Calendar
 
@@ -95,7 +98,7 @@ struct FiBotFactSheetBuilder {
                 }
                 parts.append("updated \(day(account.financialSnapshotUpdatedAt ?? account.lastUpdatedAt))")
                 let institution = account.institutionName.isEmpty ? "" : " at \(account.institutionName)"
-                return ("Account \(account.name)\(institution) (\(type), \(code))", parts.joined(separator: "; "))
+                return ("Account \(name(account.name))\(name(institution)) (\(type), \(code))", parts.joined(separator: "; "))
             }
     }
 
@@ -133,13 +136,12 @@ struct FiBotFactSheetBuilder {
         facts += rankings("Top spending categories this month", monthToDate.filter(isSpending)) {
             ($0.category ?? .other).displayName
         }
-        facts += rankings("Top merchants this month", monthToDate.filter(isSpending)) {
-            $0.normalizedMerchantName ?? $0.merchantName
-        }
+        facts += rankings("Top merchants this month", monthToDate.filter(isSpending), key: merchant)
+        facts += categoryBreakdowns(monthToDate.filter(isSpending))
         if let largest = monthToDate.filter(isSpending).max(by: { abs($0.originalAmount) < abs($1.originalAmount) }) {
             facts.append((
                 "Largest purchase this month",
-                "\(largest.merchantName), \(money(abs(largest.originalAmount), largest.originalCurrencyRawValue)) on \(day(largest.date))"
+                "\(name(largest.merchantName)), \(money(abs(largest.originalAmount), largest.originalCurrencyRawValue)) on \(day(largest.date))"
             ))
         }
         return facts
@@ -172,6 +174,32 @@ struct FiBotFactSheetBuilder {
         }
     }
 
+    /// For each top category, the merchants the money went to, so FiBot
+    /// can say what a category's total was actually spent on.
+    private func categoryBreakdowns(_ transactions: [Transaction]) -> [(String, String)] {
+        let byCurrency = Dictionary(grouping: transactions, by: \.originalCurrencyRawValue)
+        return byCurrency.keys.sorted().flatMap { code -> [(String, String)] in
+            Dictionary(grouping: byCurrency[code] ?? []) { ($0.category ?? .other).displayName }
+                .map { (category: $0.key, rows: $0.value, total: $0.value.reduce(0) { $0 + abs($1.originalAmount) }) }
+                .sorted { $0.total > $1.total }
+                .prefix(Self.rankingLimit)
+                .map { group in
+                    let merchants = Dictionary(grouping: group.rows, by: merchant)
+                        .mapValues { $0.reduce(0) { $0 + abs($1.originalAmount) } }
+                        .sorted { $0.value > $1.value }
+                    var parts = merchants.prefix(Self.merchantsPerCategory).map { "\($0.key) \(money($0.value, code))" }
+                    let unlisted = merchants.count - parts.count
+                    if unlisted > 0 { parts.append("and \(unlisted) more") }
+                    return ("\(group.category) purchases this month in \(code), by merchant", parts.joined(separator: "; "))
+                }
+        }
+    }
+
+    /// The merchant a transaction is grouped and shown under.
+    private func merchant(_ transaction: Transaction) -> String {
+        name(transaction.normalizedMerchantName ?? transaction.merchantName)
+    }
+
     /// Mirrors ``SpendingTrendComputer``: anything that is not income
     /// or a transfer is spending, whatever its sign.
     private func isSpending(_ transaction: Transaction) -> Bool {
@@ -200,7 +228,7 @@ struct FiBotFactSheetBuilder {
             .map { subscription in
                 let frequency = subscription.frequency?.displayName.lowercased() ?? "monthly"
                 return (
-                    "Subscription \(subscription.serviceName)",
+                    "Subscription \(name(subscription.serviceName))",
                     "\(money(subscription.amount, subscription.currencyCodeRawValue)) \(frequency), renews \(day(subscription.nextRenewalDate))"
                 )
             }
@@ -212,13 +240,19 @@ struct FiBotFactSheetBuilder {
             let code = budget.currencyCodeRawValue
             let period = budget.period?.rawValue ?? "monthly"
             return (
-                "Budget \(budget.name) (\(period))",
+                "Budget \(name(budget.name)) (\(period))",
                 "spent \(money(budget.spentAmount, code)) of \(money(budget.limitAmount, code)); \(money(budget.remainingAmount, code)) left"
             )
         }
     }
 
     // MARK: - Formatting
+
+    /// A name written by a bank, merchant or the person, with any long
+    /// identifying number masked before the model sees it.
+    private func name(_ text: String) -> String {
+        FiBotSensitiveTextRedactor.redactingName(text)
+    }
 
     /// Sums amounts per currency code, sorted by code.
     private func totals(_ amounts: [(String, Double)]) -> [(String, Double)] {

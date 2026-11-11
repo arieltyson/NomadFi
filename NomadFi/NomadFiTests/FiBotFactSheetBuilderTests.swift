@@ -82,4 +82,35 @@ struct FiBotFactSheetBuilderTests {
         #expect(statement(sheet, topic: "Subscriptions in CAD, monthly equivalent") == "CAD 22.00")
         #expect(statement(sheet, topic: "Subscription Music") == "CAD 12.00 monthly, renews 2026-11-20")
     }
+
+    @Test func topCategoriesAreBrokenDownByMerchant() {
+        let transactions = [
+            Transaction(merchantName: "Amazon", originalAmount: -200, originalCurrency: .cad, date: date("2026-11-03"), category: .shopping),
+            Transaction(merchantName: "Amazon", originalAmount: -50, originalCurrency: .cad, date: date("2026-11-04"), category: .shopping),
+            Transaction(merchantName: "Best Buy", originalAmount: -126.29, originalCurrency: .cad, date: date("2026-11-05"), category: .shopping),
+            Transaction(merchantName: "Cafe", originalAmount: -20, originalCurrency: .cad, date: date("2026-11-06"), category: .food),
+        ]
+        let sheet = sheet(transactions: transactions)
+        #expect(statement(sheet, topic: "Shopping purchases this month in CAD") == "Amazon CAD 250.00; Best Buy CAD 126.29")
+    }
+
+    @Test func longNumbersInNamesAreMaskedBeforeTheModelSeesThem() {
+        let account = Account(name: "ARIEL TYSON -31005", accountType: .creditCard, currencyCode: .cad, balance: 0)
+        let transactions = [
+            Transaction(merchantName: "UBER 8005928996", originalAmount: -30, originalCurrency: .cad, date: date("2026-11-03"), category: .transport),
+        ]
+        let text = sheet(accounts: [account], transactions: transactions).promptText
+        #expect(text.contains("ARIEL TYSON -••1005"))
+        #expect(!text.contains("31005"))
+        #expect(text.contains("UBER ••8996"))
+        #expect(!text.contains("8005928996"))
+    }
+
+    @Test func cardLengthNumbersAreMaskedInAnswersButMoneyIsNot() {
+        // Built at runtime so no card-shaped number sits in the repository.
+        let cardShaped = Array(repeating: "1234", count: 4).joined(separator: " ")
+        #expect(FiBotSensitiveTextRedactor.redactingAnswer("It is \(cardShaped).") == "It is ••1234.")
+        let money = "CAD 1240000.50 across 31 transactions from 2026-11-01 to 2026-11-10."
+        #expect(FiBotSensitiveTextRedactor.redactingAnswer(money) == money)
+    }
 }
