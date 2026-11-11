@@ -235,9 +235,6 @@
     "%lld documents" : {
 
     },
-    "%lld imported transactions will be mapped to hosted updates. Notes and receipts are preserved; provider removals use the transaction archive." : {
-
-    },
     "%lld of %lld correct · %@" : {
       "localizations" : {
         "en" : {
@@ -277,6 +274,9 @@
           }
         }
       }
+    },
+    "%lld transactions will switch to server updates. Notes and receipts are kept." : {
+
     },
     "%lld%% or more passes. Revisit the lesson above and retake any time." : {
 
@@ -387,7 +387,7 @@
     "Add Account" : {
 
     },
-    "Add accounts from Settings > Accounts to see your global net worth." : {
+    "Add an account or connect your bank in Settings to see your net worth." : {
 
     },
     "Add before saving" : {
@@ -412,9 +412,6 @@
 
     },
     "Add Transaction" : {
-
-    },
-    "Add transactions to auto-detect subscriptions, or add them manually." : {
 
     },
     "Add your accounts" : {
@@ -453,9 +450,6 @@
     "All cash accounts and access limits are included" : {
 
     },
-    "All data stays on-device" : {
-
-    },
     "All debt payments are scheduled" : {
 
     },
@@ -472,9 +466,6 @@
 
     },
     "Allow cash at 2%" : {
-
-    },
-    "Allow hosted bank synchronization" : {
 
     },
     "Allow Location Access" : {
@@ -586,16 +577,25 @@
     "Balanced" : {
 
     },
+    "Bank" : {
+
+    },
     "Bank balances are reference information. Enter only cash you can actually access, after holds and shared ownership limits. Credit limits and investments are excluded." : {
 
     },
     "Bank changes invalidate manually confirmed cash until you review and upload the plan again. Alerts appear here when the app connects; remote push delivery is not enabled." : {
 
     },
-    "Bank data fetched" : {
+    "Bank Connections" : {
+
+    },
+    "Bank data is up to date." : {
 
     },
     "Bank of Canada exchange rates" : {
+
+    },
+    "Bank updates" : {
 
     },
     "Banks" : {
@@ -793,7 +793,7 @@
     "Confirmation lasts 30 days. Accessible balances must be confirmed within two days. Update your plan whenever pay, spending, bills or employment changes." : {
 
     },
-    "Connect another bank" : {
+    "Connect a Bank" : {
 
     },
     "Connect to Location, Securely." : {
@@ -1027,7 +1027,10 @@
     "Delete your FiBot plan and all saved checks?" : {
 
     },
-    "Deleted data may remain in restricted backups for up to %lld days." : {
+    "Deleted data can stay in restricted backups for up to %lld days." : {
+
+    },
+    "Deleted data isn't kept in backups." : {
 
     },
     "Describe a Decision" : {
@@ -1063,7 +1066,13 @@
     "Disconnect" : {
 
     },
-    "Disconnect this bank?" : {
+    "Disconnect %@?" : {
+
+    },
+    "Disconnected" : {
+
+    },
+    "Disconnecting" : {
 
     },
     "Dismiss" : {
@@ -1114,7 +1123,7 @@
     "Double tap to select" : {
 
     },
-    "Download latest updates" : {
+    "Downloading updates…" : {
 
     },
     "Duplicate" : {
@@ -1314,10 +1323,16 @@
     "Financial Setup" : {
 
     },
+    "Finish Connecting" : {
+
+    },
     "Finish Setup" : {
 
     },
     "Finishes setup and lets you enable location later." : {
+
+    },
+    "Finishes setup. You can add accounts later in Settings." : {
 
     },
     "Finishing the link" : {
@@ -1417,6 +1432,9 @@
     "Hides the draft from the main list. You can restore it later." : {
 
     },
+    "Hold to Begin" : {
+
+    },
     "Home currency" : {
 
     },
@@ -1426,25 +1444,10 @@
     "Home jurisdiction." : {
 
     },
-    "Hosted bank connections" : {
-
-    },
-    "Hosted Connections" : {
-
-    },
-    "Hosted data" : {
-
-    },
     "Hosted FiBot checks" : {
 
     },
     "Hosted monitoring" : {
-
-    },
-    "Hosted privacy policy" : {
-
-    },
-    "Hosting region: %@" : {
 
     },
     "How much cash do I have?" : {
@@ -1459,7 +1462,7 @@
     "I consent to uploading this plan for monitoring" : {
 
     },
-    "I verified a current private device backup" : {
+    "I have a current backup of this iPhone" : {
 
     },
     "I verified these accessible funds and reserve" : {
@@ -1659,7 +1662,7 @@
         }
       }
     },
-    "Manage access" : {
+    "Manage Access" : {
 
     },
     "Manage Tiingo Token" : {
@@ -1698,10 +1701,10 @@
     "Matches" : {
 
     },
-    "Matches use unchanged bank-provider IDs. Newly issued IDs require a separate reviewed map; account names and balances are not enough." : {
+    "Matches use the bank's unchanged account IDs; names and balances aren't enough." : {
 
     },
-    "Matching existing records" : {
+    "Matching accounts" : {
 
     },
     "Maximum now within this plan" : {
@@ -1764,6 +1767,9 @@
     "Needs Review" : {
 
     },
+    "Needs sign-in" : {
+
+    },
     "Net amount after withholding" : {
 
     },
@@ -1777,6 +1783,9 @@
 
     },
     "New Conversation" : {
+
+    },
+    "New updates stop and bank access is revoked. History already on this iPhone stays." : {
 
     },
     "Next renewal" : {
@@ -1857,7 +1866,16 @@
     "NomadFi already shows a credit-card badge next to this account, so the suffix is redundant." : {
 
     },
+    "NomadFi brings the money you keep in different countries into one place, so you can spot hidden fees, stay ready for tax time and pay with the right card wherever you are." : {
+
+    },
     "NomadFi compares subscription prices across your jurisdictions. Keep your cheapest subscription active and save money every month." : {
+
+    },
+    "NomadFi couldn't reach its server. Try again in a moment." : {
+
+    },
+    "NomadFi couldn't save to the Keychain. Unlock your iPhone and try again." : {
 
     },
     "NomadFi currently supports %lld jurisdictions. Your active set already covers them." : {
@@ -1878,9 +1896,6 @@
     "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
 
     },
-    "NomadFi protects your financial privacy on-device, helps international students recover hidden FX fees, and makes cross-border money visible" : {
-
-    },
     "NomadFi reads your receipts on device, suggests a category, and waits for you to confirm." : {
 
     },
@@ -1893,16 +1908,10 @@
     "NomadFi stores this draft only on this iPhone. Deleting removes the captured text, kind, and any amount you entered. This cannot be undone." : {
 
     },
-    "NomadFi stores your authorized balances and transactions on its hosted service to sync while this iPhone is closed. Plaid handles your bank login. Review the privacy policy before enabling access." : {
-
-    },
     "NomadFi surfaces transactions that may be tax-relevant. Review before including them in your tax records. NomadFi does not provide tax advice." : {
 
     },
     "NomadFi treats rewards as verified only when an official source is attached and has been verified recently. Reddit, YouTube, and affiliate blogs are not acceptable sources." : {
-
-    },
-    "NomadFi unifies your international finances into a single dashboard — eliminating hidden FX fees, automating tax compliance, and optimizing every cross-border payment." : {
 
     },
     "NomadFi uses rewards in the purchase engine only when they're verified against an official issuer source and still inside the freshness window." : {
@@ -1912,6 +1921,9 @@
 
     },
     "NomadFi will surface tax-relevant transactions here when it sees them. Imports and manual entries both feed this queue." : {
+
+    },
+    "NomadFi's server is unavailable. Bank data on this iPhone is still available." : {
 
     },
     "None" : {
@@ -1960,6 +1972,12 @@
 
     },
     "OK" : {
+
+    },
+    "Older Bank Records" : {
+
+    },
+    "Older bank records on this iPhone need to be reviewed before new updates can be saved." : {
 
     },
     "On" : {
@@ -2091,6 +2109,9 @@
     "Optional. Your account name is only changed when you tap this row." : {
 
     },
+    "Options for %@" : {
+
+    },
     "Organize your records" : {
 
     },
@@ -2199,6 +2220,9 @@
     "Privacy Policy" : {
 
     },
+    "Private by design" : {
+
+    },
     "Private to this iPhone" : {
 
     },
@@ -2305,6 +2329,15 @@
     "Recommend a Card" : {
 
     },
+    "Reconnect" : {
+
+    },
+    "Records from NomadFi's earlier bank connection need a review before new updates can be saved." : {
+
+    },
+    "Recurring charges in your transactions appear here. To add one yourself, tap +." : {
+
+    },
     "Refresh alerts" : {
 
     },
@@ -2386,9 +2419,6 @@
     "Retry" : {
 
     },
-    "Retry finishing connection" : {
-
-    },
     "Retry finishing link" : {
 
     },
@@ -2401,10 +2431,7 @@
     "Review Credit Timing" : {
 
     },
-    "Review migration" : {
-
-    },
-    "Review migration of existing bank records" : {
+    "Review Older Bank Records" : {
 
     },
     "Review suggestion" : {
@@ -2546,7 +2573,7 @@
     "Saves this transaction to your ledger." : {
 
     },
-    "Saves your accounts and opens the dashboard" : {
+    "Saves your accounts and opens the Dashboard." : {
 
     },
     "Saves your changes to this account and returns to Settings." : {
@@ -2673,7 +2700,10 @@
     "Shows the figures this answer used" : {
 
     },
-    "Sign out" : {
+    "Sign in with Apple again to continue." : {
+
+    },
+    "Sign Out" : {
 
     },
     "Skipped" : {
@@ -2730,14 +2760,24 @@
     "Statement Calendar" : {
 
     },
+    "Status unavailable" : {
+
+    },
     "Stop" : {
 
     },
     "Stop monitoring and delete hosted FiBot data" : {
 
     },
-    "Stops new syncs and revokes bank access. Downloaded history and your notes remain on this iPhone." : {
-
+    "Stored in %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stored in %1$@. %2$@"
+          }
+        }
+      }
     },
     "Stress scenario" : {
 
@@ -2766,7 +2806,13 @@
     "Supports .csv and .tsv exports from Chase-like, CIBC-like, Amex Canada-like, and Wise-like statements, plus a generic fallback. NomadFi never claims official bank integration." : {
 
     },
+    "Switch to Server Updates" : {
+
+    },
     "Sync" : {
+
+    },
+    "Sync bank data through NomadFi's server" : {
 
     },
     "Sync Now" : {
@@ -2833,7 +2879,13 @@
     "The confirmation stamp is informational only. NomadFi does not contact your issuer." : {
 
     },
+    "The connection is still finishing. Try again shortly." : {
+
+    },
     "The currency code (e.g., USD, CAD, TTD)" : {
+
+    },
+    "The download was interrupted. Try again." : {
 
     },
     "The expense amount" : {
@@ -2860,7 +2912,7 @@
     "The published exchange-rate history covers Canadian and US dollars. Add a jurisdiction that uses one of them in Settings." : {
 
     },
-    "The server checks for bank updates independently. Opening NomadFi downloads completed updates. Bank data can be delayed; signing out keeps this iPhone's local records." : {
+    "The server sent something unexpected. Try again." : {
 
     },
     "The statement calendar comes from the linked card's Settings entry — there is no separate date editor here." : {
@@ -2878,6 +2930,12 @@
     "This answer states no figures to check." : {
 
     },
+    "This Apple Account isn't on NomadFi's pilot yet." : {
+
+    },
+    "this bank" : {
+
+    },
     "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
 
     },
@@ -2890,6 +2948,12 @@
           }
         }
       }
+    },
+    "This connection couldn't be finished automatically. Connect the bank again." : {
+
+    },
+    "This iPhone's bank data belongs to a different account. Sign in with that account." : {
+
     },
     "This is a historical check. Reevaluate the current plan before reserving money." : {
 
@@ -2913,9 +2977,6 @@
 
     },
     "This saved decision could not be read. Reevaluate your plan." : {
-
-    },
-    "This switches local record identities and disables the old local Item handle. It does not revoke the original bank connection. If a rollback is needed, restore the verified backup before re-enabling the local broker." : {
 
     },
     "This transaction may be tax-relevant. Review before including it in your tax records." : {
@@ -2960,6 +3021,9 @@
     "To recommend your best card where you are, NomadFi needs location permission." : {
 
     },
+    "Too many requests. Try again in a minute." : {
+
+    },
     "Tools" : {
 
     },
@@ -2992,6 +3056,9 @@
 
     },
     "Transactions" : {
+
+    },
+    "Transactions from your banks appear here. To add one yourself, tap +." : {
 
     },
     "Transit" : {
@@ -3033,6 +3100,12 @@
     "Unusual jump" : {
 
     },
+    "Up to date" : {
+
+    },
+    "Update" : {
+
+    },
     "Update accessible cash" : {
 
     },
@@ -3040,9 +3113,6 @@
 
     },
     "Updated %@" : {
-
-    },
-    "Updating connections" : {
 
     },
     "Upload reviewed plan and settings" : {
@@ -3058,9 +3128,6 @@
 
     },
     "Use a checking, accessible savings or cash account. Do not include overdraft, credit limits, investments or locked deposits." : {
-
-    },
-    "Use hosted updates for these records" : {
 
     },
     "Use saved snapshot" : {
@@ -3196,9 +3263,6 @@
     "You asked: %@" : {
 
     },
-    "You can add accounts later from the dashboard" : {
-
-    },
     "You can change the suggested category before confirming. NomadFi does not decide deductibility for you." : {
 
     },
@@ -3239,6 +3303,9 @@
     "You saved %@" : {
 
     },
+    "You're offline. Bank data on this iPhone is still available." : {
+
+    },
     "You've exceeded your %@budget by %@. Consider reviewing your spending." : {
       "localizations" : {
         "en" : {
@@ -3249,10 +3316,10 @@
         }
       }
     },
-    "Your checks will appear here." : {
+    "Your balances and transactions are kept on NomadFi's server so they stay current while your iPhone is closed. Plaid handles your bank sign-in." : {
 
     },
-    "Your cross-border transactions will appear here. Tap + to add one manually." : {
+    "Your checks will appear here." : {
 
     },
     "Your global net worth will be displayed in this currency. You can change it later in Settings." : {
