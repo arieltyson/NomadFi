@@ -77,6 +77,12 @@ actor HostedAPIClient {
         return try await resumeExchange()
     }
 
+    /// Whether a bank link finished in Plaid but was never saved by the
+    /// server, so the person can finish it.
+    func hasPendingExchange() async -> Bool {
+        (try? await credentials.exchange()) != nil
+    }
+
     func resumeExchange() async throws -> UUID {
         guard let pending = try await credentials.exchange(), let session = try await session(),
               pending.endpoint == endpoint, pending.userID == session.tokens.userID else {
@@ -195,6 +201,7 @@ actor HostedAPIClient {
             let code = (try? JSONDecoder().decode(ErrorResponse.self, from: result))?.error
             if response.statusCode == 401 { throw HostedServiceError.signInRequired }
             if response.statusCode == 410 { throw HostedServiceError.snapshotExpired }
+            if response.statusCode == 429 { throw HostedServiceError.rateLimited }
             if code == "PILOT_ACCESS_REQUIRED" { throw HostedServiceError.pilotAccessRequired }
             if code == "LINK_RECOVERY_REQUIRED" { throw HostedServiceError.recoveryRequired }
             if code == "EXCHANGE_IN_PROGRESS" { throw HostedServiceError.requestInProgress }

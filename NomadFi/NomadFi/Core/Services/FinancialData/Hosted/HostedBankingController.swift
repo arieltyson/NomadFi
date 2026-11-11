@@ -24,6 +24,13 @@ final class HostedBankingController {
     /// The server never reveals it; it comes from this device's own
     /// Apple credential.
     private(set) var refusedAppleSubject: String?
+    /// The state of downloading bank updates, shown at the top of Bank Connections.
+    private(set) var syncState: HostedSyncState = .idle
+    /// A bank link finished in Plaid but the server never saved it.
+    private(set) var hasPendingExchange = false
+    /// Bank records from the retired on-device connection are still stored,
+    /// which blocks hosted updates until they are reviewed or removed.
+    private(set) var hasLegacyRecords = false
 
     init(client: HostedAPIClient, redirectURI: URL, presenter: any PlaidLinkPresenting,
          privacyPolicyURL: URL? = nil, hostingRegion: String = "Not configured", backupRetentionDays: Int = 0) {
@@ -69,6 +76,7 @@ final class HostedBankingController {
                 }
                 userID = session.tokens.userID
                 connections = try await client.connections()
+                hasPendingExchange = await client.hasPendingExchange()
             } else {
                 userID = nil
                 challenge = try await client.challenge()
@@ -147,12 +155,16 @@ final class HostedBankingController {
                         else if let attemptID = pending.link.attemptID { _ = try await self.client.exchange(attemptID: attemptID, publicToken: token) }
                         else { throw HostedServiceError.invalidResponse }
                         KeychainService.delete(key: .hostedPendingLink)
+                        self.hasPendingExchange = false
                         self.connections = try await self.client.connections()
-                        self.message = "Connection saved. Bank history may take a few minutes to arrive."
+                        self.message = "Connected. Bank history can take a few minutes to arrive."
                     case .cancelled: KeychainService.delete(key: .hostedPendingLink)
-                    case .failed: self.message = "The bank connection needs another attempt. Your existing connections are still saved."
+                    case .failed: self.message = "The bank connection didn't finish. Your other banks are unaffected."
                     }
-                } catch { self.report(error) }
+                } catch {
+                    self.hasPendingExchange = await self.client.hasPendingExchange()
+                    self.report(error)
+                }
             }
         }
     }
@@ -161,19 +173,39 @@ final class HostedBankingController {
         await work {
             _ = try await self.client.resumeExchange()
             KeychainService.delete(key: .hostedPendingLink)
+            self.hasPendingExchange = false
             self.connections = try await self.client.connections()
-            self.message = "Connection saved."
+            self.message = nil
         }
     }
 
+    /// Downloads completed bank updates and saves them on this iPhone.
+    ///
+    /// Progress and the outcome go to ``syncState`` rather than the
+    /// general message, so the result appears on the line the person
+    /// is looking at.
     func sync(container: ModelContainer) async {
-        await work {
+        guard userID != nil, !syncState.isSyncing else { return }
+        refreshLocalState(container: container)
+        syncState = .syncing
+        do {
             let profiles = try container.mainContext.fetch(FetchDescriptor<JurisdictionProfile>())
             let currency = profiles.first(where: \.isHome)?.currencyCode ?? .usd
-            try await self.syncCoordinator.sync(client: self.client, container: container, homeCurrency: currency)
-            self.connections = try await self.client.connections()
-            self.message = "Downloaded bank updates are saved on this iPhone."
+            try await syncCoordinator.sync(client: client, container: container, homeCurrency: currency)
+            connections = try await client.connections()
+            syncState = .upToDate(.now)
+        } catch {
+            if case .signInRequired = error as? HostedServiceError { requireSignIn() }
+            syncState = .failed(HostedErrorMessage.text(for: error))
         }
+        refreshLocalState(container: container)
+    }
+
+    /// Re-reads what is stored on this iPhone that changes which actions apply.
+    func refreshLocalState(container: ModelContainer) {
+        let legacyKind: String? = HostedLegacyMigration.legacyKind
+        let descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.providerLinkKindRawValue == legacyKind })
+        hasLegacyRecords = ((try? container.mainContext.fetchCount(descriptor)) ?? 0) > 0
     }
 
     func prepareLegacyMigration(container: ModelContainer) async {
@@ -233,7 +265,8 @@ final class HostedBankingController {
             self.userID = nil
             self.connections = []
             self.challenge = try await self.client.challenge()
-            self.message = "Signed out. Downloaded records remain in your protected local vault."
+            self.syncState = .idle
+            self.message = nil
         }
     }
 
@@ -252,22 +285,14 @@ final class HostedBankingController {
         do { try await action() } catch { report(error) }
     }
     private func report(_ error: any Error) {
-        switch error as? HostedServiceError {
-        case .migrationRequired:
-            message = "Your existing bank history needs a verified migration before hosted records can be imported."
-        case .ownerChanged:
-            message = "This local vault belongs to a different hosted account. Sign in with its original account."
-        case .signInRequired:
-            userID = nil
-            message = "Sign in with Apple again to continue."
-            Task { challenge = try? await client.challenge() }
-        case .recoveryRequired:
-            message = "The connection could not be recovered automatically. Its Plaid authorization must be checked before linking again."
-        case .requestInProgress: message = "The connection is still finishing. Retry shortly."
-        case .pilotAccessRequired:
-            message = "This Apple Account isn't on NomadFi's hosted pilot yet."
-        default: message = "The hosted service is unavailable. Saved local records are still available."
-        }
+        if case .signInRequired = error as? HostedServiceError { requireSignIn() }
+        message = HostedErrorMessage.text(for: error)
+    }
+
+    private func requireSignIn() {
+        userID = nil
+        connections = []
+        Task { challenge = try? await client.challenge() }
     }
     private struct PendingLink: Codable {
         let ownerID: UUID

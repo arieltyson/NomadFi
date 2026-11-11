@@ -15,6 +15,8 @@ enum HostedServiceError: Error, Equatable, Sendable {
     /// Apple sign-in succeeded but this Apple Account is not on the
     /// owner-only pilot allowlist.
     case pilotAccessRequired
+    /// The server asked the app to slow down (HTTP 429).
+    case rateLimited
 }
 
 struct HostedChallenge: Decodable, Sendable {
@@ -135,4 +137,14 @@ struct HostedSnapshotPage: Decodable, Sendable {
     let hasMore: Bool
     let after: String
     let checkpoint: HostedCheckpoint
+}
+
+extension HostedConnection {
+    /// When the server last fetched this bank's data, if it has.
+    var lastSyncedDate: Date? {
+        lastSyncedAt.flatMap {
+            (try? Date($0, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)))
+                ?? (try? Date($0, strategy: Date.ISO8601FormatStyle()))
+        }
+    }
 }

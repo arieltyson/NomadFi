@@ -37,7 +37,7 @@ struct FinancialConnectionsSettingsView: View {
         List {
             if let hostedBanking {
                 Section {
-                    NavigationLink("Hosted bank connections") { HostedConnectionsView(banking: hostedBanking) }
+                    NavigationLink("Bank Connections") { HostedConnectionsView(banking: hostedBanking) }
                 }
             }
             providersSection(viewModel: viewModel)
