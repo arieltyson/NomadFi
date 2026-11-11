@@ -37,6 +37,11 @@ struct SettingsView: View {
     @State private var notificationManager = NotificationManager()
     @State private var openSetupItem: FinancialSetupItem?
 
+    /// Set when onboarding finishes with "connect a bank"; Financial
+    /// Connections clears it after opening Bank Connections.
+    @AppStorage(BankConnectionsRoute.storageKey, store: AppRoutingDefaults.shared)
+    private var opensBankConnections = false
+
     private static let logger = Logger(
         subsystem: "com.nomadfi.app",
         category: "SettingsView"
@@ -75,6 +80,9 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .onChange(of: opensBankConnections, initial: true) { _, opens in
+            if opens { openSetupItem = .financialConnections }
+        }
         .navigationDestination(item: $openSetupItem) { item in
             FinancialSetupDestination(item: item)
         }

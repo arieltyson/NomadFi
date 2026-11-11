@@ -24,10 +24,31 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
-        app.buttons["Hold to Begin"].press(forDuration: 1.5)
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 8))
+        app.buttons["Skip"].tap()
 
         XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
+    }
+
+    /// The accounts step leads with connecting a bank, offers manual entry,
+    /// and can always be skipped straight to the Dashboard.
+    @MainActor
+    func testAccountsStepOffersConnectManualAndSkip() {
+        let app = makeApp(hasCompletedOnboarding: false)
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Get Started"].waitForExistence(timeout: 8))
+        app.buttons["Get Started"].tap()
+        tapButton(containing: "Canada", in: app)
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
+        app.buttons["Continue"].tap()
+
+        XCTAssertTrue(app.buttons["Hold to Connect a Bank"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["Add Manually"].exists)
+        XCTAssertTrue(app.buttons["Skip"].exists)
+
+        app.buttons["Skip"].tap()
+        XCTAssertTrue(app.staticTexts["No Accounts Yet"].waitForExistence(timeout: 8))
     }
 
     @MainActor
@@ -43,14 +64,14 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 8))
         app.navigationBars.buttons.firstMatch.tap()
 
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
-        app.buttons["Hold to Begin"].press(forDuration: 1.5)
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 8))
+        app.buttons["Skip"].tap()
 
         XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
     }

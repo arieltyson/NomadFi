@@ -28,6 +28,10 @@ struct FinancialConnectionsSettingsView: View {
     private var jurisdictions: [JurisdictionProfile]
 
     @State private var viewModel: FinancialConnectionsViewModel
+    @State private var isShowingBankConnections = false
+
+    @AppStorage(BankConnectionsRoute.storageKey, store: AppRoutingDefaults.shared)
+    private var opensBankConnections = false
 
     init(viewModel: FinancialConnectionsViewModel = FinancialConnectionsViewModel()) {
         _viewModel = State(initialValue: viewModel)
@@ -52,6 +56,14 @@ struct FinancialConnectionsSettingsView: View {
 #endif
         }
         .navigationTitle("Financial Connections")
+        .navigationDestination(isPresented: $isShowingBankConnections) {
+            if let hostedBanking { HostedConnectionsView(banking: hostedBanking) }
+        }
+        .onChange(of: opensBankConnections, initial: true) { _, opens in
+            guard opens else { return }
+            opensBankConnections = false
+            if hostedBanking != nil { isShowingBankConnections = true }
+        }
         .task {
             await viewModel.refresh()
         }

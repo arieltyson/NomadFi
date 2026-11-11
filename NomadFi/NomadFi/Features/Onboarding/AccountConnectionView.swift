@@ -14,8 +14,12 @@ struct AccountConnectionView: View {
     @Bindable var viewModel: OnboardingViewModel
     let onComplete: () -> Void
 
+    @Environment(\.hostedBanking) private var hostedBanking
     @State private var isShowingForm = false
     @State private var isShowingLocationPermissionPriming = false
+
+    /// Whether this build can link banks through Bank Connections.
+    private var canConnectBank: Bool { hostedBanking != nil }
 
     var body: some View {
         // Content scrolls and the two actions stay pinned in a bar with the
@@ -27,6 +31,20 @@ struct AccountConnectionView: View {
                     .padding(.horizontal, SpacingTokens.large)
                     .padding(.bottom, SpacingTokens.medium)
             }
+        .toolbar {
+            // Skipping is always one tap away, in the place iOS setup
+            // flows put it.
+            if canConnectBank {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(viewModel.addedAccounts.isEmpty ? "Skip" : "Done", action: handleFinishSetup)
+                        .accessibilityHint(
+                            viewModel.addedAccounts.isEmpty
+                                ? "Finishes setup without accounts. You can connect a bank later in Settings."
+                                : "Saves your accounts and opens the Dashboard."
+                        )
+                }
+            }
+        }
         .sheet(isPresented: $isShowingForm) {
             AddAccountSheet(viewModel: viewModel, isPresented: $isShowingForm)
         }
@@ -319,12 +337,14 @@ private extension AccountConnectionView {
 
     var header: some View {
         VStack(spacing: SpacingTokens.xSmall) {
-            Text("Add your accounts")
+            Text(canConnectBank ? "Connect your accounts" : "Add your accounts")
                 .font(TypographyTokens.amountMedium)
                 .bold()
                 .multilineTextAlignment(.center)
 
-            Text("Add the accounts and cards you use in each country. Balances are optional.")
+            Text(canConnectBank
+                 ? "Connect your bank to keep balances and transactions up to date, or add accounts yourself."
+                 : "Add the accounts and cards you use in each country. Balances are optional.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -345,7 +365,9 @@ private extension AccountConnectionView {
                         ContentUnavailableView {
                             Label("No Accounts Yet", systemImage: "creditcard")
                         } description: {
-                            Text("Add an account now, or hold to begin and connect your bank later in Settings.")
+                            Text(canConnectBank
+                                 ? "Connect a bank or add an account yourself. You can also skip and do it later in Settings."
+                                 : "Add an account now, or hold to begin and add them later in Settings.")
                         }
                     }
                     .padding(SpacingTokens.large)
@@ -369,22 +391,38 @@ private extension AccountConnectionView {
     var footer: some View {
         VStack(spacing: SpacingTokens.small) {
             NomadFiActionButton(
-                title: "Add Account",
+                title: canConnectBank ? "Add Manually" : "Add Account",
                 systemImage: "plus",
                 style: .secondary,
                 controlSize: .large,
-                accessibilityHint: "Opens a form to add a bank account or card.",
+                accessibilityHint: "Opens a form to add a bank account or card yourself.",
                 action: { isShowingForm = true }
             )
 
-            HoldToBeginButton(
-                title: "Hold to Begin",
-                accessibilityHint: viewModel.addedAccounts.isEmpty
-                    ? "Finishes setup. You can add accounts later in Settings."
-                    : "Saves your accounts and opens the Dashboard.",
-                action: handleFinishSetup
-            )
+            if canConnectBank {
+                HoldToBeginButton(
+                    title: "Hold to Connect a Bank",
+                    accessibilityHint: "Finishes setup and opens Bank Connections, where you choose your bank.",
+                    action: connectBank
+                )
+            } else {
+                HoldToBeginButton(
+                    title: "Hold to Begin",
+                    accessibilityHint: viewModel.addedAccounts.isEmpty
+                        ? "Finishes setup. You can add accounts later in Settings."
+                        : "Saves your accounts and opens the Dashboard.",
+                    action: handleFinishSetup
+                )
+            }
         }
+    }
+
+    /// Finishes setup, then lands on Bank Connections. Linking waits until
+    /// setup is saved, so new bank data arrives with the home currency and
+    /// countries it needs already in place.
+    func connectBank() {
+        BankConnectionsRoute.request()
+        handleFinishSetup()
     }
 
     var shouldBypassLocationPriming: Bool {
