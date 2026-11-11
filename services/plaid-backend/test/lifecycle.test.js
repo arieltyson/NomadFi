@@ -96,6 +96,18 @@ test('bootstrap snapshot stays frozen while later generations publish', async ()
   await assert.rejects(delivery.page(userID, snapshot.snapshot_id), { code: 'SNAPSHOT_EXPIRED' });
 });
 
+test('a new snapshot supersedes unfinished ones instead of locking the device out', async () => {
+  const first = await connect(); await publish(first.connection_id, '100');
+  const abandoned = [];
+  for (let attempt = 0; attempt < 4; attempt++) abandoned.push(await delivery.begin(userID));
+  const latest = await delivery.begin(userID);
+  for (const snapshot of abandoned) {
+    await assert.rejects(delivery.page(userID, snapshot.snapshot_id), { code: 'SNAPSHOT_EXPIRED' });
+  }
+  assert.equal((await delivery.page(userID, latest.snapshot_id)).records[0].payload.current, '100');
+  assert.equal((await pool.query('SELECT count(*) FROM nomadfi.snapshots WHERE user_id = $1', [userID])).rows[0].count, '1');
+});
+
 test('disconnect stops work immediately and only drops credentials after upstream revocation', async () => {
   const first = await connect();
   await assert.rejects(revocation.disconnect(otherID, first.connection_id), { code: 'NOT_FOUND' });

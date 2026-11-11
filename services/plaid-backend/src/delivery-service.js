@@ -9,8 +9,10 @@ export class DeliveryService {
       const user = (await client.query(`SELECT delivery_revision FROM nomadfi.users
         WHERE id = $1 AND state = 'active' FOR UPDATE`, [userID])).rows[0];
       if (!user) throw new ServiceError('NOT_FOUND', 404);
-      const count = (await client.query('SELECT count(*) FROM nomadfi.snapshots WHERE user_id = $1 AND expires_at > clock_timestamp()', [userID])).rows[0].count;
-      if (Number(count) >= 3) throw new ServiceError('SNAPSHOT_LIMIT', 429);
+      // A device only ever needs the newest snapshot, so starting one
+      // supersedes the user's earlier ones. Refusing instead locked out a
+      // device whose unfinished downloads had used the quota until they expired.
+      await client.query('DELETE FROM nomadfi.snapshots WHERE user_id = $1', [userID]);
       const id = randomUUID();
       await client.query('INSERT INTO nomadfi.snapshots (id, user_id, revision) VALUES ($1, $2, $3)', [id, userID, user.delivery_revision]);
       await client.query(`INSERT INTO nomadfi.snapshot_records

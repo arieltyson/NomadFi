@@ -86,7 +86,9 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
           await rate(userID, 'manual-sync', 5); await store.requestSync(userID, id); send(202, { status: 'queued' }); return;
         }
       }
-      if (method === 'POST' && path === '/snapshots') { send(201, await delivery.begin(userID)); return; }
+      if (method === 'POST' && path === '/snapshots') {
+        await rate(userID, 'snapshot', 6); send(201, await delivery.begin(userID)); return;
+      }
       const snapshot = /^\/snapshots\/([^/]+)$/.exec(path);
       if (method === 'GET' && snapshot) {
         send(200, await delivery.page(userID, snapshot[1], url.searchParams.get('after') ?? '0')); return;
