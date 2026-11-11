@@ -22,17 +22,10 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>NomadFi uses Face ID to unlock the app so only you can see your financial data.</string>
 	<key>NSFinancialDataUsageDescription</key>
 	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>NomadFi uses your local network only to reach a test server in development builds. The App Store version never uses it.</string>
 	<key>NomadFiHostedBackendURL</key>
 	<string>$(NOMADFI_HOSTED_BACKEND_URL)</string>
 	<key>NomadFiHostedBackupRetentionDays</key>
