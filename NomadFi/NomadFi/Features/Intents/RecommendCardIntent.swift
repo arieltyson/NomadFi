@@ -34,6 +34,10 @@ struct RecommendCardIntent: AppIntent {
     /// Voice-only recommendation; no app activation.
     static let supportedModes: IntentModes = .background
 
+    /// Financial data never answers, or changes, from a locked iPhone:
+    /// Siri and Shortcuts ask for Face ID, Touch ID or the passcode first.
+    static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
+
     // MARK: - Parameters
 
     @Parameter(
