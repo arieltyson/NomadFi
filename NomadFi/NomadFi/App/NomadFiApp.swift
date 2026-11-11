@@ -5,7 +5,7 @@ import TipKit
 @main
 struct NomadFiApp: App {
 
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage(OnboardingPreferences.completedKey) private var hasCompletedOnboarding = false
     @State private var isBlurred = false
     @State private var appLockManager = AppLockManager()
     @State private var plaidLinkCoordinator = PlaidLinkCoordinator()

@@ -81,7 +81,8 @@ enum DataGovernancePolicy {
     /// Performs a complete, privacy-compliant data wipe.
     ///
     /// Deletes all SwiftData records, Keychain entries, cached receipt
-    /// images, Spotlight index entries, and pending notifications.
+    /// images, Spotlight index entries, pending notifications, the widget
+    /// snapshot and app preferences, and returns the app to onboarding.
     /// After this method returns, no user data remains on the device.
     ///
     /// - Important: This operation is irreversible. The caller is
@@ -89,7 +90,9 @@ enum DataGovernancePolicy {
     @MainActor
     static func deleteAllUserData(
         in modelContext: ModelContext,
-        notificationManager: NotificationManager
+        notificationManager: NotificationManager,
+        preferences: UserDefaults = .standard,
+        sharedDefaults: UserDefaults = AppRoutingDefaults.shared
     ) {
         // 1. Delete all SwiftData records — leaf nodes first to respect
         //    any remaining non-cascade relationships
@@ -125,6 +128,25 @@ enum DataGovernancePolicy {
 
         // 5. Remove pending notifications
         notificationManager.removeAllPendingNotifications()
+
+        // 6. Commit the record deletions now rather than on autosave.
+        do {
+            try modelContext.save()
+        } catch {
+            logger.error("Saving the data wipe failed: \(error.localizedDescription, privacy: .public)")
+        }
+
+        // 7. Clear the App Group the widgets and intents read, so deleted
+        //    balances can't linger on the Home or Lock Screen.
+        sharedDefaults.removePersistentDomain(forName: NomadFiWidgetSharedConstants.appGroupIdentifier)
+        DashboardWidgetSnapshotStore(defaults: sharedDefaults).clearSnapshot()
+
+        // 8. Clear preferences, then mark onboarding unfinished explicitly so
+        //    the app returns to onboarding immediately.
+        if let bundleIdentifier = Bundle.main.bundleIdentifier {
+            preferences.removePersistentDomain(forName: bundleIdentifier)
+        }
+        preferences.set(false, forKey: OnboardingPreferences.completedKey)
 
         logger.info("Complete data wipe finished — all user data removed from device")
     }
