@@ -7,3 +7,8 @@ cd "$repo_root"
 python3 scripts/check-staged-security.py --check-dependencies
 python3 scripts/normalize-staged-localizations.py
 python3 scripts/check-staged-security.py
+
+# Second, independent scan with the repository's Gitleaks rules when installed.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --no-banner --log-level warn
+fi

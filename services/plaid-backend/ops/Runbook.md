@@ -87,6 +87,13 @@ still hosts the API and jobs. Notes learned while provisioning it:
   login roles that inherit `nomadfi_runtime` / `nomadfi_fibot`. On PostgreSQL 16+
   a membership granted while a role is `NOINHERIT` keeps `INHERIT FALSE`; grant
   with `GRANT nomadfi_runtime TO <login> WITH INHERIT TRUE`.
+- Harden every project: enforce SSL (`supabase ssl-enforcement update
+  --enable-db-ssl-enforcement`), and through the Management API set auth
+  `disable_signup: true` with email, phone and anonymous providers off, and
+  PostgREST `db_schema: ""` so the Data API exposes nothing.
+- Builds run as the project's default compute identity; grant it only
+  `artifactregistry.writer`, `logging.logWriter` and `storage.objectViewer`,
+  never the default Editor role.
 - The `nomadfi` schema is never exposed through Supabase's Data API: it is not in
   the exposed schemas and `anon`, `authenticated` and `service_role` hold no
   privileges on it. Re-check both after any Supabase project setting change.
