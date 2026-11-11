@@ -80,3 +80,12 @@ test('queued webhooks and new links start the worker; Plaid only sees an acknowl
     assert.equal(triggered, 2);
   } finally { await new Promise(resolve => api.close(resolve)); }
 });
+
+test('every response carries hardened security headers', async () => {
+  const response = await request('/health', { authenticated: false });
+  assert.equal(response.headers.get('strict-transport-security'), 'max-age=63072000; includeSubDomains');
+  assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; frame-ancestors 'none'");
+  assert.equal(response.headers.get('x-frame-options'), 'DENY');
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+});

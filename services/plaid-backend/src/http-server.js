@@ -34,6 +34,11 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
     const requestID = randomUUID();
     response.setHeader('Content-Type', 'application/json'); response.setHeader('Cache-Control', 'no-store');
     response.setHeader('X-Content-Type-Options', 'nosniff'); response.setHeader('X-Request-ID', requestID);
+    // JSON-only API: refuse framing, scripts and referrers, and pin HTTPS.
+    response.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
+    response.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    response.setHeader('X-Frame-Options', 'DENY'); response.setHeader('Referrer-Policy', 'no-referrer');
+    response.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
     const send = (status, value) => { response.writeHead(status); response.end(JSON.stringify(value)); };
     try {
       if (!request.url || request.url.length > 4096) throw new ServiceError('INVALID_REQUEST');
