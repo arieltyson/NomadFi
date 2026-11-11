@@ -197,4 +197,46 @@ struct HostedLocalStoreTests {
         #expect(bootstrap < .seconds(10), "3,000 transactions took \(bootstrap)")
         #expect(delta < .seconds(2), "One new transaction over 3,000 took \(delta)")
     }
+
+    // MARK: - Country assignment
+
+    @Test func aLinkedAccountJoinsTheOnlyCountryThatUsesItsCurrency() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let setup = ModelContext(container)
+        setup.insert(JurisdictionProfile(countryCode: "CA", countryName: "Canada", currencyCode: .cad))
+        setup.insert(JurisdictionProfile(countryCode: "US", countryName: "United States", currencyCode: .usd))
+        try setup.save()
+        let store = HostedLocalStore(container: container)
+        try apply([account(), purchase("a")], to: store)
+
+        let context = ModelContext(container)
+        #expect(try context.fetch(FetchDescriptor<Account>()).first?.jurisdiction == "CA")
+        #expect(try context.fetch(FetchDescriptor<Transaction>()).first?.jurisdiction == "CA")
+    }
+
+    @Test func anExistingLinkedAccountIsBackfilledButAChosenCountryIsKept() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let store = HostedLocalStore(container: container)
+        try apply([account(), account(id: "second"), purchase("a")], to: store)
+        let setup = ModelContext(container)
+        setup.insert(JurisdictionProfile(countryCode: "CA", countryName: "Canada", currencyCode: .cad))
+        let chosen = try #require(setup.fetch(FetchDescriptor<Account>()).first { $0.providerExternalAccountID?.hasSuffix("second") == true })
+        chosen.jurisdiction = "TT"
+        try setup.save()
+
+        try apply([], to: store, revision: "2")
+
+        let accounts = try ModelContext(container).fetch(FetchDescriptor<Account>())
+        #expect(Set(accounts.map(\.jurisdiction)) == ["CA", "TT"])
+        #expect(try ModelContext(container).fetch(FetchDescriptor<Transaction>()).first?.jurisdiction == "CA")
+    }
+
+    @Test func aCurrencySharedByTwoCountriesIsLeftUnassigned() {
+        let profiles = [
+            JurisdictionProfile(countryCode: "US", countryName: "United States", currencyCode: .usd),
+            JurisdictionProfile(countryCode: "EC", countryName: "Ecuador", currencyCode: .usd),
+        ]
+        #expect(HostedLocalStore.defaultCountry(forCurrency: "USD", among: profiles) == nil)
+        #expect(HostedLocalStore.defaultCountry(forCurrency: "CAD", among: profiles) == nil)
+    }
 }

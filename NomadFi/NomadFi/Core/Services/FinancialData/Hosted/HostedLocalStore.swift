@@ -45,6 +45,7 @@ struct HostedLocalStore {
                 state.revision = checkpoint.revision
                 state.eventOffset = checkpoint.offset
                 state.lastAppliedAt = now
+                try assignMissingCountries(in: context)
                 try context.save()
                 return .init(checkpoint: state.checkpoint, deviceID: state.deviceID, bootstrapped: true)
             }
@@ -153,6 +154,7 @@ struct HostedLocalStore {
                 transaction.providerKindRawValue = Self.provider.logKey
                 transaction.importedAt = now
                 transaction.account = account
+                if transaction.jurisdiction.isEmpty { transaction.jurisdiction = account.jurisdiction }
                 if currency == transaction.homeCurrency {
                     transaction.appliedExchangeRate = 1
                     transaction.convertedAmount = value
@@ -161,6 +163,7 @@ struct HostedLocalStore {
                 }
                 archive.removeAll { $0.identity == event.identity }
             }
+            try assignMissingCountries(in: context)
             if saved == nil { context.insert(state) }
             state.ledgerData = try JSONEncoder().encode(ledger.values.sorted { $0.identity < $1.identity })
             state.archivedTransactionsData = try JSONEncoder().encode(archive)
@@ -173,6 +176,40 @@ struct HostedLocalStore {
             context.rollback()
             throw error
         }
+    }
+
+    /// Gives linked accounts that arrived without a country the one the
+    /// person chose that uses the account's currency, and their
+    /// transactions the same country, so they count under a flag on the
+    /// Dashboard. A currency shared by two chosen countries is left for the
+    /// person to decide, and a country they set is never changed.
+    private func assignMissingCountries(in context: ModelContext) throws {
+        let hostedKind: String? = Self.provider.logKey
+        let unassigned = try context.fetch(FetchDescriptor<Account>(
+            predicate: #Predicate { $0.providerLinkKindRawValue == hostedKind && $0.jurisdiction == "" }
+        ))
+        guard !unassigned.isEmpty else { return }
+        let profiles = try context.fetch(FetchDescriptor<JurisdictionProfile>())
+        var assigned = false
+        for account in unassigned {
+            guard let profile = Self.defaultCountry(forCurrency: account.currencyCodeRawValue, among: profiles) else { continue }
+            account.jurisdiction = profile.countryCode
+            account.jurisdictionProfile = profile
+            assigned = true
+        }
+        guard assigned else { return }
+        let uncounted = try context.fetch(FetchDescriptor<Transaction>(
+            predicate: #Predicate { $0.providerKindRawValue == hostedKind && $0.jurisdiction == "" }
+        ))
+        for transaction in uncounted {
+            if let country = transaction.account?.jurisdiction, !country.isEmpty { transaction.jurisdiction = country }
+        }
+    }
+
+    /// The only chosen country that uses `currency`, if there is exactly one.
+    static func defaultCountry(forCurrency currency: String, among profiles: [JurisdictionProfile]) -> JurisdictionProfile? {
+        let matches = profiles.filter { $0.currencyCodeRawValue == currency }
+        return matches.count == 1 ? matches[0] : nil
     }
 
     private func findState(_ context: ModelContext, ownerID: UUID, endpoint: URL) throws -> HostedLocalState? {
