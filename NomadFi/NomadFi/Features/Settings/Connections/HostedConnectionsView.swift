@@ -13,7 +13,14 @@ struct HostedConnectionsView: View {
         List {
             Section("Hosted data") {
                 Text("Hosting region: \(banking.hostingRegion)")
-                Text("Deleted data may remain in restricted backups for up to \(banking.backupRetentionDays) days.").font(.footnote)
+                Group {
+                    if banking.backupRetentionDays == 0 {
+                        Text("Deleted data isn't kept in backups.")
+                    } else {
+                        Text("Deleted data may remain in restricted backups for up to \(banking.backupRetentionDays) days.")
+                    }
+                }
+                .font(.footnote)
                 if let policyURL = banking.privacyPolicyURL { Link("Hosted privacy policy", destination: policyURL) }
             }
             if banking.userID == nil {
