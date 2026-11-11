@@ -29,6 +29,9 @@ enum NomadFiModelContainerFactory {
     /// uses the explicit `NomadFiMigrationPlan` so future schema
     /// changes have to declare their migration intent.
     static func makeProduction() -> ModelContainer {
+        // Before opening the store, so its existing files are
+        // unreadable while the iPhone is locked from now on.
+        FileProtectionHardener.protectAppFiles()
         do {
             let schema = Schema(versionedSchema: NomadFiSchemaV3.self)
             return try ModelContainer(
