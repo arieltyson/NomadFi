@@ -44,7 +44,9 @@ Secrets/
 .env.*
 !tools/plaid-sandbox-broker/.env.example
 
-docs/research/PlaidValidationEvidence/
+# Private evidence lives outside iCloud-synced folders (~/.nomadfi-private);
+# this path is a symlink to it, so match it without a trailing slash.
+docs/research/PlaidValidationEvidence
 
 # ===========================
 # Private docs (sensitive, not public-safe)

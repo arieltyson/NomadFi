@@ -15,3 +15,14 @@ description = "Literal Plaid credential or broker shared secret"
 regex = '''(?i)(?:plaid[_-]?(?:client[_-]?id|secret|broker[_-]?shared[_-]?secret)|client_id|secret)[\s"']{0,3}[:=][\s"']{0,3}([a-f0-9]{24,128})\b'''
 secretGroup = 1
 keywords = ["plaid", "client_id", "secret"]
+
+[[rules]]
+id = "nomadfi-database-url-password"
+description = "PostgreSQL connection string with an embedded password"
+regex = '''postgres(?:ql)?://[^:/\s]+:([^@\s$][^@\s]{7,})@'''
+secretGroup = 1
+keywords = ["postgres://", "postgresql://"]
+
+[allowlist]
+description = "Synthetic fixtures that only look like secrets"
+regexes = ['''sekret123456789012''']
