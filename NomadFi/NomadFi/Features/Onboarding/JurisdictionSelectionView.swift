@@ -32,14 +32,26 @@ private struct JurisdictionButton: View {
     let action: () -> Void
 
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.hapticConductor) private var conductor
+    /// Counts stamps so each new selection replays the animation.
+    @State private var stamps = 0
 
     var body: some View {
         let increasedContrast = colorSchemeContrast == .increased
 
-        Button(action: action) {
+        Button(action: toggle) {
             HStack(spacing: SpacingTokens.small) {
                 Text(jurisdiction.flag)
                     .font(.title2)
+                    .keyframeAnimator(initialValue: 1.0, trigger: stamps) { flag, scale in
+                        flag.scaleEffect(scale)
+                    } keyframes: { _ in
+                        // A passport stamp: hit hard, dip below rest, settle.
+                        SpringKeyframe(1.35, duration: StampCadence.impact)
+                        SpringKeyframe(0.9, duration: StampCadence.rebound)
+                        SpringKeyframe(1, duration: StampCadence.total - StampCadence.impact - StampCadence.rebound)
+                    }
 
                 VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                     Text(jurisdiction.name)
@@ -77,10 +89,21 @@ private struct JurisdictionButton: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityLabel("\(jurisdiction.flag) \(jurisdiction.name), \(jurisdiction.currencyCode.displayName)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityHint(isSelected ? "Double tap to deselect" : "Double tap to select")
+    }
+
+    /// Selecting stamps the flag; deselecting lets it go softly.
+    private func toggle() {
+        let wasSelected = isSelected
+        action()
+        if wasSelected {
+            conductor?.play(.release)
+        } else {
+            conductor?.play(.stamp)
+            if !reduceMotion { stamps += 1 }
+        }
     }
 }
 

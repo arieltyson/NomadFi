@@ -77,6 +77,8 @@ enum ArrivalCadence {
 enum StampCadence {
     /// When the flag hits hardest.
     static let impact: TimeInterval = 0.08
+    /// The rebound below rest after the hit.
+    static let rebound: TimeInterval = 0.1
     /// When the ink settles after the hit.
     static let settle: TimeInterval = 0.07
     /// The whole stamp, from press to rest.

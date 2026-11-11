@@ -33,16 +33,25 @@ private struct CurrencyOption: View {
     let action: () -> Void
 
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.hapticConductor) private var conductor
+    /// Counts flips so each new choice spins the coin again.
+    @State private var flips = 0
 
     var body: some View {
         let increasedContrast = colorSchemeContrast == .increased
 
-        Button(action: action) {
+        Button(action: choose) {
             HStack(spacing: SpacingTokens.small) {
                 VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                     Text(currency.symbol)
                         .font(TypographyTokens.amountMedium)
                         .bold()
+                        .keyframeAnimator(initialValue: 0.0, trigger: flips) { symbol, angle in
+                            symbol.rotation3DEffect(.degrees(angle), axis: (x: 0, y: 1, z: 0))
+                        } keyframes: { _ in
+                            CoinFlipKeyframes.track
+                        }
 
                     Text(currency.displayName)
                         .font(TypographyTokens.caption)
@@ -76,9 +85,33 @@ private struct CurrencyOption: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityLabel("\(currency.displayName), \(currency.rawValue)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    /// Choosing a currency tosses its sign like a coin.
+    private func choose() {
+        guard !isSelected else { return }
+        action()
+        conductor?.play(.coinSettle)
+        if !reduceMotion { flips += 1 }
+    }
+}
+
+/// The coin's spin, keyed to ``CoinCadence``: the sign is edge on at each
+/// haptic tap (every half turn), each half turn quicker to slow, and it
+/// settles face on.
+private enum CoinFlipKeyframes {
+    static var track: some Keyframes<Double> {
+        KeyframeTrack {
+            LinearKeyframe(90, duration: 0)
+            LinearKeyframe(270, duration: CoinCadence.edges[1] - CoinCadence.edges[0])
+            LinearKeyframe(450, duration: CoinCadence.edges[2] - CoinCadence.edges[1])
+            LinearKeyframe(630, duration: CoinCadence.edges[3] - CoinCadence.edges[2])
+            LinearKeyframe(810, duration: CoinCadence.edges[4] - CoinCadence.edges[3])
+            LinearKeyframe(990, duration: CoinCadence.edges[5] - CoinCadence.edges[4])
+            LinearKeyframe(1080, duration: CoinCadence.total - CoinCadence.edges[5])
+        }
     }
 }
 
