@@ -37,15 +37,28 @@ struct JurisdictionDetailView: View {
         let summary = JurisdictionSummary(profile: profile, accounts: accounts)
 
         List {
-            Section {
-                CurrencyText(
-                    amount: summary.total,
-                    currencyCode: summary.currency,
-                    font: TypographyTokens.amountLarge
-                )
-                .bold()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .listRowBackground(Color.clear)
+            if accounts.isEmpty && transactions.isEmpty {
+                // Nothing here yet: say so, rather than show a lone zero
+                // that reads as a page still loading.
+                Section {
+                    ContentUnavailableView {
+                        Label("Nothing in \(profile.countryName) Yet", systemImage: "building.columns")
+                    } description: {
+                        Text("Connect a bank or add an account in Settings, and it will appear here.")
+                    }
+                    .listRowBackground(Color.clear)
+                }
+            } else {
+                Section {
+                    CurrencyText(
+                        amount: summary.total,
+                        currencyCode: summary.currency,
+                        font: TypographyTokens.amountLarge
+                    )
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .listRowBackground(Color.clear)
+                }
             }
 
             if !accounts.isEmpty {

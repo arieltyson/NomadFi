@@ -51,7 +51,10 @@ struct DashboardView: View {
         .navigationDestination(for: JurisdictionProfile.self) { profile in
             JurisdictionDetailView(profile: profile)
         }
-        .refreshable { await pullToRefresh() }
+        // Run the refresh in its own task: a refresh tied to the view is
+        // cancelled when the view redraws mid-refresh, which can leave the
+        // control hanging open.
+        .refreshable { await Task { await pullToRefresh() }.value }
         .task {
             AddMoreAccountsTip.accountCount = accounts.count
             await refreshRates()
@@ -221,10 +224,14 @@ private extension DashboardView {
 
     func pullToRefresh() async {
         let previousUpdate = viewModel.lastUpdated
-        await refreshRates(force: true)
+        // Only the network call holds the control open. Insights and the
+        // trend are recomputed after it closes, so that work over every
+        // transaction never lands on the frame the control animates away.
+        await viewModel.fetchRates(for: viewModel.currencies(from: jurisdictions), force: true)
         if viewModel.lastUpdated != previousUpdate {
             completedPullRefreshes += 1
         }
+        Task { await refreshRates() }
     }
 
     /// Reuses fresh cached rates unless `force` is set, so returning to
