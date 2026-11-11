@@ -251,7 +251,7 @@ struct FiBotFactSheetBuilder {
     /// A name written by a bank, merchant or the person, with any long
     /// identifying number masked before the model sees it.
     private func name(_ text: String) -> String {
-        FiBotSensitiveTextRedactor.redactingName(text)
+        SensitiveNumberRedactor.redactingName(text)
     }
 
     /// Sums amounts per currency code, sorted by code.

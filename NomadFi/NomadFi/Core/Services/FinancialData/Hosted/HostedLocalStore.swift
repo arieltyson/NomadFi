@@ -46,6 +46,7 @@ struct HostedLocalStore {
                 state.eventOffset = checkpoint.offset
                 state.lastAppliedAt = now
                 try assignMissingCountries(in: context)
+                try maskAccountNames(in: context)
                 try context.save()
                 return .init(checkpoint: state.checkpoint, deviceID: state.deviceID, bootstrapped: true)
             }
@@ -93,7 +94,7 @@ struct HostedLocalStore {
                     if let account = matches.first { clearBalances(account) }
                     continue
                 }
-                let account = matches.first ?? Account(name: event.payload.name ?? "Linked account", institutionName: "",
+                let account = matches.first ?? Account(name: SensitiveNumberRedactor.redactingName(event.payload.name ?? "Linked account"), institutionName: "",
                                                        accountType: type, currencyCode: currency)
                 if matches.isEmpty {
                     context.insert(account)
@@ -164,6 +165,7 @@ struct HostedLocalStore {
                 archive.removeAll { $0.identity == event.identity }
             }
             try assignMissingCountries(in: context)
+            try maskAccountNames(in: context)
             if saved == nil { context.insert(state) }
             state.ledgerData = try JSONEncoder().encode(ledger.values.sorted { $0.identity < $1.identity })
             state.archivedTransactionsData = try JSONEncoder().encode(archive)
@@ -175,6 +177,20 @@ struct HostedLocalStore {
         } catch {
             context.rollback()
             throw error
+        }
+    }
+
+    /// Masks the card or account ending a bank wrote into a linked
+    /// account's name, for accounts saved before names were masked on
+    /// arrival. Only names that would change are written.
+    private func maskAccountNames(in context: ModelContext) throws {
+        let hostedKind: String? = Self.provider.logKey
+        let linked = try context.fetch(FetchDescriptor<Account>(
+            predicate: #Predicate { $0.providerLinkKindRawValue == hostedKind }
+        ))
+        for account in linked {
+            let masked = SensitiveNumberRedactor.redactingName(account.name)
+            if masked != account.name { account.name = masked }
         }
     }
 

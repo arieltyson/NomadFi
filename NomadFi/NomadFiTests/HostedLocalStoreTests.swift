@@ -239,4 +239,24 @@ struct HostedLocalStoreTests {
         #expect(HostedLocalStore.defaultCountry(forCurrency: "USD", among: profiles) == nil)
         #expect(HostedLocalStore.defaultCountry(forCurrency: "CAD", among: profiles) == nil)
     }
+
+    @Test func cardEndingsInLinkedAccountNamesAreMaskedOnArrivalAndForOlderAccounts() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let store = HostedLocalStore(container: container)
+        let named = HostedEvent(connectionID: connection, kind: "account", externalID: "card",
+                                payload: .init(name: "SYNTHETIC HOLDER -31005", type: "depository", subtype: "checking",
+                                               currency: "CAD", current: "10", available: "10",
+                                               fetchedAt: "2026-10-05T12:00:00.000Z"), removed: false)
+        try apply([named], to: store)
+        let context = ModelContext(container)
+        let saved = try #require(try context.fetch(FetchDescriptor<Account>()).first)
+        #expect(saved.name == "SYNTHETIC HOLDER -••1005")
+
+        // An account saved before masking is fixed by the next sync, even an empty one.
+        saved.name = "SYNTHETIC HOLDER -31005"
+        try context.save()
+        try apply([], to: store, revision: "2")
+        let later = ModelContext(container)
+        #expect(try later.fetch(FetchDescriptor<Account>()).first?.name == "SYNTHETIC HOLDER -••1005")
+    }
 }

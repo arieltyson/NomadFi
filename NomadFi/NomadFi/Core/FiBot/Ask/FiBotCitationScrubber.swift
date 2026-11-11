@@ -36,7 +36,7 @@ enum FiBotCitationScrubber {
     static func prepare(_ draft: FiBotAnswerDraft) -> FiBotAnswerDraft {
         let scrubbed = scrub(draft)
         return FiBotAnswerDraft(
-            text: FiBotSensitiveTextRedactor.redactingAnswer(scrubbed.text),
+            text: SensitiveNumberRedactor.redactingAnswer(scrubbed.text),
             citedFactIDs: scrubbed.citedFactIDs
         )
     }

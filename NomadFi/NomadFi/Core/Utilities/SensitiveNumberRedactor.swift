@@ -1,7 +1,8 @@
-// FiBotSensitiveTextRedactor.swift
+// SensitiveNumberRedactor.swift
 // NomadFi
 //
-// Keeps long identifying numbers out of what FiBot reads and says.
+// Keeps long identifying numbers out of names NomadFi saves and shows,
+// and out of what FiBot reads and says.
 
 import Foundation
 
@@ -9,10 +10,11 @@ import Foundation
 ///
 /// NomadFi never stores full card numbers, PINs or passwords, but names
 /// written by banks and merchants can carry the tail of a card number,
-/// a phone number or a reference. Those are masked before a name reaches
-/// the model, and any card-length number is masked again in the answer,
-/// so nothing of that shape is shown even if it arrives some other way.
-enum FiBotSensitiveTextRedactor {
+/// a phone number or a reference. Linked account names are masked before
+/// they are saved, every name is masked before it reaches FiBot's model,
+/// and any card-length number is masked again in FiBot's answer, so
+/// nothing of that shape is shown even if it arrives some other way.
+enum SensitiveNumberRedactor {
 
     /// The digits kept at the end of a masked number, as on a receipt.
     static let visibleDigits = 4

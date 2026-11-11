@@ -109,8 +109,8 @@ struct FiBotFactSheetBuilderTests {
     @Test func cardLengthNumbersAreMaskedInAnswersButMoneyIsNot() {
         // Built at runtime so no card-shaped number sits in the repository.
         let cardShaped = Array(repeating: "1234", count: 4).joined(separator: " ")
-        #expect(FiBotSensitiveTextRedactor.redactingAnswer("It is \(cardShaped).") == "It is ••1234.")
+        #expect(SensitiveNumberRedactor.redactingAnswer("It is \(cardShaped).") == "It is ••1234.")
         let money = "CAD 1240000.50 across 31 transactions from 2026-11-01 to 2026-11-10."
-        #expect(FiBotSensitiveTextRedactor.redactingAnswer(money) == money)
+        #expect(SensitiveNumberRedactor.redactingAnswer(money) == money)
     }
 }
