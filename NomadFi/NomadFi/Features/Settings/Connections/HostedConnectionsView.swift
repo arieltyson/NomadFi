@@ -1,25 +1,57 @@
 // HostedConnectionsView.swift
 // NomadFi
 //
-// Bank Connections: sign in once, see whether this iPhone is current,
-// and manage each linked bank.
+// Bank Connections: an invitation before sign-in, then whether this
+// iPhone is current and each linked bank.
 
 import SwiftData
 import SwiftUI
 
 /// The hosted bank connections screen.
 ///
-/// Signed in, it reads top to bottom as status, banks, then sign out:
-/// one line saying whether this iPhone has the latest bank data, the
-/// banks with their own status, and a quiet footer for where data is
-/// kept. Actions that only sometimes apply (finishing an interrupted
-/// link, reviewing older records) appear only when they do. Opening
-/// the screen downloads updates on its own; pull to refresh does too.
+/// Before sign-in it is a single invitation (``HostedSignInView``).
+/// Signed in, it reads top to bottom as status, banks, then sign out.
+/// Opening the screen keeps data current quietly; pulling to refresh is a
+/// request, so it shows progress and gives feedback.
 struct HostedConnectionsView: View {
 
     @Environment(\.modelContext) private var modelContext
     let banking: HostedBankingController
 
+    var body: some View {
+        Group {
+            if !banking.hasPrepared {
+                // The session is still being read; show neither state yet,
+                // so a signed-in person never sees the invitation flash by.
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if banking.userID == nil {
+                HostedSignInView(banking: banking)
+            } else {
+                HostedBanksList(banking: banking)
+            }
+        }
+        .navigationTitle("Bank Connections")
+        .navigationBarTitleDisplayMode(banking.userID == nil ? .inline : .large)
+        .task { await banking.refreshAutomatically(container: modelContext.container) }
+        .task(id: banking.linkCompletions) {
+            guard banking.linkCompletions > 0 else { return }
+            await banking.followNewConnection(container: modelContext.container)
+        }
+        .sheet(item: Binding(get: { banking.migrationReview }, set: { if $0 == nil { banking.cancelLegacyMigration() } })) { review in
+            HostedMigrationReviewSheet(review: review, banking: banking)
+        }
+    }
+}
+
+/// The signed-in screen: download status, the banks, then sign out.
+/// Actions that only sometimes apply (finishing an interrupted link,
+/// reviewing older records) appear only when they do.
+private struct HostedBanksList: View {
+
+    let banking: HostedBankingController
+
+    @Environment(\.modelContext) private var modelContext
     @State private var disconnecting: HostedConnection?
 
     var body: some View {
@@ -31,80 +63,51 @@ struct HostedConnectionsView: View {
                 }
             }
 
-            #if DEBUG
-            if let subject = banking.refusedAppleSubject {
-                HostedPilotAccessSection(subject: subject)
-            }
-            #endif
-
-            if banking.userID == nil {
-                HostedSignInSection(banking: banking)
-            } else {
-                Section {
-                    HostedSyncStatusRow(state: banking.syncState, userOutcomes: banking.userSyncOutcomes) {
-                        Task { await banking.sync(container: modelContext.container, trigger: .userInitiated) }
-                    }
+            Section {
+                HostedSyncStatusRow(state: banking.syncState, userOutcomes: banking.userSyncOutcomes) {
+                    Task { await banking.sync(container: modelContext.container, trigger: .userInitiated) }
                 }
+            }
 
-                Section {
-                    ForEach(banking.connections) { connection in
-                        HostedConnectionRow(
-                            connection: connection,
-                            onManageAccess: { Task { await banking.startLink(connectionID: connection.id) } },
-                            onDisconnect: { disconnecting = connection }
-                        )
-                    }
-                    Button("Connect a Bank", systemImage: "plus") {
-                        Task { await banking.startLink() }
-                    }
-                    .disabled(banking.isWorking)
-                    if banking.hasPendingExchange {
-                        Button("Finish Connecting", systemImage: "arrow.clockwise") {
-                            Task { await banking.retryExchange() }
-                        }
-                        .disabled(banking.isWorking)
-                    }
-                } header: {
-                    Text("Banks")
-                } footer: {
-                    HostedDataFooter(
-                        region: banking.hostingRegion,
-                        backupRetentionDays: banking.backupRetentionDays,
-                        privacyPolicyURL: banking.privacyPolicyURL
+            Section("Banks") {
+                ForEach(banking.connections) { connection in
+                    HostedConnectionRow(
+                        connection: connection,
+                        onManageAccess: { Task { await banking.startLink(connectionID: connection.id) } },
+                        onDisconnect: { disconnecting = connection }
                     )
                 }
-
-                if banking.hasLegacyRecords {
-                    Section {
-                        Button("Review Older Bank Records") {
-                            Task { await banking.prepareLegacyMigration(container: modelContext.container) }
-                        }
-                        .disabled(banking.isWorking)
-                    } footer: {
-                        Text("Records from NomadFi's earlier bank connection need a review before new updates can be saved.")
-                    }
+                Button("Connect a Bank", systemImage: "plus") {
+                    Task { await banking.startLink() }
                 }
-
-                Section {
-                    Button("Sign Out", role: .destructive) {
-                        Task { await banking.signOut() }
+                .disabled(banking.isWorking)
+                if banking.hasPendingExchange {
+                    Button("Finish Connecting", systemImage: "arrow.clockwise") {
+                        Task { await banking.retryExchange() }
                     }
                     .disabled(banking.isWorking)
                 }
             }
+
+            if banking.hasLegacyRecords {
+                Section {
+                    Button("Review Older Bank Records") {
+                        Task { await banking.prepareLegacyMigration(container: modelContext.container) }
+                    }
+                    .disabled(banking.isWorking)
+                } footer: {
+                    Text("Records from NomadFi's earlier bank connection need a review before new updates can be saved.")
+                }
+            }
+
+            Section {
+                Button("Sign Out", role: .destructive) {
+                    Task { await banking.signOut() }
+                }
+                .disabled(banking.isWorking)
+            }
         }
-        .navigationTitle("Bank Connections")
-        // Opening the screen keeps data current quietly; pulling to refresh
-        // is a request, so it shows progress and gives feedback.
-        .task { await banking.refreshAutomatically(container: modelContext.container) }
         .refreshable { await refresh() }
-        .task(id: banking.linkCompletions) {
-            guard banking.linkCompletions > 0 else { return }
-            await banking.followNewConnection(container: modelContext.container)
-        }
-        .sheet(item: Binding(get: { banking.migrationReview }, set: { if $0 == nil { banking.cancelLegacyMigration() } })) { review in
-            HostedMigrationReviewSheet(review: review, banking: banking)
-        }
         .alert(
             "Disconnect \(disconnecting?.institutionName ?? String(localized: "this bank"))?",
             isPresented: Binding(get: { disconnecting != nil }, set: { if !$0 { disconnecting = nil } })

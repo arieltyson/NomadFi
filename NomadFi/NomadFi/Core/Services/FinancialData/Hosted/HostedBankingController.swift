@@ -32,6 +32,9 @@ final class HostedBankingController {
     /// Counts banks linked in this session, so the screen can follow each
     /// new one until its first history arrives.
     private(set) var linkCompletions = 0
+    /// Whether the saved session has been read at least once, so the
+    /// screen knows which state to show.
+    private(set) var hasPrepared = false
     private var isDownloading = false
     private var isPreparing = false
     /// A bank link finished in Plaid but the server never saved it.
@@ -77,6 +80,7 @@ final class HostedBankingController {
         if showsActivity { isWorking = true }
         defer {
             isPreparing = false
+            hasPrepared = true
             if showsActivity { isWorking = false }
         }
         do {
