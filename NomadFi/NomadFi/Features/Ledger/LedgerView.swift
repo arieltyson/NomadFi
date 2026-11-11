@@ -76,26 +76,20 @@ private struct DateSectionHeader: View {
 
 private extension LedgerView {
 
-    var filteredResults: [Transaction] {
-        viewModel.filteredTransactions(transactions)
-    }
-
-    var groupedResults: [(date: Date, transactions: [Transaction])] {
-        viewModel.groupedByDate(filteredResults)
-    }
-
     var transactionList: some View {
-        ScrollView {
+        // Filter and group once per update, not once per place they are read.
+        let groups = viewModel.groupedByDate(viewModel.filteredTransactions(transactions))
+        return ScrollView {
             LazyVStack(spacing: SpacingTokens.small, pinnedViews: .sectionHeaders) {
                 activeCardSection
 
                 filterSection
 
-                if filteredResults.isEmpty {
+                if groups.isEmpty {
                     ContentUnavailableView.search(text: viewModel.searchText)
                         .padding(.top, SpacingTokens.xxLarge)
                 } else {
-                    transactionSections
+                    transactionSections(groups)
                 }
             }
             .padding(.vertical, SpacingTokens.xSmall)
@@ -125,8 +119,8 @@ private extension LedgerView {
         TransactionFilterChips(viewModel: viewModel, jurisdictions: jurisdictions)
     }
 
-    var transactionSections: some View {
-        ForEach(groupedResults, id: \.date) { group in
+    func transactionSections(_ groups: [(date: Date, transactions: [Transaction])]) -> some View {
+        ForEach(groups, id: \.date) { group in
             Section {
                 ForEach(group.transactions, id: \.self) { transaction in
                     NavigationLink(value: transaction) {

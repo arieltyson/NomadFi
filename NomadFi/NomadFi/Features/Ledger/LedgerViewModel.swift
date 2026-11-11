@@ -54,7 +54,12 @@ final class LedgerViewModel {
 
     /// Applies search text, category, and jurisdiction filters to a transaction list.
     func filteredTransactions(_ transactions: [Transaction]) -> [Transaction] {
-        transactions.filter { transaction in
+        // Nothing to filter by: return the list untouched instead of
+        // reading three properties of every transaction.
+        guard !searchText.isEmpty || !selectedCategories.isEmpty || selectedJurisdiction != nil else {
+            return transactions
+        }
+        return transactions.filter { transaction in
             let matchesSearch = searchText.isEmpty
                 || transaction.merchantName.localizedStandardContains(searchText)
                 || transaction.notes.localizedStandardContains(searchText)
@@ -76,10 +81,22 @@ final class LedgerViewModel {
         _ transactions: [Transaction]
     ) -> [(date: Date, transactions: [Transaction])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: transactions) { transaction in
-            calendar.startOfDay(for: transaction.date)
+        // The ledger arrives newest first, so days are contiguous: one pass
+        // builds the groups without hashing every row or sorting the days.
+        var groups: [(date: Date, transactions: [Transaction])] = []
+        var isNewestFirst = true
+        for transaction in transactions {
+            let day = calendar.startOfDay(for: transaction.date)
+            if let last = groups.last, last.date == day {
+                groups[groups.count - 1].transactions.append(transaction)
+            } else {
+                if let last = groups.last, last.date < day { isNewestFirst = false }
+                groups.append((date: day, transactions: [transaction]))
+            }
         }
-        return grouped
+        guard !isNewestFirst else { return groups }
+        // Unsorted input: fall back to grouping by day and sorting.
+        return Dictionary(grouping: transactions) { calendar.startOfDay(for: $0.date) }
             .sorted { $0.key > $1.key }
             .map { (date: $0.key, transactions: $0.value) }
     }
