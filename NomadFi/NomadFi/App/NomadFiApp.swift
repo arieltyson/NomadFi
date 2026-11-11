@@ -141,7 +141,7 @@ struct NomadFiApp: App {
             .onOpenURL { url in
                 if hostedBanking?.handle(url) == true { return }
                 // Plaid OAuth universal links return through the
-                // `applinks:arieltyson.github.io` associated domain.
+                // `applinks:nomadfi-app.github.io` associated domain.
                 // Forward them straight to the pending Link session;
                 // anything the coordinator does not consume is
                 // ignored so NomadFi never tries to reinterpret

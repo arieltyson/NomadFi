@@ -198,7 +198,7 @@ struct PlaidValidationRecorderTests {
             redirectConfigured: true
         )
         recorder.recordLinkLaunchRequested()
-        recorder.recordUniversalLinkObserved(host: "arieltyson.github.io")
+        recorder.recordUniversalLinkObserved(host: "nomadfi-app.github.io")
         recorder.recordPublicTokenExchanged(success: true)
         recorder.recordItemHandlePersisted(rawHandle: "itm_29f63c0ccff1abcd")
         recorder.recordReconciliationFinished(
