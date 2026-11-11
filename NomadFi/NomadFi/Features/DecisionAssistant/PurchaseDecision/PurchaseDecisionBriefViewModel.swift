@@ -126,6 +126,27 @@ final class PurchaseDecisionBriefViewModel {
         record.updatedAt = now
     }
 
+    /// Fills in the place the person chose from the nearby list.
+    func apply(_ place: NearbyPlace, countryCode: String? = nil, now: Date = .now) {
+        record.merchantName = place.name
+        record.categoryRawValue = place.category.rawValue
+        if let countryCode, !countryCode.isEmpty { record.countryCode = countryCode }
+        record.updatedAt = now
+    }
+
+    /// Fills in whatever a spoken sentence contained, leaving the rest
+    /// of the purchase as it was.
+    func apply(_ utterance: PurchaseUtterance, now: Date = .now) {
+        if let merchant = utterance.merchantName { record.merchantName = merchant }
+        if let category = utterance.category { record.categoryRawValue = category.rawValue }
+        if let currency = utterance.currency { record.currencyCodeRawValue = currency.rawValue }
+        if let amount = utterance.amount {
+            record.amount = amount
+            amountText = Self.amountEditingText(for: amount)
+        }
+        record.updatedAt = now
+    }
+
     // MARK: - Derived
 
     /// Re-runs the engine against the supplied accounts. The view

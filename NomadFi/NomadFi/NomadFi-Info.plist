@@ -26,6 +26,10 @@
 	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>NomadFi listens only while you use Say It, to fill in a purchase from what you say. Your voice is recognised on this iPhone and is never recorded or sent anywhere.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>NomadFi turns what you say into a purchase to check. Recognition happens on this iPhone, and nothing you say leaves it.</string>
 	<key>NomadFiHostedBackendURL</key>
 	<string>$(NOMADFI_HOSTED_BACKEND_URL)</string>
 	<key>NomadFiHostedBackupRetentionDays</key>

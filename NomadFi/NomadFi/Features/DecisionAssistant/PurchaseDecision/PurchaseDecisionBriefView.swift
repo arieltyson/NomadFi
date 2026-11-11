@@ -28,6 +28,8 @@ struct PurchaseDecisionBriefView: View {
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focusedField: Field?
+    @State private var isShowingNearbyPlaces = false
+    @State private var isShowingSpokenPurchase = false
 
     private var decision: PurchaseDecision {
         viewModel.decision(accounts: accounts)
@@ -40,6 +42,10 @@ struct PurchaseDecisionBriefView: View {
                     alignment: .leading,
                     spacing: SpacingTokens.large
                 ) {
+                    PurchaseCaptureBar(
+                        onNearMe: { focusedField = nil; isShowingNearbyPlaces = true },
+                        onSayIt: { focusedField = nil; isShowingSpokenPurchase = true }
+                    )
                     captureFormSection
                     rulingSection
                     confidenceSection
@@ -65,6 +71,12 @@ struct PurchaseDecisionBriefView: View {
                 }
             }
             .keyboardDone($focusedField)
+            .sheet(isPresented: $isShowingNearbyPlaces) {
+                NearbyPlacesSheet { place in viewModel.apply(place) }
+            }
+            .sheet(isPresented: $isShowingSpokenPurchase) {
+                SpokenPurchaseSheet { utterance in viewModel.apply(utterance) }
+            }
         }
     }
 
