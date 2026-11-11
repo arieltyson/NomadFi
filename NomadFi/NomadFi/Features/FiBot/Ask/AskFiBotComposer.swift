@@ -6,6 +6,11 @@
 import SwiftUI
 
 /// A glass field and one button: Ask, or Stop while FiBot is answering.
+///
+/// The field is multi-line, so the keyboard's return key adds a line and
+/// keeps its ordinary look; asking is only ever the Ask button. While the
+/// keyboard is up, a Hide Keyboard button sits on the leading side, clear
+/// of Ask, and dragging the conversation down dismisses it too.
 struct AskFiBotComposer: View {
 
     @Binding var text: String
@@ -20,10 +25,17 @@ struct AskFiBotComposer: View {
     var body: some View {
         GlassEffectContainer(spacing: SpacingTokens.small) {
             HStack(alignment: .bottom, spacing: SpacingTokens.small) {
+                if isFocused {
+                    Button("Hide Keyboard", systemImage: "keyboard.chevron.compact.down") { isFocused = false }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.glass)
+                        .buttonBorderShape(.circle)
+                        .controlSize(.large)
+                        .transition(.scale.combined(with: .opacity))
+                }
+
                 TextField("Ask FiBot", text: $text, axis: .vertical)
                     .lineLimit(1...5)
-                    .submitLabel(.send)
-                    .onSubmit(send)
                     .focused($isFocused)
                     .disabled(!isEnabled)
                     .padding(.horizontal, SpacingTokens.medium)
@@ -42,6 +54,7 @@ struct AskFiBotComposer: View {
         }
         .padding(.horizontal, SpacingTokens.medium)
         .padding(.bottom, SpacingTokens.xSmall)
+        .animation(AnimationTokens.snappy, value: isFocused)
     }
 
     private func send() {
