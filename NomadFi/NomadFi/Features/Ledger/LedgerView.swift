@@ -24,7 +24,7 @@ struct LedgerView: View {
     var body: some View {
         Group {
             if transactions.isEmpty && !viewModel.hasActiveFilters {
-                emptyState
+                LedgerEmptyStateView()
             } else {
                 transactionList
             }
@@ -92,7 +92,8 @@ private extension LedgerView {
                 filterSection
 
                 if filteredResults.isEmpty {
-                    noResultsView
+                    ContentUnavailableView.search(text: viewModel.searchText)
+                        .padding(.top, SpacingTokens.xxLarge)
                 } else {
                     transactionSections
                 }
@@ -142,27 +143,6 @@ private extension LedgerView {
         }
         .navigationDestination(for: Transaction.self) { transaction in
             TransactionDetailView(transaction: transaction)
-        }
-    }
-
-    var noResultsView: some View {
-        ContentUnavailableView.search(text: viewModel.searchText)
-            .padding(.top, SpacingTokens.xxLarge)
-    }
-
-    var emptyState: some View {
-        ContentUnavailableView {
-            Label("No Transactions", systemImage: "list.bullet.rectangle")
-        } description: {
-            Text("Your cross-border transactions will appear here. Tap + to add one manually.")
-        } actions: {
-            NomadFiActionButton(
-                title: "Add Transaction",
-                systemImage: "plus",
-                style: .primary,
-                fillsWidth: false,
-                action: { isShowingAddTransaction = true }
-            )
         }
     }
 }

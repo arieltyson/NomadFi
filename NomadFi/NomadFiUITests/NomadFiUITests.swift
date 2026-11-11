@@ -67,6 +67,9 @@ final class NomadFiUITests: XCTestCase {
 
         let addTransaction = app.navigationBars["Ledger"].buttons["Add Transaction"]
         XCTAssertTrue(addTransaction.waitForExistence(timeout: 8))
+        // The empty Ledger explains; adding is only the toolbar's +.
+        XCTAssertTrue(app.staticTexts["No Transactions"].waitForExistence(timeout: 8))
+        XCTAssertEqual(app.buttons.matching(identifier: "Add Transaction").count, 1)
         addTransaction.tap()
 
         XCTAssertTrue(app.textFields["Merchant Name"].waitForExistence(timeout: 8))
