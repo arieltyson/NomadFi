@@ -387,6 +387,9 @@
     "Add Account" : {
 
     },
+    "Add an account now, or hold to begin and connect your bank later in Settings." : {
+
+    },
     "Add an account or connect your bank in Settings to see your net worth." : {
 
     },
@@ -405,7 +408,7 @@
     "Add Subscription" : {
 
     },
-    "Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later." : {
+    "Add the accounts and cards you use in each country. Balances are optional." : {
 
     },
     "Add Tiingo Token" : {
@@ -1881,7 +1884,7 @@
     "NomadFi currently supports %lld jurisdictions. Your active set already covers them." : {
 
     },
-    "NomadFi detects your current country to recommend the lowest-fee payment card for where you are." : {
+    "NomadFi detects your current country to recommend the card with the lowest fees for where you are." : {
 
     },
     "NomadFi detects your location and recommends the card with the lowest foreign transaction fees." : {
@@ -2835,9 +2838,6 @@
 
     },
     "Tap + to scan your first receipt." : {
-
-    },
-    "Tap the button below to add your first account." : {
 
     },
     "Target account" : {
