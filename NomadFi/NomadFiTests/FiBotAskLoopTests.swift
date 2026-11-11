@@ -38,4 +38,19 @@ struct FiBotAskLoopTests {
         #expect(answer.verification == .unverified(figures: ["900.00"]))
         #expect(await answerer.corrections.count == FiBotAskLoop.maximumAttempts - 1)
     }
+
+    @Test func aMessageTooShortToMeanAnythingIsNotSentToTheModel() async throws {
+        let answerer = ScriptedFiBotAnswerer(drafts: [FiBotAnswerDraft(text: "There are 0 accounts.", citedFactIDs: ["F1"])])
+        let answer = try await FiBotAskLoop(answerer: answerer).answer("Bh", from: sheet)
+        #expect(answer.text.contains("didn't catch that"))
+        #expect(answer.verification == .noFigures)
+        #expect(answer.sources.isEmpty)
+    }
+
+    @Test func withoutAnyDataFiBotSaysHowToAddSome() async throws {
+        let answerer = ScriptedFiBotAnswerer(drafts: [FiBotAnswerDraft(text: "There are 0 accounts.", citedFactIDs: [])])
+        let answer = try await FiBotAskLoop(answerer: answerer).answer("How much cash do I have?", from: .empty)
+        #expect(answer.text.contains("Connect a bank"))
+        #expect(answer.verification == .noFigures)
+    }
 }

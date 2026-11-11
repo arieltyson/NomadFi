@@ -31,6 +31,8 @@ struct FiBotAskLoop: Sendable {
         from sheet: FiBotFactSheet,
         after previousExchange: FiBotExchange? = nil
     ) async throws -> FiBotAnswer {
+        if let reply = FiBotTriage.reply(to: question, sheet: sheet) { return reply }
+
         var correction: String?
         var result: FiBotAnswer?
 
