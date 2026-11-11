@@ -68,4 +68,5 @@ docs/financekit-application.md
 !**/*.xcstrings
 
 # Supabase CLI local state (project link cache)
-supabase/.temp/
+**/supabase/.temp/
+services/plaid-backend/.local-postgres.log
