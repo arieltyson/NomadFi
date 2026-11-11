@@ -25,16 +25,22 @@ enum CurrencyCode: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    var symbol: String {
+    /// The currency's own sign, as written where it is used.
+    var sign: String {
         switch self {
-        case .usd: "$"
-        case .cad: "CA$"
-        case .ttd: "TT$"
-        case .gbp: "GBP"
-        case .eur: "EUR"
-        case .inr: "INR"
-        case .ngn: "NGN"
-        case .cny: "CNY"
+        case .usd, .cad, .ttd: "$"
+        case .gbp: "£"
+        case .eur: "€"
+        case .inr: "₹"
+        case .ngn: "₦"
+        case .cny: "¥"
         }
     }
+
+    /// The code and the sign together, such as `CAD$` or `GBP£`.
+    ///
+    /// Every currency is written the same way, so dollars from different
+    /// countries are never mistaken for one another and no currency is
+    /// shown as the default.
+    var symbol: String { "\(rawValue)\(sign)" }
 }

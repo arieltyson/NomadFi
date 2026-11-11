@@ -39,13 +39,10 @@ private struct CurrencyOption: View {
 
         Button(action: action) {
             HStack(spacing: SpacingTokens.small) {
-                Text(currency.symbol)
-                    .font(TypographyTokens.amountMedium)
-                    .frame(width: 56, alignment: .leading)
-
                 VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                    Text(currency.rawValue)
-                        .font(TypographyTokens.sectionHeader)
+                    Text(currency.symbol)
+                        .font(TypographyTokens.amountMedium)
+                        .bold()
 
                     Text(currency.displayName)
                         .font(TypographyTokens.caption)
@@ -80,7 +77,7 @@ private struct CurrencyOption: View {
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)
-        .accessibilityLabel("\(currency.displayName), \(currency.symbol)")
+        .accessibilityLabel("\(currency.displayName), \(currency.rawValue)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
