@@ -26,6 +26,7 @@ the container command is `node src/runtime.js api`, `worker`, or `sweep`.
 | `KMS_KEY_NAME` | Full symmetric CryptoKey resource; service identity receives scoped encrypt/decrypt access |
 | `RATE_HASH_KEY` | Random 32-byte base64 key shared across service instances |
 | `HOSTED_DATA_ACCEPTANCE` | `reviewed` only after H0 privacy, cost, region and retention acceptance is recorded |
+| `WORKER_JOB_NAME` | Optional full Cloud Run job name the API starts when work is queued |
 | `PORT` | Loopback 8788 locally; container port 8080 by default |
 
 Never paste these values into issues, source files, screenshots, logs, or build
@@ -51,8 +52,12 @@ to a different CryptoKey requires an explicit re-encryption migration.
    Use the managed Cloud SQL socket, or verified TLS with a trusted CA;
    certificate verification must not be disabled. Only the API is public.
 4. Deploy Cloud Run jobs from the same digest for `worker` and `sweep`.
-   Schedule the worker every minute and sweep hourly using a separate
-   Scheduler identity granted job invocation only. Duplicate executions are
+   Set `WORKER_JOB_NAME` (`projects/<p>/locations/<r>/jobs/<worker>`) on the API
+   and grant its identity `roles/run.invoker` on that job only: verified
+   webhooks, new links, repairs, manual syncs and deletions then start the
+   worker immediately (bursts within 5 s coalesce; a failed start never fails
+   the request). Schedule the worker every 30 minutes as the fallback and the
+   sweep hourly, using a separate Scheduler identity granted job invocation only. Duplicate executions are
    fenced by database leases. Set one task per invocation and bound execution
    timeout/retries. The worker handles at most 50 claims per run. Measure the
    longest initial-history sync before choosing the job timeout.
