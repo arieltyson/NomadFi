@@ -20,7 +20,6 @@ struct HostedConnectionsView: View {
     @Environment(\.modelContext) private var modelContext
     let banking: HostedBankingController
 
-    @State private var hasConsented = false
     @State private var disconnecting: HostedConnection?
 
     var body: some View {
@@ -39,7 +38,7 @@ struct HostedConnectionsView: View {
             #endif
 
             if banking.userID == nil {
-                HostedSignInSection(banking: banking, hasConsented: $hasConsented)
+                HostedSignInSection(banking: banking)
             } else {
                 Section {
                     HostedSyncStatusRow(state: banking.syncState) {
