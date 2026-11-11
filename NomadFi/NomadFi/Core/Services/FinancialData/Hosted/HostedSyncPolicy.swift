@@ -25,6 +25,11 @@ enum HostedSyncPolicy {
     /// The shortest gap between automatic refreshes.
     static let automaticInterval: TimeInterval = 300
 
+    /// How often, and how many times, to check on a newly linked bank
+    /// before leaving it to the next ordinary refresh (about two minutes).
+    static let firstSyncCheckInterval: Duration = .seconds(4)
+    static let firstSyncChecks = 30
+
     /// Whether an automatic refresh is due.
     static func isAutomaticRefreshDue(state: HostedSyncState, now: Date = .now) -> Bool {
         guard case .upToDate(let date) = state else { return state != .syncing }

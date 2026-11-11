@@ -98,6 +98,10 @@ struct HostedConnectionsView: View {
         // is a request, so it shows progress and gives feedback.
         .task { await banking.refreshAutomatically(container: modelContext.container) }
         .refreshable { await refresh() }
+        .task(id: banking.linkCompletions) {
+            guard banking.linkCompletions > 0 else { return }
+            await banking.followNewConnection(container: modelContext.container)
+        }
         .sheet(item: Binding(get: { banking.migrationReview }, set: { if $0 == nil { banking.cancelLegacyMigration() } })) { review in
             HostedMigrationReviewSheet(review: review, banking: banking)
         }

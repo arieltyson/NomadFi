@@ -5,10 +5,11 @@
 
 import SwiftUI
 
-/// A bank row. The name and one status line are all that show; Manage
-/// Access and Disconnect live in the row's menu and Disconnect also
-/// on swipe. A bank that needs sign-in gets a visible Reconnect button,
-/// because that is the one action it can't do without.
+/// A bank row: a status symbol, then the name over one status line.
+/// Manage Access and Disconnect live in the row's menu and Disconnect
+/// also on swipe. A bank that needs sign-in gets a visible Reconnect
+/// button, because that is the one action it can't do without. Until the
+/// server's first fetch lands, the row shows progress rather than a check.
 struct HostedConnectionRow: View {
 
     let connection: HostedConnection
@@ -16,17 +17,23 @@ struct HostedConnectionRow: View {
     let onDisconnect: () -> Void
 
     private var status: HostedConnectionStatus { HostedConnectionStatus(rawValue: connection.state) }
-    private var name: String { connection.institutionName ?? String(localized: "Bank") }
+    private var name: String { connection.institutionName ?? String(localized: "Your bank") }
+
+    /// Linked, but the server's first fetch from the bank hasn't landed.
+    private var isAwaitingFirstSync: Bool { status == .connected && connection.lastSyncedDate == nil }
 
     var body: some View {
         HStack(spacing: SpacingTokens.small) {
+            HostedConnectionStatusSymbol(status: status, isAwaitingFirstSync: isAwaitingFirstSync)
+
             VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
                 Text(name)
                     .font(.headline)
-                HostedConnectionStatusLine(status: status, fetchedAt: connection.lastSyncedDate)
+                Text(statusText)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
 
             if status == .needsSignIn {
                 Button("Reconnect", action: onManageAccess)
@@ -40,29 +47,38 @@ struct HostedConnectionRow: View {
             }
             .labelStyle(.iconOnly)
         }
+        .accessibilityElement(children: .contain)
         .swipeActions {
             Button("Disconnect", role: .destructive, action: onDisconnect)
         }
     }
+
+    /// "Connected · Updated 5:07 PM", or what is happening before then.
+    private var statusText: String {
+        if isAwaitingFirstSync { return String(localized: "Getting your history…") }
+        let title = String(localized: status.title)
+        guard let fetchedAt = connection.lastSyncedDate else { return title }
+        return String(localized: "\(title) · Updated \(HostedTimestamp.text(fetchedAt))")
+    }
 }
 
-/// "Connected · Updated 5:07 PM", with the status symbol in its colour.
-private struct HostedConnectionStatusLine: View {
+/// The row's leading symbol: a spinner until the first sync lands, then
+/// the status symbol in its colour.
+private struct HostedConnectionStatusSymbol: View {
 
     let status: HostedConnectionStatus
-    let fetchedAt: Date?
+    let isAwaitingFirstSync: Bool
 
     var body: some View {
-        Label {
-            if let fetchedAt {
-                Text("\(Text(status.title)) · Updated \(HostedTimestamp.text(fetchedAt))")
+        Group {
+            if isAwaitingFirstSync {
+                ProgressView()
             } else {
-                Text(status.title)
+                Image(systemName: status.systemImage)
+                    .font(.title3)
+                    .foregroundStyle(status.tint)
             }
-        } icon: {
-            Image(systemName: status.systemImage).foregroundStyle(status.tint)
         }
-        .font(.subheadline)
-        .foregroundStyle(.secondary)
+        .accessibilityHidden(true)
     }
 }

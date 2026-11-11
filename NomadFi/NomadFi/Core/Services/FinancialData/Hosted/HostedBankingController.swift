@@ -29,6 +29,9 @@ final class HostedBankingController {
     /// Counts downloads the person asked for that have finished, so the
     /// interface can give feedback for those and stay silent for the rest.
     private(set) var userSyncOutcomes = 0
+    /// Counts banks linked in this session, so the screen can follow each
+    /// new one until its first history arrives.
+    private(set) var linkCompletions = 0
     private var isDownloading = false
     private var isPreparing = false
     /// A bank link finished in Plaid but the server never saved it.
@@ -169,7 +172,8 @@ final class HostedBankingController {
                         KeychainService.delete(key: .hostedPendingLink)
                         self.hasPendingExchange = false
                         self.connections = try await self.client.connections()
-                        self.message = "Connected. Bank history can take a few minutes to arrive."
+                        self.message = nil
+                        self.linkCompletions += 1
                     case .cancelled: KeychainService.delete(key: .hostedPendingLink)
                     case .failed: self.message = "The bank connection didn't finish. Your other banks are unaffected."
                     }
@@ -217,6 +221,23 @@ final class HostedBankingController {
         }
         if trigger == .userInitiated { userSyncOutcomes += 1 }
         refreshLocalState(container: container)
+    }
+
+    /// Follows a newly linked bank until the server's first fetch lands,
+    /// then downloads it. The row shows progress meanwhile, so this stays
+    /// quiet; it gives up after a couple of minutes and leaves the rest to
+    /// the next refresh.
+    func followNewConnection(container: ModelContainer) async {
+        for _ in 0..<HostedSyncPolicy.firstSyncChecks {
+            try? await Task.sleep(for: HostedSyncPolicy.firstSyncCheckInterval)
+            guard !Task.isCancelled, userID != nil else { return }
+            guard let latest = try? await client.connections() else { continue }
+            connections = latest
+            if latest.allSatisfy({ $0.lastSyncedDate != nil || $0.state != "connected" }) {
+                await sync(container: container, trigger: .automatic)
+                return
+            }
+        }
     }
 
     /// Keeps data current without drawing attention: runs at most once per
