@@ -16,6 +16,9 @@ enum SizeTokens {
     /// The smallest comfortable tap target (Apple HIG: 44 × 44 pt).
     static let minimumTapTarget: CGFloat = 44
 
+    /// The height of a full-width, press-and-hold commitment button.
+    static let holdButtonHeight: CGFloat = 56
+
     /// The height of an empty state's illustrative chart.
     static let emptyStateChartHeight: CGFloat = 96
 

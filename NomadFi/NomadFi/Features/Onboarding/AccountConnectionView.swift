@@ -330,7 +330,7 @@ private extension AccountConnectionView {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            Label("All data stays on-device", systemImage: "lock.shield")
+            Label("Private by design", systemImage: "lock.shield")
                 .font(TypographyTokens.caption)
                 .foregroundStyle(ColorTokens.brandPrimary)
                 .padding(.top, SpacingTokens.xxSmall)
@@ -368,14 +368,13 @@ private extension AccountConnectionView {
                 action: { isShowingForm = true }
             )
 
-            Button("Finish Setup", action: handleFinishSetup)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityHint(
-                    viewModel.addedAccounts.isEmpty
-                        ? "You can add accounts later from the dashboard"
-                        : "Saves your accounts and opens the dashboard"
-                )
+            HoldToBeginButton(
+                title: "Hold to Begin",
+                accessibilityHint: viewModel.addedAccounts.isEmpty
+                    ? "Finishes setup. You can add accounts later in Settings."
+                    : "Saves your accounts and opens the Dashboard.",
+                action: handleFinishSetup
+            )
         }
     }
 

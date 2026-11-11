@@ -24,8 +24,8 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Finish Setup"].waitForExistence(timeout: 8))
-        app.buttons["Finish Setup"].tap()
+        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
+        app.buttons["Hold to Begin"].press(forDuration: 1.5)
 
         XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
     }
@@ -43,14 +43,14 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Finish Setup"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
         app.navigationBars.buttons.firstMatch.tap()
 
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 8))
         app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.buttons["Finish Setup"].waitForExistence(timeout: 8))
-        app.buttons["Finish Setup"].tap()
+        XCTAssertTrue(app.buttons["Hold to Begin"].waitForExistence(timeout: 8))
+        app.buttons["Hold to Begin"].press(forDuration: 1.5)
 
         XCTAssertTrue(app.tabBars.buttons["Dashboard"].waitForExistence(timeout: 8))
     }
@@ -431,7 +431,15 @@ private extension NomadFiUITests {
     func tapButton(containing text: String, in app: XCUIApplication) {
         let predicate = NSPredicate(format: "label CONTAINS[c] %@", text)
         let button = app.buttons.matching(predicate).firstMatch
-        XCTAssertTrue(button.waitForExistence(timeout: 8))
+        // Lazy lists only create rows near the screen; at accessibility text
+        // sizes a row can start off screen, so scroll until it exists.
+        var swipes = 0
+        while !button.waitForExistence(timeout: swipes == 0 ? 8 : 2), swipes < 6 {
+            app.swipeUp()
+            swipes += 1
+        }
+        XCTAssertTrue(button.exists)
+        if !button.isHittable { app.swipeUp() }
         button.tap()
     }
 }
