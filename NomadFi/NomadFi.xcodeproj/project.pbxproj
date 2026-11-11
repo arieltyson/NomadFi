@@ -601,7 +601,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				NOMADFI_HOSTED_BACKEND_URL = "https://nomadfi-api-903585938180.northamerica-northeast1.run.app";
+				NOMADFI_HOSTED_BACKEND_URL = "https://nomadfi-api-196763708762.northamerica-northeast1.run.app";
 				NOMADFI_HOSTED_PRIVACY_POLICY_URL = "https://arieltyson.github.io/nomadfi-privacy/privacy/";
 				NOMADFI_HOSTED_REGION = "Canada (Montréal)";
 				NOMADFI_PLAID_REDIRECT_URI = "https://nomadfi-app.github.io/plaid/oauth";
