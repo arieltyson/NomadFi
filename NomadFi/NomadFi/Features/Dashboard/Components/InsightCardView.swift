@@ -19,11 +19,13 @@ struct InsightCardView: View {
                         .font(TypographyTokens.sectionHeader)
 
                     Text(insight.message)
-                        .font(TypographyTokens.body)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    if let confidence = insight.confidence {
+                    // An observation about the person's own history needs no
+                    // provenance chip; recommendations that cite fees or rates do.
+                    if let confidence = insight.confidence, insight.category != .anomaly {
                         StatusBadge(
                             label: confidence.displayLabel,
                             color: confidence.isVerified ? ColorTokens.positive : ColorTokens.warning,
@@ -37,7 +39,7 @@ struct InsightCardView: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(insight.category.accessibilityLabel): \(insight.title). \(insight.message). \(insight.confidence?.displayLabel ?? "")")
+        .accessibilityLabel("\(insight.title). \(insight.message)")
     }
 }
 
@@ -49,7 +51,7 @@ private extension InsightCardView {
         Image(systemName: insight.category.systemImage)
             .font(.title3)
             .foregroundStyle(insight.category.color)
-            .frame(width: 32, alignment: .center)
+            .frame(width: SpacingTokens.xLarge, alignment: .center)
             .accessibilityHidden(true)
     }
 }
@@ -98,7 +100,7 @@ struct FinancialInsight: Identifiable, Sendable {
             case .arbitrage: "arrow.triangle.swap"
             case .budget: "chart.bar.fill"
             case .subscription: "arrow.2.squarepath"
-            case .anomaly: "exclamationmark.bubble"
+            case .anomaly: "chart.line.uptrend.xyaxis"
             }
         }
 

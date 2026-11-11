@@ -93,21 +93,36 @@ struct DashboardView: View {
 
 // MARK: - Subviews
 
+/// A few things worth a look, most recent first. Only the first
+/// ``collapsedCount`` show until the person asks for the rest, so the
+/// Dashboard never turns into a list of alerts.
 private struct InsightsSection: View {
 
     let insights: [FinancialInsight]
 
+    /// How many insights show before "Show All".
+    static let collapsedCount = 3
+
+    @State private var isExpanded = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.small) {
-            Label("Your Money This Week", systemImage: "lightbulb.fill")
+            Label("Worth a Look", systemImage: "lightbulb.fill")
                 .font(TypographyTokens.sectionHeader)
                 .accessibilityAddTraits(.isHeader)
 
-            ForEach(insights) { insight in
+            ForEach(isExpanded ? insights : Array(insights.prefix(Self.collapsedCount))) { insight in
                 InsightCardView(insight: insight)
             }
+
+            if insights.count > Self.collapsedCount {
+                Button(isExpanded ? "Show Less" : "Show All \(insights.count)") {
+                    withAnimation(AnimationTokens.standard) { isExpanded.toggle() }
+                }
+                .font(.subheadline)
+                .frame(maxWidth: .infinity)
+            }
         }
-        .accessibilityLabel("Financial insights: \(insights.count) recommendation\(insights.count == 1 ? "" : "s") this week")
     }
 }
 
