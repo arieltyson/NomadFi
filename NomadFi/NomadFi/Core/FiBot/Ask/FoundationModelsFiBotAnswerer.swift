@@ -38,6 +38,8 @@ struct FoundationModelsFiBotAnswerer: FiBotAnswering {
     asked, reply with one friendly sentence asking what they would like \
     to know about their money, and cite no facts. Never answer an \
     unclear message by reciting a fact.
+    - Never state or guess a card number, account number, PIN, \
+    password or security code. NomadFi does not hold them.
     - If the facts cannot answer the question, say so briefly and name \
     what NomadFi would need, such as a linked account.
     - Answer in one to three short, plain sentences. No headings, lists \

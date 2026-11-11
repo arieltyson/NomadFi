@@ -6,7 +6,8 @@
 import Foundation
 
 /// Handles the messages a language model handles badly: ones too short
-/// to mean anything, and questions asked before NomadFi holds any data.
+/// to mean anything, requests for card numbers, PINs or passwords, and
+/// questions asked before NomadFi holds any data.
 ///
 /// Sending "Bh" to the model with a sheet of facts made it recite a fact
 /// back as though it were an answer. These cases get a plain, useful
@@ -22,10 +23,29 @@ enum FiBotTriage {
         if meaningful < minimumMeaningfulCharacters {
             return plain(String(localized: "I didn't catch that. Try asking something like \"How much have I spent this month?\""))
         }
+        if asksForCredentials(question) {
+            return plain(String(localized: "NomadFi never stores card numbers, PINs or passwords, so I can't show them. You'll find those on your card or in your bank's app."))
+        }
         if !sheet.hasFinancialData {
             return plain(String(localized: "I can't see any of your accounts yet. Connect a bank or add an account in Settings, then ask me again."))
         }
         return nil
+    }
+
+    /// Words that ask for a secret rather than about money. Matching is
+    /// deliberately broad: a wrongly caught question gets a harmless reply.
+    private static let credentialPhrases = [
+        "card number", "account number", "routing number", "transit number",
+        "cvv", "cvc", "security code", "password", "passcode", "passphrase",
+        "expiry", "expiration date", "social insurance", "social security",
+        "sin number", "ssn", "login", "log in",
+    ]
+
+    /// Whether the question asks for a card number, PIN or similar secret.
+    static func asksForCredentials(_ question: String) -> Bool {
+        let lowered = question.lowercased()
+        return credentialPhrases.contains(where: lowered.contains)
+            || lowered.contains(/\bpins?\b/)
     }
 
     private static func plain(_ text: String) -> FiBotAnswer {

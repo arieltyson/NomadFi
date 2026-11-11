@@ -30,4 +30,14 @@ enum FiBotCitationScrubber {
         for id in mentioned where !ids.contains(id) { ids.append(id) }
         return FiBotAnswerDraft(text: text, citedFactIDs: ids)
     }
+
+    /// `draft` ready to check and show: citations moved out of the
+    /// sentence and any card-length number masked.
+    static func prepare(_ draft: FiBotAnswerDraft) -> FiBotAnswerDraft {
+        let scrubbed = scrub(draft)
+        return FiBotAnswerDraft(
+            text: FiBotSensitiveTextRedactor.redactingAnswer(scrubbed.text),
+            citedFactIDs: scrubbed.citedFactIDs
+        )
+    }
 }

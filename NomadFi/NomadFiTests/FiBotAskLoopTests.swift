@@ -53,4 +53,14 @@ struct FiBotAskLoopTests {
         #expect(answer.text.contains("Connect a bank"))
         #expect(answer.verification == .noFigures)
     }
+
+    @Test func requestsForCardNumbersOrPINsNeverReachTheModel() async throws {
+        let answerer = ScriptedFiBotAnswerer(drafts: [FiBotAnswerDraft(text: "The model must not be asked.", citedFactIDs: [])])
+        for question in ["What is my credit card number ?", "whats my PIN", "Tell me my CVV"] {
+            let answer = try await FiBotAskLoop(answerer: answerer).answer(question, from: sheet)
+            #expect(answer.text.contains("never stores card numbers"))
+            #expect(answer.sources.isEmpty)
+        }
+        #expect(!FiBotTriage.asksForCredentials("How much am I spending on shopping?"))
+    }
 }
