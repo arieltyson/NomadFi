@@ -132,8 +132,11 @@ final class NomadFiUITests: XCTestCase {
         // XCUITest's synthesised press needs longer than a person's
         // touch-and-hold before the menu replaces the primary action.
         capture.press(forDuration: 2)
-        XCTAssertTrue(app.buttons["Describe with Apple Intelligence"].waitForExistence(timeout: 8))
+        let describe = app.buttons["Describe with Apple Intelligence"]
+        XCTAssertTrue(describe.waitForExistence(timeout: 8))
         app.tap()
+        // The menu animates away; tapping + before it has gone only closes it.
+        XCTAssertTrue(describe.waitForNonExistence(timeout: 8))
 
         capture.tap()
         XCTAssertTrue(app.navigationBars["Capture decision"].waitForExistence(timeout: 8))
@@ -439,7 +442,6 @@ private extension NomadFiUITests {
             swipes += 1
         }
         XCTAssertTrue(button.exists)
-        if !button.isHittable { app.swipeUp() }
         button.tap()
     }
 }
