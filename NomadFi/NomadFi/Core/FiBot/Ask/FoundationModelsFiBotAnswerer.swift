@@ -27,7 +27,8 @@ struct FoundationModelsFiBotAnswerer: FiBotAnswering {
     Rules:
     - Use only figures that appear in the facts. You may add or \
     subtract two figures, but do no other arithmetic.
-    - Cite the ID of every fact you use, such as F3.
+    - List the ID of every fact you use, such as F3, in factIDs only. \
+    Never write a fact ID in the answer itself.
     - Write amounts with their currency code, such as CAD 1,240.50. \
     Never combine amounts in different currencies.
     - Read the question generously: people type quickly, with typos, \
@@ -115,7 +116,7 @@ struct FoundationModelsFiBotAnswerer: FiBotAnswering {
 @Generable
 private struct GeneratedAnswer {
 
-    @Guide(description: "The answer in one to three short, plain sentences.")
+    @Guide(description: "The answer in one to three short, plain sentences, with no fact IDs.")
     var answer: String
 
     @Guide(description: "The ID of every fact the answer uses, such as F3.")

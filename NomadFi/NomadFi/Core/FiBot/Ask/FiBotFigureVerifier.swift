@@ -73,7 +73,10 @@ enum FiBotFigureVerifier {
 
     /// Every number in `text`, in order.
     static func figures(in text: String) -> [Figure] {
-        let pattern = /(\d[\d,]*(?:\.\d+)?)(\s?%)?/
+        // A number glued to a letter (a fact ID such as F5, or Q3) is a
+        // label, not a figure, so a number must start the text or follow
+        // something that is neither a letter nor a digit.
+        let pattern = /(?:^|[^\p{L}\d])(\d[\d,]*(?:\.\d+)?)(\s?%)?/
         return text.matches(of: pattern).compactMap { match in
             let written = String(match.output.1)
             let plain = written.replacing(",", with: "")

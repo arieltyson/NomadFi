@@ -38,12 +38,12 @@ struct FiBotAskLoop: Sendable {
 
         for attempt in 1...Self.maximumAttempts {
             try Task.checkCancellation()
-            let draft = try await answerer.draft(
+            let draft = FiBotCitationScrubber.scrub(try await answerer.draft(
                 question: question,
                 sheet: sheet,
                 previousExchange: previousExchange,
                 correction: correction
-            )
+            ))
             let (verification, sources) = FiBotFigureVerifier.verify(draft, against: sheet, question: question)
             result = FiBotAnswer(text: draft.text, sources: sources, verification: verification)
 

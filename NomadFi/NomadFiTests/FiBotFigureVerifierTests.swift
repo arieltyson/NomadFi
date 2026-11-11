@@ -66,4 +66,21 @@ struct FiBotFigureVerifierTests {
         )
         #expect(result.sources.map(\.id) == ["F1"])
     }
+
+    @Test func factIDsInTheSentenceAreNotFigures() {
+        #expect(verify("CAD 820.40 in total this month, based on F1.", cites: ["F1"]) == .verified)
+    }
+
+    @Test func factIDsAreMovedOutOfTheSentenceIntoCitations() {
+        let one = FiBotCitationScrubber.scrub(FiBotAnswerDraft(text: "CAD 820.40 in total this month, based on F1.", citedFactIDs: []))
+        #expect(one.text == "CAD 820.40 in total this month.")
+        #expect(one.citedFactIDs == ["F1"])
+
+        let two = FiBotCitationScrubber.scrub(FiBotAnswerDraft(text: "Based on F1 and F2, you spent CAD 820.40 (F1).", citedFactIDs: ["F1"]))
+        #expect(two.text == "You spent CAD 820.40.")
+        #expect(two.citedFactIDs == ["F1", "F2"])
+
+        let untouched = FiBotAnswerDraft(text: "You spent CAD 820.40.", citedFactIDs: ["F1"])
+        #expect(FiBotCitationScrubber.scrub(untouched) == untouched)
+    }
 }
