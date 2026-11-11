@@ -19,6 +19,10 @@ enum SizeTokens {
     /// The height of a full-width, press-and-hold commitment button.
     static let holdButtonHeight: CGFloat = 56
 
+    /// The outline of a prominent control drawn on a tinted fill, so its
+    /// edge holds against a black background.
+    static let prominentBorderWidth: CGFloat = 1.5
+
     /// The height of an empty state's illustrative chart.
     static let emptyStateChartHeight: CGFloat = 96
 

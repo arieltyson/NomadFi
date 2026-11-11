@@ -18,16 +18,15 @@ struct AccountConnectionView: View {
     @State private var isShowingLocationPermissionPriming = false
 
     var body: some View {
-        VStack(spacing: SpacingTokens.large) {
-            header
-
-            accountList
-
-            Spacer()
-
-            footer
-        }
-        .padding(SpacingTokens.large)
+        // Content scrolls and the two actions stay pinned in a bar with the
+        // system scroll edge effect, so nothing is cut off or overlapped
+        // at large text sizes.
+        accountList
+            .safeAreaBar(edge: .bottom) {
+                footer
+                    .padding(.horizontal, SpacingTokens.large)
+                    .padding(.bottom, SpacingTokens.medium)
+            }
         .sheet(isPresented: $isShowingForm) {
             AddAccountSheet(viewModel: viewModel, isPresented: $isShowingForm)
         }
@@ -325,7 +324,7 @@ private extension AccountConnectionView {
                 .bold()
                 .multilineTextAlignment(.center)
 
-            Text("Add the bank accounts and cards you use across your jurisdictions. Balances are optional — you can always add them later.")
+            Text("Add the accounts and cards you use in each country. Balances are optional.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -340,13 +339,23 @@ private extension AccountConnectionView {
     var accountList: some View {
         Group {
             if viewModel.addedAccounts.isEmpty {
-                ContentUnavailableView {
-                    Label("No Accounts Yet", systemImage: "creditcard")
-                } description: {
-                    Text("Tap the button below to add your first account.")
+                ScrollView {
+                    VStack(spacing: SpacingTokens.xLarge) {
+                        header
+                        ContentUnavailableView {
+                            Label("No Accounts Yet", systemImage: "creditcard")
+                        } description: {
+                            Text("Add an account now, or hold to begin and connect your bank later in Settings.")
+                        }
+                    }
+                    .padding(SpacingTokens.large)
                 }
+                .scrollBounceBehavior(.basedOnSize)
             } else {
                 List {
+                    header
+                        .frame(maxWidth: .infinity)
+                        .listRowSeparator(.hidden)
                     ForEach(viewModel.addedAccounts) { draft in
                         AccountRow(draft: draft)
                     }

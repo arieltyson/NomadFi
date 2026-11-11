@@ -28,8 +28,11 @@ struct HoldToBeginButton: View {
 
     var body: some View {
         ZStack {
+            // The track: a tinted fill with a brand outline, so the button's
+            // edge reads clearly on a black background before any fill.
             Capsule()
-                .fill(ColorTokens.tintedFill(ColorTokens.actionTint, contrast: contrast))
+                .fill(ColorTokens.tintedSurface(ColorTokens.actionTint, contrast: .increased))
+                .strokeBorder(ColorTokens.actionTint, lineWidth: SizeTokens.prominentBorderWidth)
 
             Capsule()
                 .fill(ColorTokens.actionTint)

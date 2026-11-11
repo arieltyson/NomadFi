@@ -268,7 +268,7 @@ private struct MockPermissionDialogContent: View {
                 .bold()
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("NomadFi detects your current country to recommend the lowest-fee payment card for where you are.")
+            Text("NomadFi detects your current country to recommend the card with the lowest fees for where you are.")
                 .font(TypographyTokens.body)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
