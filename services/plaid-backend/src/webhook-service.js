@@ -48,6 +48,7 @@ export class WebhookService {
       if (event.webhook_type === 'TRANSACTIONS' && event.webhook_code === 'SYNC_UPDATES_AVAILABLE') {
         await client.query(`UPDATE nomadfi.sync_jobs SET requested_revision = requested_revision + 1
           WHERE connection_id = $1`, [connection.id]);
+        return { accepted: true, queued: true };
       } else if (event.webhook_type === 'ITEM' && (event.webhook_code === 'USER_PERMISSION_REVOKED'
           || (event.webhook_code === 'ERROR' && event.error?.error_code === 'ITEM_LOGIN_REQUIRED'))) {
         await client.query("UPDATE nomadfi.connections SET state = 'reconnect_required' WHERE id = $1", [connection.id]);

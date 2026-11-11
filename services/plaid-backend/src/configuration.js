@@ -30,5 +30,6 @@ export function configuration(env) {
       keyID: required('APPLE_KEY_ID'), privateKey: required('APPLE_PRIVATE_KEY').replaceAll('\\n', '\n') },
     encryptionMode, encryptionKey: encryptionMode === 'kms' ? required('KMS_KEY_NAME') : Buffer.from(required('LOCAL_TOKEN_KEY'), 'base64'),
     allowedSubjects, rateKey, redirectURI: required('PLAID_REDIRECT_URI'), webhookURL: required('PLAID_WEBHOOK_URL'),
+    workerJobName: env.WORKER_JOB_NAME || undefined,
   };
 }

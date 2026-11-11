@@ -13,6 +13,7 @@ import { WebhookService, enqueueStaleConnections } from './webhook-service.js';
 import { createAPI } from './http-server.js';
 import { AppleNotifications } from './apple-notifications.js';
 import { FiBotService } from './fibot-service.js';
+import { WorkerTrigger } from './worker-trigger.js';
 
 const log = value => console.log(JSON.stringify(value));
 let pool, server, cipher, stopping = false;
@@ -31,7 +32,8 @@ try {
   if (mode === 'api') {
     server = createAPI({ pool, auth, store, link, delivery: new DeliveryService(pool), revocation, fibot: new FiBotService(pool),
       appleNotifications: new AppleNotifications({ pool, apple, revocation }),
-      webhooks: new WebhookService({ pool, plaid }), rateKey: config.rateKey, logger: log });
+      webhooks: new WebhookService({ pool, plaid }), rateKey: config.rateKey, logger: log,
+      workerTrigger: new WorkerTrigger({ jobName: config.workerJobName, logger: log }) });
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(config.port, config.host, resolve); });
     log({ event: 'api_listening' });
     await new Promise(resolve => server.once('close', resolve));

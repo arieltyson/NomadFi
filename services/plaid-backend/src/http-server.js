@@ -19,7 +19,8 @@ function object(raw) {
     return parsed;
   } catch { throw new ServiceError('INVALID_JSON'); }
 }
-export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, appleNotifications, fibot, rateKey, logger = () => {} }) {
+export function createAPI({ pool, auth, store, link, delivery, revocation, webhooks, appleNotifications, fibot, rateKey,
+  workerTrigger = { request: async () => 'disabled' }, logger = () => {} }) {
   if (!Buffer.isBuffer(rateKey) || rateKey.length < 32) throw new ServiceError('INVALID_RATE_KEY');
   const rate = async (identity, group, maximum) => {
     const key = createHmac('sha256', rateKey).update(`${group}:${identity}`).digest();
@@ -41,7 +42,9 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       await rate(request.socket.remoteAddress ?? 'unknown', 'ingress', 300);
       if (method === 'POST' && path === '/webhooks/plaid') {
         await rate('plaid', 'webhooks', 120);
-        send(200, await webhooks.receive(await body(request, 262144), request.headers['plaid-verification'])); return;
+        const received = await webhooks.receive(await body(request, 262144), request.headers['plaid-verification']);
+        if (received.queued) await workerTrigger.request();
+        send(200, { accepted: true }); return;
       }
       if (!['GET', 'POST', 'DELETE'].includes(method)) throw new ServiceError('METHOD_NOT_ALLOWED', 405);
       const mutating = method !== 'GET';
@@ -62,7 +65,9 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       const session = await auth.authenticate(authorization.slice(7)), userID = session.user_id;
       await rate(userID, 'authenticated', 120);
       if (method === 'POST' && path === '/auth/logout') { await auth.logout(session.id, userID); send(200, { status: 'signed_out' }); return; }
-      if (method === 'DELETE' && path === '/account') { send(202, await revocation.deleteAccount(userID)); return; }
+      if (method === 'DELETE' && path === '/account') {
+        const deleted = await revocation.deleteAccount(userID); await workerTrigger.request(); send(202, deleted); return;
+      }
       if (fibot && path === '/fibot/configuration' && method === 'POST') {
         await rate(userID, 'fibot-configuration', 5); send(200, await fibot.configure(userID, input)); return;
       }
@@ -75,15 +80,21 @@ export function createAPI({ pool, auth, store, link, delivery, revocation, webho
       }
       if (method === 'POST' && path === '/link/exchange') {
         await rate(userID, 'exchange', 10);
-        send(200, await link.exchange(userID, input.attempt_id, input.public_token)); return;
+        const exchanged = await link.exchange(userID, input.attempt_id, input.public_token);
+        await workerTrigger.request(); send(200, exchanged); return;
       }
       const connection = /^\/connections\/([^/]+)(\/sync|\/updated)?$/.exec(path);
       if (connection) {
         const id = uuid(connection[1]);
-        if (method === 'DELETE' && !connection[2]) { send(202, await revocation.disconnect(userID, id)); return; }
-        if (method === 'POST' && connection[2] === '/updated') { send(200, await link.completeUpdate(userID, id)); return; }
+        if (method === 'DELETE' && !connection[2]) {
+          const disconnected = await revocation.disconnect(userID, id); await workerTrigger.request(); send(202, disconnected); return;
+        }
+        if (method === 'POST' && connection[2] === '/updated') {
+          const updated = await link.completeUpdate(userID, id); await workerTrigger.request(); send(200, updated); return;
+        }
         if (method === 'POST' && connection[2] === '/sync') {
-          await rate(userID, 'manual-sync', 5); await store.requestSync(userID, id); send(202, { status: 'queued' }); return;
+          await rate(userID, 'manual-sync', 5); await store.requestSync(userID, id); await workerTrigger.request();
+          send(202, { status: 'queued' }); return;
         }
       }
       if (method === 'POST' && path === '/snapshots') {

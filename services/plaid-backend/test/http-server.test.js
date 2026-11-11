@@ -60,3 +60,23 @@ test('invalid JSON and excessive authentication traffic are rejected', async () 
   }
   assert.equal((await request('/auth/challenge', { method: 'POST', body: {}, authenticated: false })).status, 429);
 });
+
+test('queued webhooks and new links start the worker; Plaid only sees an acknowledgment', async () => {
+  let triggered = 0;
+  const api = createAPI({ pool, rateKey: randomBytes(32),
+    auth: { async authenticate() { return { id: randomUUID(), user_id: owner }; } },
+    link: { async exchange() { return { connection_id: randomUUID() }; } },
+    webhooks: { async receive() { return { accepted: true, queued: true }; } },
+    workerTrigger: { async request() { triggered += 1; return 'started'; } },
+  });
+  api.listen(0, '127.0.0.1'); await once(api, 'listening');
+  const base = `http://127.0.0.1:${api.address().port}`;
+  try {
+    const webhook = await fetch(`${base}/webhooks/plaid`, { method: 'POST', body: '{}' });
+    assert.equal(webhook.status, 200); assert.deepEqual(await webhook.json(), { accepted: true });
+    const exchange = await fetch(`${base}/link/exchange`, { method: 'POST', headers: { 'Content-Type': 'application/json',
+      Authorization: `Bearer ${randomBytes(32).toString('base64url')}` }, body: JSON.stringify({ attempt_id: randomUUID(), public_token: 'public-sandbox-x' }) });
+    assert.equal(exchange.status, 200);
+    assert.equal(triggered, 2);
+  } finally { await new Promise(resolve => api.close(resolve)); }
+});
