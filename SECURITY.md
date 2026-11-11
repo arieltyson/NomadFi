@@ -117,7 +117,7 @@ release receive security fixes.
   repository. Fixed: background App Intents usable from a locked iPhone;
   default instead of Complete file protection; widgets showing balances when
   locked; an unused local-network ATS exception; plaintext Plaid secrets on
-  disk in an iCloud-synced folder (deleted; rotation required); project
+  disk in an iCloud-synced folder (deleted, and both secrets rotated the same day); project
   Editor rights on the build identity; Supabase accepting non-TLS
   connections, public sign-ups and Data API schemas; missing API security
   headers; an unpinned base image; Dependabot alerts off.
