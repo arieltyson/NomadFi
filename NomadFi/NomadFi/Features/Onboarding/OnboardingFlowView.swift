@@ -12,6 +12,8 @@ struct OnboardingFlowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = OnboardingViewModel()
+    /// One conductor for the whole flow, so its engine starts once.
+    @State private var conductor = HapticConductor()
 
     var body: some View {
         NavigationStack(path: $viewModel.path) {
@@ -22,6 +24,7 @@ struct OnboardingFlowView: View {
                         .navigationBarTitleDisplayMode(.inline)
                 }
         }
+        .environment(\.hapticConductor, conductor)
         .alert("Couldn't Finish Setup", isPresented: $viewModel.isShowingSaveFailure) {
             Button("OK", role: .cancel) { }
         } message: {
