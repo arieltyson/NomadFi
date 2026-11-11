@@ -33,11 +33,28 @@ struct HostedLocalStore {
                   revision > current || (revision == current && checkpoint.offset >= state.eventOffset) else {
                 throw HostedServiceError.obsoleteDelivery
             }
-            let accounts = try context.fetch(FetchDescriptor<Account>())
-            let legacyKind = FinancialDataProviderKind.externalAggregator(identifier: "plaid_sandbox").logKey
-            guard !accounts.contains(where: { $0.providerLinkKindRawValue == legacyKind }) else {
+            let legacyKind: String? = FinancialDataProviderKind.externalAggregator(identifier: "plaid_sandbox").logKey
+            let legacyAccounts = FetchDescriptor<Account>(predicate: #Predicate { $0.providerLinkKindRawValue == legacyKind })
+            guard try context.fetchCount(legacyAccounts) == 0 else {
                 throw HostedServiceError.migrationRequired
             }
+            // Most deliveries carry nothing new. Record the checkpoint and
+            // leave every account and transaction untouched and unloaded.
+            if events.isEmpty, reviewedMigration == nil {
+                if saved == nil { context.insert(state) }
+                state.revision = checkpoint.revision
+                state.eventOffset = checkpoint.offset
+                state.lastAppliedAt = now
+                try context.save()
+                return .init(checkpoint: state.checkpoint, deviceID: state.deviceID, bootstrapped: true)
+            }
+            // Only hosted records can match, and each is looked up by its
+            // identity, so the work grows with this delivery rather than with
+            // the square of the whole history.
+            let hostedKind: String? = Self.provider.logKey
+            let hostedAccounts = try context.fetch(FetchDescriptor<Account>(predicate: #Predicate { $0.providerLinkKindRawValue == hostedKind }))
+            let accountsByIdentity = Dictionary(grouping: hostedAccounts, by: { $0.providerExternalAccountID ?? "" })
+            let changed = Set(events.map(\.identity))
             let previous = try state.ledger()
             var ledger = Dictionary(previous.map { ($0.identity, $0) }, uniquingKeysWith: { _, last in last })
             for event in events {
@@ -49,11 +66,23 @@ struct HostedLocalStore {
                                                   externalID: event.externalID, payload: prior.payload, removed: true)
                 } else { ledger[event.identity] = event }
             }
-            let transactions = try context.fetch(FetchDescriptor<Transaction>())
+            let hostedTransactions = try context.fetch(FetchDescriptor<Transaction>(predicate: #Predicate { $0.providerKindRawValue == hostedKind }))
+            let transactionsByIdentity = Dictionary(grouping: hostedTransactions, by: { $0.externalTransactionID ?? "" })
             var mappedAccounts: [String: Account] = [:]
+            // Accounts created in this pass; their transactions may have been
+            // skipped earlier for want of an account, so they are revisited.
+            var newAccountIdentities: Set<String> = []
             for event in ledger.values where event.entityKind == "account" {
-                let matches = accounts.filter { $0.providerLinkKindRawValue == Self.provider.logKey && $0.providerExternalAccountID == event.identity }
+                let matches = accountsByIdentity[event.identity] ?? []
                 guard matches.count <= 1 else { throw HostedServiceError.invalidResponse }
+                guard changed.contains(event.identity) else {
+                    // Unchanged: keep it as it is, and let its transactions find it.
+                    if !event.isRemoved, let account = matches.first, event.payload.currency.flatMap(CurrencyCode.init(rawValue:)) != nil,
+                       accountType(event.payload) != nil {
+                        mappedAccounts[event.identity] = account
+                    }
+                    continue
+                }
                 if event.isRemoved {
                     if let account = matches.first { clearBalances(account) }
                     continue
@@ -65,7 +94,10 @@ struct HostedLocalStore {
                 }
                 let account = matches.first ?? Account(name: event.payload.name ?? "Linked account", institutionName: "",
                                                        accountType: type, currencyCode: currency)
-                if matches.isEmpty { context.insert(account) }
+                if matches.isEmpty {
+                    context.insert(account)
+                    newAccountIdentities.insert(event.identity)
+                }
                 account.providerLinkKindRawValue = Self.provider.logKey
                 account.providerExternalAccountID = event.identity
                 account.providerConnectionID = event.connectionID.uuidString
@@ -83,7 +115,9 @@ struct HostedLocalStore {
                 : try JSONDecoder().decode([HostedTransactionArchive].self, from: state.archivedTransactionsData)
             let previousByID = Dictionary(previous.map { ($0.identity, $0) }, uniquingKeysWith: { _, last in last })
             for event in ledger.values where event.entityKind == "transaction" {
-                let matches = transactions.filter { $0.providerKindRawValue == Self.provider.logKey && $0.externalTransactionID == event.identity }
+                let accountIdentity = event.payload.accountID.map { "\(event.connectionID.uuidString.lowercased())/account/\($0)" }
+                guard changed.contains(event.identity) || accountIdentity.map(newAccountIdentities.contains) == true else { continue }
+                let matches = transactionsByIdentity[event.identity] ?? []
                 guard matches.count <= 1 else { throw HostedServiceError.invalidResponse }
                 if event.isRemoved || event.payload.pending == true {
                     if let transaction = matches.first {
@@ -95,8 +129,7 @@ struct HostedLocalStore {
                     }
                     continue
                 }
-                guard let externalAccount = event.payload.accountID,
-                      let account = mappedAccounts["\(event.connectionID.uuidString.lowercased())/account/\(externalAccount)"],
+                guard let accountIdentity, let account = mappedAccounts[accountIdentity],
                       let rawCurrency = event.payload.currency, let currency = CurrencyCode(rawValue: rawCurrency),
                       let value = try amount(event.payload.amount), let day = day(event.payload.date) else { continue }
                 let merchant = event.payload.merchantName ?? event.payload.name ?? "Transaction"

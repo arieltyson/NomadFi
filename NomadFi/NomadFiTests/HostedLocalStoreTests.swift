@@ -136,4 +136,65 @@ struct HostedLocalStoreTests {
         #expect(try context.fetch(FetchDescriptor<Account>()).first?.name == "Preserved fixture")
         #expect(try context.fetchCount(FetchDescriptor<HostedLocalState>()) == 0)
     }
+
+    // MARK: - Work stays proportional to the delivery
+
+    private func purchase(_ id: String, amount: String = "10", on accountID: String = "account") -> HostedEvent {
+        .init(connectionID: connection, kind: "transaction", externalID: id,
+              payload: .init(name: "Purchase \(id)", currency: "CAD", accountID: accountID, amount: amount,
+                             date: "2026-10-01", pending: false), removed: false)
+    }
+
+    @Test func anEmptyDeliveryAdvancesTheCheckpointAndTouchesNothing() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let store = HostedLocalStore(container: container)
+        let first = Date(timeIntervalSince1970: 1_800_000_000)
+        _ = try store.apply([account(), purchase("a")], checkpoint: .init(revision: "1", offset: end),
+                            ownerID: owner, endpoint: endpoint, homeCurrency: .cad, now: first)
+        _ = try store.apply([], checkpoint: .init(revision: "2", offset: end),
+                            ownerID: owner, endpoint: endpoint, homeCurrency: .cad, now: first.addingTimeInterval(600))
+
+        let context = ModelContext(container)
+        #expect(try context.fetch(FetchDescriptor<Transaction>()).first?.importedAt == first)
+        #expect(try context.fetch(FetchDescriptor<Account>()).first?.lastUpdatedAt == first)
+        #expect(try store.position(ownerID: owner, endpoint: endpoint)?.checkpoint.revision == "2")
+    }
+
+    @Test func aDeliveryOnlyRewritesTheRecordsItNames() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let store = HostedLocalStore(container: container)
+        let first = Date(timeIntervalSince1970: 1_800_000_000), later = first.addingTimeInterval(600)
+        _ = try store.apply([account(), purchase("a"), purchase("b")], checkpoint: .init(revision: "1", offset: end),
+                            ownerID: owner, endpoint: endpoint, homeCurrency: .cad, now: first)
+        _ = try store.apply([purchase("b", amount: "25"), purchase("c")], checkpoint: .init(revision: "2", offset: end),
+                            ownerID: owner, endpoint: endpoint, homeCurrency: .cad, now: later)
+
+        let rows = try ModelContext(container).fetch(FetchDescriptor<Transaction>())
+        let byName = Dictionary(uniqueKeysWithValues: rows.map { ($0.merchantName, $0) })
+        #expect(rows.count == 3)
+        #expect(byName["Purchase a"]?.importedAt == first, "An unnamed record is left exactly as it was")
+        #expect(byName["Purchase b"]?.originalAmount == 25)
+        #expect(byName["Purchase b"]?.importedAt == later)
+        #expect(byName["Purchase c"]?.importedAt == later)
+        #expect(byName.values.allSatisfy { $0.account != nil }, "New records still find an account that did not change")
+    }
+
+    @Test func aLargeHistoryMergesQuicklyAndLaterDeliveriesStayCheap() throws {
+        let container = try SwiftDataTestContainerFactory.makeFullSchemaContainer()
+        let store = HostedLocalStore(container: container)
+        let history = [account()] + (0..<3000).map { purchase("t\($0)") }
+        let clock = ContinuousClock()
+
+        let bootstrap = try clock.measure {
+            _ = try store.apply(history, checkpoint: .init(revision: "1", offset: end),
+                                ownerID: owner, endpoint: endpoint, homeCurrency: .cad)
+        }
+        let delta = try clock.measure {
+            _ = try store.apply([purchase("new")], checkpoint: .init(revision: "2", offset: end),
+                                ownerID: owner, endpoint: endpoint, homeCurrency: .cad)
+        }
+        #expect(try ModelContext(container).fetchCount(FetchDescriptor<Transaction>()) == 3001)
+        #expect(bootstrap < .seconds(10), "3,000 transactions took \(bootstrap)")
+        #expect(delta < .seconds(2), "One new transaction over 3,000 took \(delta)")
+    }
 }
