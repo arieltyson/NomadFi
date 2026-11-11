@@ -161,7 +161,9 @@ private struct AddAccountSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        // Full height only: a half-height form grows when the keyboard opens
+        // and collapses again when it closes, which moves everything twice.
+        .presentationDetents([.large])
         .onAppear { focusedField = .name }
     }
 

@@ -41,7 +41,7 @@ struct PlaidSandboxDeveloperConfigView: View {
         .navigationTitle("Plaid Sandbox Harness")
         .sheet(item: $sharedExport) { payload in
             ShareSheet(activityItems: payload.activityItems)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
     }
 }
