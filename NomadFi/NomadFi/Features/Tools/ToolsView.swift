@@ -16,7 +16,9 @@ import SwiftUI
 /// request so it fires once.
 struct ToolsView: View {
 
-    @State private var path: [Tool] = []
+    /// Type-erased so screens inside a tool can push their own values
+    /// (a region, a transaction); a `[Tool]` path silently refused them.
+    @State private var path = NavigationPath()
 
     @AppStorage(Tool.pendingStorageKey, store: AppRoutingDefaults.shared)
     private var pendingTool: String = ""
@@ -34,7 +36,7 @@ struct ToolsView: View {
         }
         .onChange(of: pendingTool, initial: true) { _, rawValue in
             guard let tool = Tool(rawValue: rawValue) else { return }
-            path = [tool]
+            path = NavigationPath([tool])
             pendingTool = ""
         }
     }
