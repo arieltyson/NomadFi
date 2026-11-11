@@ -120,4 +120,6 @@ release receive security fixes.
   disk in an iCloud-synced folder (deleted, and both secrets rotated the same day); project
   Editor rights on the build identity; Supabase accepting non-TLS
   connections, public sign-ups and Data API schemas; missing API security
-  headers; an unpinned base image; Dependabot alerts off.
+  headers; an unpinned base image; Dependabot alerts off. Enabling alerts
+  surfaced 40 advisories, 39 in the retired on-Mac Plaid broker (removed)
+  and one in pyspark (upgraded to 3.5.8).
