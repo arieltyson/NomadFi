@@ -5,10 +5,10 @@
 
 import SwiftUI
 
-/// Adds the system keyboard toolbar's Done button and drag-to-dismiss.
+/// Adds a Done button above the keyboard and drag-to-dismiss.
 ///
 /// The return key is not a dismissal. A `.decimalPad` has no return
-/// key at all, and on a multi-line field return inserts a newline —
+/// key at all, and on a multi-line field return inserts a newline,
 /// so a screen that relies on it leaves people with no way out.
 ///
 /// The modifier owns the dismissal rather than taking a closure for
@@ -16,9 +16,8 @@ import SwiftUI
 /// caller that can forget to. Dragging the keyboard away is wired up
 /// here too, so the gesture and the button always arrive together.
 ///
-/// Attach it *inside* the screen's `NavigationStack`. SwiftUI drops
-/// keyboard toolbar items attached outside the stack — which is what
-/// made the button vanish after the first focus in an earlier build.
+/// The button appears whenever `focus` holds a field, so it is there
+/// from the first focus, including focus set as a sheet opens.
 ///
 /// ```swift
 /// @FocusState private var focusedField: Field?
@@ -35,10 +34,9 @@ private struct KeyboardDoneToolbar<Value: Hashable>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    KeyboardDoneButton { focus.wrappedValue = nil }
+            .safeAreaInset(edge: .bottom) {
+                if focus.wrappedValue != nil {
+                    KeyboardDoneBar { focus.wrappedValue = nil }
                 }
             }
     }
@@ -52,12 +50,33 @@ private struct SingleFieldKeyboardDoneToolbar: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    KeyboardDoneButton { focus.wrappedValue = false }
+            .safeAreaInset(edge: .bottom) {
+                if focus.wrappedValue {
+                    KeyboardDoneBar { focus.wrappedValue = false }
                 }
             }
+    }
+}
+
+/// Done, trailing, in a slim bar that rides on top of the keyboard.
+///
+/// Drawn by the app rather than placed in the system keyboard toolbar:
+/// on iOS 26 a `.keyboard` toolbar item often fails to appear when focus
+/// is set as a screen or sheet opens, and shows only after focus moves,
+/// which left people without a visible way to dismiss the keyboard.
+private struct KeyboardDoneBar: View {
+
+    let dismiss: () -> Void
+
+    var body: some View {
+        HStack {
+            Spacer()
+            KeyboardDoneButton(dismiss: dismiss)
+                .buttonStyle(.glass)
+        }
+        .padding(.horizontal, SpacingTokens.medium)
+        .padding(.vertical, SpacingTokens.xSmall)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 }
 
