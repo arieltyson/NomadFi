@@ -508,10 +508,19 @@
         }
       }
     },
+    "Answered on this iPhone by Apple Intelligence. Your data and questions never leave it, and conversations aren't saved." : {
+
+    },
     "API token" : {
 
     },
     "Apple FinanceKit" : {
+
+    },
+    "Apple Intelligence is still getting ready. Try again soon." : {
+
+    },
+    "Apple Intelligence isn't available right now." : {
 
     },
     "Applied when no category override matches the purchase category." : {
@@ -526,7 +535,16 @@
     "As of %@" : {
 
     },
+    "Ask" : {
+
+    },
     "Ask a professional" : {
+
+    },
+    "Ask FiBot" : {
+
+    },
+    "Ask FiBot needs an iPhone that supports Apple Intelligence." : {
 
     },
     "Ask NomadFi which saved payment method clears the hard rules for a purchase. The engine is deterministic — it will not invent rewards claims or predict a credit-score outcome." : {
@@ -667,6 +685,9 @@
     "Cheaper (%@)" : {
 
     },
+    "Check a Purchase" : {
+
+    },
     "Check affordability with FiBot" : {
 
     },
@@ -680,6 +701,9 @@
 
     },
     "Check Net Worth" : {
+
+    },
+    "Checked against your data" : {
 
     },
     "Choose a Different File" : {
@@ -1184,6 +1208,9 @@
     "Evaluated as of %@" : {
 
     },
+    "Every figure in this answer matches NomadFi's own records below." : {
+
+    },
     "Every fund is assumed to earn the same, so the mix only balances risk against conversion costs." : {
 
     },
@@ -1244,22 +1271,28 @@
     "Fair Cost" : {
 
     },
-    "FiBot" : {
-
-    },
-    "FiBot · Can I afford this?" : {
-
-    },
     "FiBot brief" : {
 
     },
+    "FiBot can't answer that one. Try asking about your accounts, spending or subscriptions." : {
+
+    },
     "FiBot checks an immediate cash purchase against your confirmed income, bills and reserves. Review your plan before relying on a result." : {
+
+    },
+    "FiBot could not match %@ to your records, even after checking again. Treat those figures with care." : {
+
+    },
+    "FiBot couldn't finish that answer. Try again." : {
 
     },
     "FiBot evidence" : {
 
     },
     "FiBot monitoring" : {
+
+    },
+    "Figures used" : {
 
     },
     "Financial Connections" : {
@@ -1412,6 +1445,12 @@
 
     },
     "Hosting region: %@" : {
+
+    },
+    "How much cash do I have?" : {
+
+    },
+    "How much have I spent this month?" : {
 
     },
     "How much you expect to pay, in the purchase currency." : {
@@ -1701,6 +1740,9 @@
     "Monthly Subscription Cost" : {
 
     },
+    "More" : {
+
+    },
     "More actions" : {
 
     },
@@ -1732,6 +1774,9 @@
 
     },
     "New" : {
+
+    },
+    "New Conversation" : {
 
     },
     "Next renewal" : {
@@ -2154,6 +2199,9 @@
     "Privacy Policy" : {
 
     },
+    "Private to this iPhone" : {
+
+    },
     "Profile" : {
 
     },
@@ -2219,6 +2267,9 @@
 
     },
     "Rates Unavailable" : {
+
+    },
+    "Reading and checking your finances…" : {
 
     },
     "Reading receipt..." : {
@@ -2619,6 +2670,9 @@
     "Showing Plaid Link" : {
 
     },
+    "Shows the figures this answer used" : {
+
+    },
     "Sign out" : {
 
     },
@@ -2629,6 +2683,9 @@
 
     },
     "Snooze alerts for seven days" : {
+
+    },
+    "Some figures couldn't be checked" : {
 
     },
     "Something Went Wrong" : {
@@ -2671,6 +2728,9 @@
 
     },
     "Statement Calendar" : {
+
+    },
+    "Stop" : {
 
     },
     "Stop monitoring and delete hosted FiBot data" : {
@@ -2764,6 +2824,9 @@
     "That doesn't look like a Tiingo token." : {
 
     },
+    "That needed more context than FiBot can hold. Try a narrower question." : {
+
+    },
     "The calculation assumes" : {
 
     },
@@ -2810,6 +2873,9 @@
 
     },
     "This account has a legacy balance but no credit limit. If the number above is actually your credit limit, move it here — a limit is capacity, not a balance." : {
+
+    },
+    "This answer states no figures to check." : {
 
     },
     "This button only works when the local Plaid sandbox broker is running. It is a developer-only path for NomadFi's Phase 5D proof, not a production connection flow." : {
@@ -2940,6 +3006,9 @@
     "TTD — Trinidad and Tobago Dollar" : {
 
     },
+    "Turn on Apple Intelligence in Settings to ask FiBot." : {
+
+    },
     "Type" : {
 
     },
@@ -3045,6 +3114,9 @@
     "What are you considering?" : {
 
     },
+    "What do my subscriptions cost?" : {
+
+    },
     "What is your home currency?" : {
 
     },
@@ -3119,6 +3191,9 @@
 
     },
     "Yearly return" : {
+
+    },
+    "You asked: %@" : {
 
     },
     "You can add accounts later from the dashboard" : {
