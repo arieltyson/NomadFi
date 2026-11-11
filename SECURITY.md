@@ -37,8 +37,9 @@ release receive security fixes.
   Every background App Intent requires authentication, and a test pins
   this for each intent.
 - **Widgets redact balances** on the Lock Screen and in StandBy.
-- **Optional App Lock** (Face ID, Touch ID or passcode) and an app-switcher
-  privacy blur.
+- **An app-switcher privacy blur.** Locking the app itself is left to iOS
+  (touch and hold the icon, then Require Face ID), which covers every
+  entry point; NomadFi no longer ships its own lock.
 - **Ask FiBot runs on device.** Questions, facts and answers never leave the
   iPhone, and every figure in an answer is checked against NomadFi's own
   records before it is shown.

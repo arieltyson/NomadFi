@@ -22,10 +22,10 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>NomadFi uses Face ID to unlock the app so only you can see your financial data.</string>
 	<key>NSFinancialDataUsageDescription</key>
 	<string>NomadFi reads on-device balances and transactions from Apple FinanceKit so it can help you choose the best card, plan credit-card timing, and reduce cross-border fees. The data stays on your device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
 	<key>NomadFiHostedBackendURL</key>
 	<string>$(NOMADFI_HOSTED_BACKEND_URL)</string>
 	<key>NomadFiHostedBackupRetentionDays</key>
@@ -36,8 +36,6 @@
 	<string>$(NOMADFI_HOSTED_REGION)</string>
 	<key>NomadFiPlaidRedirectURI</key>
 	<string>$(NOMADFI_PLAID_REDIRECT_URI)</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>NomadFi detects your current country to recommend the lowest-fee payment card for where you are.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

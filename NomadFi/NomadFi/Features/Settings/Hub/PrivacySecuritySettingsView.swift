@@ -23,7 +23,6 @@ import SwiftUI
 struct PrivacySecuritySettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppLockManager.self) private var appLockManager
     @Environment(\.hostedBanking) private var hostedBanking
 
     @State private var isShowingPrivacyPolicy = false
@@ -34,7 +33,6 @@ struct PrivacySecuritySettingsView: View {
 
     var body: some View {
         List {
-            securitySection
             privacySection
         }
         .navigationTitle("Privacy & Security")
@@ -52,9 +50,6 @@ struct PrivacySecuritySettingsView: View {
         .disabled(isDeleting)
         .sheet(isPresented: $isShowingPrivacyPolicy) {
             PrivacyPolicySheet()
-        }
-        .task {
-            appLockManager.refreshBiometricAvailability()
         }
     }
 }
@@ -88,35 +83,6 @@ private extension PrivacySecuritySettingsView {
             DataGovernancePolicy.deleteAllUserData(in: modelContext, notificationManager: notificationManager)
         } catch {
             deletionMessage = "The hosted deletion request could not be confirmed. Your local records and sign-in are kept so you can retry."
-        }
-    }
-
-    var securitySection: some View {
-        @Bindable var appLockManager = appLockManager
-
-        return Section {
-            Toggle(appLockTitle, isOn: $appLockManager.isAppLockEnabled)
-
-            if appLockManager.isAppLockEnabled {
-                Picker("Lock After", selection: $appLockManager.lockTimeout) {
-                    ForEach(LockTimeout.allCases) { timeout in
-                        Text(timeout.displayName).tag(timeout)
-                    }
-                }
-            }
-        } header: {
-            Text("Security")
-        }
-    }
-
-    /// Names what the toggle requires, so it needs no footer.
-    var appLockTitle: String {
-        guard appLockManager.isBiometricAvailable else { return "Require Passcode" }
-        return switch appLockManager.biometricType {
-        case .faceID: "Require Face ID"
-        case .touchID: "Require Touch ID"
-        case .opticID: "Require Optic ID"
-        default: "Require Passcode"
         }
     }
 

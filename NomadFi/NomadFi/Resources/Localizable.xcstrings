@@ -387,7 +387,7 @@
     "Add Account" : {
 
     },
-    "Add an account now, or hold to begin and connect your bank later in Settings." : {
+    "Add an account now, or hold to begin and add them later in Settings." : {
 
     },
     "Add an account or connect your bank in Settings to see your net worth." : {
@@ -472,6 +472,9 @@
 
     },
     "Allow Location Access" : {
+
+    },
+    "Always up to date" : {
 
     },
     "Amazon arrival order" : {
@@ -578,9 +581,6 @@
 
     },
     "Balanced" : {
-
-    },
-    "Bank" : {
 
     },
     "Bank balances are reference information. Enter only cash you can actually access, after holds and shared ownership limits. Credit limits and investments are excluded." : {
@@ -799,7 +799,19 @@
     "Connect a Bank" : {
 
     },
+    "Connect a bank or add an account yourself. You can also skip and do it later in Settings." : {
+
+    },
     "Connect to Location, Securely." : {
+
+    },
+    "Connect your accounts" : {
+
+    },
+    "Connect your bank to keep balances and transactions up to date, or add accounts yourself." : {
+
+    },
+    "Connect Your Banks" : {
 
     },
     "Connected" : {
@@ -1030,12 +1042,6 @@
     "Delete your FiBot plan and all saved checks?" : {
 
     },
-    "Deleted data can stay in restricted backups for up to %lld days." : {
-
-    },
-    "Deleted data isn't kept in backups." : {
-
-    },
     "Describe a Decision" : {
 
     },
@@ -1070,6 +1076,9 @@
 
     },
     "Disconnect %@?" : {
+
+    },
+    "Disconnect a bank or delete everything whenever you like." : {
 
     },
     "Disconnected" : {
@@ -1220,6 +1229,9 @@
     "Evaluated as of %@" : {
 
     },
+    "Every balance and transaction in one place, kept current for you." : {
+
+    },
     "Every figure in this answer matches NomadFi's own records below." : {
 
     },
@@ -1335,6 +1347,12 @@
     "Finishes setup and lets you enable location later." : {
 
     },
+    "Finishes setup and opens Bank Connections, where you choose your bank." : {
+
+    },
+    "Finishes setup without accounts. You can connect a bank later in Settings." : {
+
+    },
     "Finishes setup. You can add accounts later in Settings." : {
 
     },
@@ -1411,6 +1429,9 @@
     "Get your global net worth across all accounts." : {
 
     },
+    "Getting your history…" : {
+
+    },
     "Global Net Worth" : {
 
     },
@@ -1436,6 +1457,9 @@
 
     },
     "Hold to Begin" : {
+
+    },
+    "Hold to Connect a Bank" : {
 
     },
     "Home currency" : {
@@ -1783,6 +1807,9 @@
 
     },
     "New" : {
+
+    },
+    "New activity arrives on its own, even while NomadFi is closed." : {
 
     },
     "New Conversation" : {
@@ -2640,6 +2667,9 @@
     "Search transactions" : {
 
     },
+    "Secured by Plaid" : {
+
+    },
     "Security" : {
 
     },
@@ -2709,6 +2739,9 @@
     "Sign Out" : {
 
     },
+    "Skip" : {
+
+    },
     "Skipped" : {
 
     },
@@ -2772,16 +2805,6 @@
     "Stop monitoring and delete hosted FiBot data" : {
 
     },
-    "Stored in %@. %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Stored in %1$@. %2$@"
-          }
-        }
-      }
-    },
     "Stress scenario" : {
 
     },
@@ -2813,9 +2836,6 @@
 
     },
     "Sync" : {
-
-    },
-    "Sync bank data through NomadFi's server" : {
 
     },
     "Sync Now" : {
@@ -3303,6 +3323,9 @@
     "You saved %@" : {
 
     },
+    "You sign in with your bank through Plaid. NomadFi never sees your password." : {
+
+    },
     "You're offline. Bank data on this iPhone is still available." : {
 
     },
@@ -3316,7 +3339,10 @@
         }
       }
     },
-    "Your balances and transactions are kept on NomadFi's server so they stay current while your iPhone is closed. Plaid handles your bank sign-in." : {
+    "Your bank" : {
+
+    },
+    "Your bank data is kept on NomadFi's server. [Privacy Policy](%@)" : {
 
     },
     "Your checks will appear here." : {
@@ -3363,6 +3389,9 @@
 
     },
     "Your What-If" : {
+
+    },
+    "Yours to remove" : {
 
     }
   },

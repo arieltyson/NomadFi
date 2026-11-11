@@ -85,7 +85,7 @@ This project uses modern Swift, SwiftUI, and Apple platform frameworks for a nat
 - [x] WidgetKit (Home Screen and Lock Screen widgets, Control Center controls)
 - [x] Vision (on-device receipt text recognition) and PhotosUI
 - [x] CoreLocation and MapKit (current-country detection)
-- [x] LocalAuthentication (Face ID App Lock) and Keychain Services
+- [x] Keychain Services and Complete Data Protection (app locking is left to iOS's Require Face ID)
 - [x] Core Spotlight
 - [x] TipKit
 - [x] UserNotifications

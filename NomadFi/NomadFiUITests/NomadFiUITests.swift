@@ -424,7 +424,6 @@ private extension NomadFiUITests {
         app.launchEnvironment = [
             "UI_TEST_MODE": "1",
             "UI_TEST_RESET_STATE": "1",
-            "UI_TEST_DISABLE_APP_LOCK": "1",
             "UI_TEST_FORCE_REDUCE_MOTION": "1",
             "UI_TEST_HAS_COMPLETED_ONBOARDING": hasCompletedOnboarding ? "1" : "0",
         ].merging(extraEnvironment) { _, newValue in newValue }

@@ -28,7 +28,6 @@ final class AppStoreScreenshotTests: XCTestCase {
         app.launchEnvironment = [
             "UI_TEST_MODE": "1",
             "UI_TEST_RESET_STATE": "1",
-            "UI_TEST_DISABLE_APP_LOCK": "1",
             "UI_TEST_HAS_COMPLETED_ONBOARDING": "1",
             "UI_TEST_SEED_SAMPLE_DATA": "1",
         ]

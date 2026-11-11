@@ -118,7 +118,7 @@ enum DataGovernancePolicy {
         let receiptsDirectory = URL.documentsDirectory.appending(path: "receipts")
         try? FileManager.default.removeItem(at: receiptsDirectory)
 
-        // 3. Remove all Keychain items (app lock state, API tokens)
+        // 3. Remove all Keychain items (session and pending-link state, retired settings)
         KeychainService.deleteAll()
 
         // 4. Remove Spotlight entries

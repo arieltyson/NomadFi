@@ -7,7 +7,6 @@ struct NomadFiApp: App {
 
     @AppStorage(OnboardingPreferences.completedKey) private var hasCompletedOnboarding = false
     @State private var isBlurred = false
-    @State private var appLockManager = AppLockManager()
     @State private var plaidLinkCoordinator = PlaidLinkCoordinator()
     @State private var hostedBanking = HostedBankingController.configured()
 #if DEBUG
@@ -101,14 +100,6 @@ struct NomadFiApp: App {
                         .zIndex(2)
                 }
 
-                // Biometric lock overlay — blocks content until authenticated
-                if appLockManager.isLocked
-                    && hasCompletedOnboarding
-                    && !uiTestConfig.disableAppLock
-                {
-                    AppLockView()
-                        .zIndex(3)
-                }
             }
             .onChange(of: scenePhase, initial: true) { _, newPhase in
                 switch newPhase {
@@ -121,19 +112,11 @@ struct NomadFiApp: App {
                         }
                     }
 
-                    if !uiTestConfig.disableAppLock {
-                        appLockManager.sceneDidBecomeActive()
-                    }
-                    if !appLockManager.isLocked {
-                        Task { await hostedBanking?.refreshOnForeground(container: modelContainer) }
-                    }
+                    Task { await hostedBanking?.refreshOnForeground(container: modelContainer) }
                 case .inactive:
                     isBlurred = true
                 case .background:
                     isBlurred = true
-                    if !uiTestConfig.disableAppLock {
-                        appLockManager.sceneDidEnterBackground()
-                    }
                 @unknown default:
                     break
                 }
@@ -157,11 +140,7 @@ struct NomadFiApp: App {
                 _ = handled
 #endif
             }
-            .environment(appLockManager)
             .environment(\.hostedBanking, hostedBanking)
-            .onChange(of: appLockManager.isLocked) { _, locked in
-                if !locked { Task { await hostedBanking?.refreshOnForeground(container: modelContainer) } }
-            }
             .environment(\.plaidLinkCoordinator, plaidLinkCoordinator)
 #if DEBUG
             .environment(\.plaidValidationRecorder, plaidValidationRecorder)
@@ -206,7 +185,6 @@ private struct UITestLaunchConfiguration {
 
     let isUITesting: Bool
     let resetAppState: Bool
-    let disableAppLock: Bool
     let forceReduceMotion: Bool
     let seedSampleData: Bool
     let hasCompletedOnboarding: Bool?
@@ -222,10 +200,6 @@ private struct UITestLaunchConfiguration {
         if isUITesting {
             resetAppState = Self.boolValue(
                 for: "UI_TEST_RESET_STATE",
-                in: environment
-            )
-            disableAppLock = Self.boolValue(
-                for: "UI_TEST_DISABLE_APP_LOCK",
                 in: environment
             )
             forceReduceMotion = Self.boolValue(
@@ -244,7 +218,6 @@ private struct UITestLaunchConfiguration {
             }
         } else {
             resetAppState = false
-            disableAppLock = false
             forceReduceMotion = false
             seedSampleData = false
             hasCompletedOnboarding = nil

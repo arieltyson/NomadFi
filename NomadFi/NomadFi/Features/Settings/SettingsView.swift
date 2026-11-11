@@ -27,7 +27,6 @@ import SwiftUI
 struct SettingsView: View {
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppLockManager.self) private var appLockManager
 
     @Query private var accounts: [Account]
 
@@ -87,7 +86,6 @@ struct SettingsView: View {
             FinancialSetupDestination(item: item)
         }
         .task {
-            appLockManager.refreshBiometricAvailability()
             await notificationManager.refreshAuthorizationStatus()
             await syncCreditCardRemindersIfNeeded()
             repairHomeJurisdictionIfNeeded()

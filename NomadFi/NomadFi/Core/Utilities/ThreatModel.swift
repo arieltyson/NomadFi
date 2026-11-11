@@ -18,7 +18,8 @@
 /// ### 1. Device Theft
 /// **Scenario:** An unlocked or recently-locked device is stolen.
 /// **Mitigations:**
-/// - App Lock with Face ID / Touch ID / device passcode (``AppLockManager``)
+/// - Files unreadable while the iPhone is locked (Complete Data Protection)
+/// - iOS's own Require Face ID for the app, if the person turns it on
 /// - Configurable lock timeout: immediate, 1 minute, 5 minutes
 /// - App Switcher privacy blur on scene phase change (``NomadFiApp``)
 /// - Keychain items use `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
@@ -59,7 +60,6 @@
 /// ### 5. Shared Device
 /// **Scenario:** Multiple people use the same iPhone (family, roommates).
 /// **Mitigations:**
-/// - App Lock requires biometric authentication on each open
 /// - Lock triggers on background with configurable timeout
 /// - "Delete All My Data" in Settings for complete wipe before
 ///   transferring device (``DataGovernancePolicy/deleteAllUserData``)

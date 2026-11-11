@@ -25,10 +25,11 @@ enum KeychainService {
 
     /// Keys for items stored in the Keychain.
     enum Key: String, Sendable {
-        /// Whether the user has enabled biometric app lock.
+        /// Retired with the in-app lock (iOS locks apps natively). Kept only
+        /// so a data wipe still removes values written by earlier builds.
         case appLockEnabled = "com.nomadfi.appLockEnabled"
 
-        /// The user's preferred app lock timeout interval in seconds.
+        /// Retired with the in-app lock; see ``appLockEnabled``.
         case appLockTimeout = "com.nomadfi.appLockTimeout"
 
         /// Reserved for future API tokens (exchange rate premium, etc.).
