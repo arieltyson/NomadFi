@@ -26,6 +26,11 @@ final class HostedBankingController {
     private(set) var refusedAppleSubject: String?
     /// The state of downloading bank updates, shown at the top of Bank Connections.
     private(set) var syncState: HostedSyncState = .idle
+    /// Counts downloads the person asked for that have finished, so the
+    /// interface can give feedback for those and stay silent for the rest.
+    private(set) var userSyncOutcomes = 0
+    private var isDownloading = false
+    private var isPreparing = false
     /// A bank link finished in Plaid but the server never saved it.
     private(set) var hasPendingExchange = false
     /// Bank records from the retired on-device connection are still stored,
@@ -60,10 +65,17 @@ final class HostedBankingController {
         #endif
     }
 
-    func prepare() async {
-        guard !isWorking else { return }
-        isWorking = true
-        defer { isWorking = false }
+    /// Loads the session and connections.
+    /// - Parameter showsActivity: Pass `false` for a background refresh, so
+    ///   buttons don't dim while nothing the person asked for is happening.
+    func prepare(showsActivity: Bool = true) async {
+        guard !isWorking, !isPreparing else { return }
+        isPreparing = true
+        if showsActivity { isWorking = true }
+        defer {
+            isPreparing = false
+            if showsActivity { isWorking = false }
+        }
         do {
             if let session = try await client.session() {
                 let state = try await ASAuthorizationAppleIDProvider().credentialState(forUserID: session.appleSubject)
@@ -184,10 +196,13 @@ final class HostedBankingController {
     /// Progress and the outcome go to ``syncState`` rather than the
     /// general message, so the result appears on the line the person
     /// is looking at.
-    func sync(container: ModelContainer) async {
-        guard userID != nil, !syncState.isSyncing else { return }
+    func sync(container: ModelContainer, trigger: HostedSyncTrigger = .userInitiated) async {
+        guard userID != nil, !isDownloading else { return }
+        isDownloading = true
+        defer { isDownloading = false }
         refreshLocalState(container: container)
-        syncState = .syncing
+        let previous = syncState
+        if HostedSyncPolicy.showsProgress(for: trigger, state: previous) { syncState = .syncing }
         do {
             let profiles = try container.mainContext.fetch(FetchDescriptor<JurisdictionProfile>())
             let currency = profiles.first(where: \.isHome)?.currencyCode ?? .usd
@@ -196,9 +211,22 @@ final class HostedBankingController {
             syncState = .upToDate(.now)
         } catch {
             if case .signInRequired = error as? HostedServiceError { requireSignIn() }
-            syncState = .failed(HostedErrorMessage.text(for: error))
+            syncState = HostedSyncPolicy.stateAfterFailure(
+                HostedErrorMessage.text(for: error), trigger: trigger, previous: previous
+            )
         }
+        if trigger == .userInitiated { userSyncOutcomes += 1 }
         refreshLocalState(container: container)
+    }
+
+    /// Keeps data current without drawing attention: runs at most once per
+    /// ``HostedSyncPolicy/automaticInterval``, without progress, haptics or
+    /// dimmed buttons unless nothing has loaded yet.
+    func refreshAutomatically(container: ModelContainer) async {
+        refreshLocalState(container: container)
+        guard userID == nil || HostedSyncPolicy.isAutomaticRefreshDue(state: syncState) else { return }
+        await prepare(showsActivity: userID == nil)
+        await sync(container: container, trigger: .automatic)
     }
 
     /// Re-reads what is stored on this iPhone that changes which actions apply.
@@ -247,8 +275,7 @@ final class HostedBankingController {
 
     func refreshOnForeground(container: ModelContainer) async {
         guard (try? await client.session()) != nil else { return }
-        await prepare()
-        if userID != nil { await sync(container: container) }
+        await refreshAutomatically(container: container)
     }
 
     func disconnect(_ connectionID: UUID) async {

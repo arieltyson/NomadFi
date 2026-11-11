@@ -41,8 +41,8 @@ struct HostedConnectionsView: View {
                 HostedSignInSection(banking: banking)
             } else {
                 Section {
-                    HostedSyncStatusRow(state: banking.syncState) {
-                        Task { await banking.sync(container: modelContext.container) }
+                    HostedSyncStatusRow(state: banking.syncState, userOutcomes: banking.userSyncOutcomes) {
+                        Task { await banking.sync(container: modelContext.container, trigger: .userInitiated) }
                     }
                 }
 
@@ -94,7 +94,9 @@ struct HostedConnectionsView: View {
             }
         }
         .navigationTitle("Bank Connections")
-        .task { await refresh() }
+        // Opening the screen keeps data current quietly; pulling to refresh
+        // is a request, so it shows progress and gives feedback.
+        .task { await banking.refreshAutomatically(container: modelContext.container) }
         .refreshable { await refresh() }
         .sheet(item: Binding(get: { banking.migrationReview }, set: { if $0 == nil { banking.cancelLegacyMigration() } })) { review in
             HostedMigrationReviewSheet(review: review, banking: banking)
@@ -114,10 +116,10 @@ struct HostedConnectionsView: View {
         }
     }
 
-    /// Signs in state, then downloads whatever the server has finished.
+    /// A refresh the person asked for: reloads banks, then downloads
+    /// whatever the server has finished.
     private func refresh() async {
         await banking.prepare()
-        banking.refreshLocalState(container: modelContext.container)
-        await banking.sync(container: modelContext.container)
+        await banking.sync(container: modelContext.container, trigger: .userInitiated)
     }
 }

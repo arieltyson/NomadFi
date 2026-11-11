@@ -7,11 +7,14 @@ import SwiftUI
 
 /// Shows the download state and the single action that fits it:
 /// Update when idle or current, Try Again after a failure, nothing
-/// while downloading. Success and failure land with a haptic and are
-/// read aloud by VoiceOver.
+/// while downloading. A download the person asked for ends with a haptic
+/// and a VoiceOver announcement; automatic refreshes end silently.
 struct HostedSyncStatusRow: View {
 
     let state: HostedSyncState
+    /// Finished downloads the person asked for. Feedback is tied to this,
+    /// not to `state`, so automatic refreshes stay silent.
+    let userOutcomes: Int
     let onUpdate: () -> Void
 
     var body: some View {
@@ -30,14 +33,14 @@ struct HostedSyncStatusRow: View {
             }
         }
         .controlSize(.small)
-        .sensoryFeedback(trigger: state) { _, new in
-            switch new {
+        .sensoryFeedback(trigger: userOutcomes) { _, _ in
+            switch state {
             case .upToDate: .success
             case .failed: .error
             case .idle, .syncing: nil
             }
         }
-        .onChange(of: state) { _, new in announce(new) }
+        .onChange(of: userOutcomes) { _, _ in announce(state) }
     }
 
     private func announce(_ state: HostedSyncState) {
@@ -93,9 +96,9 @@ private struct HostedSyncStatusLabel: View {
 
 #Preview {
     List {
-        HostedSyncStatusRow(state: .idle) {}
-        HostedSyncStatusRow(state: .syncing) {}
-        HostedSyncStatusRow(state: .upToDate(.now)) {}
-        HostedSyncStatusRow(state: .failed("Too many requests. Try again in a minute.")) {}
+        HostedSyncStatusRow(state: .idle, userOutcomes: 0) {}
+        HostedSyncStatusRow(state: .syncing, userOutcomes: 0) {}
+        HostedSyncStatusRow(state: .upToDate(.now), userOutcomes: 0) {}
+        HostedSyncStatusRow(state: .failed("Too many requests. Try again in a minute."), userOutcomes: 0) {}
     }
 }
