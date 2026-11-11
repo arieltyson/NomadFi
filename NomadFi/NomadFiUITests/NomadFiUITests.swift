@@ -158,6 +158,20 @@ final class NomadFiUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Check a Purchase"].waitForExistence(timeout: 8))
     }
 
+    /// Empty screens explain rather than duplicate the toolbar's add action.
+    @MainActor
+    func testEmptyStatesAreQuietAndSingleAction() {
+        let app = makeApp(hasCompletedOnboarding: true)
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["No Accounts Yet"].waitForExistence(timeout: 8))
+
+        app.tabBars.buttons["Tools"].tap()
+        tapButton(containing: "Subscriptions", in: app)
+        XCTAssertTrue(app.staticTexts["No Subscriptions"].waitForExistence(timeout: 8))
+        XCTAssertEqual(app.buttons.matching(identifier: "Add Subscription").count, 1)
+    }
+
     /// Investing Learn shows a card per jurisdiction, each opening
     /// that region's lessons.
     @MainActor

@@ -38,7 +38,7 @@ struct SubscriptionsView: View {
     var body: some View {
         Group {
             if subscriptions.isEmpty && viewModel.detectedSubscriptions.isEmpty {
-                emptyState
+                SubscriptionsEmptyStateView()
             } else {
                 subscriptionList
             }
@@ -281,24 +281,6 @@ private extension SubscriptionsView {
                     .padding(.horizontal, SpacingTokens.medium)
                 }
             }
-        }
-    }
-
-    // MARK: Empty State
-
-    var emptyState: some View {
-        ContentUnavailableView {
-            Label("No Subscriptions", systemImage: "arrow.triangle.2.circlepath")
-        } description: {
-            Text("Add transactions to auto-detect subscriptions, or add them manually.")
-        } actions: {
-            NomadFiActionButton(
-                title: "Add Subscription",
-                systemImage: "plus",
-                style: .primary,
-                fillsWidth: false,
-                action: { isShowingAddSubscription = true }
-            )
         }
     }
 }
