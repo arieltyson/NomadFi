@@ -21,28 +21,17 @@ struct SpendingSliceRow: View {
     @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: SpacingTokens.xxSmall))
-            : AnyLayout(HStackLayout(spacing: SpacingTokens.small))
-
-        layout {
-            TintedIconBadge(systemImage: slice.systemImage, tint: ColorTokens.chartColor(at: slice.colorRank))
-
-            VStack(alignment: .leading, spacing: SpacingTokens.xxxSmall) {
-                Text(slice.name)
-                    .font(TypographyTokens.body)
-                Text(slice.share, format: .percent.precision(.fractionLength(0)))
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            if !dynamicTypeSize.isAccessibilitySize {
-                Spacer(minLength: SpacingTokens.xSmall)
-            }
-
-            HStack(spacing: SpacingTokens.xSmall) {
-                CurrencyText(amount: slice.total, currencyCode: currency)
-                SpendingRowAccessory(accessory: accessory)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                SpendingSliceRowContent(slice: slice, currency: currency, accessory: accessory, isStacked: true)
+            } else {
+                // One line when the name and amount fit side by side;
+                // otherwise the amount moves under the name, so neither
+                // a name nor an amount is ever broken mid-word.
+                ViewThatFits(in: .horizontal) {
+                    SpendingSliceRowContent(slice: slice, currency: currency, accessory: accessory, isStacked: false)
+                    SpendingSliceRowContent(slice: slice, currency: currency, accessory: accessory, isStacked: true)
+                }
             }
         }
         .padding(.vertical, SpacingTokens.xSmall)
@@ -55,6 +44,44 @@ struct SpendingSliceRow: View {
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isHighlighted ? .isSelected : [])
+    }
+}
+
+/// A ``SpendingSliceRow``'s icon, name, share, amount and chevron, either
+/// side by side or with the amount under the name.
+private struct SpendingSliceRowContent: View {
+
+    let slice: SpendingChartSlice
+    let currency: CurrencyCode
+    let accessory: SpendingSliceRow.Accessory
+    let isStacked: Bool
+
+    var body: some View {
+        HStack(spacing: SpacingTokens.small) {
+            TintedIconBadge(systemImage: slice.systemImage, tint: ColorTokens.chartColor(at: slice.colorRank))
+
+            VStack(alignment: .leading, spacing: SpacingTokens.xxxSmall) {
+                Text(slice.name)
+                    .font(TypographyTokens.body)
+                    .lineLimit(isStacked ? nil : 1)
+                    .fixedSize(horizontal: !isStacked, vertical: isStacked)
+                if isStacked {
+                    CurrencyText(amount: slice.total, currencyCode: currency)
+                }
+                Text(slice.share, format: .percent.precision(.fractionLength(0)))
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: SpacingTokens.xSmall)
+
+            if !isStacked {
+                CurrencyText(amount: slice.total, currencyCode: currency)
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            SpendingRowAccessory(accessory: accessory)
+        }
     }
 }
 

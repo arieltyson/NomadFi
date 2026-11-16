@@ -34,8 +34,12 @@ struct SpendingMerchantRow: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: SpacingTokens.xSmall)
+                // An amount stays whole on one line; a long name wraps instead.
                 CurrencyText(amount: merchant.total, currencyCode: currency)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .layoutPriority(1)
             }
             .padding(.vertical, SpacingTokens.xSmall)
             .padding(.leading, SpacingTokens.xxLarge)
