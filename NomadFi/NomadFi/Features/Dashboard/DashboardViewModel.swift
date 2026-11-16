@@ -104,12 +104,10 @@ final class DashboardViewModel {
             homeCurrency: homeCurrency
         )
 
-        // Use real insights if we have data, otherwise show helpful samples
-        if generated.isEmpty && transactions.isEmpty {
-            insights = FinancialInsight.samples
-        } else {
-            insights = generated
-        }
+        // Use real insights if we have data, otherwise show helpful samples.
+        // Unchanged results are not reassigned, so the cards stay still.
+        let next = generated.isEmpty && transactions.isEmpty ? FinancialInsight.samples : generated
+        if next != insights { insights = next }
 
         Self.logger.info("Dashboard insights: \(self.insights.count) (\(generated.count) from real data)")
     }
@@ -124,11 +122,12 @@ final class DashboardViewModel {
         homeCurrency: CurrencyCode,
         now: Date = .now
     ) {
-        spendingTrend = SpendingTrendComputer.summary(
+        let next = SpendingTrendComputer.summary(
             transactions: transactions,
             now: now,
             homeCurrency: homeCurrency
         )
+        if next != spendingTrend { spendingTrend = next }
     }
 
     // MARK: - Calculations

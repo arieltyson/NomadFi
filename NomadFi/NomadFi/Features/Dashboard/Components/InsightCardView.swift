@@ -59,9 +59,13 @@ private extension InsightCardView {
 // MARK: - Financial Insight Model
 
 /// A single actionable financial insight for the dashboard.
-struct FinancialInsight: Identifiable, Sendable {
+///
+/// Identified by its content, not a fresh `UUID`, so regenerating the
+/// same insights keeps the same cards on screen instead of removing and
+/// re-inserting every one of them.
+struct FinancialInsight: Identifiable, Equatable, Sendable {
 
-    let id = UUID()
+    var id: String { "\(category)|\(title)|\(message)" }
     let title: String
     let message: String
     let category: Category
@@ -84,7 +88,7 @@ struct FinancialInsight: Identifiable, Sendable {
         self.confidence = confidence
     }
 
-    enum Category: Sendable {
+    enum Category: Hashable, Sendable {
         case fxWaste
         case arbitrage
         case budget
