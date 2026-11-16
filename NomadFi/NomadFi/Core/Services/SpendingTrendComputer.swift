@@ -51,7 +51,6 @@ enum SpendingTrendComputer {
     ///     common currency in the data so the card still renders.
     ///   - calendar: Calendar for month binning. Defaults to
     ///     Gregorian so tests remain deterministic across locales.
-    @MainActor
     static func summary(
         transactions: [Transaction],
         now: Date = .now,
@@ -140,7 +139,6 @@ enum SpendingTrendComputer {
 
     // MARK: - Currency picking
 
-    @MainActor
     private static func dominantCurrency(
         inWindow transactions: [Transaction],
         preferred: CurrencyCode
@@ -197,7 +195,6 @@ enum SpendingTrendComputer {
 
     // MARK: - Category reduction
 
-    @MainActor
     private static func categoryRows(
         for transactions: [Transaction],
         months: [SpendingTrendMonth],

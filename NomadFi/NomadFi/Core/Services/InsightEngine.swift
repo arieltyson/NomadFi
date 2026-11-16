@@ -26,7 +26,6 @@ enum InsightEngine {
 
     /// Generates all applicable insights from the user's financial data.
     /// - Returns: An array of insights, sorted by priority (most urgent first).
-    @MainActor
     static func generateInsights(
         transactions: [Transaction],
         accounts: [Account],
@@ -70,7 +69,6 @@ enum InsightEngine {
     /// `SpendAnomalyDetector` surfaces. Exposed at the namespace
     /// level so focused tests can pin the engine output with an
     /// injected `now` without running the full insight pipeline.
-    @MainActor
     static func spendAnomalyInsights(
         transactions: [Transaction],
         now: Date = .now

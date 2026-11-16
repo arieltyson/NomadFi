@@ -55,7 +55,6 @@ enum RecurringChargeDetector {
     /// - Returns: Candidates sorted by confidence (desc) then
     ///   `lastChargeDate` (desc) so the UI can render the strongest,
     ///   freshest signal first.
-    @MainActor
     static func detect(
         from transactions: [Transaction],
         now: Date = .now
@@ -134,7 +133,6 @@ enum RecurringChargeDetector {
 
     // MARK: - Pattern analysis
 
-    @MainActor
     private static func buildCandidate(
         from transactions: [Transaction],
         now: Date
@@ -259,7 +257,6 @@ enum RecurringChargeDetector {
         let currency: CurrencyCode
     }
 
-    @MainActor
     private static func groupByAmount(_ transactions: [Transaction]) -> [[Transaction]] {
         var groups: [[Transaction]] = []
         for transaction in transactions {

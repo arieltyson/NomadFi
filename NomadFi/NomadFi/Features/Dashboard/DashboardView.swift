@@ -4,17 +4,16 @@ import TipKit
 
 /// The primary dashboard displaying global net worth, accounts, exchange rates, and insights.
 ///
-/// Uses `@Query` for reactive SwiftData data and `DashboardViewModel`
-/// for service calls and derived calculations.
+/// Uses `@Query` for the few accounts and jurisdictions it shows directly.
+/// Everything derived from the transaction history is built off the main
+/// thread by `DashboardViewModel`, so loading, scrolling and refreshing
+/// never wait on it.
 struct DashboardView: View {
 
     @Query(sort: \JurisdictionProfile.displayOrder)
     private var jurisdictions: [JurisdictionProfile]
 
     @Query private var accounts: [Account]
-
-    @Query(sort: \Transaction.date, order: .reverse)
-    private var transactions: [Transaction]
 
     @State private var viewModel = DashboardViewModel()
     @State private var showError = false
@@ -81,11 +80,12 @@ struct DashboardView: View {
                 Task { await refreshRates() }
             }
         }
-        .onChange(of: transactions.count) { _, _ in
-            viewModel.recomputeSpendingTrend(
-                transactions: transactions,
-                homeCurrency: homeCurrency
-            )
+        .task {
+            // Rebuild the digest after saves from anywhere: an import, a
+            // sync, a transaction added in the Ledger.
+            for await _ in NotificationCenter.default.notifications(named: ModelContext.didSave) {
+                viewModel.scheduleDigestRefresh(in: modelContext.container, homeCurrency: homeCurrency)
+            }
         }
         .sensoryFeedback(.success, trigger: completedPullRefreshes)
     }
@@ -188,14 +188,20 @@ private extension DashboardView {
             if let trend = viewModel.spendingTrend {
                 SpendingTrendCard(summary: trend)
                     .padding(.horizontal, SpacingTokens.medium)
+                    .transition(.opacity)
             }
 
             if !viewModel.insights.isEmpty {
                 InsightsSection(insights: viewModel.insights)
                     .padding(.horizontal, SpacingTokens.medium)
+                    .transition(.opacity)
             }
         }
         .padding(.vertical, SpacingTokens.medium)
+        // Cards that arrive after the first frame fade in instead of
+        // popping, and the cards below them glide into place.
+        .animation(reduceMotion ? nil : AnimationTokens.standard, value: viewModel.spendingTrend)
+        .animation(reduceMotion ? nil : AnimationTokens.standard, value: viewModel.insights)
     }
 
     var excludedCreditCardsCount: Int {
@@ -239,14 +245,14 @@ private extension DashboardView {
 
     func pullToRefresh() async {
         let previousUpdate = viewModel.lastUpdated
-        // Only the network call holds the control open. Insights and the
-        // trend are recomputed after it closes, so that work over every
-        // transaction never lands on the frame the control animates away.
+        // Only the network call holds the control open. The digest is
+        // rebuilt on a background worker after it, so the control closes
+        // on a free main thread.
         await viewModel.fetchRates(for: viewModel.currencies(from: jurisdictions), force: true)
         if viewModel.lastUpdated != previousUpdate {
             completedPullRefreshes += 1
         }
-        Task { await refreshRates() }
+        Task { await refreshDigestAndWidget() }
     }
 
     /// Reuses fresh cached rates unless `force` is set, so returning to
@@ -254,16 +260,11 @@ private extension DashboardView {
     func refreshRates(force: Bool = false) async {
         let currencies = viewModel.currencies(from: jurisdictions)
         await viewModel.fetchRates(for: currencies, force: force)
-        viewModel.generateInsights(
-            transactions: transactions,
-            accounts: accounts,
-            homeCurrency: homeCurrency
-        )
-        viewModel.recomputeSpendingTrend(
-            transactions: transactions,
-            homeCurrency: homeCurrency
-        )
+        await refreshDigestAndWidget()
+    }
 
+    func refreshDigestAndWidget() async {
+        await viewModel.refreshDigest(in: modelContext.container, homeCurrency: homeCurrency)
         viewModel.publishWidgetSnapshot(
             accounts: accounts,
             jurisdictions: jurisdictions

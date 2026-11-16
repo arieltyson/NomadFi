@@ -5,9 +5,10 @@ import SwiftData
 /// Manages dashboard state including exchange rate fetching,
 /// net worth calculations, and financial insight generation.
 ///
-/// Works alongside `@Query` in the view: SwiftData queries provide reactive account,
-/// transaction, and jurisdiction data, while this view model handles service calls,
-/// currency conversions, and the ``InsightEngine`` for real-time financial intelligence.
+/// Works alongside `@Query` in the view: SwiftData queries provide reactive account
+/// and jurisdiction data, while this view model handles service calls, currency
+/// conversions, and a background ``DashboardDigestWorker`` that runs the
+/// ``InsightEngine`` over the transaction history without touching the main thread.
 @MainActor
 @Observable
 final class DashboardViewModel {
@@ -28,6 +29,8 @@ final class DashboardViewModel {
     private var cachedRates: [ExchangeRateSnapshot] = []
     private var cachedRatesTimestamp: Date?
     private var cachedCurrencies: Set<CurrencyCode> = []
+    private var cachedDigestWorker: DashboardDigestWorker?
+    private var digestTask: Task<Void, any Error>?
 
     /// Maximum age for cached exchange rates before they're considered stale.
     /// After this interval, cached rates are discarded on the next fetch attempt.
@@ -86,48 +89,65 @@ final class DashboardViewModel {
         }
     }
 
-    // MARK: - Insight Generation
+    // MARK: - Digest
 
-    /// Generates actionable financial insights from the user's data.
+    /// How long a burst of saves (an import, a sync) must settle before
+    /// the digest is rebuilt, so it is rebuilt once per burst.
+    static let digestDebounce: Duration = .milliseconds(400)
+
+    /// Rebuilds insights and the spending trend from the full history on
+    /// a background worker, so the main thread stays free to scroll and
+    /// animate. A newer request cancels an older one, and unchanged
+    /// results are not reassigned, so the cards stay still.
     ///
-    /// Replaces sample data with real calculations from the ``InsightEngine``.
-    /// Falls back to sample insights when there's insufficient data.
-    func generateInsights(
-        transactions: [Transaction],
-        accounts: [Account],
-        homeCurrency: CurrencyCode
-    ) {
-        let generated = InsightEngine.generateInsights(
-            transactions: transactions,
-            accounts: accounts,
-            exchangeRates: exchangeRates,
-            homeCurrency: homeCurrency
-        )
-
-        // Use real insights if we have data, otherwise show helpful samples.
-        // Unchanged results are not reassigned, so the cards stay still.
-        let next = generated.isEmpty && transactions.isEmpty ? FinancialInsight.samples : generated
-        if next != insights { insights = next }
-
-        Self.logger.info("Dashboard insights: \(self.insights.count) (\(generated.count) from real data)")
+    /// - Parameter debounce: Waits ``digestDebounce`` first; for rebuilds
+    ///   triggered by saves rather than by the person.
+    func refreshDigest(
+        in container: ModelContainer,
+        homeCurrency: CurrencyCode,
+        debounce: Bool = false
+    ) async {
+        digestTask?.cancel()
+        let worker = digestWorker(for: container)
+        let exchangeRates = exchangeRates
+        let task = Task {
+            if debounce {
+                try await Task.sleep(for: Self.digestDebounce)
+            }
+            let digest = try await worker.digest(
+                exchangeRates: exchangeRates,
+                homeCurrency: homeCurrency
+            )
+            try Task.checkCancellation()
+            apply(digest)
+        }
+        digestTask = task
+        do {
+            try await task.value
+        } catch is CancellationError {
+            // Superseded by a newer request.
+        } catch {
+            Self.logger.error("Dashboard digest failed: \(error.localizedDescription)")
+        }
     }
 
-    /// Computes the spending-trend summary for the Dashboard's
-    /// read-only card. Returns `nil` when there is not enough
-    /// activity — the card is then hidden rather than rendering a
-    /// misleading flat row. Call after the transaction query
-    /// changes; the closure is deterministic and cheap.
-    func recomputeSpendingTrend(
-        transactions: [Transaction],
-        homeCurrency: CurrencyCode,
-        now: Date = .now
-    ) {
-        let next = SpendingTrendComputer.summary(
-            transactions: transactions,
-            now: now,
-            homeCurrency: homeCurrency
-        )
-        if next != spendingTrend { spendingTrend = next }
+    /// Starts a debounced digest rebuild without waiting for it — for
+    /// saves, which can arrive in bursts.
+    func scheduleDigestRefresh(in container: ModelContainer, homeCurrency: CurrencyCode) {
+        Task { await refreshDigest(in: container, homeCurrency: homeCurrency, debounce: true) }
+    }
+
+    private func apply(_ digest: DashboardDigest) {
+        if digest.insights != insights { insights = digest.insights }
+        if digest.spendingTrend != spendingTrend { spendingTrend = digest.spendingTrend }
+        Self.logger.info("Dashboard insights: \(self.insights.count)")
+    }
+
+    private func digestWorker(for container: ModelContainer) -> DashboardDigestWorker {
+        if let worker = cachedDigestWorker { return worker }
+        let worker = DashboardDigestWorker(modelContainer: container)
+        cachedDigestWorker = worker
+        return worker
     }
 
     // MARK: - Calculations

@@ -62,7 +62,6 @@ enum SpendAnomalyDetector {
     ///     inject a deterministic value.
     /// - Returns: Anomalies sorted by recency so the UI renders
     ///   the freshest, most actionable signal first.
-    @MainActor
     static func detect(
         from transactions: [Transaction],
         now: Date = .now
@@ -137,7 +136,6 @@ enum SpendAnomalyDetector {
         .annual: (graceDays: 30, maxOverdueDays: 400),
     ]
 
-    @MainActor
     private static func missingCharge(
         for candidate: RecurringChargeCandidate,
         matches: [Transaction],
@@ -201,7 +199,6 @@ enum SpendAnomalyDetector {
     /// recurring detector's amount bucket — a spike by definition
     /// sits *outside* that bucket. The baseline is the mean of the
     /// bucket matches (the cadence the detector already validated).
-    @MainActor
     private static func amountSpike(
         for candidate: RecurringChargeCandidate,
         bucketMatches: [Transaction],
@@ -266,7 +263,6 @@ enum SpendAnomalyDetector {
     /// normalisation + currency + amount bucket (±5 %) as the
     /// recurring detector used. Safe baseline for missing-charge
     /// detection.
-    @MainActor
     private static func bucketMatchingTransactions(
         for candidate: RecurringChargeCandidate,
         in transactions: [Transaction]
@@ -286,7 +282,6 @@ enum SpendAnomalyDetector {
     /// Finds every eligible transaction that shares the candidate's
     /// merchant-key + currency, regardless of amount. Used to find
     /// spikes that don't fit the cadence bucket.
-    @MainActor
     private static func broadMatchingTransactions(
         for candidate: RecurringChargeCandidate,
         in transactions: [Transaction]
@@ -302,7 +297,6 @@ enum SpendAnomalyDetector {
     /// Same eligibility check `RecurringChargeDetector` applies.
     /// Reimplementing here instead of exposing the detector's
     /// private helper keeps the dependency surface small.
-    @MainActor
     private static func isEligible(_ transaction: Transaction) -> Bool {
         let category = transaction.category ?? .other
         if category == .income || category == .transfer { return false }
@@ -312,7 +306,6 @@ enum SpendAnomalyDetector {
     /// Normalization aligned with `RecurringChargeDetector`: prefer
     /// the persisted normalized merchant name, fall back to
     /// `MerchantNormalizer` on the raw name.
-    @MainActor
     private static func normalizedKey(for transaction: Transaction) -> String {
         if let stored = transaction.normalizedMerchantName,
            !stored.isEmpty {
