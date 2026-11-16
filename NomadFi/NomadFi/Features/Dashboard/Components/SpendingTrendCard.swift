@@ -3,8 +3,9 @@
 //
 // Read-only insight surface on the Dashboard. Shows where recent
 // spending landed by category across a short month window. Never
-// editable, never routed to the Ledger — tapping the card does not
-// open a drilldown (by design: the Ledger lives in Tools).
+// editable and never routed to the Ledger (it lives in Tools);
+// tapping the card opens the Spending breakdown, where each category
+// splits into finer kinds of spending and the merchants behind them.
 //
 // The card is rendered only when `SpendingTrendComputer` returned a
 // summary that cleared the "meaningful" floor, so presence itself
@@ -56,12 +57,20 @@ private extension SpendingTrendCard {
 
     var header: some View {
         Label {
-            VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
-                Text("Where your money went")
-                    .font(TypographyTokens.sectionHeader)
-                Text("Last \(summary.months.count) \(summary.months.count == 1 ? "month" : "months") • \(summary.currencyCode.rawValue)")
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: SpacingTokens.xxSmall) {
+                    Text("Where your money went")
+                        .font(TypographyTokens.sectionHeader)
+                    Text("Last \(summary.months.count) \(summary.months.count == 1 ? "month" : "months") • \(summary.currencyCode.rawValue)")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: SpacingTokens.xSmall)
+                // The card opens the Spending breakdown.
+                Image(systemName: "chevron.forward")
+                    .font(TypographyTokens.caption.bold())
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
         } icon: {
             Image(systemName: "chart.bar.xaxis")

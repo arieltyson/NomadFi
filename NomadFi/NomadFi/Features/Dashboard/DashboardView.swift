@@ -50,6 +50,9 @@ struct DashboardView: View {
         .navigationDestination(for: JurisdictionProfile.self) { profile in
             JurisdictionDetailView(profile: profile)
         }
+        .navigationDestination(for: SpendingRoute.self) { route in
+            SpendingView(route: route)
+        }
         // Run the refresh in its own task: a refresh tied to the view is
         // cancelled when the view redraws mid-refresh, which can leave the
         // control hanging open.
@@ -186,9 +189,13 @@ private extension DashboardView {
                 .padding(.horizontal, SpacingTokens.medium)
 
             if let trend = viewModel.spendingTrend {
-                SpendingTrendCard(summary: trend)
-                    .padding(.horizontal, SpacingTokens.medium)
-                    .transition(.opacity)
+                NavigationLink(value: SpendingRoute(homeCurrency: homeCurrency)) {
+                    SpendingTrendCard(summary: trend)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Shows what kinds of spending and which merchants make up each category.")
+                .padding(.horizontal, SpacingTokens.medium)
+                .transition(.opacity)
             }
 
             if !viewModel.insights.isEmpty {
