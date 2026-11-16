@@ -159,16 +159,6 @@
         }
       }
     },
-    "%@: %@. %@. %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$@. %3$@. %4$@"
-          }
-        }
-      }
-    },
     "%@. %@" : {
       "localizations" : {
         "en" : {
@@ -474,6 +464,12 @@
     "Allow Location Access" : {
 
     },
+    "Allow Location for NomadFi to see places near you." : {
+
+    },
+    "Allow Microphone and Speech Recognition for NomadFi in Settings to use Say It." : {
+
+    },
     "Always up to date" : {
 
     },
@@ -706,6 +702,9 @@
     "Check Net Worth" : {
 
     },
+    "Check your connection and try again." : {
+
+    },
     "Checked against your data" : {
 
     },
@@ -799,6 +798,9 @@
     "Connect a Bank" : {
 
     },
+    "Connect a bank or add an account in Settings, and it will appear here." : {
+
+    },
     "Connect a bank or add an account yourself. You can also skip and do it later in Settings." : {
 
     },
@@ -870,6 +872,9 @@
 
     },
     "Costs paid, including rebalancing" : {
+
+    },
+    "Couldn't Find Places" : {
 
     },
     "Couldn't Finish Setup" : {
@@ -1319,18 +1324,11 @@
     "Figures used" : {
 
     },
-    "Financial Connections" : {
+    "Fills in the purchase from what you say" : {
 
     },
-    "Financial insights: %lld recommendation%@ this week" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Financial insights: %1$lld recommendation%2$@ this week"
-          }
-        }
-      }
+    "Financial Connections" : {
+
     },
     "Financial plan" : {
 
@@ -1453,6 +1451,9 @@
     "Hear NomadFi's deterministic credit-timing check across your saved credit cards — near-limit warnings, paydown-before-close prompts, or a calm \"all cards ready\" read." : {
 
     },
+    "Hide Keyboard" : {
+
+    },
     "Hides the draft from the main list. You can restore it later." : {
 
     },
@@ -1486,7 +1487,13 @@
     "How much you expect to pay, in the purchase currency." : {
 
     },
+    "I can't see any of your accounts yet. Connect a bank or add an account in Settings, then ask me again." : {
+
+    },
     "I consent to uploading this plan for monitoring" : {
+
+    },
+    "I didn't catch that. Try asking something like \"How much have I spent this month?\"" : {
 
     },
     "I have a current backup of this iPhone" : {
@@ -1652,6 +1659,9 @@
     "Linked card" : {
 
     },
+    "Lists places around you to fill in the purchase" : {
+
+    },
     "Loading account" : {
 
     },
@@ -1670,10 +1680,10 @@
     "Location Error" : {
 
     },
-    "Location permission preview" : {
+    "Location Is Off" : {
 
     },
-    "Lock After" : {
+    "Location permission preview" : {
 
     },
     "Log Expense" : {
@@ -1688,6 +1698,9 @@
           }
         }
       }
+    },
+    "Looking around…" : {
+
     },
     "Manage Access" : {
 
@@ -1785,6 +1798,9 @@
     "Moves the draft back to the Gathered intelligence list." : {
 
     },
+    "Near Me" : {
+
+    },
     "Needs more review" : {
 
     },
@@ -1872,6 +1888,9 @@
     "No new rows to import — choose a different file." : {
 
     },
+    "No places were found close to you. Type the merchant instead." : {
+
+    },
     "No previous decisions yet" : {
 
     },
@@ -1920,7 +1939,7 @@
     "NomadFi does not provide tax advice. Suggestions are procedural only. Nothing is written to your tax records until you confirm." : {
 
     },
-    "NomadFi Locked" : {
+    "NomadFi never stores card numbers, PINs or passwords, so I can't show them. You'll find those on your card or in your bank's app." : {
 
     },
     "NomadFi parses the file on this device and previews the rows before writing anything. Nothing leaves your iPhone." : {
@@ -1986,6 +2005,12 @@
     "Notes, optional" : {
 
     },
+    "Nothing in %@ Yet" : {
+
+    },
+    "Nothing Nearby" : {
+
+    },
     "Notifications" : {
 
     },
@@ -2041,6 +2066,9 @@
 
     },
     "Open NomadFi with the scenario you dictated filled in, ready for on-device AI to structure. NomadFi never analyzes or saves anything until you confirm in the app." : {
+
+    },
+    "Open Settings" : {
 
     },
     "Opens Plaid Link against the locally-configured sandbox broker." : {
@@ -2350,6 +2378,9 @@
     "Recent spending context" : {
 
     },
+    "Recognised on this iPhone" : {
+
+    },
     "Recognition" : {
 
     },
@@ -2612,6 +2643,12 @@
     "Savings Opportunities" : {
 
     },
+    "Say It" : {
+
+    },
+    "Say what you're buying, like \"forty dollars at Whole Foods\"." : {
+
+    },
     "Scan Error" : {
 
     },
@@ -2670,9 +2707,6 @@
     "Secured by Plaid" : {
 
     },
-    "Security" : {
-
-    },
     "Select All" : {
 
     },
@@ -2725,6 +2759,12 @@
 
     },
     "Short title, optional" : {
+
+    },
+    "Show All %lld" : {
+
+    },
+    "Show Less" : {
 
     },
     "Showing Plaid Link" : {
@@ -2914,6 +2954,9 @@
     "The expense category" : {
 
     },
+    "The microphone couldn't start. Try again in a moment." : {
+
+    },
     "The model left these blank. Fill them in below before saving the draft, or save as-is and finish in the draft detail sheet." : {
 
     },
@@ -2970,6 +3013,9 @@
       }
     },
     "This connection couldn't be finished automatically. Connect the bank again." : {
+
+    },
+    "This iPhone can't recognise speech on device in your language, so NomadFi won't send your voice anywhere. Type the purchase instead." : {
 
     },
     "This iPhone's bank data belongs to a different account. Sign in with that account." : {
@@ -3153,6 +3199,9 @@
     "Use saved snapshot" : {
 
     },
+    "Use This" : {
+
+    },
     "Use your own words — merchant, context, and what you're weighing. This is the only required field." : {
 
     },
@@ -3264,6 +3313,9 @@
     "Worst drop" : {
 
     },
+    "Worth a Look" : {
+
+    },
     "Would be %@ after %lld years, all costs paid" : {
       "localizations" : {
         "en" : {
@@ -3354,10 +3406,10 @@
     "Your home jurisdiction is where NomadFi reports your net worth. Data attached to a jurisdiction keeps living on its own records — removing a jurisdiction never deletes your accounts, transactions, budgets, subscriptions, or tax documents." : {
 
     },
-    "Your money crosses borders." : {
+    "Your location is used once to find these places and isn't saved." : {
 
     },
-    "Your Money This Week" : {
+    "Your money crosses borders." : {
 
     },
     "Your net worth across %lld account%@ is approximately %@.%@" : {
