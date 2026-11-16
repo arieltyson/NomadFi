@@ -1,0 +1,247 @@
+{
+  "subcategories": [
+    {
+      "id": "transport.flights",
+      "name": "Flights",
+      "systemImage": "airplane",
+      "parent": "transport",
+      "providerCodes": ["TRAVEL_FLIGHTS"],
+      "merchants": ["air canada", "westjet", "flair airlines", "porter airlines", "air transat", "pacific coastal", "harbour air", "united airlines", "delta air", "american airlines", "alaska air", "southwest air", "jetblue", "caribbean airlines", "lufthansa", "british airways", "klm", "air france", "emirates", "qatar airways", "cathay pacific", "japan airlines", "flighthub", "skyscanner"],
+      "keywords": ["airline", "airlines", "airways", "air lines"]
+    },
+    {
+      "id": "transport.rideShare",
+      "name": "Ride Share",
+      "systemImage": "car.side.fill",
+      "parent": "transport",
+      "providerCodes": ["TRANSPORTATION_TAXIS_AND_RIDE_SHARES"],
+      "merchants": ["uber", "uber trip", "lyft", "kabu", "bolt", "grab", "didi", "curb", "yellow cab", "black top cabs"],
+      "keywords": ["taxi", "cab", "cabs", "limo"]
+    },
+    {
+      "id": "transport.carShare",
+      "name": "Car Share",
+      "systemImage": "key.fill",
+      "parent": "transport",
+      "providerCodes": [],
+      "merchants": ["evo", "evo car share", "evo carshare", "modo", "modo co op", "zipcar", "communauto", "getaround", "turo", "share now", "free2move", "car2go"],
+      "keywords": ["carshare", "car share", "car sharing"]
+    },
+    {
+      "id": "transport.carRental",
+      "name": "Car Rental",
+      "systemImage": "car.fill",
+      "parent": "transport",
+      "providerCodes": ["TRAVEL_RENTAL_CARS"],
+      "merchants": ["hertz", "avis", "enterprise rent a car", "budget rent a car", "national car rental", "sixt", "alamo", "thrifty", "dollar rent a car"],
+      "keywords": ["car rental", "rent a car"]
+    },
+    {
+      "id": "transport.transit",
+      "name": "Transit",
+      "systemImage": "tram.fill",
+      "parent": "transport",
+      "providerCodes": ["TRANSPORTATION_PUBLIC_TRANSIT"],
+      "merchants": ["translink", "compass", "compass card", "bc transit", "presto", "ttc", "go transit", "stm", "opus", "oc transpo", "via rail", "amtrak", "greyhound", "mta", "bart", "clipper", "bc ferries"],
+      "keywords": ["transit", "metro", "rail", "ferry", "ferries"]
+    },
+    {
+      "id": "transport.fuel",
+      "name": "Fuel",
+      "systemImage": "fuelpump.fill",
+      "parent": "transport",
+      "providerCodes": ["TRANSPORTATION_GAS"],
+      "merchants": ["shell", "esso", "chevron", "petro canada", "husky", "mobil", "exxon", "exxonmobil", "bp", "arco", "ultramar", "pioneer", "co op gas", "costco gas", "canadian tire gas"],
+      "keywords": ["gas station", "fuel", "petroleum"]
+    },
+    {
+      "id": "transport.parking",
+      "name": "Parking and Tolls",
+      "systemImage": "parkingsign",
+      "parent": "transport",
+      "providerCodes": ["TRANSPORTATION_PARKING", "TRANSPORTATION_TOLLS"],
+      "merchants": ["impark", "easypark", "paybyphone", "honk", "diamond parking", "spothero", "parkmobile", "indigo", "precise parklink"],
+      "keywords": ["parking", "toll", "tolls"]
+    },
+    {
+      "id": "transport.micromobility",
+      "name": "Bikes and Scooters",
+      "systemImage": "bicycle",
+      "parent": "transport",
+      "providerCodes": ["TRANSPORTATION_BIKES_AND_SCOOTERS"],
+      "merchants": ["mobi", "mobi bike share", "lime", "bird", "neuron", "citi bike", "bixi", "bike share toronto"],
+      "keywords": ["bike share", "scooter"]
+    },
+    {
+      "id": "transport.lodging",
+      "name": "Lodging",
+      "systemImage": "bed.double.fill",
+      "parent": "transport",
+      "providerCodes": ["TRAVEL_LODGING"],
+      "merchants": ["airbnb", "vrbo", "booking com", "hotels com", "marriott", "hilton", "hyatt", "ihg", "holiday inn", "best western", "fairmont", "sandman", "hostelworld"],
+      "keywords": ["hotel", "hotels", "inn", "hostel", "motel", "resort"]
+    },
+    {
+      "id": "food.groceries",
+      "name": "Groceries",
+      "systemImage": "cart.fill",
+      "parent": "food",
+      "providerCodes": ["FOOD_AND_DRINK_GROCERIES"],
+      "merchants": ["nesters", "nesters market", "safeway", "save on foods", "whole foods", "t t supermarket", "loblaws", "no frills", "real canadian superstore", "superstore", "sobeys", "iga", "freshco", "food basics", "metro", "costco", "choices markets", "urban fare", "fresh st market", "h mart", "kin s farm market", "trader joe s", "kroger", "aldi", "lidl", "publix", "wegmans", "sprouts", "instacart", "voila"],
+      "keywords": ["grocery", "groceries", "supermarket", "market", "foods"]
+    },
+    {
+      "id": "food.delivery",
+      "name": "Delivery",
+      "systemImage": "takeoutbag.and.cup.and.straw.fill",
+      "parent": "food",
+      "providerCodes": [],
+      "merchants": ["uber", "uber eats", "ubereats", "doordash", "skip the dishes", "skipthedishes", "grubhub", "postmates", "fantuan", "deliveroo", "just eat", "foodora", "seamless", "caviar", "chowbus"],
+      "keywords": ["delivery"]
+    },
+    {
+      "id": "food.coffee",
+      "name": "Coffee",
+      "systemImage": "cup.and.saucer.fill",
+      "parent": "food",
+      "providerCodes": ["FOOD_AND_DRINK_COFFEE"],
+      "merchants": ["starbucks", "tim hortons", "blenz", "jj bean", "49th parallel", "matchstick", "revolver", "caffe artigiano", "second cup", "dunkin", "blue bottle", "peet s"],
+      "keywords": ["coffee", "cafe", "espresso", "roasters"]
+    },
+    {
+      "id": "food.restaurants",
+      "name": "Restaurants",
+      "systemImage": "fork.knife",
+      "parent": "food",
+      "providerCodes": ["FOOD_AND_DRINK_RESTAURANT", "FOOD_AND_DRINK_FAST_FOOD"],
+      "merchants": ["mcdonald s", "a w", "wendy s", "burger king", "subway", "chipotle", "five guys", "popeyes", "kfc", "taco bell", "earls", "cactus club", "joeys", "white spot", "the keg", "nando s", "freshii", "pizza hut", "domino s", "boston pizza"],
+      "keywords": ["restaurant", "bistro", "grill", "kitchen", "sushi", "ramen", "pizza", "pizzeria", "burger", "burgers", "taqueria", "diner", "eatery", "pho", "noodle", "noodles", "dumpling", "bbq", "thai", "izakaya"]
+    },
+    {
+      "id": "food.drinks",
+      "name": "Bars and Liquor",
+      "systemImage": "wineglass.fill",
+      "parent": "food",
+      "providerCodes": ["FOOD_AND_DRINK_BEER_WINE_AND_LIQUOR"],
+      "merchants": ["bc liquor", "bcl", "lcbo", "saq", "the beer store", "liquor depot", "everything wine"],
+      "keywords": ["liquor", "pub", "brewing", "brewery", "taproom", "bar", "wine", "spirits"]
+    },
+    {
+      "id": "shopping.online",
+      "name": "Online",
+      "systemImage": "shippingbox.fill",
+      "parent": "shopping",
+      "providerCodes": ["GENERAL_MERCHANDISE_ONLINE_MARKETPLACES"],
+      "merchants": ["amazon", "amzn", "amazon ca", "amazon com", "amzn mktp", "ebay", "etsy", "temu", "shein", "aliexpress", "wayfair"],
+      "keywords": []
+    },
+    {
+      "id": "shopping.clothing",
+      "name": "Clothing",
+      "systemImage": "tshirt.fill",
+      "parent": "shopping",
+      "providerCodes": ["GENERAL_MERCHANDISE_CLOTHING_AND_ACCESSORIES"],
+      "merchants": ["uniqlo", "h m", "zara", "lululemon", "aritzia", "gap", "old navy", "nike", "adidas", "simons", "winners", "marshalls", "sport chek", "mec", "arc teryx"],
+      "keywords": ["apparel", "clothing", "boutique", "shoes"]
+    },
+    {
+      "id": "shopping.electronics",
+      "name": "Electronics",
+      "systemImage": "desktopcomputer",
+      "parent": "shopping",
+      "providerCodes": ["GENERAL_MERCHANDISE_ELECTRONICS"],
+      "merchants": ["best buy", "apple store", "memory express", "canada computers", "the source", "micro center", "b h photo"],
+      "keywords": ["electronics"]
+    },
+    {
+      "id": "shopping.everyday",
+      "name": "Everyday Stores",
+      "systemImage": "bag.fill",
+      "parent": "shopping",
+      "providerCodes": ["GENERAL_MERCHANDISE_SUPERSTORES", "GENERAL_MERCHANDISE_DISCOUNT_STORES", "GENERAL_MERCHANDISE_CONVENIENCE_STORES"],
+      "merchants": ["walmart", "target", "costco", "dollarama", "canadian tire", "ikea", "home depot", "london drugs", "7 eleven", "circle k"],
+      "keywords": ["dollar store", "convenience"]
+    },
+    {
+      "id": "medical.pharmacy",
+      "name": "Pharmacy",
+      "systemImage": "pills.fill",
+      "parent": "medical",
+      "providerCodes": ["MEDICAL_PHARMACIES_AND_SUPPLEMENTS"],
+      "merchants": ["shoppers drug mart", "rexall", "pharmasave", "cvs", "walgreens", "jean coutu"],
+      "keywords": ["pharmacy", "drug mart", "drugs"]
+    },
+    {
+      "id": "medical.care",
+      "name": "Care",
+      "systemImage": "stethoscope",
+      "parent": "medical",
+      "providerCodes": ["MEDICAL_PRIMARY_CARE", "MEDICAL_DENTAL_CARE", "MEDICAL_EYE_CARE", "MEDICAL_NURSING_CARE", "MEDICAL_VETERINARY_SERVICES", "MEDICAL_OTHER_MEDICAL"],
+      "merchants": [],
+      "keywords": ["clinic", "dental", "dentist", "optometry", "physio", "physiotherapy", "medical", "health"]
+    },
+    {
+      "id": "entertainment.screen",
+      "name": "Movies and TV",
+      "systemImage": "film.fill",
+      "parent": "entertainment",
+      "providerCodes": ["ENTERTAINMENT_TV_AND_MOVIES"],
+      "merchants": ["cineplex", "landmark cinemas", "amc", "regal", "netflix", "disney plus", "crave", "prime video"],
+      "keywords": ["cinema", "cinemas", "theatre", "theater"]
+    },
+    {
+      "id": "entertainment.music",
+      "name": "Music",
+      "systemImage": "music.note",
+      "parent": "entertainment",
+      "providerCodes": ["ENTERTAINMENT_MUSIC_AND_AUDIO"],
+      "merchants": ["spotify", "apple music", "tidal", "soundcloud", "audible"],
+      "keywords": []
+    },
+    {
+      "id": "entertainment.events",
+      "name": "Events",
+      "systemImage": "ticket.fill",
+      "parent": "entertainment",
+      "providerCodes": ["ENTERTAINMENT_SPORTING_EVENTS_AMUSEMENT_PARKS_AND_CONCERTS"],
+      "merchants": ["ticketmaster", "stubhub", "eventbrite", "live nation", "seatgeek"],
+      "keywords": ["tickets", "concert", "stadium", "arena"]
+    },
+    {
+      "id": "entertainment.games",
+      "name": "Games",
+      "systemImage": "gamecontroller.fill",
+      "parent": "entertainment",
+      "providerCodes": ["ENTERTAINMENT_VIDEO_GAMES"],
+      "merchants": ["steam", "steampowered", "playstation", "xbox", "nintendo", "epic games", "riot games"],
+      "keywords": []
+    },
+    {
+      "id": "utilities.phone",
+      "name": "Phone",
+      "systemImage": "iphone",
+      "parent": "utilities",
+      "providerCodes": ["RENT_AND_UTILITIES_TELEPHONE"],
+      "merchants": ["rogers", "telus", "bell", "fido", "koodo", "virgin plus", "freedom mobile", "public mobile", "chatr", "lucky mobile", "fizz", "t mobile", "verizon", "at t"],
+      "keywords": ["wireless", "mobile"]
+    },
+    {
+      "id": "utilities.internet",
+      "name": "Internet",
+      "systemImage": "wifi",
+      "parent": "utilities",
+      "providerCodes": ["RENT_AND_UTILITIES_INTERNET_AND_CABLE"],
+      "merchants": ["shaw", "novus", "teksavvy", "start com", "comcast", "xfinity"],
+      "keywords": ["internet", "broadband"]
+    },
+    {
+      "id": "utilities.energy",
+      "name": "Energy",
+      "systemImage": "bolt.fill",
+      "parent": "utilities",
+      "providerCodes": ["RENT_AND_UTILITIES_GAS_AND_ELECTRICITY"],
+      "merchants": ["bc hydro", "fortisbc", "hydro one", "toronto hydro", "hydro quebec", "enbridge", "epcor", "enmax", "atco"],
+      "keywords": ["hydro", "electric", "electricity", "energy"]
+    }
+  ]
+}
