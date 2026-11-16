@@ -2,12 +2,12 @@ import Foundation
 import OSLog
 import SwiftData
 
-/// Drives the Spending screens: which period is shown, its breakdown, and
-/// sorting a merchant into a kind of spending.
+/// Drives the Spending screens: which month, three months or year is
+/// shown, its breakdown, and sorting a merchant into a kind of spending.
 ///
 /// Breakdowns are built by a background ``SpendingBreakdownWorker`` and
-/// kept per period, so switching back to a period is instant and the main
-/// thread never totals purchases.
+/// kept per interval, so returning to one is instant and the main thread
+/// never totals purchases.
 @MainActor
 @Observable
 final class SpendingViewModel {
@@ -17,25 +17,40 @@ final class SpendingViewModel {
     let homeCurrency: CurrencyCode
     let taxonomy: SpendingTaxonomy
 
-    /// The period being shown. Three months by default, to match the
-    /// Dashboard card this screen opens from.
+    /// How much time is shown at once. Three months by default, to match
+    /// the Dashboard card this screen opens from. Changing it keeps the
+    /// chosen month, so a month's year is one tap away.
     var period: SpendingPeriod = .quarter {
-        didSet { lastShown = breakdowns[oldValue] ?? lastShown }
+        didSet { keepShowing(SpendingInterval(oldValue, containing: chosenDate)) }
     }
 
-    /// Whether a breakdown is being built for the current period.
+    /// A date in the last month shown; the interval is built around it.
+    private(set) var chosenDate: Date = .now
+
+    /// The exact months or year shown.
+    var interval: SpendingInterval {
+        SpendingInterval(period, containing: chosenDate)
+    }
+
+    /// The earliest purchase, which bounds how far back one can go.
+    private(set) var earliestSpendingDate: Date?
+
+    /// Whether a breakdown is being built for the current interval.
     private(set) var isLoading = false
 
-    private(set) var breakdowns: [SpendingPeriod: SpendingBreakdown] = [:]
+    private(set) var breakdowns: [SpendingInterval: SpendingBreakdown] = [:]
 
-    /// The breakdown last shown, kept on screen while another period's is
-    /// built so the screen never blanks.
+    /// The breakdown last shown, kept on screen while another interval's
+    /// is built so the screen never blanks.
     private var lastShown: SpendingBreakdown?
 
-    /// The current period's breakdown, or the last one shown while it loads.
+    /// The current interval's breakdown, or the last one shown while it loads.
     var breakdown: SpendingBreakdown? {
-        breakdowns[period] ?? lastShown
+        breakdowns[interval] ?? lastShown
     }
+
+    /// The most intervals the jump list offers, newest first.
+    static let maximumListedIntervals = 60
 
     /// How long a burst of saves must settle before the breakdown is rebuilt.
     static let reloadDebounce: Duration = .milliseconds(400)
@@ -64,12 +79,54 @@ final class SpendingViewModel {
         self.suggestionStore = suggestionStore
     }
 
+    // MARK: - Choosing the Interval
+
+    /// Whether an earlier interval holds any purchases.
+    var canGoBack: Bool {
+        earliestSpendingDate.map { interval.start > $0 } ?? false
+    }
+
+    /// Whether a later interval has started yet.
+    func canGoForward(now: Date = .now) -> Bool {
+        interval.end <= now
+    }
+
+    /// Moves one interval earlier (negative) or later (positive).
+    func step(by steps: Int) {
+        show(interval.shifted(by: steps))
+    }
+
+    func show(_ newInterval: SpendingInterval) {
+        keepShowing(interval)
+        period = newInterval.period
+        chosenDate = newInterval.lastMonthDate
+    }
+
+    /// The intervals one can jump to, newest first: from the one holding
+    /// today back to the one holding the earliest purchase.
+    func selectableIntervals(now: Date = .now) -> [SpendingInterval] {
+        var intervals = [SpendingInterval(period, containing: now)]
+        guard let earliest = earliestSpendingDate else { return intervals }
+        while intervals.count < Self.maximumListedIntervals,
+              let last = intervals.last, last.start > earliest {
+            intervals.append(last.shifted(by: -1))
+        }
+        return intervals
+    }
+
+    private func keepShowing(_ previous: SpendingInterval) {
+        lastShown = breakdowns[previous] ?? lastShown
+    }
+
     // MARK: - Loading
 
-    /// Builds the current period's breakdown unless it is already built.
+    /// Builds the current interval's breakdown unless it is already built.
     func load(in container: ModelContainer) async {
-        guard breakdowns[period] == nil else { return }
-        await build(period, in: container)
+        if earliestSpendingDate == nil {
+            earliestSpendingDate = try? await worker(for: container).earliestSpendingDate()
+        }
+        guard breakdowns[interval] == nil else { return }
+        await build(interval, in: container)
     }
 
     /// Rebuilds after the store changed, once a burst of saves settles.
@@ -101,7 +158,7 @@ final class SpendingViewModel {
     /// sort, each only once ever, then rebuilds if any found a home. Stops
     /// when the screen goes away.
     func sortUnrecognizedMerchants(in container: ModelContainer) async {
-        guard suggester.isAvailable, let breakdown = breakdowns[period] else { return }
+        guard suggester.isAvailable, let breakdown = breakdowns[interval] else { return }
         let worker = await worker(for: container)
         let candidates = Self.unrecognizedMerchants(
             in: breakdown,
@@ -161,16 +218,17 @@ final class SpendingViewModel {
 
     private func rebuildAll(in container: ModelContainer) async {
         breakdowns.removeAll()
-        await build(period, in: container)
+        earliestSpendingDate = try? await worker(for: container).earliestSpendingDate()
+        await build(interval, in: container)
     }
 
-    private func build(_ period: SpendingPeriod, in container: ModelContainer) async {
+    private func build(_ interval: SpendingInterval, in container: ModelContainer) async {
         isLoading = true
         defer { isLoading = false }
         do {
-            let built = try await worker(for: container).breakdown(period: period, homeCurrency: homeCurrency)
-            breakdowns[period] = built
-            if period == self.period { lastShown = built }
+            let built = try await worker(for: container).breakdown(interval: interval, homeCurrency: homeCurrency)
+            breakdowns[interval] = built
+            if interval == self.interval { lastShown = built }
         } catch {
             Self.logger.error("Spending breakdown failed: \(error.localizedDescription, privacy: .public)")
         }

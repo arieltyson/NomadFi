@@ -21,12 +21,11 @@ actor SpendingBreakdownWorker {
     // MARK: - Breakdown
 
     func breakdown(
-        period: SpendingPeriod,
+        interval: SpendingInterval,
         homeCurrency: CurrencyCode,
-        taxonomy: SpendingTaxonomy = .bundled,
-        now: Date = .now
+        taxonomy: SpendingTaxonomy = .bundled
     ) throws -> SpendingBreakdown {
-        let records = try records(since: period.startDate(now: now))
+        let records = try records(in: interval)
         let classifier = SpendingClassifier(
             taxonomy: taxonomy,
             merchantRules: try merchantRules(),
@@ -35,9 +34,8 @@ actor SpendingBreakdownWorker {
         return SpendingBreakdownComputer.breakdown(
             records: records,
             classifier: classifier,
-            period: period,
-            homeCurrency: homeCurrency,
-            now: now
+            interval: interval,
+            homeCurrency: homeCurrency
         )
     }
 
@@ -92,14 +90,30 @@ actor SpendingBreakdownWorker {
 
     // MARK: - Reading
 
-    /// The period's possible spending, fetched with the date and category
-    /// filters applied by the store.
-    private func records(since start: Date) throws -> [SpendingRecord] {
+    /// The date of the earliest purchase that could count as spending, or
+    /// `nil` when there is none, which bounds how far back one can go.
+    func earliestSpendingDate() throws -> Date? {
+        let income = TransactionCategory.income.rawValue
+        let transfer = TransactionCategory.transfer.rawValue
+        var descriptor = FetchDescriptor<Transaction>(
+            predicate: #Predicate { $0.categoryRawValue != income && $0.categoryRawValue != transfer },
+            sortBy: [SortDescriptor(\.date)]
+        )
+        descriptor.fetchLimit = 1
+        return try modelContext.fetch(descriptor).first?.date
+    }
+
+    /// The interval's possible spending, fetched with the date and
+    /// category filters applied by the store.
+    private func records(in interval: SpendingInterval) throws -> [SpendingRecord] {
+        let start = interval.start
+        let end = interval.end
         let income = TransactionCategory.income.rawValue
         let transfer = TransactionCategory.transfer.rawValue
         let transactions = try modelContext.fetch(FetchDescriptor<Transaction>(
             predicate: #Predicate { transaction in
                 transaction.date >= start
+                    && transaction.date < end
                     && transaction.categoryRawValue != income
                     && transaction.categoryRawValue != transfer
             }

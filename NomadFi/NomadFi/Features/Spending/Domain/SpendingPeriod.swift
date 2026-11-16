@@ -1,7 +1,8 @@
 import Foundation
 
-/// How far back the spending breakdown looks, always in whole months
-/// ending with the current one.
+/// How much time the spending breakdown covers at once: a month, a
+/// rolling three months, or a calendar year. Which month or year is
+/// chosen separately; see ``SpendingInterval``.
 enum SpendingPeriod: String, CaseIterable, Identifiable, Sendable {
     case month
     case quarter
@@ -18,18 +19,12 @@ enum SpendingPeriod: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// How many months the period covers, including the current one.
-    var monthCount: Int {
+    /// How far one step back or forward moves.
+    var step: (component: Calendar.Component, value: Int) {
         switch self {
-        case .month: 1
-        case .quarter: 3
-        case .year: 12
+        case .month: (.month, 1)
+        case .quarter: (.month, 3)
+        case .year: (.year, 1)
         }
-    }
-
-    /// The first instant the period covers: the start of its first month.
-    func startDate(now: Date = .now, calendar: Calendar = .current) -> Date {
-        let thisMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
-        return calendar.date(byAdding: .month, value: -(monthCount - 1), to: thisMonth) ?? thisMonth
     }
 }

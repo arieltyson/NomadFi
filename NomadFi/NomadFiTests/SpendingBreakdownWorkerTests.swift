@@ -49,7 +49,7 @@ struct SpendingBreakdownWorkerTests {
         try context.save()
 
         let worker = SpendingBreakdownWorker(modelContainer: container)
-        let first = try await worker.breakdown(period: .month, homeCurrency: .cad)
+        let first = try await worker.breakdown(interval: SpendingInterval(.month, containing: .now), homeCurrency: .cad)
         #expect(first.total == 130)
         #expect(first.otherCurrencyCount == 1)
         #expect(first.categories.map(\.category) == [.food, .transport])
@@ -62,13 +62,13 @@ struct SpendingBreakdownWorkerTests {
 
         let mystery = try #require(transport.subcategories.last?.merchants.first)
         try await worker.setRule(merchantKey: mystery.id, subcategoryID: "transport.carShare")
-        let learned = try #require(try await worker.breakdown(period: .month, homeCurrency: .cad).slice(for: .transport))
+        let learned = try #require(try await worker.breakdown(interval: SpendingInterval(.month, containing: .now), homeCurrency: .cad).slice(for: .transport))
         #expect(learned.subcategories.map(\.id) == ["transport.rideShare", "transport.carShare"])
         #expect(learned.subcategories.last?.total == 20)
         #expect(learned.subcategories.last?.merchants.contains { $0.ruledSubcategoryID == "transport.carShare" } == true)
 
         try await worker.setRule(merchantKey: mystery.id, subcategoryID: nil)
-        let automatic = try #require(try await worker.breakdown(period: .month, homeCurrency: .cad).slice(for: .transport))
+        let automatic = try #require(try await worker.breakdown(interval: SpendingInterval(.month, containing: .now), homeCurrency: .cad).slice(for: .transport))
         #expect(automatic.subcategories.last?.isOther == true)
     }
 }

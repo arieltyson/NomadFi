@@ -11,14 +11,11 @@ enum SpendingBreakdownComputer {
     static func breakdown(
         records: [SpendingRecord],
         classifier: SpendingClassifier,
-        period: SpendingPeriod,
-        homeCurrency: CurrencyCode,
-        now: Date = .now,
-        calendar: Calendar = .current
+        interval: SpendingInterval,
+        homeCurrency: CurrencyCode
     ) -> SpendingBreakdown {
-        let start = period.startDate(now: now, calendar: calendar)
         let spending = records.filter { record in
-            record.date >= start && record.date <= now && record.amount != 0
+            interval.contains(record.date) && record.amount != 0
                 && record.category != .income && record.category != .transfer
         }
         let currency = dominantCurrency(in: spending, preferring: homeCurrency)
@@ -55,7 +52,7 @@ enum SpendingBreakdownComputer {
         .sorted { $0.total > $1.total }
 
         return SpendingBreakdown(
-            period: period,
+            interval: interval,
             currency: currency,
             total: categories.reduce(0) { $0 + $1.total },
             categories: categories,

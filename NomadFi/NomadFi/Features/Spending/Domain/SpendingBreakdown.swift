@@ -3,7 +3,7 @@ import Foundation
 /// Where the money went in a period: categories, their subcategories and
 /// the merchants within them, all in one currency.
 struct SpendingBreakdown: Equatable, Sendable {
-    let period: SpendingPeriod
+    let interval: SpendingInterval
     let currency: CurrencyCode
     let total: Double
     /// Largest first.

@@ -27,6 +27,8 @@ struct SpendingView: View {
                 }
                 .pickerStyle(.segmented)
 
+                SpendingIntervalNavigator(viewModel: viewModel)
+
                 SpendingOverviewContent(viewModel: viewModel, chartStyle: chartStyle)
             }
             .padding(SpacingTokens.medium)
@@ -41,7 +43,7 @@ struct SpendingView: View {
         .navigationDestination(for: SpendingCategoryRoute.self) { route in
             SpendingCategoryView(category: route.category, viewModel: viewModel)
         }
-        .task(id: viewModel.period) {
+        .task(id: viewModel.interval) {
             await viewModel.load(in: modelContext.container)
             await viewModel.sortUnrecognizedMerchants(in: modelContext.container)
         }
@@ -80,7 +82,7 @@ private struct SpendingOverviewContent: View {
                         slices: slices,
                         total: breakdown.total,
                         currency: breakdown.currency,
-                        caption: String(localized: breakdown.period.title),
+                        caption: String(localized: "Total"),
                         style: chartStyle,
                         selectedID: $selectedID
                     )

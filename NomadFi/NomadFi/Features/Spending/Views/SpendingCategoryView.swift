@@ -27,7 +27,7 @@ struct SpendingCategoryView: View {
                             slices: slices,
                             total: slice.total,
                             currency: breakdown.currency,
-                            caption: String(localized: breakdown.period.title),
+                            caption: breakdown.interval.title,
                             style: chartStyle,
                             selectedID: $selectedID
                         )

@@ -274,6 +274,9 @@
     "•" : {
 
     },
+    "^[%lld purchase](inflect: true)" : {
+
+    },
     "1 %@ equals %@ %@" : {
       "localizations" : {
         "en" : {
@@ -285,6 +288,9 @@
       }
     },
     "3 days before renewal" : {
+
+    },
+    "3 Months" : {
 
     },
     "30%% total %@" : {
@@ -414,6 +420,9 @@
 
     },
     "Adding a jurisdiction lets you assign accounts, budgets, and tax documents to that country. You can remove it later when nothing is attached." : {
+
+    },
+    "Adding up your spending" : {
 
     },
     "Adds %@ to your active jurisdictions." : {
@@ -556,6 +565,9 @@
 
     },
     "Authorized — no eligible accounts found" : {
+
+    },
+    "Automatic" : {
 
     },
     "Available" : {
@@ -712,6 +724,9 @@
 
     },
     "Choose an account" : {
+
+    },
+    "Choose what kind of spending this merchant is." : {
 
     },
     "City or context" : {
@@ -878,6 +893,9 @@
 
     },
     "Couldn't Finish Setup" : {
+
+    },
+    "Count As" : {
 
     },
     "Country" : {
@@ -1454,6 +1472,9 @@
     "Hide Keyboard" : {
 
     },
+    "Hides its merchants." : {
+
+    },
     "Hides the draft from the main list. You can restore it later." : {
 
     },
@@ -1624,6 +1645,9 @@
 
     },
     "Leave empty to use the base rate." : {
+
+    },
+    "Leaves out ^[%lld purchase](inflect: true) in other currencies." : {
 
     },
     "Ledger" : {
@@ -1846,6 +1870,9 @@
     "NGN — Nigerian Naira" : {
 
     },
+    "No %@ Spending" : {
+
+    },
     "No Accounts" : {
 
     },
@@ -1898,6 +1925,9 @@
 
     },
     "No specific keyword signals on file." : {
+
+    },
+    "No Spending" : {
 
     },
     "No Subscriptions" : {
@@ -2212,6 +2242,9 @@
     "Per-card assessment" : {
 
     },
+    "Period" : {
+
+    },
     "Permanently removes all accounts, transactions, receipts, and subscriptions from this device" : {
 
     },
@@ -2318,6 +2351,9 @@
 
     },
     "Purchase details" : {
+
+    },
+    "Purchases from this period will appear here." : {
 
     },
     "Question %lld of %lld" : {
@@ -2764,13 +2800,25 @@
     "Show All %lld" : {
 
     },
+    "Show as Bars" : {
+
+    },
+    "Show as Wheel" : {
+
+    },
     "Show Less" : {
 
     },
     "Showing Plaid Link" : {
 
     },
+    "Shows its merchants." : {
+
+    },
     "Shows the figures this answer used" : {
+
+    },
+    "Shows what kinds of spending and which merchants make up each category." : {
 
     },
     "Sign in with Apple again to continue." : {
@@ -2797,6 +2845,9 @@
     "Something Went Wrong" : {
 
     },
+    "Sort a Merchant" : {
+
+    },
     "Source" : {
 
     },
@@ -2810,6 +2861,9 @@
 
     },
     "Sources" : {
+
+    },
+    "Spending" : {
 
     },
     "Stale or incomplete information" : {
@@ -2898,6 +2952,9 @@
 
     },
     "Tap + to scan your first receipt." : {
+
+    },
+    "Tap a merchant to choose what kind of spending it is. NomadFi remembers it for every purchase there." : {
 
     },
     "Target account" : {
@@ -3327,6 +3384,9 @@
       }
     },
     "Writes the new rows to your ledger. Duplicates and skipped rows are not saved." : {
+
+    },
+    "Year" : {
 
     },
     "Yearly return" : {
