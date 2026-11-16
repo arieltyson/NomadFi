@@ -29,4 +29,20 @@ enum SizeTokens {
     /// The widest an empty state's illustration grows, so it stays a
     /// hint rather than a screen-filling graphic on large displays.
     static let emptyStateIllustrationMaxWidth: CGFloat = 320
+
+    // MARK: - Charts
+
+    /// How far into a ring chart its hole reaches, as a share of radius.
+    static let ringChartInnerRadiusRatio: CGFloat = 0.62
+
+    /// The gap between neighboring sectors of a ring chart, in points.
+    static let ringChartSectorInset: CGFloat = 1.5
+
+    /// How much of its row a horizontal bar fills, leaving room for the
+    /// name above it.
+    static let barChartBarHeightRatio: CGFloat = 0.45
+
+    /// The widest a ring chart grows, so it stays a glanceable figure on
+    /// iPad and in landscape rather than filling the screen.
+    static let ringChartMaxDiameter: CGFloat = 280
 }

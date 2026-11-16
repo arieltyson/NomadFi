@@ -56,6 +56,27 @@ enum ColorTokens {
     /// Tertiary background for nested groupings.
     static let surfaceTertiary = Color(.tertiarySystemBackground)
 
+    // MARK: - Charts
+
+    /// Series colors for charts that compare parts of a whole, in the
+    /// order slices are ranked. System colors, so each adapts to dark
+    /// mode and Increase Contrast; neighbors differ in hue and lightness.
+    static let chartSeries: [Color] = [
+        brandPrimary, .orange, .indigo, .pink, .teal, .yellow, .purple, .mint, .red, .cyan, .brown, .blue,
+    ]
+
+    /// The color of a chart's "Other" slice, deliberately quiet.
+    static let chartOther = Color.gray
+
+    /// The series color for a ranked slice, or ``chartOther`` for `nil`.
+    static func chartColor(at rank: Int?) -> Color {
+        guard let rank else { return chartOther }
+        return chartSeries[rank % chartSeries.count]
+    }
+
+    /// How much an unselected slice fades while another is selected.
+    static let chartDimmedOpacity: Double = 0.3
+
     // MARK: - Tinted Fills
 
     /// The fill behind a tinted chip or badge whose foreground carries

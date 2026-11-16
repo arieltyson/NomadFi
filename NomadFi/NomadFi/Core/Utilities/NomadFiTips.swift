@@ -106,3 +106,22 @@ struct TaxExportTip: Tip {
         Image(systemName: "square.and.arrow.up")
     }
 }
+
+// MARK: - Sort Merchant Tip
+
+/// Shown once on a category's breakdown while some purchases are still
+/// unsorted, to say that a tap sorts a merchant for good.
+struct SortMerchantTip: Tip {
+
+    var title: Text {
+        Text("Sort a Merchant")
+    }
+
+    var message: Text? {
+        Text("Tap a merchant to choose what kind of spending it is. NomadFi remembers it for every purchase there.")
+    }
+
+    var image: Image? {
+        Image(systemName: "hand.tap.fill")
+    }
+}
