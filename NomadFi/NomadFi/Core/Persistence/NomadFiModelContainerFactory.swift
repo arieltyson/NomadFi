@@ -33,7 +33,7 @@ enum NomadFiModelContainerFactory {
         // unreadable while the iPhone is locked from now on.
         FileProtectionHardener.protectAppFiles()
         do {
-            let schema = Schema(versionedSchema: NomadFiSchemaV3.self)
+            let schema = Schema(versionedSchema: NomadFiSchemaV4.self)
             return try ModelContainer(
                 for: schema,
                 migrationPlan: NomadFiMigrationPlan.self,

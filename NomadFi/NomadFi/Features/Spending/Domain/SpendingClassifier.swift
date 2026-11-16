@@ -60,6 +60,11 @@ struct SpendingClassifier: Sendable {
             ?? matchers.keyword(in: words)
     }
 
+    /// The subcategory the person chose for a merchant, if they did.
+    func ruledSubcategoryID(for merchantKey: String) -> String? {
+        merchantRules[merchantKey]
+    }
+
     /// The key purchases from one merchant share, used for rules and for
     /// grouping: the import-time normalized name when there is one.
     static func merchantKey(for transaction: Transaction) -> String {
