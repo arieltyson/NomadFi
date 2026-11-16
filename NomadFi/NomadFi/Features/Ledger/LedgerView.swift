@@ -6,11 +6,14 @@ import TipKit
 /// list of all transactions across jurisdictions.
 ///
 /// Features Active Card recommendation, filter chips, and navigation
-/// to transaction details and manual entry.
+/// to transaction details and manual entry. Rows load a page at a time
+/// as the list scrolls, so the ledger opens at once however long the
+/// history is.
 struct LedgerView: View {
 
-    @Query(sort: \Transaction.date, order: .reverse)
-    private var transactions: [Transaction]
+    /// At most one row: enough to tell an empty ledger from a filtered one.
+    @Query(LedgerViewModel.anyTransactionDescriptor)
+    private var anyTransaction: [Transaction]
 
     @Query(sort: \JurisdictionProfile.displayOrder)
     private var jurisdictions: [JurisdictionProfile]
@@ -23,7 +26,7 @@ struct LedgerView: View {
 
     var body: some View {
         Group {
-            if transactions.isEmpty && !viewModel.hasActiveFilters {
+            if anyTransaction.isEmpty && !viewModel.hasActiveFilters {
                 LedgerEmptyStateView()
             } else {
                 transactionList
@@ -41,6 +44,9 @@ struct LedgerView: View {
         .sheet(isPresented: $isShowingAddTransaction) {
             AddTransactionView()
         }
+        .task(id: viewModel.searchText) {
+            await viewModel.applySearchText()
+        }
         .task {
             viewModel.refreshLocationAuthorizationStatus()
             await viewModel.updateActiveCardRecommendation(accounts: accounts)
@@ -56,44 +62,29 @@ struct LedgerView: View {
     }
 }
 
-// MARK: - Transaction List
-
-private struct DateSectionHeader: View {
-
-    let date: Date
-
-    var body: some View {
-        Text(date, format: .dateTime.weekday(.wide).month(.abbreviated).day())
-            .font(TypographyTokens.caption)
-            .foregroundStyle(.secondary)
-            .textCase(nil)
-            .accessibilityAddTraits(.isHeader)
-    }
-}
-
 // MARK: - Private Helpers
 
 private extension LedgerView {
 
     var transactionList: some View {
-        // Filter and group once per update, not once per place they are read.
-        let groups = viewModel.groupedByDate(viewModel.filteredTransactions(transactions))
-        return ScrollView {
+        ScrollView {
             LazyVStack(spacing: SpacingTokens.small, pinnedViews: .sectionHeaders) {
                 activeCardSection
 
                 filterSection
 
-                if groups.isEmpty {
-                    ContentUnavailableView.search(text: viewModel.searchText)
-                        .padding(.top, SpacingTokens.xxLarge)
-                } else {
-                    transactionSections(groups)
-                }
+                LedgerTransactionSections(
+                    descriptor: viewModel.fetchDescriptor,
+                    searchText: viewModel.appliedSearchText,
+                    onNearEnd: viewModel.loadNextPage(loadedCount:)
+                )
             }
             .padding(.vertical, SpacingTokens.xSmall)
         }
         .scrollIndicators(.hidden)
+        .navigationDestination(for: Transaction.self) { transaction in
+            TransactionDetailView(transaction: transaction)
+        }
     }
 
     @ViewBuilder
@@ -116,27 +107,6 @@ private extension LedgerView {
 
     var filterSection: some View {
         TransactionFilterChips(viewModel: viewModel, jurisdictions: jurisdictions)
-    }
-
-    func transactionSections(_ groups: [(date: Date, transactions: [Transaction])]) -> some View {
-        ForEach(groups, id: \.date) { group in
-            Section {
-                ForEach(group.transactions, id: \.self) { transaction in
-                    NavigationLink(value: transaction) {
-                        TransactionRowView(transaction: transaction)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, SpacingTokens.medium)
-                }
-            } header: {
-                DateSectionHeader(date: group.date)
-                    .padding(.horizontal, SpacingTokens.medium)
-                    .padding(.top, SpacingTokens.xSmall)
-            }
-        }
-        .navigationDestination(for: Transaction.self) { transaction in
-            TransactionDetailView(transaction: transaction)
-        }
     }
 }
 

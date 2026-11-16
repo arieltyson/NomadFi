@@ -6,18 +6,40 @@ import SwiftData
 /// Manages ledger state including search, filtering, date grouping,
 /// and the Active Card recommendation engine.
 ///
-/// Works alongside `@Query` in ``LedgerView``: SwiftData queries provide
-/// reactive transaction data, while this view model handles filtering,
-/// grouping, service calls, and derived intelligence.
+/// Works alongside `@Query` in ``LedgerView``: this view model describes
+/// which page of which rows to fetch, and SwiftData fetches them, filtered
+/// and sorted by the store, so the ledger never loads the whole history.
 @MainActor
 @Observable
 final class LedgerViewModel {
 
     // MARK: - Filter State
 
+    /// The text in the search field, updated on every keystroke.
     var searchText: String = ""
-    var selectedCategories: Set<TransactionCategory> = []
-    var selectedJurisdiction: String?
+    var selectedCategories: Set<TransactionCategory> = [] {
+        didSet { resetPaging() }
+    }
+    var selectedJurisdiction: String? {
+        didSet { resetPaging() }
+    }
+
+    /// The search the fetch applies: ``searchText`` once typing pauses.
+    private(set) var appliedSearchText: String = ""
+
+    // MARK: - Paging
+
+    /// Rows fetched per page. One page fills several screens, so opening
+    /// the ledger only ever reads a small, constant slice of the store.
+    static let pageSize = 50
+    /// How many rows from the end of the loaded slice the next page is
+    /// requested, so it arrives before the user reaches the bottom.
+    static let prefetchDistance = 15
+    /// How long typing must pause before the search reaches the store.
+    static let searchDebounce: Duration = .milliseconds(250)
+
+    /// How many of the newest matching rows the ledger fetches.
+    private(set) var fetchLimit = LedgerViewModel.pageSize
 
     // MARK: - Active Card
 
@@ -44,34 +66,85 @@ final class LedgerViewModel {
         refreshLocationAuthorizationStatus()
     }
 
-    // MARK: - Filtering
+    // MARK: - Fetching
 
-    /// Applies search text, category, and jurisdiction filters to a transaction list.
-    func filteredTransactions(_ transactions: [Transaction]) -> [Transaction] {
-        // Nothing to filter by: return the list untouched instead of
-        // reading three properties of every transaction.
-        guard !searchText.isEmpty || !selectedCategories.isEmpty || selectedJurisdiction != nil else {
-            return transactions
+    /// Fetches the newest page of rows matching the current filters, with
+    /// filtering and sorting done by the store rather than in memory.
+    var fetchDescriptor: FetchDescriptor<Transaction> {
+        var descriptor = FetchDescriptor(
+            predicate: filterPredicate,
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = fetchLimit
+        return descriptor
+    }
+
+    /// Matches the applied search, categories and jurisdiction, or `nil`
+    /// when nothing is filtered so the store reads rows without a predicate.
+    var filterPredicate: Predicate<Transaction>? {
+        let search = appliedSearchText
+        let categories = selectedCategories.map(\.rawValue)
+        var conditions: [Predicate<Transaction>] = []
+
+        if !search.isEmpty {
+            conditions.append(#Predicate { transaction in
+                transaction.merchantName.localizedStandardContains(search)
+                    || transaction.notes.localizedStandardContains(search)
+            })
         }
-        return transactions.filter { transaction in
-            let matchesSearch = searchText.isEmpty
-                || transaction.merchantName.localizedStandardContains(searchText)
-                || transaction.notes.localizedStandardContains(searchText)
-
-            let matchesCategory = selectedCategories.isEmpty
-                || (transaction.category.map { selectedCategories.contains($0) } ?? false)
-
-            let matchesJurisdiction = selectedJurisdiction == nil
-                || transaction.jurisdiction == selectedJurisdiction
-
-            return matchesSearch && matchesCategory && matchesJurisdiction
+        if !categories.isEmpty {
+            conditions.append(#Predicate { transaction in
+                categories.contains(transaction.categoryRawValue)
+            })
         }
+        if let jurisdiction = selectedJurisdiction {
+            conditions.append(#Predicate { transaction in
+                transaction.jurisdiction == jurisdiction
+            })
+        }
+
+        return conditions.reduce(nil) { combined, next in
+            guard let combined else { return next }
+            return #Predicate { transaction in
+                combined.evaluate(transaction) && next.evaluate(transaction)
+            }
+        }
+    }
+
+    /// Hands the search field's text to the fetch once typing pauses, so
+    /// the store is queried once per pause instead of once per keystroke.
+    /// Clearing the field applies at once.
+    func applySearchText() async {
+        if !searchText.isEmpty {
+            do {
+                try await Task.sleep(for: Self.searchDebounce)
+            } catch {
+                return
+            }
+        }
+        guard appliedSearchText != searchText else { return }
+        appliedSearchText = searchText
+        resetPaging()
+    }
+
+    /// Requests the next page once the loaded slice is full; a slice
+    /// shorter than the limit means every matching row is already shown.
+    func loadNextPage(loadedCount: Int) {
+        guard loadedCount >= fetchLimit else { return }
+        fetchLimit += Self.pageSize
+    }
+
+    /// Fetches one row, just to tell whether the ledger has any at all.
+    static var anyTransactionDescriptor: FetchDescriptor<Transaction> {
+        var descriptor = FetchDescriptor<Transaction>()
+        descriptor.fetchLimit = 1
+        return descriptor
     }
 
     // MARK: - Date Grouping
 
     /// Groups transactions by calendar day, sorted most recent first.
-    func groupedByDate(
+    static func groupedByDate(
         _ transactions: [Transaction]
     ) -> [(date: Date, transactions: [Transaction])] {
         let calendar = Calendar.current
@@ -191,6 +264,12 @@ final class LedgerViewModel {
 
     var hasActiveFilters: Bool {
         !selectedCategories.isEmpty || selectedJurisdiction != nil
+    }
+
+    /// Starts again from the first page when what is being matched changes.
+    private func resetPaging() {
+        guard fetchLimit != Self.pageSize else { return }
+        fetchLimit = Self.pageSize
     }
 
     // MARK: - Real Cost Calculation
