@@ -43,7 +43,6 @@ struct LedgerView: View {
         }
         .task {
             viewModel.refreshLocationAuthorizationStatus()
-            viewModel.updateFXIntelligence(transactions: transactions)
             await viewModel.updateActiveCardRecommendation(accounts: accounts)
         }
         .alert("Location Error", isPresented: $showError) {

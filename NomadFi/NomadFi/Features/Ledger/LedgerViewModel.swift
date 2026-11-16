@@ -4,7 +4,7 @@ import OSLog
 import SwiftData
 
 /// Manages ledger state including search, filtering, date grouping,
-/// FX waste aggregation, and the Active Card recommendation engine.
+/// and the Active Card recommendation engine.
 ///
 /// Works alongside `@Query` in ``LedgerView``: SwiftData queries provide
 /// reactive transaction data, while this view model handles filtering,
@@ -32,12 +32,6 @@ final class LedgerViewModel {
     // MARK: - Error State
 
     var errorMessage: String?
-
-    // MARK: - FX Intelligence
-
-    var weeklyFXWaste: Double = 0
-    var monthlyFXWaste: Double = 0
-    var crossBorderCountThisWeek: Int = 0
 
     // MARK: - Dependencies
 
@@ -178,26 +172,6 @@ final class LedgerViewModel {
             recommendedAccountName = nil
             recommendedAccountFeeConfidence = nil
         }
-    }
-
-    // MARK: - FX Intelligence
-
-    /// Updates all FX waste metrics from the transaction history.
-    func updateFXIntelligence(transactions: [Transaction]) {
-        let calendar = Calendar.current
-        let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: .now) ?? .now
-        let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: .now) ?? .now
-
-        weeklyFXWaste = InsightEngine.totalFXWaste(transactions: transactions, since: oneWeekAgo)
-        monthlyFXWaste = InsightEngine.totalFXWaste(transactions: transactions, since: oneMonthAgo)
-        crossBorderCountThisWeek = InsightEngine.crossBorderTransactionCount(
-            transactions: transactions,
-            since: oneWeekAgo
-        )
-
-        Self.logger.info(
-            "FX intelligence updated — weekly waste: \(self.weeklyFXWaste, privacy: .private), monthly: \(self.monthlyFXWaste, privacy: .private)"
-        )
     }
 
     // MARK: - Filter Helpers
