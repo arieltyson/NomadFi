@@ -43,6 +43,7 @@ struct SpendingView: View {
         }
         .task(id: viewModel.period) {
             await viewModel.load(in: modelContext.container)
+            await viewModel.sortUnrecognizedMerchants(in: modelContext.container)
         }
         .task {
             // Purchases synced or added while the screen is open, and

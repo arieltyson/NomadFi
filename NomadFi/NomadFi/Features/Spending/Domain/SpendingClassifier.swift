@@ -9,6 +9,8 @@ import Foundation
 ///    bank feeds file it under restaurants.
 /// 3. The bank feed's detailed category code.
 /// 4. A generic word in the merchant's name.
+/// 5. A suggestion the on-device model made for a merchant nothing else
+///    recognized.
 ///
 /// A purchase only ever lands in a subcategory of its own category, so
 /// "Uber" is Ride Share under Transportation and Delivery under Food and
@@ -20,11 +22,18 @@ struct SpendingClassifier: Sendable {
 
     /// Merchant key → subcategory ID, from the person's own choices.
     private let merchantRules: [String: String]
+    /// Merchant key → subcategory ID, suggested on device.
+    private let suggestions: [String: String]
     private let matchers: [TransactionCategory: Matchers]
 
-    init(taxonomy: SpendingTaxonomy, merchantRules: [String: String] = [:]) {
+    init(
+        taxonomy: SpendingTaxonomy,
+        merchantRules: [String: String] = [:],
+        suggestions: [String: String] = [:]
+    ) {
         self.taxonomy = taxonomy
         self.merchantRules = merchantRules
+        self.suggestions = suggestions
         matchers = Dictionary(
             uniqueKeysWithValues: TransactionCategory.allCases.map { category in
                 (category, Matchers(taxonomy.subcategories(of: category)))
@@ -48,9 +57,7 @@ struct SpendingClassifier: Sendable {
         category: TransactionCategory,
         providerCode: String?
     ) -> SpendingSubcategory? {
-        if let ruleID = merchantRules[merchantKey],
-           let ruled = taxonomy.subcategory(id: ruleID),
-           ruled.parent == category {
+        if let ruled = subcategory(id: merchantRules[merchantKey], within: category) {
             return ruled
         }
         guard let matchers = matchers[category] else { return nil }
@@ -58,6 +65,12 @@ struct SpendingClassifier: Sendable {
         return matchers.merchant(in: words)
             ?? providerCode.flatMap { matchers.byProviderCode[$0] }
             ?? matchers.keyword(in: words)
+            ?? subcategory(id: suggestions[merchantKey], within: category)
+    }
+
+    private func subcategory(id: String?, within category: TransactionCategory) -> SpendingSubcategory? {
+        guard let id, let subcategory = taxonomy.subcategory(id: id), subcategory.parent == category else { return nil }
+        return subcategory
     }
 
     /// The subcategory the person chose for a merchant, if they did.

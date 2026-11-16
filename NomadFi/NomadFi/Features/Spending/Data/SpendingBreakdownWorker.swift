@@ -10,6 +10,10 @@ actor SpendingBreakdownWorker {
 
     private static let logger = Logger(subsystem: "com.nomadfi.app", category: "SpendingBreakdown")
 
+    /// Where on-device suggestions are remembered.
+    private var suggestionStore = SpendingSuggestionStore.standard
+    private var cachedSuggestions: SpendingSuggestionStore.Suggestions?
+
     /// Bank detail codes by transaction identity, kept until the hosted
     /// ledger changes so it is decoded once rather than on every request.
     private var providerCodes: (signature: String, codes: [String: String])?
@@ -23,7 +27,11 @@ actor SpendingBreakdownWorker {
         now: Date = .now
     ) throws -> SpendingBreakdown {
         let records = try records(since: period.startDate(now: now))
-        let classifier = SpendingClassifier(taxonomy: taxonomy, merchantRules: try merchantRules())
+        let classifier = SpendingClassifier(
+            taxonomy: taxonomy,
+            merchantRules: try merchantRules(),
+            suggestions: suggestions()
+        )
         return SpendingBreakdownComputer.breakdown(
             records: records,
             classifier: classifier,
@@ -53,6 +61,33 @@ actor SpendingBreakdownWorker {
             existing.forEach(modelContext.delete)
         }
         try modelContext.save()
+    }
+
+    // MARK: - Suggestions
+
+    /// Merchants already asked about, whether or not anything fit.
+    func askedMerchantKeys() -> Set<String> {
+        Set(suggestions().keys)
+    }
+
+    /// Remembers new suggestions; an empty ID records that nothing fit.
+    func recordSuggestions(_ new: SpendingSuggestionStore.Suggestions) throws {
+        let merged = suggestions().merging(new) { _, latest in latest }
+        try suggestionStore.save(merged)
+        cachedSuggestions = merged
+    }
+
+    /// Points the worker at another suggestion file, for tests.
+    func useSuggestionStore(_ store: SpendingSuggestionStore) {
+        suggestionStore = store
+        cachedSuggestions = nil
+    }
+
+    private func suggestions() -> SpendingSuggestionStore.Suggestions {
+        if let cachedSuggestions { return cachedSuggestions }
+        let loaded = suggestionStore.load()
+        cachedSuggestions = loaded
+        return loaded
     }
 
     // MARK: - Reading

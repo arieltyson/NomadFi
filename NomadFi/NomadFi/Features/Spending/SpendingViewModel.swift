@@ -40,15 +40,28 @@ final class SpendingViewModel {
     /// How long a burst of saves must settle before the breakdown is rebuilt.
     static let reloadDebounce: Duration = .milliseconds(400)
 
+    /// How many unrecognized merchants are offered to the on-device model
+    /// per visit, largest first, so the work stays brief.
+    static let suggestionsPerVisit = 20
+
     // MARK: - Dependencies
 
+    private let suggester: any SpendingMerchantSuggesting
+    private let suggestionStore: SpendingSuggestionStore
     private var worker: SpendingBreakdownWorker?
     private var reloadTask: Task<Void, Never>?
     private static let logger = Logger(subsystem: "com.nomadfi.app", category: "Spending")
 
-    init(homeCurrency: CurrencyCode, taxonomy: SpendingTaxonomy = .bundled) {
+    init(
+        homeCurrency: CurrencyCode,
+        taxonomy: SpendingTaxonomy = .bundled,
+        suggester: any SpendingMerchantSuggesting = FoundationModelsSpendingSuggester(),
+        suggestionStore: SpendingSuggestionStore = .standard
+    ) {
         self.homeCurrency = homeCurrency
         self.taxonomy = taxonomy
+        self.suggester = suggester
+        self.suggestionStore = suggestionStore
     }
 
     // MARK: - Loading
@@ -84,6 +97,68 @@ final class SpendingViewModel {
         await rebuildAll(in: container)
     }
 
+    /// Asks the on-device model about the largest merchants nothing could
+    /// sort, each only once ever, then rebuilds if any found a home. Stops
+    /// when the screen goes away.
+    func sortUnrecognizedMerchants(in container: ModelContainer) async {
+        guard suggester.isAvailable, let breakdown = breakdowns[period] else { return }
+        let worker = await worker(for: container)
+        let candidates = Self.unrecognizedMerchants(
+            in: breakdown,
+            taxonomy: taxonomy,
+            excluding: await worker.askedMerchantKeys(),
+            limit: Self.suggestionsPerVisit
+        )
+        var answers: SpendingSuggestionStore.Suggestions = [:]
+        for candidate in candidates {
+            guard !Task.isCancelled else { break }
+            do {
+                let id = try await suggester.suggest(
+                    merchantName: candidate.name,
+                    category: candidate.category,
+                    options: taxonomy.subcategories(of: candidate.category)
+                )
+                answers[candidate.merchantKey] = id ?? ""
+            } catch {
+                // Not remembered, so the merchant is asked about again later.
+                Self.logger.error("Merchant suggestion failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        guard !answers.isEmpty else { return }
+        do {
+            try await worker.recordSuggestions(answers)
+        } catch {
+            Self.logger.error("Saving merchant suggestions failed: \(error.localizedDescription, privacy: .public)")
+        }
+        if answers.values.contains(where: { !$0.isEmpty }) {
+            await rebuildAll(in: container)
+        }
+    }
+
+    /// Merchants under a category's "Other" that the category could split
+    /// into, not yet asked about, largest first.
+    static func unrecognizedMerchants(
+        in breakdown: SpendingBreakdown,
+        taxonomy: SpendingTaxonomy,
+        excluding asked: Set<String>,
+        limit: Int
+    ) -> [UnrecognizedMerchant] {
+        var candidates: [UnrecognizedMerchant] = []
+        for category in breakdown.categories where !taxonomy.subcategories(of: category.category).isEmpty {
+            for other in category.subcategories where other.isOther {
+                for merchant in other.merchants where merchant.ruledSubcategoryID == nil && !asked.contains(merchant.id) {
+                    candidates.append(UnrecognizedMerchant(
+                        merchantKey: merchant.id,
+                        name: merchant.name,
+                        category: category.category,
+                        total: merchant.total
+                    ))
+                }
+            }
+        }
+        return Array(candidates.sorted { $0.total > $1.total }.prefix(limit))
+    }
+
     private func rebuildAll(in container: ModelContainer) async {
         breakdowns.removeAll()
         await build(period, in: container)
@@ -101,9 +176,10 @@ final class SpendingViewModel {
         }
     }
 
-    private func worker(for container: ModelContainer) -> SpendingBreakdownWorker {
+    private func worker(for container: ModelContainer) async -> SpendingBreakdownWorker {
         if let worker { return worker }
         let created = SpendingBreakdownWorker(modelContainer: container)
+        await created.useSuggestionStore(suggestionStore)
         worker = created
         return created
     }
